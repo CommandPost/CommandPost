@@ -284,6 +284,114 @@
         "name": "Command Set Shortcuts.Editing.Change Duration"
     },
     {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Add"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Alpha Add"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Behind"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Color Burn"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Color Dodge"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Darken"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Difference"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Exclusion"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Hard Light"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Hard Mix"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Lighten"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Linear Burn"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Linear Dodge"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Linear Light"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Multiply"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Normal"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Overlay"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Pin Light"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Premultiplied Mix"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Screen"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Silhouette Alpha"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Silhouette Luma"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Soft Light"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Stencil Alpha"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Stencil Luma"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Subtract"
+    },
+    {
+        "info": "Changes the Blend Mode of the selected clip.",
+        "name": "Video Inspector.Compositing.Blend Mode.Vivid Light"
+    },
+    {
         "info": "Changes the Highlights Brightness",
         "name": "Color Wheels.Highlights.Highlights Brightness",
         "range": [

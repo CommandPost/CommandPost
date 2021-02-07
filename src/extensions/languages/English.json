@@ -121,6 +121,7 @@
         "automaticallyImport": "Automatically Import without Notification",
         "automaticallySwitchApplications": "Automatically Switch Applications",
         "automaticKeyframes": "Automatic Keyframes",
+        "automaticProfileSwitching": "Enable Automatic Profile Switching",
         "autoMountOnAC": "Mount external drives when switching to AC power",
         "autoUnmountOnBattery": "Unmount external drives when switching to battery power",
         "back": "Back",

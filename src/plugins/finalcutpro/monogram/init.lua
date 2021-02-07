@@ -12,6 +12,7 @@ local plist             = require "hs.plist"
 local config            = require "cp.config"
 local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
+local notifier          = require "cp.ui.notifier"
 
 local copy              = fnutils.copy
 
@@ -80,12 +81,27 @@ end
 --  * puckFinderFn - a function that will return the `ColorPuck` to reset.
 --
 -- Returns:
---  * a func
+--  * a function that will receive the Monogram control metadata table and process it.
 local function makeResetColorWheelHandler(wheelFinderFn)
     return function()
         local wheel = wheelFinderFn()
         wheel:show()
         wheel:colorOrientation({right=0, up=0})
+    end
+end
+
+-- makeFunctionHandler(fn) -> function
+-- Function
+-- Creates a 'handler' for triggering a function.
+--
+-- Parameters:
+--  * fn - the function you want to trigger.
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeFunctionHandler(fn)
+    return function()
+        fn()
     end
 end
 
@@ -450,6 +466,38 @@ function plugin.init(deps)
     manager.registerPlugin("Final Cut Pro via CP", sourcePath)
 
     --------------------------------------------------------------------------------
+    -- Setup Automatic Profile Switching Ability:
+    --------------------------------------------------------------------------------
+    local checkForLayoutChanges = deferred.new(0.1):action(function()
+        if fcp.inspector.color.colorWheels:isShowing() then
+            manager.changeContext("Color Wheels")
+        elseif fcp.inspector.color.colorBoard:isShowing() then
+            manager.changeContext("Color Board")
+        elseif fcp.inspector.video:isShowing() then
+            manager.changeContext("Video Inspector")
+        elseif fcp.inspector.info:isShowing() then
+            manager.changeContext("Info Inspector")
+        end
+    end)
+    mod.notifier = notifier.new(fcp:bundleID(), function() return fcp.app:UI() end)
+    mod.notifier:watchFor({"AXUIElementDestroyed"}, function() checkForLayoutChanges() end)
+    manager.automaticProfileSwitching:watch(function(enabled)
+        if enabled and manager.enabled() then
+            mod.notifier:start()
+        else
+            mod.notifier:stop()
+        end
+    end)
+    manager.automaticProfileSwitching:update()
+    manager.enabled:watch(function(enabled)
+        if enabled and manager.automaticProfileSwitching() then
+            mod.notifier:start()
+        else
+            mod.notifier:stop()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
     -- Colour Wheel Controls:
     --------------------------------------------------------------------------------
     local colourWheels = {
@@ -524,6 +572,12 @@ function plugin.init(deps)
     registerAction("Video Inspector.Crop.Crop Right", makeSliderHandler(function() return fcp.inspector.video.crop():right() end))
     registerAction("Video Inspector.Crop.Crop Top", makeSliderHandler(function() return fcp.inspector.video.crop():top() end))
     registerAction("Video Inspector.Crop.Crop Bottom", makeSliderHandler(function() return fcp.inspector.video.crop():bottom() end))
+
+    for _, v in pairs(fcp.inspector.video.BLEND_MODES) do
+        if v.flexoID then
+            registerAction("Video Inspector.Compositing.Blend Mode." .. fcp:string(v.flexoID, "en"), makeFunctionHandler(function() fcp.inspector.video:compositing():blendMode():doSelectValue(fcp:string(v.flexoID)):Now() end))
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Menu Items:

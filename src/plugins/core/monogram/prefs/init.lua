@@ -232,6 +232,16 @@ function plugin.init(deps, env)
                 checked = monogram.enabled,
             }
         )
+        :addCheckbox(3.1,
+            {
+                label = i18n("automaticProfileSwitching"),
+                id = "automaticProfileSwitching",
+                onchange = function(_, params)
+                    monogram.automaticProfileSwitching(params.checked)
+                end,
+                checked = monogram.automaticProfileSwitching,
+            }
+        )
         :addParagraph(4, html.br())
         :addButton(5,
             {

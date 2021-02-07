@@ -1,13 +1,26 @@
 {
-  "name": "Final Cut Pro (via CP)",
-  "id": "org.latenitefilms.CommandPost.FinalCutPro",
-  "bundle": ["com.apple.FinalCut"],
-  "category": ["video"],
-  "connection": [
-    {
-      "name": "CommandPost",
-      "type": "udp",
-      "port": 51234
-    }
-  ]
+    "bundle": [
+        "com.apple.FinalCut"
+    ],
+    "category": [
+        "video"
+    ],
+    "connection": [
+        {
+            "name": "CommandPost",
+            "port": 51234,
+            "type": "udp"
+        }
+    ],
+    "help": {
+        "url": "https://commandpost.io"
+    },
+    "id": "org.latenitefilms.CommandPost.FinalCutPro",
+    "name": "Final Cut Pro (via CP)",
+    "workflows": [
+        "Color Board",
+        "Color Wheels",
+        "Info Inspector",
+        "Video Inspector"
+    ]
 }

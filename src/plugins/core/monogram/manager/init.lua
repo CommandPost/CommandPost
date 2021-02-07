@@ -8,6 +8,8 @@ local log                       = require "hs.logger".new "monogram"
 
 local application               = require "hs.application"
 local inspect                   = require "hs.inspect"
+local inspect                   = require "hs.inspect"
+local socket                    = require "hs.socket"
 local timer                     = require "hs.timer"
 local udp                       = require "hs.socket.udp"
 
@@ -41,6 +43,11 @@ local MONOGRAM_CREATOR_BUNDLE_ID = "com.monogramcc.Monogram-Creator"
 -- The Monogram Creator Download URL.
 local MONOGRAM_CREATOR_DOWNLOAD_URL = "https://monogramcc.com/download"
 
+-- MONOGRAM_STATE_PATH -> string
+-- Constant
+-- The path to the Monogram Creator State file.
+local MONOGRAM_STATE_PATH = os.getenv("HOME") .. "/Library/Application Support/Monogram/Service/state.json"
+
 --- plugins.core.monogram.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
 --- Number of favourites
@@ -50,6 +57,11 @@ mod.NUMBER_OF_FAVOURITES = 20
 --- Variable
 --- A `cp.prop` that that contains all the Monogram Favourites.
 mod.favourites = json.prop(os.getenv("HOME") .. "/Library/Application Support/CommandPost/", "Monogram", "Favourites.cpMonogram", {})
+
+--- plugins.core.monogram.manager.lastPort -> number
+--- Variable
+--- The port that Monogram Creator used to connect to CommandPost.
+mod.lastPort = 59178
 
 -- getMonogramCreatorBundleID() -> string
 -- Function
@@ -129,16 +141,22 @@ end
 --
 -- Returns:
 --  * None
-local function callbackFn(data)
+local function callbackFn(data, sockAddress)
     if data then
         local decodedData = json.decode(data)
-        --print(string.format("decodedData: %s", hs.inspect(decodedData)))
         local action = mod.performAction[decodedData.input]
         if action then
             action(decodedData)
         else
-            log.ef("Unknown Monogram Action: %s", decodedData.input)
+            log.ef("Unknown Monogram Message:\n%s\n%s", inspect(decodedData))
         end
+
+        -- Get the Monogram port so we can send messages back:
+        local address = socket.parseAddress(sockAddress)
+        mod.lastPort = address.port
+
+        --log.df("decodedData: %s", inspect(decodedData))
+        --log.df("address: %s", hs.inspect(address))
     end
 end
 
@@ -157,7 +175,6 @@ function mod.launchCreatorBundle()
         launchOrFocusByBundleID(bundleID)
     end
 end
-
 
 --- plugins.core.monogram.manager.launchCreatorBundle() -> none
 --- Function
@@ -190,47 +207,26 @@ local function setupPlugins()
     local plugins = mod.plugins
 
     --------------------------------------------------------------------------------
-    -- Copy Monogram Plugins to Application Support Folder:
-    --------------------------------------------------------------------------------
-    local userConfigRootPath = config.userConfigRootPath
-    local destinationPath = userConfigRootPath .. "/Monogram/Plugins/"
-    if ensureDirectoryExists(userConfigRootPath, "Monogram", "Plugins") then
-        for pluginName, sourcePath in pairs(plugins) do
-            local pluginExtension = pluginName .. ".palette"
-            if not doesDirectoryExist(destinationPath .. pluginExtension) then
-                local cmd = [[cp -R "]] ..  sourcePath .. pluginExtension .. [[" "]] .. destinationPath .. pluginExtension .. [["]]
-                local _, status = os.execute(cmd)
-                if not status then
-                    log.ef("Failed to execute: %s", cmd)
-                    return false
-                end
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
     -- Check the plugins are enabled in the Monogram Preferences:
     --------------------------------------------------------------------------------
-    local homePath = os.getenv("HOME")
-    local statePath = homePath .. "/Library/Application Support/Monogram/Service/state.json"
     local pluginsToInstall = {}
-    if not doesFileExist(statePath) then
+    if not doesFileExist(MONOGRAM_STATE_PATH) then
         log.ef("The Monogram State file could not be found. Is Monogram Creator Installed?")
         return false
     else
-        local stateData = json.read(statePath)
+        local stateData = json.read(MONOGRAM_STATE_PATH)
         if stateData then
             local integrations = stateData.integrations
             if integrations then
-                for pluginName, _ in pairs(plugins) do
+                for pluginName, sourcePath in pairs(plugins) do
                     local pluginInstalled = false
                     for _, path in pairs(integrations) do
-                        if path == destinationPath .. pluginName .. ".palette" then
+                        if path == sourcePath .. pluginName .. ".palette" then
                             pluginInstalled = true
                         end
                     end
                     if not pluginInstalled then
-                        table.insert(pluginsToInstall, pluginName)
+                        table.insert(pluginsToInstall, sourcePath .. pluginName)
                     end
                 end
 
@@ -238,8 +234,8 @@ local function setupPlugins()
                 -- We need to install some plugins:
                 --------------------------------------------------------------------------------
                 if next(pluginsToInstall) then
-                    for _, pluginName in pairs(pluginsToInstall) do
-                        table.insert(stateData.integrations, destinationPath .. pluginName .. ".palette")
+                    for _, pluginPath in pairs(pluginsToInstall) do
+                        table.insert(stateData.integrations, pluginPath .. ".palette")
                     end
 
                     local bundleID = getMonogramCreatorBundleID()
@@ -251,7 +247,7 @@ local function setupPlugins()
                         didKill = true
                     end
 
-                    json.write(statePath, stateData)
+                    json.write(MONOGRAM_STATE_PATH, stateData)
 
                     if didKill then
                         mod._launcher = doAfter(1, function()
@@ -281,35 +277,21 @@ local function removePlugins()
     local plugins = mod.plugins
 
     --------------------------------------------------------------------------------
-    -- Remove the Monogram Plugins from the Application Support Folder:
-    --------------------------------------------------------------------------------
-    local userConfigRootPath = config.userConfigRootPath
-    local destinationPath = userConfigRootPath .. "/Monogram/Plugins/"
-    local cmd = [[rm -rf "]] .. destinationPath .. [["]]
-    local _, status = execute(cmd)
-    if not status then
-        log.ef("Failed to remove Monogram Plugin Folder")
-        return false
-    end
-
-    --------------------------------------------------------------------------------
     -- Remove plugins from Monogram Preferences:
     --------------------------------------------------------------------------------
-    local homePath = os.getenv("HOME")
-    local statePath = homePath .. "/Library/Application Support/Monogram/Service/state.json"
-    if not doesFileExist(statePath) then
+    if not doesFileExist(MONOGRAM_STATE_PATH) then
         log.ef("The Monogram State file could not be found. Is Monogram Creator Installed?")
         return false
     else
-        local stateData = json.read(statePath)
+        local stateData = json.read(MONOGRAM_STATE_PATH)
         if stateData then
             local integrations = stateData.integrations
             if integrations then
                 local intergrationsToKeep = {}
                 for _, path in pairs(integrations) do
                     local needsRemoving = false
-                    for pluginName, _ in pairs(plugins) do
-                        if path == destinationPath .. pluginName .. ".palette" then
+                    for pluginName, sourcePath in pairs(plugins) do
+                        if path == sourcePath .. pluginName .. ".palette" then
                             needsRemoving = true
                         end
                     end
@@ -332,7 +314,7 @@ local function removePlugins()
                     didKill = true
                 end
 
-                json.write(statePath, stateData)
+                json.write(MONOGRAM_STATE_PATH, stateData)
 
                 if didKill then
                     mod._launcher = doAfter(1, function()
@@ -360,7 +342,12 @@ mod.enabled = config.prop("monogram.enabled", false):watch(function(enabled)
     end
 end)
 
---- plugins.core.monogram.manager.setEnabled() -> none
+--- plugins.core.monogram.manager.automaticProfileSwitching <cp.prop: boolean>
+--- Field
+--- Enable or disable Automatic Profile Switching
+mod.automaticProfileSwitching = config.prop("monogram.automaticProfileSwitching", false)
+
+--- plugins.core.monogram.manager.setEnabled(enabled) -> none
 --- Function
 --- Enables or disables Monogram Support.
 ---
@@ -384,6 +371,28 @@ function mod.setEnabled(enabled)
         end
     end
     return mod.enabled()
+end
+
+--- plugins.core.monogram.manager.changeContext(context) -> none
+--- Function
+--- Switches the Monogram Profile.
+---
+--- Parameters:
+---  * context - The name of the context you want to switch to.
+---
+--- Returns:
+---  * None
+function mod.changeContext(context)
+    if mod.enabled() then
+        local message = {
+            ["command"] = {
+                ["commandString"] = "changeContext",
+                ["context"] = context,
+            }
+        }
+        local message = json.encode(message)
+        mod.server:send(message, "127.0.0.1", mod.lastPort)
+    end
 end
 
 local plugin = {
