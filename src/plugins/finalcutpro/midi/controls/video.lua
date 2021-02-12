@@ -122,7 +122,7 @@ local function createAbsoluteMIDIPositionSlider(paramFn, invert)
             if shiftPressed() then
                 multiplier = 2
             elseif optionPressed() then
-                multipler = 3
+                multiplier = 3
             end
 
             if invert then
