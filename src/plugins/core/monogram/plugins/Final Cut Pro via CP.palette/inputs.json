@@ -96,7 +96,8 @@
         ],
         "reset": 0,
         "step": 0.1,
-        "stepMin": 0.1
+        "stepMin": 0.1,
+        "excludeModules": "slider"
     },
     {
         "info": "Adjusts the cropping on the selected clip",
@@ -107,7 +108,8 @@
         ],
         "reset": 0,
         "step": 0.1,
-        "stepMin": 0.1
+        "stepMin": 0.1,
+        "excludeModules": "slider"
     },
     {
         "info": "Adjusts the cropping on the selected clip",
@@ -118,7 +120,8 @@
         ],
         "reset": 0,
         "step": 0.1,
-        "stepMin": 0.1
+        "stepMin": 0.1,
+        "excludeModules": "slider"
     },
     {
         "info": "Adjusts the cropping on the selected clip",
@@ -129,7 +132,8 @@
         ],
         "reset": 0,
         "step": 0.1,
-        "stepMin": 0.1
+        "stepMin": 0.1,
+        "excludeModules": "slider"
     },
     {
         "info": "Aligns selection to video clip range ",
@@ -479,7 +483,7 @@
             100
         ],
         "reset": 100,
-        "step": 0.01,
+        "step": 1,
         "stepMin": 0.01
     },
     {
@@ -600,12 +604,12 @@
         "info": "Controls the Color Wheels Temperature slider",
         "name": "Color Wheels.Temperature",
         "range": [
-            10000,
-            2500
+            2500,
+            10000
         ],
-        "reset": 0,
-        "step": 0.1,
-        "stepMin": 0.1
+        "reset": 5000,
+        "step": 25,
+        "stepMin": 1
     },
     {
         "info": "Controls the Color Wheels Tint slider",
@@ -615,8 +619,8 @@
             50
         ],
         "reset": 0,
-        "step": 0.1,
-        "stepMin": 0.1
+        "step": 1,
+        "stepMin": 1
     },
     {
         "info": "Copy Selected Keyframes",
@@ -1329,7 +1333,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Highlights Color Wheel Vertically",
@@ -1340,7 +1345,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Highlights Exposure Puck in the Color Board",
@@ -1395,7 +1401,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Master Color Wheel Vertically",
@@ -1406,7 +1413,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Master Exposure Puck in the Color Board",
@@ -1461,7 +1469,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Midtones Color Wheel Vertically",
@@ -1472,7 +1481,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Midtones Exposure Puck in the Color Board",
@@ -1527,7 +1537,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Shadows Color Wheel Vertically",
@@ -1538,7 +1549,8 @@
         ],
         "reset": 0,
         "step": 0.001666666667,
-        "stepMin": 0.001666666667
+        "stepMin": 0.001666666667,
+        "excludeModules": "slider"
     },
     {
         "info": "Moves the Shadows Exposure Puck in the Color Board",
@@ -2570,7 +2582,7 @@
             5000
         ],
         "reset": 0,
-        "step": 0.1,
+        "step": 1,
         "stepMin": 0.1
     },
     {
@@ -2592,7 +2604,7 @@
             5000
         ],
         "reset": 0,
-        "step": 0.1,
+        "step": 1,
         "stepMin": 0.1
     },
     {
@@ -2614,7 +2626,7 @@
             5000
         ],
         "reset": 0,
-        "step": 0.1,
+        "step": 1,
         "stepMin": 0.1
     },
     {
@@ -2625,7 +2637,7 @@
             5000
         ],
         "reset": 0,
-        "step": 0.1,
+        "step": 1,
         "stepMin": 0.1
     },
     {
@@ -2647,7 +2659,7 @@
             360
         ],
         "reset": 0,
-        "step": 0.1,
+        "step": -0.1,
         "stepMin": 0.1
     },
     {
