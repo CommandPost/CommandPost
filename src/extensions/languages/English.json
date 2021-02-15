@@ -1185,6 +1185,7 @@
         "invalidProwlAPIKey": "Invalid Prowl API Key",
         "invalidSearchField": "The search field looks invalid.",
         "invalidSearchFieldDescription": "Please check what you've written in the search field and try again.",
+        "inverted": "Inverted",
         "item": {
             "one": "item",
             "other": "items"
@@ -1316,6 +1317,7 @@
         "midiControlColorWheel": "Hold down SHIFT to change value at extended range.",
         "midiControls": "MIDI Controls",
         "midiEditor": "MIDI Editor",
+        "midiPositionInvertedDescription": "Hold SHIFT for double, OPTION for triple.",
         "midiResetAll": "Reset All Applications",
         "midiResetAllConfirmation": "This will reset all MIDI items across all applications to the default values.",
         "midiResetGroup": "Reset Selected Application",

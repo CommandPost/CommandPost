@@ -2,14 +2,18 @@
 ---
 --- Final Cut Pro MIDI Video Inspector Controls.
 
-local require = require
+local require           = require
+
+--local log               = require "hs.logger".new "video"
 
 local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
+local optionPressed     = tools.optionPressed
 local rescale           = tools.rescale
+local shiftPressed      = tools.shiftPressed
 
 local function createAbsoluteMIDIOpacitySlider()
     local value
@@ -88,7 +92,7 @@ local function createAbsoluteMIDIScaleSlider(paramFn)
     end
 end
 
-local function createAbsoluteMIDIPositionSlider(paramFn)
+local function createAbsoluteMIDIPositionSlider(paramFn, invert)
     local value
     local updateUI = deferred.new(0.01):action(function()
         local param = paramFn()
@@ -103,9 +107,9 @@ local function createAbsoluteMIDIPositionSlider(paramFn)
             if midiValue == 8192 then
                 value = 0
             elseif midiValue > 8192 then
-                value = rescale(midiValue, 8193, 16383, 1, 277)
+                value = rescale(midiValue, 8193, 16383, 1, 277, invert)
             elseif midiValue < 8192 then
-                value = rescale(midiValue, 0, 8191, -277, -1)
+                value = rescale(midiValue, 0, 8191, -277, -1, invert)
             end
             updateUI()
         else
@@ -113,12 +117,32 @@ local function createAbsoluteMIDIPositionSlider(paramFn)
             -- 7bit:
             --------------------------------------------------------------------------------
             local controllerValue = metadata.controllerValue
-            if controllerValue == 64 then
-                value = 0
-            elseif controllerValue < 64 then
-                value = rescale(controllerValue, 0, 63, 277, 0.1)
-            elseif controllerValue > 64 then
-                value = rescale(controllerValue, 64, 127, -0.1, -277)
+
+            local multiplier = 1
+            if shiftPressed() then
+                multiplier = 2
+            elseif optionPressed() then
+                multiplier = 3
+            end
+
+            if invert then
+                -- -277 to 277
+                if controllerValue == 64 then
+                    value = 0
+                elseif controllerValue < 64 then
+                    value = rescale(controllerValue, 0, 63, -277 * multiplier, -0.1 * multiplier)
+                elseif controllerValue > 64 then
+                    value = rescale(controllerValue, 64, 127, 0.1 * multiplier, 277 * multiplier)
+                end
+            else
+                -- 277 to -277
+                if controllerValue == 64 then
+                    value = 0
+                elseif controllerValue < 64 then
+                    value = rescale(controllerValue, 0, 63, 277 * multiplier, 0.1 * multiplier)
+                elseif controllerValue > 64 then
+                    value = rescale(controllerValue, 64, 127, -0.1 * multiplier, -277 * multiplier)
+                end
             end
             updateUI()
         end
@@ -226,6 +250,12 @@ function plugin.init(deps)
         subText = i18n("midiVideoInspector"),
         fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():position().x end),
     })
+    manager.controls:new("transformPositionXInverted", {
+        group = "fcpx",
+        text = i18n("transform") .. " - " .. i18n("position") .. " X - " .. i18n("inverted") .. " (" .. i18n("absolute") .. ")",
+        subText = i18n("midiPositionInvertedDescription"),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():position().x end, true),
+    })
 
     --------------------------------------------------------------------------------
     -- Position Y (-2500 TO 2500):
@@ -235,6 +265,12 @@ function plugin.init(deps)
         text = i18n("transform") .. " - " .. i18n("position") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
         fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():position().y end),
+    })
+    manager.controls:new("transformPositionYInverted", {
+        group = "fcpx",
+        text = i18n("transform") .. " - " .. i18n("position") .. " Y - " .. i18n("inverted") .. " (" .. i18n("absolute") .. ")",
+        subText = i18n("midiPositionInvertedDescription"),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():position().y end, true),
     })
 
     --------------------------------------------------------------------------------
