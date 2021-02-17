@@ -20,6 +20,7 @@ local tools                 = require "cp.tools"
 
 local ax                    = require "hs.axuielement"
 
+local accessibilityState    = hs.accessibilityState
 local concat                = table.concat
 local copy                  = fnutils.copy
 local doAfter               = timer.doAfter
@@ -170,7 +171,7 @@ function plugin.init(deps)
             mod._handler:reset(true)
             if not mod._cache[app:bundleID()] then
                 doAfter(0.1, function()
-                    if app and app:bundleID() then
+                    if app and app:bundleID() and accessibilityState() then
                         getMenuItems(app, function(result)
                             local bundleID = app:bundleID()
                             if bundleID and not mod._cache[bundleID] then
@@ -358,7 +359,7 @@ function plugin.postInit(deps)
         local bundleID = app:bundleID()
         if not mod._cache[bundleID] then
             local visibleWindows = app:visibleWindows()
-            if next(visibleWindows) then
+            if next(visibleWindows) and accessibilityState() then
                 getMenuItems(app, function(result)
                     if not mod._cache[bundleID] then
                         mod._cache[bundleID] = result
