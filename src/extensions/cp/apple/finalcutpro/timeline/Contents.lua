@@ -244,11 +244,11 @@ end
 ---  * The table of selected axuielements that match the conditions
 function Contents:selectedClipsUI(expandGroups, filterFn)
     local ui = self:UI()
-    if ui then
-        local clips = ui:attributeValue("AXSelectedChildren")
+    local clips = ui and ui:attributeValue("AXSelectedChildren")
+    if clips then
         return self:_filterClips(clips, expandGroups, filterFn)
     end
-    return nil
+    return {}
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:clipsUI(expandedGroups, filterFn) -> table of axuielements
