@@ -1854,7 +1854,6 @@
         "shotData": "Shot Data",
         "shotDataDescriptionFour": "This utility was commissioned by Vigneswaran Rajkumar for a feature film project.",
         "shotDataDescriptionOne": "This utility allows you to import a FCPXML which contains one or more Shot Data Titles in a timeline, and converts",
-        "shotDataDescriptionThree": "The Motion Template is currently optimised to work with timelines with a 4096 x 1716 resolution.",
         "shotDataDescriptionTwo": "the data from these Motion Templates into a single CSV file for use in other applications.",
         "shotDataDropZone": "You can also drag and drop projects from the Final Cut Pro Browser to here for processing...",
         "shotDataFailedToInstallTemplate": "Failed to install Shot Data Template.",
