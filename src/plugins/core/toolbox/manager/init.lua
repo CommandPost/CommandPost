@@ -22,6 +22,7 @@ local tools       = require "cp.tools"
 
 local moses       = require "moses"
 local panel       = require "panel"
+local semver      = require "semver"
 
 local doAfter     = timer.doAfter
 local sortedIndex = moses.sortedIndex
@@ -500,7 +501,17 @@ function mod.selectPanel(id)
             else
                 height = thePanel.height
             end
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
+
+            --------------------------------------------------------------------------------
+            -- Offset macOS Big Sur:
+            --------------------------------------------------------------------------------
+            local offset = 0
+            local macOSVersion = tools.macOSVersion()
+            if semver(macOSVersion) >= semver("10.16") then
+                offset = -10
+            end
+
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height + offset})
         end
 
     end
