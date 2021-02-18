@@ -726,7 +726,7 @@ function plugin.init(deps, env)
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 355,
+        height          = 320,
     })
     :addContent(1, generateContent, false)
 
