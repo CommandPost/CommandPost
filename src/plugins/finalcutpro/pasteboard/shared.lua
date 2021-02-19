@@ -21,7 +21,8 @@ local tools                 = require "cp.tools"
 local Do                    = require "cp.rx.go.Do"
 local Throw                 = require "cp.rx.go.Throw"
 
-local displayMessage        = dialog.displayMessage
+local displayChooseFolder   = dialog.displayChooseFolder
+local displayTextBoxMessage = dialog.displayTextBoxMessage
 local doAfter               = timer.doAfter
 local doesDirectoryExist    = tools.doesDirectoryExist
 
@@ -32,46 +33,20 @@ local mod = {}
 -- Shared Pasteboard File Extension.
 local HISTORY_EXTENSION = ".cpSharedPasteboard"
 
--- plugins.finalcutpro.pasteboard.shared._hostname -> string
--- Variable
--- The hostname.
-mod._hostname = host.localizedName()
-
--- plugins.finalcutpro.pasteboard.shared.maxHistory -> number
--- Variable
+-- MAXIMUM_HISTORY -> number
+-- Constant
 -- The maximum number of items in the shared Pasteboard History.
-mod.maxHistory = 5
+local MAXIMUM_HISTORY = 5
 
 --- plugins.finalcutpro.pasteboard.shared.enabled <cp.prop: boolean>
 --- Field
 --- Gets whether or not the shared pasteboard is enabled as a boolean.
 mod.enabled = config.prop("enabledShardPasteboard", false)
 
---- plugins.finalcutpro.pasteboard.shared.getRootPath() -> string
---- Function
---- Get shared pasteboard root path.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Shared Pasteboard Path as string.
-function mod.getRootPath()
-    return config.get("sharedPasteboardPath", nil)
-end
-
---- plugins.finalcutpro.pasteboard.shared.setRootPath(path) -> none
---- Function
---- Sets the shared pasteboard root path.
----
---- Parameters:
----  * path - The path you want to set as a string.
----
---- Returns:
----  * None
-function mod.setRootPath(path)
-    config.set("sharedPasteboardPath", path)
-end
+--- plugins.finalcutpro.pasteboard.shared.path <cp.prop: string>
+--- Field
+--- The Shared Pasteboard Root Path.
+mod.path = config.prop("sharedPasteboardPath", nil)
 
 --- plugins.finalcutpro.pasteboard.shared.validRootPath() -> boolean
 --- Function
@@ -83,7 +58,7 @@ end
 --- Returns:
 ---  * `true` if it exists otherwise `false`.
 function mod.validRootPath()
-    return doesDirectoryExist(mod.getRootPath())
+    return doesDirectoryExist(mod.path())
 end
 
 -- watchUpdate(data, name) -> none
@@ -97,44 +72,40 @@ end
 -- Returns:
 --  * None
 local function watchUpdate(data, name)
-    if name then
-        local sharedPasteboardPath = mod.getRootPath()
-        if sharedPasteboardPath ~= nil then
-
-            local folderName
-            if mod._overrideFolder ~= nil then
-                folderName = mod._overrideFolder
-                mod._overrideFolder = nil
-            else
-                folderName = mod.getLocalFolderName()
-            end
-
-            --------------------------------------------------------------------------------
-            -- First, read the existing history:
-            --------------------------------------------------------------------------------
-            local history = mod.getHistory(folderName) or {}
-
-            --------------------------------------------------------------------------------
-            -- Drop old history items:
-            --------------------------------------------------------------------------------
-            while (#history >= mod.maxHistory) do
-                table.remove(history, 1)
-            end
-
-            --------------------------------------------------------------------------------
-            -- Add the new item:
-            --------------------------------------------------------------------------------
-            local item = {
-                name = name,
-                data = base64.encode(data),
-            }
-            table.insert(history, item)
-
-            --------------------------------------------------------------------------------
-            -- Save the updated history:
-            --------------------------------------------------------------------------------
-            mod.setHistory(folderName, history)
+    if data and name and mod.validRootPath() then
+        local folderName
+        if mod._overrideFolder ~= nil then
+            folderName = mod._overrideFolder
+            mod._overrideFolder = nil
+        else
+            folderName = mod.getLocalFolderName()
         end
+
+        --------------------------------------------------------------------------------
+        -- First, read the existing history:
+        --------------------------------------------------------------------------------
+        local history = mod.getHistory(folderName) or {}
+
+        --------------------------------------------------------------------------------
+        -- Drop old history items:
+        --------------------------------------------------------------------------------
+        while (#history >= MAXIMUM_HISTORY) do
+            table.remove(history, 1)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Add the new item:
+        --------------------------------------------------------------------------------
+        local item = {
+            name = name,
+            data = base64.encode(data),
+        }
+        table.insert(history, item)
+
+        --------------------------------------------------------------------------------
+        -- Save the updated history:
+        --------------------------------------------------------------------------------
+        mod.setHistory(folderName, history)
     end
 end
 
@@ -149,27 +120,23 @@ end
 ---  * None
 function mod.update()
     if mod.enabled() then
-        if not mod.validRootPath() then
-            -- Assign a new root path:
-            local result = dialog.displayChooseFolder(i18n("sharedPasteboardRootFolder"))
-            if result then
-                mod.setRootPath(result)
-            else
-                mod.enabled(false)
-            end
-        end
-        if mod.validRootPath() and not mod._watcherId then
+        --------------------------------------------------------------------------------
+        -- Enabled:
+        --------------------------------------------------------------------------------
+        if not mod._watcherId then
             mod._watcherId = mod._manager.watch({
                 update  = watchUpdate,
             })
         end
-    end
-    if not mod.enabled() then
+    else
+        --------------------------------------------------------------------------------
+        -- Disabled:
+        --------------------------------------------------------------------------------
         if mod._watcherId then
             mod._manager.unwatch(mod._watcherId)
             mod._watcherId = nil
         end
-        mod.setRootPath(nil)
+        mod.path(nil)
     end
 end
 
@@ -184,7 +151,7 @@ end
 ---  * A table of folder names.
 function mod.getFolderNames()
     local folders = {}
-    local rootPath = mod.getRootPath()
+    local rootPath = mod.path()
     if rootPath then
         local path = fs.pathToAbsolute(rootPath)
         if path then
@@ -212,7 +179,7 @@ end
 --- Returns:
 ---  * The local folder name as a string.
 function mod.getLocalFolderName()
-    return mod._hostname
+    return host.localizedName()
 end
 
 --- plugins.finalcutpro.pasteboard.shared.overrideNextFolderName(overrideFolder) -> none
@@ -242,7 +209,7 @@ end
 function mod.copyWithCustomClipName()
     local menuBar = fcp.menu
     if menuBar:isEnabled({"Edit", "Copy"}) then
-        local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
+        local result = displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
         mod.overrideNextClipName(result)
         menuBar:selectMenu({"Edit", "Copy"})
@@ -261,7 +228,7 @@ end
 ---  * The history path as a string
 function mod.getHistoryPath(folderName, fileExtension)
     fileExtension = fileExtension or HISTORY_EXTENSION
-    return mod.getRootPath() .. folderName .. fileExtension
+    return mod.path() .. folderName .. fileExtension
 end
 
 --- plugins.finalcutpro.pasteboard.shared.getHistory(folderName) -> table
@@ -326,11 +293,11 @@ end
 function mod.copyWithCustomClipNameAndFolder()
     local menuBar = fcp.menu
     if menuBar:isEnabled({"Edit", "Copy"}) then
-        local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
+        local result = displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
         mod._manager.overrideNextClipName(result)
 
-        result = dialog.displayTextBoxMessage(i18n("overrideFolderNamePrompt"), i18n("overrideValueInvalid"), "")
+        result = displayTextBoxMessage(i18n("overrideFolderNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
         mod.overrideNextFolderName(result)
 
@@ -406,10 +373,12 @@ end
 ---  * The shared pasteboard menu as a table.
 function mod.generateSharedPasteboardMenu()
     local folderItems = {}
-    if mod.enabled() and mod.validRootPath() then
+    if mod.enabled() and not mod.validRootPath() then
+        table.insert(folderItems, { title = i18n("theSharedFolderCouldNotBeFound"), disabled = true })
+    elseif mod.enabled() then
         local fcpxRunning = fcp:isRunning()
 
-        local sharedPasteboardFolderModified = fs.attributes(mod.getRootPath(), "modification")
+        local sharedPasteboardFolderModified = fs.attributes(mod.path(), "modification")
         local folderNames
         if sharedPasteboardFolderModified ~= mod._sharedPasteboardFolderModified or mod._folderNames == nil then
             folderNames = mod.getFolderNames()
@@ -459,6 +428,28 @@ function mod.generateSharedPasteboardMenu()
     return folderItems
 end
 
+-- toggleEnabled() -> none
+-- Function
+-- Toggles the Shared Pasteboard.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function toggleEnabled()
+    if mod.enabled() then
+        mod.path(nil)
+        mod.enabled(false)
+    else
+        local result = displayChooseFolder(i18n("sharedPasteboardRootFolder"))
+        if result then
+            mod.path(result)
+            mod.enabled(true)
+        end
+    end
+end
+
 local plugin = {
     id              = "finalcutpro.pasteboard.shared",
     group           = "finalcutpro",
@@ -488,8 +479,8 @@ function plugin.init(deps)
       :addItem(1000, function()
             return {
                 title       = i18n("enableSharedPasteboard"),
-                fn          = function() mod.enabled:toggle() end,
-                checked     = mod.enabled() and mod.validRootPath()
+                fn          = toggleEnabled,
+                checked     = mod.enabled()
             }
       end)
       :addSeparator(2000)
@@ -504,29 +495,13 @@ function plugin.init(deps)
             mod.copyWithCustomClipNameAndFolder()
       end)
 
-    return mod
-end
-
-function plugin.postInit()
     --------------------------------------------------------------------------------
-    -- Only load plugin if FCPX is supported:
+    -- Force the enabled watcher to trigger:
     --------------------------------------------------------------------------------
-    if not fcp:isSupported() then return end
-
-    local setEnabledValue = false
-    if mod.enabled() then
-        if not mod.validRootPath() then
-            if displayMessage(i18n("sharedPasteboardPathMissing"), {i18n("yes"), i18n("no")}) == i18n("yes") then
-                setEnabledValue = true
-            end
-        else
-            setEnabledValue = true
-        end
-    end
-
-    mod.enabled(setEnabledValue)
     mod.enabled:watch(mod.update)
     mod.enabled:update()
+
+    return mod
 end
 
 return plugin

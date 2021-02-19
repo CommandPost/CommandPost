@@ -1978,6 +1978,7 @@
         "theBatchOfFCPXMLsHasBeenExportedSuccessfully": "The batch of FCPXMLs has been exported successfully.",
         "theCSVHasBeenExportedSuccessfully": "The CSV has been exported successfully.",
         "theOriginalAndNewColumnsCannotBeTheSamePleaseCheckYourSettingsAndTryAgain": "The original and new columns cannot be the same. Please check your settings and try again.",
+        "theSharedFolderCouldNotBeFound": "The Shared Folder could not be found.",
         "theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain": "The supplied FCPXML did not pass DTD validation. Please check that the FCPXML supplied is valid and try again.",
         "thisCanTakeSeveralMinutes": "This can take several minutes",
         "thisIsATest": "This is a test",
