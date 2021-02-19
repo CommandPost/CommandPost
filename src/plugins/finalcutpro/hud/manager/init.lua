@@ -2,7 +2,7 @@
 ---
 --- Manager for the Final Cut Pro HUD.
 
-local require = require
+local require       = require
 
 local hs            = _G.hs
 
@@ -738,8 +738,13 @@ function mod.selectPanel(id)
             elseif displayMode == "label" and sizeMode == "small" then
                 offset = -22
             end
-            height = height + offset
 
+            --------------------------------------------------------------------------------
+            -- NOTE: Unlike the main preferences windows, we don't need to offset this
+            --       for Big Sur.
+            --------------------------------------------------------------------------------
+
+            height = height + offset
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
