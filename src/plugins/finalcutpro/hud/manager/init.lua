@@ -2,7 +2,7 @@
 ---
 --- Manager for the Final Cut Pro HUD.
 
-local require = require
+local require       = require
 
 local hs            = _G.hs
 
@@ -26,7 +26,6 @@ local tools         = require "cp.tools"
 
 local moses         = require "moses"
 local panel         = require "panel"
-local semver        = require "semver"
 
 local doAfter       = timer.doAfter
 local forBundleID   = app.forBundleID
@@ -741,12 +740,9 @@ function mod.selectPanel(id)
             end
 
             --------------------------------------------------------------------------------
-            -- Offset macOS Big Sur:
+            -- NOTE: Unlike the main preferences windows, we don't need to offset this
+            --       for Big Sur.
             --------------------------------------------------------------------------------
-            local macOSVersion = tools.macOSVersion()
-            if semver(macOSVersion) >= semver("10.16") then
-                offset = offset - 10
-            end
 
             height = height + offset
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })

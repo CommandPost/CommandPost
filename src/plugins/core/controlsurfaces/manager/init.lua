@@ -517,7 +517,7 @@ function mod.selectPanel(id)
             local offset = 0
             local macOSVersion = tools.macOSVersion()
             if semver(macOSVersion) >= semver("10.16") then
-                offset = -10
+                offset = -20
             end
 
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height + offset})
