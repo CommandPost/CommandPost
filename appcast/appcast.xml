@@ -6,8 +6,31 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.1.2</title>
+			<title>Version 1.1.3</title>
 			<description><![CDATA[
+				<h1>CommandPost 1.1.3</h1>
+
+				<h2>New Features:</h2>
+				<ul><li>Added actions that adjust the Position controls in Final Cut Pro's inspector in reverse using MIDI. Thanks Joe Dull!</li>
+				<li>Added an action to "Toggle Opacity Fade Handles in Video Animation Popup on Selected Clips". Thanks for the suggestion Ripple Training! Unfortunately, due to a bug in Final Cut Pro's Accessibility API this doesn't work for clips within a secondary storyline container.</li>
+				<li>Added preferences to change the Search Console width and height. This can be found when you right click on the Search Console. Each individual Search Console has its own unique width and height (i.e. the Search Console in Final Cut Pro can be different than in After Effects).</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>DaVinci Resolve & After Effects Tangent support is now disabled by default on a fresh install.</li>
+				<li>Updated the Shot Data Motion Template, so that it works with all common aspect ratios. Thanks Iain Anderson!</li>
+				<li>We've removed the EULA from the CommandPost DMG, and updated the tag-line to match the website.</li>
+				<li>We've adjusted the window sizes on Big Sur so there's not as much wasted space at the bottom of the windows.</li>
+				<li>The Shared Pasteboard will no longer prompt you on CommandPost's startup if the shared folder is not accessible. This means that if you're using something like PostLab Drive, the Shared Pasteboard will now work when the drive is connected, and you won't get notified if the drive becomes disconnected. Thanks for reporting Dale Ryan Leckie!</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed a bug where the menu bar actions had the wrong menu path in the Search Console subtext.</li>
+				<li>Fixed a bug where you will be asked for Accessibility Permissions straight away on a fresh install. Thanks for reporting Iain Anderson!</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Due to a suspected bug in Xcode 12, the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. We've contacted Apple to try and come up with a fix.</li></ul>
+
+				<hr />
+
 				<h1>CommandPost 1.1.2</h1>
 
 				<h2>Bug Fixes:</h2>
@@ -15,9 +38,6 @@
 
 				<h2>Improvements:</h2>
 				<ul><li>The Shot Data Motion Template has been updated. Thanks Vigneswaran Rajkumar!</li></ul>
-
-				<h2>Known Issues:</h2>
-				<ul><li>For some strange reason the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. It seems Xcode 12 has broken something - we&#39;re still investigating a fix.</li></ul>
 
 				<hr />
 
@@ -36,9 +56,6 @@
 				<li>Some fields weren't being correctly exported in the Shot Data Toolbox Utility. This is now fixed. Thanks for reporting Vigneswaran Rajkumar!</li>
 				<li>Fixed a bug which cause a MIDI error when launching CommandPost 1.1 or later for the first time. Thanks for reporting Scott Dodson!</li>
 				<li>Fixed a bug where Stream Deck settings weren't migrated from CommandPost 1.0.6 (or earlier) to 1.1 (or later). The Final Cut Pro and All Applications settings are now automatically migrated to the Stream Deck Unit 1.</li></ul>
-
-				<h2>Known Issues:</h2>
-				<ul><li>For some strange reason the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. It seems Xcode 12 has broken something - we&#39;re still investigating a fix.</li></ul>
 
 				<hr />
 
@@ -124,16 +141,13 @@
 				<li>Fixed a bug where a deleted Media Watch Folder would reappear when you restarted CommandPost. Thanks for reporting Erik Lathouwers, Matt Steeves &amp; Jiří Fiala!</li>
 				<li>Fixed a bug which prevented Color Board controls from working in some newer versions of Final Cut Pro when the interface was in German. Thanks for reporting Eric Badura!</li>
 				<li>Fixed a bug that would cause an error if you tried to Restore a Browser Layout that wasn&#39;t previously saved. Thanks for reporting Gábor Kertai!</li></ul>
-
-				<h2>Known Issues:</h2>
-				<ul><li>For some strange reason the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. It seems Xcode 12 has broken something - we&#39;re still investigating a fix.</li></ul>
 			]]>
 			</description>
-			<pubDate>Thu,  4 Feb 2021 15:51:06 +1100</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.1.2/CommandPost_1.1.2.dmg"
-				sparkle:version="6480"
-                sparkle:shortVersionString="1.1.2"
-				sparkle:dsaSignature="MC4CFQD8cjKjqrxQ+I3NTQlO7VctZdX4rwIVAKL9WkB45ENoFjsbdK544g56tZg2"
+			<pubDate>Sat, 20 Feb 2021 01:36:56 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.1.3/CommandPost_1.1.3.dmg"
+				sparkle:version="6559"
+                sparkle:shortVersionString="1.1.3"
+				sparkle:dsaSignature="MC0CFBXtR89BGlUckNV4CRUIH2tx/4kOAhUA4QjD8cuTYnYRJN7JDNOBrMUv3wU="
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
