@@ -1,5 +1,149 @@
 [
     {
+        "excludeModules": "slider",
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Bottom",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Left",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Right",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Top",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Highlights Color Wheel Horizontally",
+        "name": "Color Wheels.Highlights.Highlights Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Highlights Color Wheel Vertically",
+        "name": "Color Wheels.Highlights.Highlights Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Master Color Wheel Horizontally",
+        "name": "Color Wheels.Master.Master Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Master Color Wheel Vertically",
+        "name": "Color Wheels.Master.Master Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Midtones Color Wheel Horizontally",
+        "name": "Color Wheels.Midtones.Midtones Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Midtones Color Wheel Vertically",
+        "name": "Color Wheels.Midtones.Midtones Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Shadows Color Wheel Horizontally",
+        "name": "Color Wheels.Shadows.Shadows Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "excludeModules": "slider",
+        "info": "Moves the Shadows Color Wheel Vertically",
+        "name": "Color Wheels.Shadows.Shadows Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
         "info": "Add a Color Mask to the selected effect",
         "name": "Command Set Shortcuts.Effects.Add Color Mask"
     },
@@ -86,54 +230,6 @@
     {
         "info": "Adjust the content creation date and time of the selected clips",
         "name": "Command Set Shortcuts.General.Adjust Content Created Date and Time…"
-    },
-    {
-        "info": "Adjusts the cropping on the selected clip",
-        "name": "Video Inspector.Crop.Crop Bottom",
-        "range": [
-            0,
-            4000
-        ],
-        "reset": 0,
-        "step": 0.1,
-        "stepMin": 0.1,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Adjusts the cropping on the selected clip",
-        "name": "Video Inspector.Crop.Crop Left",
-        "range": [
-            0,
-            4000
-        ],
-        "reset": 0,
-        "step": 0.1,
-        "stepMin": 0.1,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Adjusts the cropping on the selected clip",
-        "name": "Video Inspector.Crop.Crop Right",
-        "range": [
-            0,
-            4000
-        ],
-        "reset": 0,
-        "step": 0.1,
-        "stepMin": 0.1,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Adjusts the cropping on the selected clip",
-        "name": "Video Inspector.Crop.Crop Top",
-        "range": [
-            0,
-            4000
-        ],
-        "reset": 0,
-        "step": 0.1,
-        "stepMin": 0.1,
-        "excludeModules": "slider"
     },
     {
         "info": "Aligns selection to video clip range ",
@@ -604,8 +700,8 @@
         "info": "Controls the Color Wheels Temperature slider",
         "name": "Color Wheels.Temperature",
         "range": [
-            2500,
-            10000
+            10000,
+            2500
         ],
         "reset": 5000,
         "step": 25,
@@ -1325,30 +1421,6 @@
         "stepMin": 1
     },
     {
-        "info": "Moves the Highlights Color Wheel Horizontally",
-        "name": "Color Wheels.Highlights.Highlights Horizontal",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Moves the Highlights Color Wheel Vertically",
-        "name": "Color Wheels.Highlights.Highlights Vertical",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
-    },
-    {
         "info": "Moves the Highlights Exposure Puck in the Color Board",
         "name": "Color Board.Exposure.Exposure Highlights",
         "range": [
@@ -1391,30 +1463,6 @@
         "reset": 0,
         "step": 1,
         "stepMin": 1
-    },
-    {
-        "info": "Moves the Master Color Wheel Horizontally",
-        "name": "Color Wheels.Master.Master Horizontal",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Moves the Master Color Wheel Vertically",
-        "name": "Color Wheels.Master.Master Vertical",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
     },
     {
         "info": "Moves the Master Exposure Puck in the Color Board",
@@ -1461,30 +1509,6 @@
         "stepMin": 1
     },
     {
-        "info": "Moves the Midtones Color Wheel Horizontally",
-        "name": "Color Wheels.Midtones.Midtones Horizontal",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Moves the Midtones Color Wheel Vertically",
-        "name": "Color Wheels.Midtones.Midtones Vertical",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
-    },
-    {
         "info": "Moves the Midtones Exposure Puck in the Color Board",
         "name": "Color Board.Exposure.Exposure Midtones",
         "range": [
@@ -1527,30 +1551,6 @@
         "reset": 0,
         "step": 1,
         "stepMin": 1
-    },
-    {
-        "info": "Moves the Shadows Color Wheel Horizontally",
-        "name": "Color Wheels.Shadows.Shadows Horizontal",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
-    },
-    {
-        "info": "Moves the Shadows Color Wheel Vertically",
-        "name": "Color Wheels.Shadows.Shadows Vertical",
-        "range": [
-            -255,
-            255
-        ],
-        "reset": 0,
-        "step": 0.001666666667,
-        "stepMin": 0.001666666667,
-        "excludeModules": "slider"
     },
     {
         "info": "Moves the Shadows Exposure Puck in the Color Board",
@@ -4661,6 +4661,18 @@
     {
         "info": "Turn snapping on or off",
         "name": "Command Set Shortcuts.Editing.Snapping"
+    },
+    {
+        "info": "Turn the dial to move through the timeline frame-by-frame. Press and turn to sprint through.",
+        "name": "Timeline.Jog",
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Turn the dial to nudge the select clip frame-by-frame. Press and turn to move 10 frames.",
+        "name": "Timeline.Nudge",
+        "step": 1,
+        "stepMin": 1
     },
     {
         "info": "Turn the selected color corrections and effects on or off",

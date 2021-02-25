@@ -11,10 +11,13 @@ local plist             = require "hs.plist"
 
 local config            = require "cp.config"
 local deferred          = require "cp.deferred"
+local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 local notifier          = require "cp.ui.notifier"
 
 local copy              = fnutils.copy
+local displayMessage    = dialog.displayMessage
 
 local mod = {}
 
@@ -136,7 +139,9 @@ end
 local function makeShortcutHandler(finderFn)
     return function()
         local shortcut = finderFn()
-        fcp:doShortcut(shortcut):Now()
+        fcp:doShortcut(shortcut):Catch(function()
+            displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+        end):Now()
     end
 end
 
@@ -457,13 +462,14 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local manager = deps.manager
     local registerAction = manager.registerAction
+    local registerPlugin = manager.registerPlugin
 
     --------------------------------------------------------------------------------
     -- Register the plugin:
     --------------------------------------------------------------------------------
     local basePath = config.basePath
     local sourcePath = basePath .. "/plugins/core/monogram/plugins/"
-    manager.registerPlugin("Final Cut Pro via CP", sourcePath)
+    registerPlugin("Final Cut Pro via CP", sourcePath)
 
     --------------------------------------------------------------------------------
     -- Setup Automatic Profile Switching Ability:
@@ -494,6 +500,40 @@ function plugin.init(deps)
             mod.notifier:start()
         else
             mod.notifier:stop()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Jog:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Jog", function(data)
+        if data.operation == "+" then
+            if data.params[1] == -1 then
+                fcp:doShortcut("JumpToPreviousFrame"):Now()
+            elseif data.params[1] == 1 then
+                fcp:doShortcut("JumpToNextFrame"):Now()
+            elseif data.params[1] == 10 then
+                fcp:doShortcut("JumpForward10Frames"):Now()
+            elseif data.params[1] == -10 then
+                fcp:doShortcut("JumpBackward10Frames"):Now()
+            end
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Nudge:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Nudge", function(data)
+        if data.operation == "+" then
+            if data.params[1] == -1 then
+                fcp:doShortcut("NudgeLeft"):Now()
+            elseif data.params[1] == 1 then
+                fcp:doShortcut("NudgeRight"):Now()
+            elseif data.params[1] == -10 then
+                fcp:doShortcut("NudgeLeftMany"):Now()
+            elseif data.params[1] == 10 then
+                fcp:doShortcut("NudgeRightMany"):Now()
+            end
         end
     end)
 
