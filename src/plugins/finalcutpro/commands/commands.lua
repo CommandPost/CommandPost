@@ -5,6 +5,8 @@
 
 local require       = require
 
+--local log           = require "hs.logger".new "fcpCmds"
+
 local commands      = require "cp.commands"
 local fcp           = require "cp.apple.finalcutpro"
 

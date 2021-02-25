@@ -125,6 +125,20 @@ function activator.lazy.prop:lastQueryValue()
     return config.prop(self._prefix .. "lastQueryValue", "")
 end
 
+--- plugins.core.action.activator.lastRows <cp.prop: number>
+--- Field
+--- The last number of rows. Defaults to 10.
+function activator.lazy.prop:lastRows()
+    return config.prop(self._prefix .. "lastRows", 10)
+end
+
+--- plugins.core.action.activator.lastRows <cp.prop: number>
+--- Field
+--- The last width of the Search Console. Defaults to 40.
+function activator.lazy.prop:lastWidth()
+    return config.prop(self._prefix .. "lastWidth", 50)
+end
+
 --- plugins.core.action.activator.showHidden <cp.prop: boolean>
 --- Field
 --- If `true`, hidden items are shown.
@@ -1144,6 +1158,25 @@ function activator:refreshChooser()
     end
 end
 
+--- plugins.core.action.activator:refreshChooser() -> none
+--- Method
+--- Refreshes a Chooser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function activator:resize()
+    local theChooser = self:chooser()
+    if theChooser then
+        theChooser:width(self:lastWidth())
+        theChooser:rows(self:lastRows())
+        theChooser:hide()
+        theChooser:show()
+    end
+end
+
 --- plugins.core.action.activator:isVisible() -> boolean
 --- Method
 --- Checks if the chooser is currently displayed.
@@ -1233,6 +1266,12 @@ function activator:show()
     -- Update Selected Toolbar Icon:
     --------------------------------------------------------------------------------
     self:updateSelectedToolbarIcon()
+
+    --------------------------------------------------------------------------------
+    -- Set width and rows:
+    --------------------------------------------------------------------------------
+    theChooser:width(self:lastWidth())
+    theChooser:rows(self:lastRows())
 
     --------------------------------------------------------------------------------
     -- Show Console:
@@ -1436,7 +1475,52 @@ function activator:rightClickAction(index)
                 }
             )
         end
+
+        insert(choiceMenu, { title = "-" })
     end
+
+    --------------------------------------------------------------------------------
+    -- Search Console Width:
+    --------------------------------------------------------------------------------
+    local ofScreen = i18n("ofScreen")
+    insert(choiceMenu, {
+        title = i18n("width"),
+        menu = {
+            { title = "40% " .. ofScreen, fn = function() self:lastWidth(40); self:resize() end, checked = self:lastWidth() == 40 },
+            { title = "50% " .. ofScreen, fn = function() self:lastWidth(50); self:resize() end, checked = self:lastWidth() == 50 },
+            { title = "60% " .. ofScreen, fn = function() self:lastWidth(60); self:resize() end, checked = self:lastWidth() == 60 },
+            { title = "70% " .. ofScreen, fn = function() self:lastWidth(70); self:resize() end, checked = self:lastWidth() == 70 },
+            { title = "80% " .. ofScreen, fn = function() self:lastWidth(80); self:resize() end, checked = self:lastWidth() == 80 },
+            { title = "90% " .. ofScreen, fn = function() self:lastWidth(90); self:resize() end, checked = self:lastWidth() == 90 },
+        },
+    })
+
+    --------------------------------------------------------------------------------
+    -- Search Console Height:
+    --
+    -- Due to a bug in Hammerspoon, rows don't take into account the toolbar,
+    -- so we need to add an offset:
+    --
+    -- https://github.com/Hammerspoon/hammerspoon/issues/2179
+    --------------------------------------------------------------------------------
+    local offset = 1
+    local rowsLabel = string.lower(i18n("rows"))
+    insert(choiceMenu, {
+        title = i18n("height"),
+        menu = {
+            { title = "5 " .. rowsLabel, fn = function() self:lastRows(5 + offset); self:resize() end, checked = self:lastRows() == 5 + offset },
+            { title = "6 " .. rowsLabel, fn = function() self:lastRows(6 + offset); self:resize() end, checked = self:lastRows() == 6 + offset },
+            { title = "7 " .. rowsLabel, fn = function() self:lastRows(7 + offset); self:resize() end, checked = self:lastRows() == 7 + offset },
+            { title = "8 " .. rowsLabel, fn = function() self:lastRows(8 + offset); self:resize() end, checked = self:lastRows() == 8 + offset },
+            { title = "9 " .. rowsLabel, fn = function() self:lastRows(9 + offset); self:resize() end, checked = self:lastRows() == 9 + offset },
+            { title = "10 " .. rowsLabel, fn = function() self:lastRows(10 + offset); self:resize() end, checked = self:lastRows() == 10 + offset },
+            { title = "11 " .. rowsLabel, fn = function() self:lastRows(11 + offset); self:resize() end, checked = self:lastRows() == 11 + offset },
+            { title = "12 " .. rowsLabel, fn = function() self:lastRows(12 + offset); self:resize() end, checked = self:lastRows() == 12 + offset },
+            { title = "13 " .. rowsLabel, fn = function() self:lastRows(13 + offset); self:resize() end, checked = self:lastRows() == 13 + offset },
+            { title = "14 " .. rowsLabel, fn = function() self:lastRows(14 + offset); self:resize() end, checked = self:lastRows() == 14 + offset },
+            { title = "15 " .. rowsLabel, fn = function() self:lastRows(15 + offset); self:resize() end, checked = self:lastRows() == 15 + offset },
+        },
+    })
 
     if self:configurable() then
         --------------------------------------------------------------------------------
