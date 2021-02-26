@@ -748,7 +748,7 @@ function axutils.snapshot(element, filename, elementFrame)
                 return
             end
 
-            local windowFrame = window:frame()
+            local windowFrame = window:attributeValue("AXFrame")
             local shotSize = windowSnap:size()
 
             local ratio = shotSize.h/windowFrame.h
