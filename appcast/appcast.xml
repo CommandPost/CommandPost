@@ -11,7 +11,7 @@
 				<h1>CommandPost 1.1.4</h1>
 
 				<h2>Changes:</h2>
-				<li>On a fresh installation, CommandPost will no longer ask you if you want to copy the CommandPost application to your application folder. Instead, you should manually copy CommandPost to the application folder via the Applications shortcut in the DMG package. This has been changed to get around issues where people want to install CommandPost in their user-specific application folder, or when there's permission issues trying to copy CommandPost across, which can happen on some Big Sur installations.</li></ul>
+				<ul><li>On a fresh installation, CommandPost will no longer ask you if you want to copy the CommandPost application to your application folder. Instead, you should manually copy CommandPost to the application folder via the Applications shortcut in the DMG package. This has been changed to get around issues where people want to install CommandPost in their user-specific application folder, or when there's permission issues trying to copy CommandPost across, which can happen on some Big Sur installations.</li></ul>
 
 				<h2>Bug Fixes:</h2>
 				<ul><li>Fixed the "Zoom to selection" action in Final Cut Pro. Thanks for reporting Jeffrey Linneman!</li>
