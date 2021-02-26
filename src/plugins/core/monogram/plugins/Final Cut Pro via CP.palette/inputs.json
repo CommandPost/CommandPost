@@ -4663,12 +4663,16 @@
         "name": "Command Set Shortcuts.Editing.Snapping"
     },
     {
+        "excludeModules": "button",
+        "hideCustomizeStep":  true,
         "info": "Turn the dial to move through the timeline frame-by-frame. Press and turn to sprint through.",
         "name": "Timeline.Jog",
         "step": 1,
         "stepMin": 1
     },
     {
+        "excludeModules": "button",
+        "hideCustomizeStep":  true,
         "info": "Turn the dial to nudge the select clip frame-by-frame. Press and turn to move 10 frames.",
         "name": "Timeline.Nudge",
         "step": 1,

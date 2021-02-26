@@ -1,6 +1,9 @@
 {
     "bundle": [
-        "com.apple.FinalCut"
+        "com.apple.FinalCut",
+        "com.apple.finalcut",
+        "com.apple.FinalCutTrial",
+        "com.apple.finalcuttrial"
     ],
     "category": [
         "video"

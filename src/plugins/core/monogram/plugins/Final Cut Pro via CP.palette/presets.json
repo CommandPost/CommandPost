@@ -43,6 +43,36 @@
 			"turn": "Color Wheels.Highlights.Highlights Brightness",
 			"turnSensitivity": 9,
 			"nudgeSpeedMs": 100
+		},
+		{
+			"name": "Timeline.Jog (1 frame)",
+			"info": "Turn to move through the timeline frame-by-frame.\n\nNote: Tilt is unassigned.",
+			"turn": "Timeline.Jog",
+			"turnSensitivity": 9
+		},
+		{
+			"name": "Timeline.Jog (10 frames)",
+			"info": "Turn to move through the timeline by 10 frames at a time.\n\nNote: Tilt is unassigned.",
+			"turn": {
+				"input": "Timeline.Jog",
+				"step": 10
+			},
+			"turnSensitivity": 9
+		},
+		{
+			"name": "Timeline.Nudge (1 frame)",
+			"info": "Turn to nudge the selected clip frame-by-frame.\n\nNote: Tilt is unassigned.",
+			"turn": "Timeline.Nudge",
+			"turnSensitivity": 9
+		},
+		{
+			"name": "Timeline.Nudge (10 frames)",
+			"info": "Turn to nudge the selected clip by 10 frames at a time.\n\nNote: Tilt is unassigned.",
+			"turn": {
+				"input": "Timeline.Nudge",
+				"step": 10
+			},
+			"turnSensitivity": 9
 		}
 	]
 }
