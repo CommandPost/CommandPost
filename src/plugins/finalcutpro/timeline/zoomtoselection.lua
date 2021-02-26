@@ -2,30 +2,30 @@
 ---
 --- Zoom the Timeline to fit the currently-selected clips.
 
-local require = require
+local require   = require
 
-local fcp = require("cp.apple.finalcutpro")
+local fcp       = require "cp.apple.finalcutpro"
 
 local mod = {}
 
---- plugins.finalcutpro.timeline.zoomtoselection.SELECTION_BUFFER -> number
---- Constant
---- The number of pixels of buffer space to allow the selection zoom to fit.
-mod.SELECTION_BUFFER = 70
+-- SELECTION_BUFFER -> number
+-- Constant
+-- The number of pixels of buffer space to allow the selection zoom to fit.
+local SELECTION_BUFFER = 70
 
---- plugins.finalcutpro.timeline.zoomtoselection.DEFAULT_SHIFT -> number
---- Constant
---- Default Shift.
-mod.DEFAULT_SHIFT = 1.0
+-- DEFAULT_SHIFT -> number
+-- Constant
+-- Default Shift.
+local DEFAULT_SHIFT = 1.0
 
---- plugins.finalcutpro.timeline.zoomtoselection.MIN_SHIFT -> number
---- Constant
---- Minimum Shift.
-mod.MIN_SHIFT = 0.025
+-- MIN_SHIFT -> number
+-- Constant
+-- Minimum Shift.
+local MIN_SHIFT = 0.025
 
--- plugins.finalcutpro.timeline.zoomtoselection._selectedWidth(minClip, maxClip) -> number
+-- getSelectedWidth(minClip, maxClip) -> number
 -- Function
--- Selected Width
+-- Gets the Selected Width.
 --
 -- Parameters:
 --  * minClip - Minimum Clip Width as number
@@ -33,11 +33,11 @@ mod.MIN_SHIFT = 0.025
 --
 -- Returns:
 --  * Selected Width as number
-function mod._selectedWidth(minClip, maxClip)
-    return maxClip:position().x + maxClip:size().w - minClip:frame().x + mod.SELECTION_BUFFER*2
+local function getSelectedWidth(minClip, maxClip)
+    return maxClip:attributeValue("AXPosition").x + maxClip:attributeValue("AXSize").w - minClip:attributeValue("AXFrame").x + SELECTION_BUFFER*2
 end
 
--- plugins.finalcutpro.timeline.zoomtoselection._zoomToFit(minClip, maxClip, shift) -> number
+-- zoomToFit(minClip, maxClip, shift) -> number
 -- Function
 -- Zoom to fit.
 --
@@ -48,26 +48,30 @@ end
 --
 -- Returns:
 --  * Selected Width as number
-function mod._zoomToFit(minClip, maxClip, shift)
-    local zoomAmount = mod.zoomAmount
-    local selectedWidth = mod._selectedWidth(minClip, maxClip)
-    local viewFrame = mod.contents:viewFrame()
+local function zoomToFit(minClip, maxClip, shift)
+
+    local contents = fcp.timeline.contents
+    local appearance = fcp.timeline.toolbar.appearance
+    local zoomAmount = appearance.zoomAmount
+
+    local selectedWidth = getSelectedWidth(minClip, maxClip)
+    local viewFrame = contents:viewFrame()
 
     local dir = selectedWidth < viewFrame.w and 1 or -1
 
-    if shift < mod.MIN_SHIFT then
+    if shift < MIN_SHIFT then
         if dir == -1 then
             --------------------------------------------------------------------------------
             -- We need to zoom back out:
             --------------------------------------------------------------------------------
-            shift = mod.MIN_SHIFT
+            shift = MIN_SHIFT
         else
             --------------------------------------------------------------------------------
             -- Too small - bail.
             -- Move to the first clip position:
             --------------------------------------------------------------------------------
-            mod.contents:shiftHorizontalToX(minClip:position().x - mod.SELECTION_BUFFER)
-            mod.appearance:hide()
+            contents:shiftHorizontalToX(minClip:attributeValue("AXPosition").x - SELECTION_BUFFER)
+            appearance:hide()
             return
         end
     end
@@ -75,7 +79,7 @@ function mod._zoomToFit(minClip, maxClip, shift)
     --------------------------------------------------------------------------------
     -- Show the appearance popup:
     --------------------------------------------------------------------------------
-    mod.appearance:show()
+    appearance:show()
 
     --------------------------------------------------------------------------------
     -- Zoom in until it fits:
@@ -83,14 +87,14 @@ function mod._zoomToFit(minClip, maxClip, shift)
     while dir == 1 and selectedWidth < viewFrame.w or dir == -1 and selectedWidth > viewFrame.w do
         zoomAmount:value(zoomAmount:value() + shift * dir)
 
-        selectedWidth = mod._selectedWidth(minClip, maxClip)
-        viewFrame = mod.contents:viewFrame()
+        selectedWidth = getSelectedWidth(minClip, maxClip)
+        viewFrame = contents:viewFrame()
     end
 
     --------------------------------------------------------------------------------
     -- Keep zooming, with better precision:
     --------------------------------------------------------------------------------
-    mod._zoomToFit(minClip, maxClip, shift/2)
+    zoomToFit(minClip, maxClip, shift/2)
 end
 
 --- plugins.finalcutpro.timeline.zoomtoselection.zoomToSelection() -> boolean
@@ -103,14 +107,15 @@ end
 --- Returns:
 --- * `true` if there is selected content in the timeline and zooming was successful.
 function mod.zoomToSelection()
-    local selectedClips = mod.contents:selectedClipsUI()
+    local contents = fcp.timeline.contents
+    local selectedClips = contents:selectedClipsUI()
     if not selectedClips or #selectedClips == 0 then
         return false
     end
 
     local minClip, maxClip
 
-    local rangeSelection = mod.contents:rangeSelectionUI()
+    local rangeSelection = contents:rangeSelectionUI()
     if rangeSelection then
         minClip = rangeSelection
         maxClip = rangeSelection
@@ -120,7 +125,7 @@ function mod.zoomToSelection()
         --------------------------------------------------------------------------------
         local minX, maxX
         for _,clip in ipairs(selectedClips) do
-            local frame = clip:frame()
+            local frame = clip:attributeValue("AXFrame")
             if minX == nil or minX > frame.x then
                 minX = frame.x
                 minClip = clip
@@ -135,7 +140,7 @@ function mod.zoomToSelection()
     --------------------------------------------------------------------------------
     -- Zoom in until it fits, getting more precise as we go:
     --------------------------------------------------------------------------------
-    mod._zoomToFit(minClip, maxClip, mod.DEFAULT_SHIFT)
+    zoomToFit(minClip, maxClip, DEFAULT_SHIFT)
 
     return true
 end
@@ -153,13 +158,6 @@ function plugin.init(deps)
     -- Only load plugin if Final Cut Pro is supported:
     --------------------------------------------------------------------------------
     if not fcp:isSupported() then return end
-
-    --------------------------------------------------------------------------------
-    -- Initialise the module:
-    --------------------------------------------------------------------------------
-    mod.appearance = fcp.timeline.toolbar.appearance
-    mod.zoomAmount = mod.appearance.zoomAmount
-    mod.contents = fcp.timeline.contents
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
