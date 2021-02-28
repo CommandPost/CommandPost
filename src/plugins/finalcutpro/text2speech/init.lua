@@ -766,16 +766,16 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     if mod.addCaption() then
         fcp:selectMenu({"View", "Zoom to Fit"})
-        local originalMousePoint = mouse.getAbsolutePosition()
+        local originalMousePoint = mouse.absolutePosition()
         local point = { x = lastClip:position().x + lastClip:frame().w/2, y = lastClip:position().y + lastClip:frame().h/2}
-        mouse.setAbsolutePosition(point)
+        mouse.absolutePosition(point)
         eventtap.leftClick(point)
         fcp:selectMenu({"Mark", "Set Clip Range"})
         fcp:selectMenu({"Edit", "Captions", "Add Caption"})
         pasteboard.setContents(mod._lastTextToSpeak)
         fcp:selectMenu({"Edit", "Paste"})
         eventtap.leftClick(point)
-        mouse.setAbsolutePosition(originalMousePoint)
+        mouse.absolutePosition(originalMousePoint)
     end
 
     --------------------------------------------------------------------------------
@@ -1057,7 +1057,7 @@ function mod._rightClickCallback()
     }
     mod.rightClickMenubar = menubar.new(false)
         :setMenu(rightClickMenu)
-        :popupMenu(mouse.getAbsolutePosition(), true)
+        :popupMenu(mouse.absolutePosition(), true)
 end
 
 --- plugins.finalcutpro.text2speech.show() -> none

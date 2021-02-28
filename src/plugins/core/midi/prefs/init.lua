@@ -1110,7 +1110,7 @@ local function midiPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:
@@ -1150,7 +1150,7 @@ local function midiPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "openAudioMIDISetup" then
             open("/Applications/Utilities/Audio MIDI Setup.app")
         elseif callbackType == "importSettings" then
@@ -1205,7 +1205,7 @@ local function midiPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "exportSettings" then
             --------------------------------------------------------------------------------
             -- Export Settings:
@@ -1273,7 +1273,7 @@ local function midiPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "changeIgnore" then
             --------------------------------------------------------------------------------
             -- Change Ignore:

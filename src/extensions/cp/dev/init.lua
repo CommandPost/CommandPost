@@ -155,7 +155,7 @@ end
 --- Returns:
 ---  * None
 function mod.elementAtMouse()
-    return ax.systemElementAtPosition(mouse.getAbsolutePosition())
+    return ax.systemElementAtPosition(mouse.absolutePosition())
 end
 
 --- cp.dev.inspectAtMouse(options) -> none

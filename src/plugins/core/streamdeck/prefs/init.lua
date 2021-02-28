@@ -1016,7 +1016,7 @@ local function streamDeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyUnit" then
             --------------------------------------------------------------------------------
             -- Copy Unit:
@@ -1069,7 +1069,7 @@ local function streamDeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyApplication" then
             --------------------------------------------------------------------------------
             -- Copy Application:
@@ -1141,7 +1141,7 @@ local function streamDeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:
@@ -1182,7 +1182,7 @@ local function streamDeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "openKeyCreator" then
             --------------------------------------------------------------------------------
             -- Open Key Creator:
@@ -1245,7 +1245,7 @@ local function streamDeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "exportSettings" then
             --------------------------------------------------------------------------------
             -- Export Settings:
@@ -1346,7 +1346,7 @@ local function streamDeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

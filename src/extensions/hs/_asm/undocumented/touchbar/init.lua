@@ -88,7 +88,7 @@ end
 ---  * This method mimics the display location as set by the sample code this module is based on.  See https://github.com/bikkelbroeders/TouchBarDemoApp for more information.
 ---  * The touch bar position will be adjusted so that it is fully visible on the screen even if this moves it left or right from the mouse's current position.
 virtualMT.atMousePosition = function(self)
-    local origin    = mouse.getAbsolutePosition()
+    local origin    = mouse.absolutePosition()
     local tbFrame   = self:getFrame()
     local scFrame   = mouse.getCurrentScreen():fullFrame()
     local scRight   = scFrame.x + scFrame.w

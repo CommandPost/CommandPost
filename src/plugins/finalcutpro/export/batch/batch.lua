@@ -147,7 +147,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
     local exportPath            = mod.getDestinationFolder()
     local destinationPreset     = mod.getDestinationPreset()
     local errorFunction         = "\n\nError occurred in batchExportTimelineClips()."
-    local originalMousePosition = mouse.getAbsolutePosition()
+    local originalMousePosition = mouse.absolutePosition()
 
     --------------------------------------------------------------------------------
     -- Process each clip individually:
@@ -240,7 +240,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not isOnPrimaryStoryline then
             local point = { x = originalFrame.x + originalFrame.w/2, y = originalFrame.y + originalFrame.h/2}
-            mouse.setAbsolutePosition(point)
+            mouse.absolutePosition(point)
             eventtap.leftClick(point)
         end
         if not fcp:selectMenu({"Mark", "Set Clip Range"}) then
@@ -502,7 +502,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
     -- Restore Mouse position:
     --------------------------------------------------------------------------------
     if not isOnPrimaryStoryline then
-        mouse.setAbsolutePosition(originalMousePosition)
+        mouse.absolutePosition(originalMousePosition)
     end
 
     --------------------------------------------------------------------------------
