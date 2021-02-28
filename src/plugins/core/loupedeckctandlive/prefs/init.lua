@@ -28,13 +28,16 @@ local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
 local getFilenameFromPath       = tools.getFilenameFromPath
+local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
+local infoForBundlePath         = application.infoForBundlePath
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
+local tableMatch                = tools.tableMatch
 local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
@@ -55,7 +58,7 @@ local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
 --- plugins.core.loupedeckctandlive.prefs.supportedExtensions -> string
 --- Variable
 --- Table of supported extensions for Icons.
-mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
+mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp", "app"}
 
 --- plugins.core.loupedeckctandlive.prefs.defaultIconPath -> string
 --- Variable
@@ -328,7 +331,7 @@ end
 --  * The encoded URL string
 local function insertImage(path)
     local p = mod._env:pathToAbsolute(path)
-    local i = image.imageFromPath(p)
+    local i = imageFromPath(p)
     return i:encodeAsURLString(false, "PNG")
 end
 
@@ -852,6 +855,67 @@ function mod.mt:panelCallback(id, params)
                 self:setItem(app, bank, controlType, bid, buttonType, result)
 
                 --------------------------------------------------------------------------------
+                -- If the action contains an image, apply it to the Touch Button:
+                --------------------------------------------------------------------------------
+                if params.controlType == "touchButton" then
+                    local choices = handler.choices():getChoices()
+                    local preSuppliedImage
+                    for _, v in pairs(choices) do
+                        if tableMatch(v.params, action) then
+                            if v.image then
+                                preSuppliedImage = v.image
+                            end
+                            break
+                        end
+                    end
+                    if preSuppliedImage then
+                        --------------------------------------------------------------------------------
+                        -- Set screen limitations:
+                        --------------------------------------------------------------------------------
+                        local width, height = getScreenSizeFromControlType(controlType)
+
+                        --------------------------------------------------------------------------------
+                        -- Process the Icon to remove transparency:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
+                        v[1] = {
+                            --------------------------------------------------------------------------------
+                            -- Force Black background:
+                            --------------------------------------------------------------------------------
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                            type = "rectangle",
+                        }
+                        v[2] = {
+                          type="image",
+                          image = preSuppliedImage,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
+                        local fixedImage = v:imageFromCanvas()
+
+                        v:delete()
+                        v = nil -- luacheck: ignore
+
+                        local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+                        --------------------------------------------------------------------------------
+                        -- Write to file:
+                        --------------------------------------------------------------------------------
+                        self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+                        --------------------------------------------------------------------------------
+                        -- Update the preferences UI:
+                        --------------------------------------------------------------------------------
+                        injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]])
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        self.device:refresh()
+                    end
+                end
+
+                --------------------------------------------------------------------------------
                 -- Update the webview:
                 --------------------------------------------------------------------------------
                 if params["buttonType"] == "pressAction" then
@@ -1104,7 +1168,9 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 self.lastIconPath(removeFilenameFromPath(path))
 
-                local icon = image.imageFromPath(path)
+                local appInfo = infoForBundlePath(path)
+                local bundleID = appInfo and appInfo.CFBundleIdentifier
+                local icon = imageFromPath(path) or imageFromAppBundle(bundleID)
                 if icon then
                     --------------------------------------------------------------------------------
                     -- Set screen limitations:
