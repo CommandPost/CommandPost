@@ -1684,7 +1684,7 @@ function mod.mt:panelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
 
         elseif callbackType == "clearIcon" then
             --------------------------------------------------------------------------------
@@ -1919,7 +1919,7 @@ function mod.mt:panelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "exportSettings" then
             --------------------------------------------------------------------------------
             -- Export Settings:
@@ -1987,7 +1987,7 @@ function mod.mt:panelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyControlToAllBanks" then
             --------------------------------------------------------------------------------
             -- Copy Control to All Banks:
@@ -2219,7 +2219,7 @@ function mod.mt:panelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "changeIgnore" then
             local app = params["application"]
             local ignore = params["ignore"]
@@ -2307,7 +2307,7 @@ function mod.mt:panelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "dropAndDrop" then
             --------------------------------------------------------------------------------
             -- Drag & Drop:
@@ -2448,7 +2448,7 @@ function mod.mt:panelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "openKeyCreator" then
             --------------------------------------------------------------------------------
             -- Open Key Creator:

@@ -1647,7 +1647,7 @@ function activator:rightClickAction(index)
     end
 
     self._rightClickMenubar:setMenu(choiceMenu):removeFromMenuBar()
-    self._rightClickMenubar:popupMenu(mouse.getAbsolutePosition(), true)
+    self._rightClickMenubar:popupMenu(mouse.absolutePosition(), true)
 end
 
 return activator

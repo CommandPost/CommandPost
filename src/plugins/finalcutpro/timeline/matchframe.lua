@@ -746,7 +746,7 @@ local function revealInKeywordCollection(solo)
 
                         menubar.new(false)
                             :setMenu(menu)
-                            :popupMenu(mouse.getAbsolutePosition(), true)
+                            :popupMenu(mouse.absolutePosition(), true)
                     end)
                     :show()
             end

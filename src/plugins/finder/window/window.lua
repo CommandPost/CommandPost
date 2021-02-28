@@ -57,12 +57,12 @@ function mod.centerCursor()
         --------------------------------------------------------------------------------
         -- Center the cursor one the focused window:
         --------------------------------------------------------------------------------
-        mouse.setAbsolutePosition({x=focusedWindowFrame.x+focusedWindowFrame.w/2, y=focusedWindowFrame.y+focusedWindowFrame.h/2})
+        mouse.absolutePosition({x=focusedWindowFrame.x+focusedWindowFrame.w/2, y=focusedWindowFrame.y+focusedWindowFrame.h/2})
     else
         --------------------------------------------------------------------------------
         -- Center the cursor on the screen:
         --------------------------------------------------------------------------------
-        mouse.setAbsolutePosition({x=focusedWindowScreenFullFrame.x+focusedWindowScreenFullFrame.w/2, y=focusedWindowScreenFullFrame.y+focusedWindowScreenFullFrame.h/2})
+        mouse.absolutePosition({x=focusedWindowScreenFullFrame.x+focusedWindowScreenFullFrame.w/2, y=focusedWindowScreenFullFrame.y+focusedWindowScreenFullFrame.h/2})
     end
 end
 

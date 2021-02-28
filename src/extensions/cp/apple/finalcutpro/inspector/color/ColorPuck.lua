@@ -411,7 +411,7 @@ function ColorPuck:start()
     --------------------------------------------------------------------------------
     -- Record the origin and draw a marker:
     --------------------------------------------------------------------------------
-    self.origin = mouse.getAbsolutePosition()
+    self.origin = mouse.absolutePosition()
     self:drawMarker()
 
     --------------------------------------------------------------------------------
@@ -633,7 +633,7 @@ function ColorPuck:loop()
     local pct = self.percent
     local angle = self.angle
 
-    local current = mouse.getAbsolutePosition()
+    local current = mouse.absolutePosition()
     local xDiff = current.x - self.origin.x
     local yDiff = self.origin.y - current.y
 

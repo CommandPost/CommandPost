@@ -1252,10 +1252,10 @@ end
 ---  * None
 function tools.ninjaMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
-    local originalMousePoint = mouse.getAbsolutePosition()
+    local originalMousePoint = mouse.absolutePosition()
     tools.leftClick(point, delay)
     if delay > 0 then usleep(delay) end
-    mouse.setAbsolutePosition(originalMousePoint)
+    mouse.absolutePosition(originalMousePoint)
 end
 
 --- cp.tools.ninjaRightMouseClick(point[, delay]) -> none
@@ -1270,10 +1270,10 @@ end
 ---  * None
 function tools.ninjaRightMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
-    local originalMousePoint = mouse.getAbsolutePosition()
+    local originalMousePoint = mouse.absolutePosition()
     tools.rightClick(point, delay)
     if delay > 0 then usleep(delay) end
-    mouse.setAbsolutePosition(originalMousePoint)
+    mouse.absolutePosition(originalMousePoint)
 end
 
 --- cp.tools.ninjaDoubleClick(point[, delay]) -> none
@@ -1288,10 +1288,10 @@ end
 ---  * None
 function tools.ninjaDoubleClick(point, delay)
     delay = delay or DEFAULT_DELAY
-    local originalMousePoint = mouse.getAbsolutePosition()
+    local originalMousePoint = mouse.absolutePosition()
     tools.doubleLeftClick(point, delay)
     if delay > 0 then usleep(delay) end
-    mouse.setAbsolutePosition(originalMousePoint)
+    mouse.absolutePosition(originalMousePoint)
 end
 
 --- cp.tools.ninjaMouseAction(point, fn) -> none
@@ -1305,10 +1305,10 @@ end
 --- Returns:
 ---  * None
 function tools.ninjaMouseAction(point, fn)
-    local originalMousePoint = mouse.getAbsolutePosition()
-    mouse.setAbsolutePosition(point)
+    local originalMousePoint = mouse.absolutePosition()
+    mouse.absolutePosition(point)
     fn()
-    mouse.setAbsolutePosition(originalMousePoint)
+    mouse.absolutePosition(originalMousePoint)
 end
 
 --- cp.tools.tableCount(table) -> number

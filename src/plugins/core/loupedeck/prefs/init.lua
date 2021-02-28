@@ -521,7 +521,7 @@ local function loupedeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "exportSettings" then
             --------------------------------------------------------------------------------
             -- Export Settings:
@@ -589,7 +589,7 @@ local function loupedeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "changeIgnore" then
             --------------------------------------------------------------------------------
             -- Change Ignore:
@@ -721,7 +721,7 @@ local function loupedeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:
@@ -761,7 +761,7 @@ local function loupedeckPanelCallback(id, params)
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.getAbsolutePosition(), true)
+            popup:popupMenu(mouse.absolutePosition(), true)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
