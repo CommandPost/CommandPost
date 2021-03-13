@@ -571,8 +571,8 @@ local function processFCPXML(path)
                     local currentHeading = TEMPLATE_ORDER[i]
                     local value = row[currentHeading]
                     if value then
-                        if value:match(",") then
-                            output = output .. [["]] .. value .. [["]]
+                        if value:match(",") or value:match([["]]) then
+                            output = output .. [["]] .. value:gsub([["]], [[""]]) .. [["]]
                         else
                             output = output .. value
                         end
