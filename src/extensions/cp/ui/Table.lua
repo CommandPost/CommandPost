@@ -596,7 +596,7 @@ function Table:toCSV()
                             if cell:attributeValue("AXRole") == "AXTextField" then
                                 -- If there's only an AXTable > AXRow:
                                 local item = cell:attributeValue("AXValue")
-                                result = result .. [["]] .. item .. [["]]
+                                result = result .. [["]] .. item:gsub([["]], [[""]]) .. [["]]
                                 if c ~= #cells then
                                     result = result .. ","
                                 else
@@ -608,7 +608,7 @@ function Table:toCSV()
                                 -- If there's an AXTable > AXRow > AXCell:
                                 local field = childMatching(cell, StaticText.matches) or childMatching(cell, TextField.matches) or childMatching(cell, MenuButton.matches)
                                 local item = (field and field:attributeValue("AXValue")) or (field and field:attributeValue("AXTitle")) or ""
-                                result = result .. [["]] .. item .. [["]]
+                                result = result .. [["]] .. item:gsub([["]], [[""]]) .. [["]]
                                 if c ~= #cells then
                                     result = result .. ","
                                 else
