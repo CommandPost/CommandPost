@@ -23,8 +23,10 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
+local getFileExtensionFromPath  = tools.getFileExtensionFromPath
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
+local replace                   = tools.replace
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableCount                = tools.tableCount
@@ -248,6 +250,16 @@ local data = {}
 -- Original filename of the FCPXML.
 local originalFilename = ""
 
+-- resourceCache -> table
+-- Variable
+-- A cache of all the resource paths.
+local resourceCache = {}
+
+-- resourceCache -> table
+-- Variable
+-- A table of all the files to copy.
+local filesToCopy = {}
+
 -- desktopPath -> string
 -- Constant
 -- Path to the users desktop
@@ -383,6 +395,8 @@ local function processTitles(nodes)
 
                 local titleDuration             = nil
 
+                local photoPath                 = nil
+
                 --------------------------------------------------------------------------------
                 -- Get title duration:
                 --------------------------------------------------------------------------------
@@ -465,6 +479,20 @@ local function processTitles(nodes)
                                     sfxFlagValue = "true"
                                 end
                             end
+                        elseif nodeChild:name() == "video" then
+                            --------------------------------------------------------------------------------
+                            -- Connected Video:
+                            --------------------------------------------------------------------------------
+                            local rawAttributes = nodeChild:rawAttributes()
+                            local ref
+                            for _, v in pairs(rawAttributes) do
+                                if v:name() == "ref" then
+                                    ref = v:stringValue()
+                                end
+                            end
+                            if ref and resourceCache[ref] then
+                                photoPath = resourceCache[ref]
+                            end
                         end
                     end
 
@@ -484,6 +512,14 @@ local function processTitles(nodes)
                     --------------------------------------------------------------------------------
                     if titleDuration and not results["Shot Duration"] then
                         results["Shot Duration"] = titleDuration
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If there's an image "attached" to the title, include it in filesToCopy:
+                    --------------------------------------------------------------------------------
+                    if photoPath then
+                        local filename = "Scene " .. results["Scene Number"] .. " - Shot " .. results["Shot Number"]
+                        filesToCopy[filename] = photoPath
                     end
 
                     --------------------------------------------------------------------------------
@@ -513,6 +549,48 @@ local function processFCPXML(path)
             -- Open the FCPXML:
             --------------------------------------------------------------------------------
             local document = xml.open(path)
+
+            --------------------------------------------------------------------------------
+            -- Process Resources:
+            --------------------------------------------------------------------------------
+            filesToCopy = {}
+            resourceCache = {}
+            local resources = document:XPathQuery("/fcpxml[1]/resources[1]")
+            local resourcesChildren = resources and resources[1] and resources[1]:children()
+            if resourcesChildren then
+                for _, element in pairs(resourcesChildren) do
+                    if element:name() == "asset" then
+                        local rawAttributes = element:rawAttributes()
+                        local id, src
+                        for _, v in pairs(rawAttributes) do
+                            if v:name() == "id" then
+                                id = v:stringValue()
+                            end
+                        end
+                        local elementChildren = element:children()
+                        for _, v in pairs(elementChildren) do
+                            if v:name() == "media-rep" then
+                                for _, v in pairs(v:rawAttributes()) do
+                                    if v:name() == "src" then
+                                        src = v:stringValue()
+                                        --------------------------------------------------------------------------------
+                                        -- Remove the file://
+                                        --------------------------------------------------------------------------------
+                                        src = replace(src, "file://", "")
+                                    end
+                                end
+                            end
+                        end
+                        if id and src then
+                            resourceCache[id] = src
+                        end
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Process Sequence Spine:
+            --------------------------------------------------------------------------------
             local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
             local spineChildren = spine and spine[1] and spine[1]:children()
 
@@ -600,6 +678,15 @@ local function processFCPXML(path)
             local exportPath = exportPathResult and exportPathResult["1"]
 
             if exportPath then
+                --------------------------------------------------------------------------------
+                -- Consolidate images:
+                --------------------------------------------------------------------------------
+                for destinationFilename, sourcePath in pairs(filesToCopy) do
+                    local extension = getFileExtensionFromPath(sourcePath)
+                    local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. exportPath .. "/" .. destinationFilename .. "." .. extension .. [["]]
+                    hs.execute(copyCommand)
+                end
+
                 mod.lastSavePath(exportPath)
                 local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
                 writeToFile(exportedFilePath, output)
