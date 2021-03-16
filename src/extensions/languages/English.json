@@ -1983,6 +1983,7 @@
         "textToSpeechDestination": "Please select where you want to save your audio files:",
         "texture": "Texture",
         "theBatchOfFCPXMLsHasBeenExportedSuccessfully": "The batch of FCPXMLs has been exported successfully.",
+        "theCSVAndConsolidatedImagesHasBeenExportedSuccessfully": "The CSV and consolidated images has been exported successfully.",
         "theCSVHasBeenExportedSuccessfully": "The CSV has been exported successfully.",
         "theOriginalAndNewColumnsCannotBeTheSamePleaseCheckYourSettingsAndTryAgain": "The original and new columns cannot be the same. Please check your settings and try again.",
         "theSharedFolderCouldNotBeFound": "The Shared Folder could not be found.",

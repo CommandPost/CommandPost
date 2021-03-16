@@ -576,9 +576,9 @@ local function processFCPXML(path)
                         local elementChildren = element:children()
                         for _, v in pairs(elementChildren) do
                             if v:name() == "media-rep" then
-                                for _, v in pairs(v:rawAttributes()) do
-                                    if v:name() == "src" then
-                                        src = v:stringValue()
+                                for _, attribute in pairs(v:rawAttributes()) do
+                                    if attribute:name() == "src" then
+                                        src = attribute:stringValue()
                                         --------------------------------------------------------------------------------
                                         -- Remove the file://
                                         --------------------------------------------------------------------------------
@@ -709,10 +709,10 @@ local function processFCPXML(path)
                             if doesFileExist(sourcePath) then
                                 local extension = getFileExtensionFromPath(sourcePath)
                                 local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. consolidatePath .. "/" .. destinationFilename .. "." .. extension .. [["]]
-                                local output, status = hs.execute(copyCommand)
+                                local errors, status = hs.execute(copyCommand)
                                 if not status then
                                     consolidateSuccessful = false
-                                    log.ef("Failed to copy source file: %s", output)
+                                    log.ef("Failed to copy source file: %s", errors)
                                 end
                             else
                                 consolidateSuccessful = false
@@ -727,7 +727,11 @@ local function processFCPXML(path)
                 writeToFile(exportedFilePath, output)
 
                 if consolidateSuccessful then
-                    webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                    if tableCount(filesToCopy) >= 1 then
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVAndConsolidatedImagesHasBeenExportedSuccessfully"), i18n("ok"))
+                    else
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                    end
                 else
                     webviewAlert(mod._manager.getWebview(), function() end, i18n("someErrorsHaveOccurred"), i18n("csvExportedSuccessfullyImagesCouldNotBeConsolidated"), i18n("ok"))
                 end
