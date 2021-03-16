@@ -276,6 +276,11 @@ mod.lastOpenPath = config.prop("toolbox.shotdata.lastOpenPath", desktopPath)
 --- Last save path
 mod.lastSavePath = config.prop("toolbox.shotdata.lastSavePath", desktopPath)
 
+--- plugins.finalcutpro.toolbox.shotdata.lastConsolidatePath <cp.prop: string>
+--- Field
+--- Last folder to consolidate the files to
+mod.lastConsolidatePath = config.prop("toolbox.shotdata.lastConsolidatePath", desktopPath)
+
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -680,27 +685,40 @@ local function processFCPXML(path)
                 mod.lastSavePath(desktopPath)
             end
 
-            local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAnOutputDirectory") .. ":", mod.lastSavePath(), false, true, false)
+            local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheCSVTo") .. ":", mod.lastSavePath(), false, true, false)
             local exportPath = exportPathResult and exportPathResult["1"]
 
             if exportPath then
                 --------------------------------------------------------------------------------
                 -- Consolidate images:
                 --------------------------------------------------------------------------------
-
                 local consolidateSuccessful = true
-                for destinationFilename, sourcePath in pairs(filesToCopy) do
-                    if doesFileExist(sourcePath) then
-                        local extension = getFileExtensionFromPath(sourcePath)
-                        local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. exportPath .. "/" .. destinationFilename .. "." .. extension .. [["]]
-                        local output, status = hs.execute(copyCommand)
-                        if not status then
-                            consolidateSuccessful = false
-                            log.ef("Failed to copy source file: %s", output)
+                if tableCount(filesToCopy) >= 1 then
+                    --------------------------------------------------------------------------------
+                    -- Make sure last save path still exists, otherwise use Desktop:
+                    --------------------------------------------------------------------------------
+                    if not doesDirectoryExist(mod.lastConsolidatePath()) then
+                        mod.lastConsolidatePath(desktopPath)
+                    end
+
+                    local consolidatePathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheConsolidatedImages") .. ":", mod.lastConsolidatePath(), false, true, false)
+                    local consolidatePath = consolidatePathResult and consolidatePathResult["1"]
+                    if consolidatePath then
+                        mod.lastConsolidatePath(consolidatePath)
+                        for destinationFilename, sourcePath in pairs(filesToCopy) do
+                            if doesFileExist(sourcePath) then
+                                local extension = getFileExtensionFromPath(sourcePath)
+                                local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. consolidatePath .. "/" .. destinationFilename .. "." .. extension .. [["]]
+                                local output, status = hs.execute(copyCommand)
+                                if not status then
+                                    consolidateSuccessful = false
+                                    log.ef("Failed to copy source file: %s", output)
+                                end
+                            else
+                                consolidateSuccessful = false
+                                log.ef("Failed to find source file: %s", sourcePath)
+                            end
                         end
-                    else
-                        consolidateSuccessful = false
-                        log.ef("Failed to find source file: %s", sourcePath)
                     end
                 end
 
@@ -711,7 +729,7 @@ local function processFCPXML(path)
                 if consolidateSuccessful then
                     webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
                 else
-                    webviewAlert(mod._manager.getWebview(), function() end, "Some errors have occurred.", "The CSV has been exported successfully, however some of the images could not be consolidated. Please check the Debug Console for error messages.", i18n("ok"))
+                    webviewAlert(mod._manager.getWebview(), function() end, i18n("someErrorsHaveOccurred"), i18n("csvExportedSuccessfullyImagesCouldNotBeConsolidated"), i18n("ok"))
                 end
             end
         else
@@ -829,13 +847,13 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Utilities Panel:
     --------------------------------------------------------------------------------
-    mod._panel          =  deps.manager.addPanel({
+    mod._panel = deps.manager.addPanel({
         priority        = 2,
         id              = "shotdata",
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 320,
+        height          = 390,
     })
     :addContent(1, generateContent, false)
 
