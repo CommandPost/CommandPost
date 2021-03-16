@@ -22,6 +22,7 @@ local xml                       = require "hs._asm.xml"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local doesFileExist             = tools.doesFileExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local getFileExtensionFromPath  = tools.getFileExtensionFromPath
 local getFilenameFromPath       = tools.getFilenameFromPath
@@ -577,6 +578,11 @@ local function processFCPXML(path)
                                         -- Remove the file://
                                         --------------------------------------------------------------------------------
                                         src = replace(src, "file://", "")
+
+                                        --------------------------------------------------------------------------------
+                                        -- Remove any URL encoding:
+                                        --------------------------------------------------------------------------------
+                                        src = src:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
                                     end
                                 end
                             end
@@ -681,16 +687,32 @@ local function processFCPXML(path)
                 --------------------------------------------------------------------------------
                 -- Consolidate images:
                 --------------------------------------------------------------------------------
+
+                local consolidateSuccessful = true
                 for destinationFilename, sourcePath in pairs(filesToCopy) do
-                    local extension = getFileExtensionFromPath(sourcePath)
-                    local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. exportPath .. "/" .. destinationFilename .. "." .. extension .. [["]]
-                    hs.execute(copyCommand)
+                    if doesFileExist(sourcePath) then
+                        local extension = getFileExtensionFromPath(sourcePath)
+                        local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. exportPath .. "/" .. destinationFilename .. "." .. extension .. [["]]
+                        local output, status = hs.execute(copyCommand)
+                        if not status then
+                            consolidateSuccessful = false
+                            log.ef("Failed to copy source file: %s", output)
+                        end
+                    else
+                        consolidateSuccessful = false
+                        log.ef("Failed to find source file: %s", sourcePath)
+                    end
                 end
 
                 mod.lastSavePath(exportPath)
                 local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
                 writeToFile(exportedFilePath, output)
-                webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+
+                if consolidateSuccessful then
+                    webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                else
+                    webviewAlert(mod._manager.getWebview(), function() end, "Some errors have occurred.", "The CSV has been exported successfully, however some of the images could not be consolidated. Please check the Debug Console for error messages.", i18n("ok"))
+                end
             end
         else
             webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
