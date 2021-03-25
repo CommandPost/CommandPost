@@ -172,7 +172,7 @@ function mod.section(labelKey, index)
                         local center = geometry(resetButtonFrame).center
                         tools.ninjaMouseAction(center, function()
                             wait(0.1)
-                            local element = ax.systemElementAtPosition(mouse.getAbsolutePosition())
+                            local element = ax.systemElementAtPosition(mouse.absolutePosition())
                             if element and element:attributeValue("AXRole") == "AXCheckBox" then
                                 local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
                                 result = element:title() == iHide

@@ -57,7 +57,7 @@ function mod.control(metadata)
         --------------------------------------------------------------------------------
         -- CONTROL is being pressed:
         --------------------------------------------------------------------------------
-        local element = ax.systemElementAtPosition(mouse.getAbsolutePosition())
+        local element = ax.systemElementAtPosition(mouse.absolutePosition())
 
         --------------------------------------------------------------------------------
         -- Ignore if this exact UI Element is already selected:

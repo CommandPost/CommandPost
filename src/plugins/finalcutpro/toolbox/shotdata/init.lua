@@ -22,9 +22,12 @@ local xml                       = require "hs._asm.xml"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local doesFileExist             = tools.doesFileExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
+local getFileExtensionFromPath  = tools.getFileExtensionFromPath
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
+local replace                   = tools.replace
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableCount                = tools.tableCount
@@ -248,6 +251,16 @@ local data = {}
 -- Original filename of the FCPXML.
 local originalFilename = ""
 
+-- resourceCache -> table
+-- Variable
+-- A cache of all the resource paths.
+local resourceCache = {}
+
+-- resourceCache -> table
+-- Variable
+-- A table of all the files to copy.
+local filesToCopy = {}
+
 -- desktopPath -> string
 -- Constant
 -- Path to the users desktop
@@ -262,6 +275,11 @@ mod.lastOpenPath = config.prop("toolbox.shotdata.lastOpenPath", desktopPath)
 --- Field
 --- Last save path
 mod.lastSavePath = config.prop("toolbox.shotdata.lastSavePath", desktopPath)
+
+--- plugins.finalcutpro.toolbox.shotdata.lastConsolidatePath <cp.prop: string>
+--- Field
+--- Last folder to consolidate the files to
+mod.lastConsolidatePath = config.prop("toolbox.shotdata.lastConsolidatePath", desktopPath)
 
 -- renderPanel(context) -> none
 -- Function
@@ -383,6 +401,8 @@ local function processTitles(nodes)
 
                 local titleDuration             = nil
 
+                local photoPath                 = nil
+
                 --------------------------------------------------------------------------------
                 -- Get title duration:
                 --------------------------------------------------------------------------------
@@ -465,6 +485,20 @@ local function processTitles(nodes)
                                     sfxFlagValue = "true"
                                 end
                             end
+                        elseif nodeChild:name() == "video" then
+                            --------------------------------------------------------------------------------
+                            -- Connected Video:
+                            --------------------------------------------------------------------------------
+                            local rawAttributes = nodeChild:rawAttributes()
+                            local ref
+                            for _, v in pairs(rawAttributes) do
+                                if v:name() == "ref" then
+                                    ref = v:stringValue()
+                                end
+                            end
+                            if ref and resourceCache[ref] then
+                                photoPath = resourceCache[ref]
+                            end
                         end
                     end
 
@@ -484,6 +518,14 @@ local function processTitles(nodes)
                     --------------------------------------------------------------------------------
                     if titleDuration and not results["Shot Duration"] then
                         results["Shot Duration"] = titleDuration
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If there's an image "attached" to the title, include it in filesToCopy:
+                    --------------------------------------------------------------------------------
+                    if photoPath then
+                        local filename = "Scene " .. results["Scene Number"] .. " - Shot " .. results["Shot Number"]
+                        filesToCopy[filename] = photoPath
                     end
 
                     --------------------------------------------------------------------------------
@@ -513,6 +555,53 @@ local function processFCPXML(path)
             -- Open the FCPXML:
             --------------------------------------------------------------------------------
             local document = xml.open(path)
+
+            --------------------------------------------------------------------------------
+            -- Process Resources:
+            --------------------------------------------------------------------------------
+            filesToCopy = {}
+            resourceCache = {}
+            local resources = document:XPathQuery("/fcpxml[1]/resources[1]")
+            local resourcesChildren = resources and resources[1] and resources[1]:children()
+            if resourcesChildren then
+                for _, element in pairs(resourcesChildren) do
+                    if element:name() == "asset" then
+                        local rawAttributes = element:rawAttributes()
+                        local id, src
+                        for _, v in pairs(rawAttributes) do
+                            if v:name() == "id" then
+                                id = v:stringValue()
+                            end
+                        end
+                        local elementChildren = element:children()
+                        for _, v in pairs(elementChildren) do
+                            if v:name() == "media-rep" then
+                                for _, attribute in pairs(v:rawAttributes()) do
+                                    if attribute:name() == "src" then
+                                        src = attribute:stringValue()
+                                        --------------------------------------------------------------------------------
+                                        -- Remove the file://
+                                        --------------------------------------------------------------------------------
+                                        src = replace(src, "file://", "")
+
+                                        --------------------------------------------------------------------------------
+                                        -- Remove any URL encoding:
+                                        --------------------------------------------------------------------------------
+                                        src = src:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+                                    end
+                                end
+                            end
+                        end
+                        if id and src then
+                            resourceCache[id] = src
+                        end
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Process Sequence Spine:
+            --------------------------------------------------------------------------------
             local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
             local spineChildren = spine and spine[1] and spine[1]:children()
 
@@ -571,8 +660,8 @@ local function processFCPXML(path)
                     local currentHeading = TEMPLATE_ORDER[i]
                     local value = row[currentHeading]
                     if value then
-                        if value:match(",") then
-                            output = output .. [["]] .. value .. [["]]
+                        if value:match(",") or value:match([["]]) then
+                            output = output .. [["]] .. value:gsub([["]], [[""]]) .. [["]]
                         else
                             output = output .. value
                         end
@@ -596,14 +685,56 @@ local function processFCPXML(path)
                 mod.lastSavePath(desktopPath)
             end
 
-            local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAnOutputDirectory") .. ":", mod.lastSavePath(), false, true, false)
+            local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheCSVTo") .. ":", mod.lastSavePath(), false, true, false)
             local exportPath = exportPathResult and exportPathResult["1"]
 
             if exportPath then
+                --------------------------------------------------------------------------------
+                -- Consolidate images:
+                --------------------------------------------------------------------------------
+                local consolidateSuccessful = true
+                if tableCount(filesToCopy) >= 1 then
+                    --------------------------------------------------------------------------------
+                    -- Make sure last save path still exists, otherwise use Desktop:
+                    --------------------------------------------------------------------------------
+                    if not doesDirectoryExist(mod.lastConsolidatePath()) then
+                        mod.lastConsolidatePath(desktopPath)
+                    end
+
+                    local consolidatePathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheConsolidatedImages") .. ":", mod.lastConsolidatePath(), false, true, false)
+                    local consolidatePath = consolidatePathResult and consolidatePathResult["1"]
+                    if consolidatePath then
+                        mod.lastConsolidatePath(consolidatePath)
+                        for destinationFilename, sourcePath in pairs(filesToCopy) do
+                            if doesFileExist(sourcePath) then
+                                local extension = getFileExtensionFromPath(sourcePath)
+                                local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. consolidatePath .. "/" .. destinationFilename .. "." .. extension .. [["]]
+                                local errors, status = hs.execute(copyCommand)
+                                if not status then
+                                    consolidateSuccessful = false
+                                    log.ef("Failed to copy source file: %s", errors)
+                                end
+                            else
+                                consolidateSuccessful = false
+                                log.ef("Failed to find source file: %s", sourcePath)
+                            end
+                        end
+                    end
+                end
+
                 mod.lastSavePath(exportPath)
                 local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
                 writeToFile(exportedFilePath, output)
-                webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+
+                if consolidateSuccessful then
+                    if tableCount(filesToCopy) >= 1 then
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVAndConsolidatedImagesHasBeenExportedSuccessfully"), i18n("ok"))
+                    else
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                    end
+                else
+                    webviewAlert(mod._manager.getWebview(), function() end, i18n("someErrorsHaveOccurred"), i18n("csvExportedSuccessfullyImagesCouldNotBeConsolidated"), i18n("ok"))
+                end
             end
         else
             webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
@@ -720,13 +851,13 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Utilities Panel:
     --------------------------------------------------------------------------------
-    mod._panel          =  deps.manager.addPanel({
+    mod._panel = deps.manager.addPanel({
         priority        = 2,
         id              = "shotdata",
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 320,
+        height          = 390,
     })
     :addContent(1, generateContent, false)
 

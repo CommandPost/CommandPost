@@ -237,7 +237,7 @@ local function rightClickButton(id)
     local buttons = mod.buttons()
     local button = buttons and buttons[id]
 
-    local position = mouse.getAbsolutePosition()
+    local position = mouse.absolutePosition()
     local popup = menubar.new()
 
     local menu = {

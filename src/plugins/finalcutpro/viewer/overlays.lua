@@ -500,7 +500,7 @@ function mod.show()
                                         else
                                             Do(function()
                                                 if mod._canvas then
-                                                    local mousePosition = mouse.getAbsolutePosition()
+                                                    local mousePosition = mouse.absolutePosition()
                                                     local canvasTopLeft = mod._canvas:topLeft()
                                                     local newX = mousePosition.x - canvasTopLeft.x
                                                     local newY = mousePosition.y - canvasTopLeft.y
@@ -534,7 +534,7 @@ function mod.show()
                                     else
                                         Do(function()
                                             if mod._canvas then
-                                                local mousePosition = mouse.getAbsolutePosition()
+                                                local mousePosition = mouse.absolutePosition()
                                                 local canvasTopLeft = mod._canvas:topLeft()
                                                 local letterboxHeight = mousePosition.y - canvasTopLeft.y
                                                 local viewerFrame = geometry.new(frame)

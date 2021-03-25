@@ -657,7 +657,7 @@ local function showHistoryPopup()
     local popup = menubar.new()
     popup:setMenu(menu)
     popup:removeFromMenuBar()
-    popup:popupMenu(mouse.getAbsolutePosition(), true)
+    popup:popupMenu(mouse.absolutePosition(), true)
 end
 
 local plugin = {
