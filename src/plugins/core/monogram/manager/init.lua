@@ -8,23 +8,19 @@ local log                       = require "hs.logger".new "monogram"
 
 local application               = require "hs.application"
 local inspect                   = require "hs.inspect"
-local inspect                   = require "hs.inspect"
 local socket                    = require "hs.socket"
-local timer                     = require "hs.timer"
 local udp                       = require "hs.socket.udp"
 
 local config                    = require "cp.config"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
-local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
-local doesFileExist             = tools.doesFileExist
-local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = _G.hs.execute
 local infoForBundleID           = application.infoForBundleID
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local playErrorSound            = tools.playErrorSound
+local readFromFile              = tools.readFromFile
 
 local mod = {}
 
@@ -43,10 +39,10 @@ local MONOGRAM_CREATOR_BUNDLE_ID = "com.monogramcc.Monogram-Creator"
 -- The Monogram Creator Download URL.
 local MONOGRAM_CREATOR_DOWNLOAD_URL = "https://monogramcc.com/download"
 
--- MONOGRAM_STATE_PATH -> string
+-- MONOGRAM_CREATOR_INTEGRATIONS_PATH -> string
 -- Constant
--- The path to the Monogram Creator State file.
-local MONOGRAM_STATE_PATH = os.getenv("HOME") .. "/Library/Application Support/Monogram/Service/state.json"
+-- The Monogram Creators Integration Path.
+local MONOGRAM_CREATOR_INTEGRATIONS_PATH = os.getenv("HOME") .. "/Library/Application Support/Monogram/Service/integrations"
 
 --- plugins.core.monogram.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
@@ -151,12 +147,11 @@ local function callbackFn(data, sockAddress)
             log.ef("Unknown Monogram Message:\n%s\n%s", inspect(decodedData))
         end
 
+        --------------------------------------------------------------------------------
         -- Get the Monogram port so we can send messages back:
+        --------------------------------------------------------------------------------
         local address = socket.parseAddress(sockAddress)
         mod.lastPort = address.port
-
-        --log.df("decodedData: %s", inspect(decodedData))
-        --log.df("address: %s", hs.inspect(address))
     end
 end
 
@@ -201,60 +196,20 @@ end
 -- Returns:
 --  * None
 local function setupPlugins()
-    --------------------------------------------------------------------------------
-    -- List of Monogram Plugins:
-    --------------------------------------------------------------------------------
-    local plugins = mod.plugins
-
-    --------------------------------------------------------------------------------
-    -- Check the plugins are enabled in the Monogram Preferences:
-    --------------------------------------------------------------------------------
-    local pluginsToInstall = {}
-    if not doesFileExist(MONOGRAM_STATE_PATH) then
-        log.ef("The Monogram State file could not be found. Is Monogram Creator Installed?")
-        return false
-    else
-        local stateData = json.read(MONOGRAM_STATE_PATH)
-        if stateData then
-            local integrations = stateData.integrations
-            if integrations then
-                for pluginName, sourcePath in pairs(plugins) do
-                    local pluginInstalled = false
-                    for _, path in pairs(integrations) do
-                        if path == sourcePath .. pluginName .. ".palette" then
-                            pluginInstalled = true
-                        end
-                    end
-                    if not pluginInstalled then
-                        table.insert(pluginsToInstall, sourcePath .. pluginName)
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- We need to install some plugins:
-                --------------------------------------------------------------------------------
-                if next(pluginsToInstall) then
-                    for _, pluginPath in pairs(pluginsToInstall) do
-                        table.insert(stateData.integrations, pluginPath .. ".palette")
-                    end
-
-                    local bundleID = getMonogramCreatorBundleID()
-                    local creator = application.get(bundleID)
-
-                    local didKill = false
-                    if creator then
-                        creator:kill9()
-                        didKill = true
-                    end
-
-                    json.write(MONOGRAM_STATE_PATH, stateData)
-
-                    if didKill then
-                        mod._launcher = doAfter(1, function()
-                            mod.launchCreatorBundle()
-                        end)
-                    end
-                end
+    for pluginName, sourcePath in pairs(mod.plugins) do
+        local destination = MONOGRAM_CREATOR_INTEGRATIONS_PATH .."/" .. pluginName .. ".palette/signature.txt"
+        local source = sourcePath .. pluginName .. ".palette/signature.txt"
+        local diffCmd = [[diff "]] .. source .. [[" "]] .. destination .. [["]]
+        local o, s = execute(diffCmd)
+        if type(s) == "nil" or o ~= "" then
+            --------------------------------------------------------------------------------
+            -- Need to copy the files across:
+            --------------------------------------------------------------------------------
+            local cmd = [[cp -R "]] ..  sourcePath .. pluginName .. [[.palette/" "]] .. MONOGRAM_CREATOR_INTEGRATIONS_PATH .. "/" .. pluginName .. [[.palette/"]]
+            local output, status = execute(cmd)
+            if not status then
+                log.ef("Failed to copy %s Monogram Integration: %s", pluginName, output)
+                return false
             end
         end
     end
@@ -271,60 +226,17 @@ end
 -- Returns:
 --  * None
 local function removePlugins()
-    --------------------------------------------------------------------------------
-    -- List of Monogram Plugins:
-    --------------------------------------------------------------------------------
-    local plugins = mod.plugins
-
-    --------------------------------------------------------------------------------
-    -- Remove plugins from Monogram Preferences:
-    --------------------------------------------------------------------------------
-    if not doesFileExist(MONOGRAM_STATE_PATH) then
-        log.ef("The Monogram State file could not be found. Is Monogram Creator Installed?")
-        return false
-    else
-        local stateData = json.read(MONOGRAM_STATE_PATH)
-        if stateData then
-            local integrations = stateData.integrations
-            if integrations then
-                local intergrationsToKeep = {}
-                for _, path in pairs(integrations) do
-                    local needsRemoving = false
-                    for pluginName, sourcePath in pairs(plugins) do
-                        if path == sourcePath .. pluginName .. ".palette" then
-                            needsRemoving = true
-                        end
-                    end
-                    if not needsRemoving then
-                        table.insert(intergrationsToKeep, path)
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- Update Monogram Preferences:
-                --------------------------------------------------------------------------------
-                stateData.integrations = intergrationsToKeep
-
-                local bundleID = getMonogramCreatorBundleID()
-                local creator = application.get(bundleID)
-
-                local didKill = false
-                if creator then
-                    creator:kill9()
-                    didKill = true
-                end
-
-                json.write(MONOGRAM_STATE_PATH, stateData)
-
-                if didKill then
-                    mod._launcher = doAfter(1, function()
-                        mod.launchCreatorBundle()
-                    end)
-                end
+    for pluginName, _ in pairs(mod.plugins) do
+        local path = MONOGRAM_CREATOR_INTEGRATIONS_PATH .."/" .. pluginName .. ".palette/"
+        if doesDirectoryExist(path) then
+            local cmd = [[rm -rf "]] .. path .. [["]]
+            local output, status = execute(cmd)
+            if not status then
+                log.ef("Failed to delete %s Monogram Integration: %s", pluginName, output)
+                return false
             end
         end
     end
-
     return true
 end
 
@@ -384,13 +296,13 @@ end
 ---  * None
 function mod.changeContext(context)
     if mod.enabled() then
-        local message = {
+        local m = {
             ["command"] = {
                 ["commandString"] = "changeContext",
                 ["context"] = context,
             }
         }
-        local message = json.encode(message)
+        local message = json.encode(m)
         mod.server:send(message, "127.0.0.1", mod.lastPort)
     end
 end
@@ -433,6 +345,9 @@ end
 
 function plugin.postInit()
     mod.enabled:update()
+    if mod.enabled() then
+        setupPlugins()
+    end
 end
 
 return plugin
