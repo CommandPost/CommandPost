@@ -20,7 +20,6 @@ local execute                   = _G.hs.execute
 local infoForBundleID           = application.infoForBundleID
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local playErrorSound            = tools.playErrorSound
-local readFromFile              = tools.readFromFile
 
 local mod = {}
 
