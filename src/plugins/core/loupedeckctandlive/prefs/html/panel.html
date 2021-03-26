@@ -109,7 +109,7 @@
 				if (id == "9") { label = "Touch Button 9" }
 				if (id == "10") { label = "Touch Button 10" }
 				if (id == "11") { label = "Touch Button 11" }
-				if (id == "112") { label = "Touch Button 12" }
+				if (id == "12") { label = "Touch Button 12" }
 			}
 			if (controlType == "knob") {
 				if (id == "1") { label = "Knob 1" }
@@ -610,6 +610,9 @@
 				alertErrorMessage(err);
 			}
 
+			// Reset the drop zone:
+			element.value = "";
+
 		};
 	}
 
@@ -759,6 +762,20 @@
 				id: "{{ id }}",
 				params: {
 					type: "openKeyCreator",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function openIconFolder() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "openIconFolder",
 				},
 			}
 			postMessage(result);
@@ -1087,8 +1104,17 @@
 			<th style="padding-left: 10px;">
 				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="exportSettings()">{{ i18n("exportSettings") }}</a>
 			</th>
-			<th style="padding-left: 10px;">
+		</tr>
+	</thead>
+</table>
+<table style="margin-top: -10px;">
+	<thead>
+		<tr>
+			<th style="padding-left: 20px;">
 				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="openKeyCreator()">{{ i18n("openKeyCreator") }}</a>
+			</th>
+			<th style="padding-left: 10px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="openIconFolder()">{{ i18n("openIconFolder") }}</a>
 			</th>
 			<th style="padding-left: 10px;">
 				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="buyMoreIcons()">{{ i18n("buyMoreIcons") }}</a>

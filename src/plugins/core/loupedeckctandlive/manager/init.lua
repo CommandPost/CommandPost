@@ -571,10 +571,10 @@ function mod.new(deviceType)
 
                 items = o.items() -- Reload items
                 local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
-                displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
+                displayNotification(i18n(o.i18nID) .. " " .. i18n("bank") .. ": " .. label)
             end
         end)
-        :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
+        :onActionId(function(action) return o.id .. "Bank" .. action.id end)
 
     --------------------------------------------------------------------------------
     -- Actions to Manually Change Application:

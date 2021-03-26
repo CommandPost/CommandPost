@@ -90,7 +90,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1055
+        o.height            = 1090
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -101,7 +101,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1020
+        o.height            = 1050
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -544,6 +544,8 @@ function mod.mt:generateKnobImages(app, bank, bid)
         v = nil -- luacheck: ignore
 
         encodedKnobIcon = knobImage:encodeAsURLString(true)
+    else
+        encodedKnobIcon = ""
     end
 
     self:setItem(app, bank, "sideScreen", whichScreen, "encodedKnobIcon", encodedKnobIcon)
@@ -740,6 +742,49 @@ function mod.mt:updateUI(params)
         changeColor(']] .. colorValue .. [[');
         setIcon("]] .. encodedIcon .. [[");
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
+end
+
+function mod.mt:updateSideScreens()
+
+end
+
+-- processEncodedIcon(encodedIcon, controlType) -> string
+-- Function
+-- Processes an encoded icon.
+--
+-- Parameters:
+--  * encodedIcon - The encoded icon as URL string.
+--  * controlType - The control type as string.
+--
+-- Returns:
+--  * A new encoded icon as URL string.
+local function processEncodedIcon(encodedIcon, controlType)
+    local width, height = getScreenSizeFromControlType(controlType)
+
+    --------------------------------------------------------------------------------
+    -- Process the Icon to remove transparency:
+    --------------------------------------------------------------------------------
+    local newImage = imageFromURL(encodedIcon)
+    local v = canvas.new{x = 0, y = 0, w = width, h = height }
+    v[1] = {
+        --------------------------------------------------------------------------------
+        -- Force Black background:
+        --------------------------------------------------------------------------------
+        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+        type = "rectangle",
+    }
+    v[2] = {
+      type="image",
+      image = newImage,
+      frame = { x = 0, y = 0, h = "100%", w = "100%" },
+    }
+    local fixedImage = v:imageFromCanvas()
+
+    v:delete()
+    v = nil -- luacheck: ignore
+
+    return fixedImage:encodeAsURLString(true)
 end
 
 --- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
@@ -1283,7 +1328,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Bad Icon File Extension:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("badStreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+            webviewAlert(mod._manager.getWebview(), function() end, i18n("badLoupedeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
         elseif callbackType == "updateIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
@@ -1331,6 +1376,16 @@ function mod.mt:panelCallback(id, params)
             self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
 
             --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            self:generateKnobImages(app, bank, bid)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI(params)
+
+            --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             self.device:refresh()
@@ -1339,37 +1394,8 @@ function mod.mt:panelCallback(id, params)
             -- Update Icon:
             --------------------------------------------------------------------------------
             local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
             local controlType = "touchButton"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = processEncodedIcon(encodedIcon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1377,8 +1403,13 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local bid = params["id"]
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure you need this:
+            --self:updateUI(params)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1430,6 +1461,18 @@ function mod.mt:panelCallback(id, params)
 
             self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
 
+            local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]]
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            self:generateKnobImages(app, bank, bid)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI(params)
+
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
@@ -1478,6 +1521,11 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
             self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI(params)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1534,39 +1582,9 @@ function mod.mt:panelCallback(id, params)
             self:generateKnobImages(app, bank, bid)
 
             --------------------------------------------------------------------------------
-            -- Update Preferences Screen:
+            -- Update the UI:
             --------------------------------------------------------------------------------
-            local items = self.items()
-            local selectedApp = items[app]
-            local selectedBank = selectedApp and selectedApp[bank]
-
-            local updateIconsScript = ""
-
-            --------------------------------------------------------------------------------
-            -- Left Screen:
-            --------------------------------------------------------------------------------
-            local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
-            if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
-            elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
-            else
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
-            end
-
-            --------------------------------------------------------------------------------
-            -- Right Screen:
-            --------------------------------------------------------------------------------
-            local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
-            if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
-            elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
-            else
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
-            end
-
-            injectScript(updateIconsScript)
+            self:updateUI(params)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1622,52 +1640,21 @@ function mod.mt:panelCallback(id, params)
 
                                 self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
 
-                                local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]]
-
                                 --------------------------------------------------------------------------------
                                 -- Process knobs:
                                 --------------------------------------------------------------------------------
                                 if controlType == "knob" then
-
                                     self:generateKnobImages(app, bank, bid)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Update preferences UI:
-                                    --------------------------------------------------------------------------------
-                                    local items = self.items()
-
-                                    local currentApp = items[app]
-                                    local currentBank = currentApp and currentApp[bank]
-                                    local currentSideScreen = currentBank and currentBank.sideScreen
-
-                                    local sideScreenOne = currentSideScreen["1"]
-                                    local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
-                                    local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
-                                    if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
-                                    elseif encodedIcon and encodedIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
-                                    else
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                                    end
-
-                                    local sideScreenTwo = currentSideScreen["2"]
-                                    encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
-                                    encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
-                                    if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                        changeImageScript = changeImageScript .. "\n" ..  [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
-                                    elseif encodedIcon and encodedIcon ~= "" then
-                                        changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
-                                    else
-                                        changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
-                                    end
                                 end
 
                                 --------------------------------------------------------------------------------
-                                -- Update preference UI via JavaScript:
+                                -- Update the UI:
                                 --------------------------------------------------------------------------------
-                                injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. changeImageScript)
+                                self:updateUI(params)
 
+                                --------------------------------------------------------------------------------
+                                -- Refresh the hardware:
+                                --------------------------------------------------------------------------------
                                 self.device:refresh()
                             end,
                         })
@@ -1697,56 +1684,17 @@ function mod.mt:panelCallback(id, params)
 
             self:setItem(app, bank, controlType, bid, "encodedIcon", "")
 
-            local items = self.items()
-            local encodedImage = insertImage("images/" .. controlType .. bid .. ".png")
-            if items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid]["encodedIconLabel"] then
-                if items[app][bank][controlType][bid]["iconLabel"] ~= "" then
-                    encodedImage = items[app][bank][controlType][bid]["encodedIconLabel"]
-                end
-            end
-
-            local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImage .. [[")]]
-
             --------------------------------------------------------------------------------
             -- Process knobs:
             --------------------------------------------------------------------------------
             if controlType == "knob" then
-
                 self:generateKnobImages(app, bank, bid)
-
-                --------------------------------------------------------------------------------
-                -- Update preferences UI:
-                --------------------------------------------------------------------------------
-                items = self.items() -- Refresh items
-
-                local currentApp = items[app]
-                local currentBank = currentApp and currentApp[bank]
-                local currentSideScreen = currentBank and currentBank.sideScreen
-
-                local sideScreenOne = currentSideScreen["1"]
-                local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
-                local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
-                if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
-                elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
-                else
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                end
-
-                local sideScreenTwo = currentSideScreen["2"]
-                encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
-                encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
-                if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
-                elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
-                else
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                end
             end
 
-            injectScript([[setIcon("");]] .. "\n" .. changeImageScript)
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI(params)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -2459,6 +2407,11 @@ function mod.mt:panelCallback(id, params)
             -- Buy More Icons:
             --------------------------------------------------------------------------------
             execute('open "' .. BUY_MORE_ICONS_URL .. '"')
+        elseif callbackType == "openIconFolder" then
+            --------------------------------------------------------------------------------
+            -- Open Icon Folder:
+            --------------------------------------------------------------------------------
+            execute('open "' .. config.basePath .. '/extensions/cp/resources/assets/icons/"')
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

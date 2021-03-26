@@ -152,6 +152,13 @@ function tools.keyStroke(modifiers, character, app)
         if m == "function" then m = "fn" end
         newKeyEvent(map[m], false):post(app)
     end
+
+    --[[
+    log.df("modifiers: %s", hs.inspect(modifiers))
+    log.df("character: %s", character)
+    log.df("app: %s", app)
+    --]]
+
 end
 
 --- cp.tools.pressSystemKey(key) -> none
