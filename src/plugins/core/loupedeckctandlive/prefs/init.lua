@@ -1696,7 +1696,16 @@ function mod.mt:panelCallback(id, params)
                             local combined = mergeTable(original, data)
                             self.items(combined)
                         end
+
+                        --------------------------------------------------------------------------------
+                        -- Reload Preferences:
+                        --------------------------------------------------------------------------------
                         mod._manager.refresh()
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        self.device:refresh()
                     end
                 end
             end
