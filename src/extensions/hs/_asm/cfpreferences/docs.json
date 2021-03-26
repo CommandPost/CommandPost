@@ -15,15 +15,17 @@
     "stripped_doc" : [
 
     ],
+    "desc" : "Stuff about the module",
     "Deprecated" : [
 
     ],
     "type" : "Module",
-    "desc" : "Stuff about the module",
     "Constructor" : [
 
     ],
-    "doc" : "Stuff about the module",
+    "Field" : [
+
+    ],
     "Method" : [
 
     ],
@@ -33,9 +35,7 @@
     "items" : [
 
     ],
-    "Field" : [
-
-    ],
+    "doc" : "Stuff about the module",
     "name" : "hs._asm.cfpreferences"
   }
 ]
