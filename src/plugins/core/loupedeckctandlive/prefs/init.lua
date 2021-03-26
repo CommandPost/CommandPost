@@ -197,7 +197,22 @@ function mod.new(deviceType)
         tooltip         = o.label,
         height          = o.height,
     })
-        :addHeading(6, o.label)
+
+        :addHeading(1, o.label)
+
+        :addContent(2, [[
+            <style>
+                .menubarRow {
+                    display: flex;
+                }
+
+                .menubarColumn {
+                    flex: 50%;
+                }
+            </style>
+            <div class="menubarRow">
+                <div class="menubarColumn">
+        ]], false)
 
         :addCheckbox(7.1,
             {
@@ -262,8 +277,13 @@ function mod.new(deviceType)
             }
         )
 
+        :addContent(11, [[
+                </div>
+                <div class="menubarColumn">
+        ]], false)
 
-        :addSelect(11,
+
+        :addSelect(12,
             {
                 label       =   i18n("screensBacklightLevel"),
                 value       =   o.screensBacklightLevel,
@@ -285,10 +305,14 @@ function mod.new(deviceType)
             }
         )
 
+        :addContent(13, [[
+                </div>
+            </div>
+        ]], false)
 
-        :addParagraph(12, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
+        :addParagraph(14, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
 
-        :addContent(13, function(...) return o:generateContent(...) end, false)
+        :addContent(15, function(...) return o:generateContent(...) end, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
@@ -713,6 +737,9 @@ function mod.mt:updateUI(params)
         ]]
     end
 
+    --------------------------------------------------------------------------------
+    -- Inject Script:
+    --------------------------------------------------------------------------------
     injectScript([[
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
@@ -744,27 +771,28 @@ function mod.mt:updateUI(params)
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
 end
 
-function mod.mt:updateSideScreens()
-
-end
-
--- processEncodedIcon(encodedIcon, controlType) -> string
+-- processEncodedIcon(icon, controlType) -> string
 -- Function
 -- Processes an encoded icon.
 --
 -- Parameters:
---  * encodedIcon - The encoded icon as URL string.
+--  * icon - The encoded icon as URL string or a hs.image object.
 --  * controlType - The control type as string.
 --
 -- Returns:
 --  * A new encoded icon as URL string.
-local function processEncodedIcon(encodedIcon, controlType)
+local function processEncodedIcon(icon, controlType)
     local width, height = getScreenSizeFromControlType(controlType)
 
     --------------------------------------------------------------------------------
     -- Process the Icon to remove transparency:
     --------------------------------------------------------------------------------
-    local newImage = imageFromURL(encodedIcon)
+    local newImage
+    if type(icon) == "userdata" then
+        newImage = icon
+    else
+        newImage = imageFromURL(icon)
+    end
     local v = canvas.new{x = 0, y = 0, w = width, h = height }
     v[1] = {
         --------------------------------------------------------------------------------
@@ -785,6 +813,21 @@ local function processEncodedIcon(encodedIcon, controlType)
     v = nil -- luacheck: ignore
 
     return fixedImage:encodeAsURLString(true)
+end
+
+-- changeControl(controlType, id) -> none
+-- Function
+-- Triggers a JavaScript function to change the control on the UI.
+--
+-- Parameters:
+--  * controlType - The control type.
+--  * id - The control ID.
+--
+-- Returns:
+--  * None
+local function changeControl(controlType, id)
+    local injectScript = mod._manager.injectScript
+    injectScript("changeControl('', '', '" .. controlType .. "', '" .. id .. "');")
 end
 
 --- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
@@ -914,37 +957,9 @@ function mod.mt:panelCallback(id, params)
                     end
                     if preSuppliedImage then
                         --------------------------------------------------------------------------------
-                        -- Set screen limitations:
-                        --------------------------------------------------------------------------------
-                        local width, height = getScreenSizeFromControlType(controlType)
-
-                        --------------------------------------------------------------------------------
-                        -- Process the Icon to remove transparency:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                        v[1] = {
-                            --------------------------------------------------------------------------------
-                            -- Force Black background:
-                            --------------------------------------------------------------------------------
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                            type = "rectangle",
-                        }
-                        v[2] = {
-                          type="image",
-                          image = preSuppliedImage,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                        }
-                        local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
-                        local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
-
-                        --------------------------------------------------------------------------------
                         -- Write to file:
                         --------------------------------------------------------------------------------
+                        local encodedIcon = processEncodedIcon(preSuppliedImage, controlType)
                         self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
 
                         --------------------------------------------------------------------------------
@@ -1326,45 +1341,16 @@ function mod.mt:panelCallback(id, params)
             end
         elseif callbackType == "badExtension" then
             --------------------------------------------------------------------------------
-            -- Bad Icon File Extension:
+            -- Bad Icon File Extension from a Drag & Drop:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("badLoupedeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+            webviewAlert(mod._manager.getWebview(), function() end, i18n("badLoupedeckIcon"), i18n("badLoupedeckIconTip"), i18n("ok"))
         elseif callbackType == "updateIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = params["controlType"]
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1373,7 +1359,7 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
 
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
             --------------------------------------------------------------------------------
             -- Process knobs:
@@ -1391,11 +1377,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateButtonIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Button Icon After A Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
+            local icon = params["icon"]
             local controlType = "touchButton"
-            local encodedIcon = processEncodedIcon(encodedIcon, controlType)
+            local encodedIcon = processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1406,10 +1392,9 @@ function mod.mt:panelCallback(id, params)
             self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
             --------------------------------------------------------------------------------
-            -- Update the UI:
+            -- Change the control and update the UI:
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure you need this:
-            --self:updateUI(params)
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1417,40 +1402,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateSideScreenIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Side Screen Icons after a Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "sideScreen"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1459,9 +1415,7 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
 
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
-
-            local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]]
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
             --------------------------------------------------------------------------------
             -- Process knobs:
@@ -1469,9 +1423,9 @@ function mod.mt:panelCallback(id, params)
             self:generateKnobImages(app, bank, bid)
 
             --------------------------------------------------------------------------------
-            -- Update the UI:
+            -- Change the control and update the UI:
             --------------------------------------------------------------------------------
-            self:updateUI(params)
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1479,40 +1433,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateWheelIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Wheel Icon via Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "wheelScreen"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1520,12 +1445,12 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local bid = params["id"]
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
             --------------------------------------------------------------------------------
-            -- Update the UI:
+            -- Change the control and update the UI:
             --------------------------------------------------------------------------------
-            self:updateUI(params)
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1533,40 +1458,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateKnobIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Knob Icon After A Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "knob"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1574,7 +1470,7 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local bid = params["id"]
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
             --------------------------------------------------------------------------------
             -- Generate Knob Images:
@@ -1582,9 +1478,9 @@ function mod.mt:panelCallback(id, params)
             self:generateKnobImages(app, bank, bid)
 
             --------------------------------------------------------------------------------
-            -- Update the UI:
+            -- Change the control and update the UI:
             --------------------------------------------------------------------------------
-            self:updateUI(params)
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1608,37 +1504,8 @@ function mod.mt:panelCallback(id, params)
                                 local bank = params["bank"]
                                 local bid = params["id"]
 
-                                --------------------------------------------------------------------------------
-                                -- Set screen limitations:
-                                --------------------------------------------------------------------------------
-                                local width, height = getScreenSizeFromControlType(controlType)
-
-                                --------------------------------------------------------------------------------
-                                -- Process the Icon to remove transparency:
-                                --------------------------------------------------------------------------------
-                                local newImage = imageFromURL(item[2])
-                                local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                                v[1] = {
-                                    --------------------------------------------------------------------------------
-                                    -- Force Black background:
-                                    --------------------------------------------------------------------------------
-                                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                                    fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                                    type = "rectangle",
-                                }
-                                v[2] = {
-                                  type="image",
-                                  image = newImage,
-                                  frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                                }
-                                local fixedImage = v:imageFromCanvas()
-
-                                v:delete()
-                                v = nil -- luacheck: ignore
-
-                                local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
-
-                                self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+                                local encodedIcon = processEncodedIcon(item[2], controlType)
+                                self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
                                 --------------------------------------------------------------------------------
                                 -- Process knobs:

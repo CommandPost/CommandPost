@@ -95,8 +95,10 @@
 
 	function changeControl(element, label, controlType, id) {
 		if (!label) {
-			controlType = element.getAttribute("controlType");
-			id = element.getAttribute("controlID");
+			if (element) {
+				controlType = element.getAttribute("controlType");
+				id = element.getAttribute("controlID");
+			}
 			if (controlType == "touchButton") {
 				if (id == "1") { label = "Touch Button 1" }
 				if (id == "2") { label = "Touch Button 2" }
