@@ -290,13 +290,41 @@ function mod.new(deviceType)
         :addContent(11, [[
                 </div>
                 <div class="menubarColumn">
-        ]], false)
+                <style>
+                    .screensBacklightLevel select {
+                        margin-left: 85px;
+                        width: 80px;
+                    }
+                    .resizeImagesOnImport select {
+                        margin-left: 80px;
+                        width: 80px;
+                    }
 
+                    .imageBackgroundColourOnImport input {
+                        margin-left: 10px;
+                        -webkit-appearance: none;
+                        text-shadow:0 1px 0 rgba(0,0,0,0.4);
+                        background-color: rgba(65,65,65,1);
+                        color: #bfbfbc;
+                        text-decoration: none;
+                        padding: 2px 18px 2px 5px;
+                        border:0.5px solid black;
+                        display: inline-block;
+                        border-radius: 3px;
+                        border-radius: 0px;
+                        cursor: default;
+                        font-family: -apple-system;
+                        font-size: 13px;
+                        width: 56px;
+                    }
+                </style>
+        ]], false)
 
         :addSelect(12,
             {
                 label       =   i18n("screensBacklightLevel"),
                 value       =   o.screensBacklightLevel,
+                class       =   "screensBacklightLevel",
                 options     =   function()
                                     local options = {}
                                     for i=1, 10 do
@@ -318,14 +346,20 @@ function mod.new(deviceType)
         :addSelect(12.1,
             {
                 label       =   i18n("resizeImagesOnImport"),
+                class       =   "resizeImagesOnImport",
                 value       =   o.resizeImagesOnImport,
                 options     =   function()
                                     local options = {
                                         { value = "100%",   label = "100%" },
+                                        { value = "95%",    label = "95%" },
                                         { value = "90%",    label = "90%" },
+                                        { value = "85%",    label = "85%" },
                                         { value = "80%",    label = "80%" },
+                                        { value = "75%",    label = "75%" },
                                         { value = "70%",    label = "70%" },
+                                        { value = "65%",    label = "65%" },
                                         { value = "60%",    label = "60%" },
+                                        { value = "55%",    label = "55%" },
                                         { value = "50%",    label = "50%" },
                                     }
                                     return options
@@ -341,7 +375,7 @@ function mod.new(deviceType)
             {
                 label       =   i18n("imageBackgroundColourOnImport") .. ":",
                 value       =   function() return o.backgroundColour() end,
-                class       =   "jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                class       =   "imageBackgroundColourOnImport jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params) o.backgroundColour(params.value) end,
             }
         )
