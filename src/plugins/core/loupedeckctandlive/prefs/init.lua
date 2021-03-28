@@ -57,6 +57,11 @@ local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
 -- URL to SideshowFX Website
 local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
 
+-- SNIPPET_HELP_URL -> string
+-- Constant
+-- URL to Snippet Support Site
+local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets"
+
 --- plugins.core.loupedeckctandlive.prefs.supportedExtensions -> string
 --- Variable
 --- Table of supported extensions for Icons.
@@ -104,7 +109,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1050
+        o.height            = 1090
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -2337,6 +2342,12 @@ function mod.mt:panelCallback(id, params)
             end
 
             playErrorSound()
+
+        elseif callbackType == "examples" then
+            --------------------------------------------------------------------------------
+            -- Examples Button:
+            --------------------------------------------------------------------------------
+            execute('open "' .. SNIPPET_HELP_URL .. '"')
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

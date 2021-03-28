@@ -960,6 +960,20 @@
 		}
 	}
 
+	function examples() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "examples",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function updateIgnoreVisibility() {
 		if (document.getElementById("application").value == "All Applications") {
 			document.getElementById("ignoreApp").style.display = "none";
@@ -1809,7 +1823,7 @@
 							<td width="229px"><input type="text" id="snippet_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="snippetC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">Examples</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
 						</tr>
 
 						<!-- WHEEL SENSITIVITY: -->

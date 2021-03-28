@@ -866,33 +866,43 @@ function mod.mt:refresh(dueToAppChange)
 
                 local successful, result = pcall(load(code))
                 if successful and isImage(result) then
+                    local size = result:size()
+                    if size.w == 90 and size.h == 90 then
+                        --------------------------------------------------------------------------------
+                        -- The generated image is already 90x90 so proceed:
+                        --------------------------------------------------------------------------------
+                        encodedIcon = result:encodeAsURLString(true)
+                    else
+                        --------------------------------------------------------------------------------
+                        -- The generated image is not 90x90 so process:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
 
-                    local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
+                        --------------------------------------------------------------------------------
+                        -- Background:
+                        --------------------------------------------------------------------------------
+                        v[1] = {
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, hex = backgroundColour },
+                            type = "rectangle",
+                        }
 
-                    --------------------------------------------------------------------------------
-                    -- Background:
-                    --------------------------------------------------------------------------------
-                    v[1] = {
-                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                        fillColor = { alpha = 1, hex = backgroundColour },
-                        type = "rectangle",
-                    }
+                        --------------------------------------------------------------------------------
+                        -- Icon - Scaled as per preferences:
+                        --------------------------------------------------------------------------------
+                        v[2] = {
+                          type="image",
+                          image = result,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
 
-                    --------------------------------------------------------------------------------
-                    -- Icon - Scaled as per preferences:
-                    --------------------------------------------------------------------------------
-                    v[2] = {
-                      type="image",
-                      image = result,
-                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                    }
+                        local fixedImage = v:imageFromCanvas()
 
-                    local fixedImage = v:imageFromCanvas()
+                        v:delete()
+                        v = nil -- luacheck: ignore
 
-                    v:delete()
-                    v = nil -- luacheck: ignore
-
-                    encodedIcon = fixedImage:encodeAsURLString(true)
+                        encodedIcon = fixedImage:encodeAsURLString(true)
+                    end
                 end
             end
         end
