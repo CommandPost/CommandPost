@@ -2,49 +2,50 @@
 ---
 --- A collection of handy miscellaneous tools for Lua development.
 
-local require           = require
+local require               = require
 
-local log               = require "hs.logger".new "tools"
+local log                   = require "hs.logger".new "tools"
 
-local application       = require "hs.application"
-local base64            = require "hs.base64"
-local eventtap          = require "hs.eventtap"
-local fs                = require "hs.fs"
-local geometry          = require "hs.geometry"
-local host              = require "hs.host"
-local inspect           = require "hs.inspect"
-local keycodes          = require "hs.keycodes"
-local mouse             = require "hs.mouse"
-local osascript         = require "hs.osascript"
-local screen            = require "hs.screen"
-local sound             = require "hs.sound"
-local text              = require "hs.text"
-local timer             = require "hs.timer"
-local window            = require "hs.window"
+local application           = require "hs.application"
+local base64                = require "hs.base64"
+local eventtap              = require "hs.eventtap"
+local fs                    = require "hs.fs"
+local geometry              = require "hs.geometry"
+local host                  = require "hs.host"
+local inspect               = require "hs.inspect"
+local keycodes              = require "hs.keycodes"
+local mouse                 = require "hs.mouse"
+local osascript             = require "hs.osascript"
+local screen                = require "hs.screen"
+local sound                 = require "hs.sound"
+local text                  = require "hs.text"
+local timer                 = require "hs.timer"
+local window                = require "hs.window"
 
-local config            = require "cp.config"
+local config                = require "cp.config"
 
-local v                 = require "semver"
+local v                     = require "semver"
 
-local attributes        = fs.attributes
-local dir               = fs.dir
-local mkdir             = fs.mkdir
-local pathToAbsolute    = fs.pathToAbsolute
-local rmdir             = fs.rmdir
-local symlinkAttributes = fs.symlinkAttributes
+local attributes            = fs.attributes
+local dir                   = fs.dir
+local mkdir                 = fs.mkdir
+local pathToAbsolute        = fs.pathToAbsolute
+local rmdir                 = fs.rmdir
+local symlinkAttributes     = fs.symlinkAttributes
 
-local event             = eventtap.event
-local insert            = table.insert
-local locale            = host.locale
-local map               = keycodes.map
-local usleep            = timer.usleep
-local utf16             = text.utf16
+local event                 = eventtap.event
+local insert                = table.insert
+local locale                = host.locale
+local map                   = keycodes.map
+local usleep                = timer.usleep
+local utf16                 = text.utf16
 
-local execute           = _G.hs.execute
-local processInfo       = _G.hs.processInfo
+local execute               = _G.hs.execute
+local processInfo           = _G.hs.processInfo
+local getObjectMetatable    = _G.hs.getObjectMetatable
 
-local newKeyEvent       = event.newKeyEvent
-local newSystemKeyEvent = event.newSystemKeyEvent
+local newKeyEvent           = event.newKeyEvent
+local newSystemKeyEvent     = event.newSystemKeyEvent
 
 local tools = {}
 
@@ -1988,6 +1989,19 @@ function tools.replace(textValue, old, new)
         local result = textValue:sub(1, b - 1) .. new .. textValue:sub(e + 1)
         return tools.replace(result, old, new)
     end
+end
+
+--- cp.tools.isImage(object) -> boolean
+--- Function
+--- Is the supplied object an `hs.image`?
+---
+--- Parameters:
+---  * object - An object to check
+---
+--- Returns:
+---  * A boolean
+function tools.isImage(object)
+    return object and getmetatable(object) == getObjectMetatable("hs.image") or false
 end
 
 return tools

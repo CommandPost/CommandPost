@@ -32,9 +32,12 @@ local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
+local isImage                   = tools.isImage
 local mergeTable                = tools.mergeTable
+local playErrorSound            = tools.playErrorSound
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
+local split                     = tools.split
 local tableContains             = tools.tableContains
 local tableMatch                = tools.tableMatch
 local trim                      = tools.trim
@@ -604,8 +607,7 @@ function mod.mt:generateKnobImages(app, bank, bid)
         knobThreeImage = currentKnobThreeEncodedIconLabel
     end
 
-    local encodedKnobIcon = ""
-
+    local encodedKnobIcon
     if knobOneImage or knobTwoImage or knobThreeImage then
         local v = canvas.new{x = 0, y = 0, w = 60, h = 270 }
         v[1] = {
@@ -710,6 +712,9 @@ function mod.mt:updateUI(params)
     local downValue = selectedID and selectedID.downAction and selectedID.downAction.actionTitle or ""
     local doubleTapValue = selectedID and selectedID.doubleTapAction and selectedID.doubleTapAction.actionTitle or ""
     local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
+
+    local snippetValue = selectedID and selectedID.snippetAction and selectedID.snippetAction.actionTitle or ""
+
     local colorValue = selectedID and selectedID.led or "FFFFFF"
     local encodedIcon = selectedID and selectedID.encodedIcon or ""
     local iconLabel = selectedID and selectedID.iconLabel or ""
@@ -736,6 +741,21 @@ function mod.mt:updateUI(params)
             local currentEncodedIcon = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIcon
             local currentIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].iconLabel
             local currentEncodedIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIconLabel
+
+            --------------------------------------------------------------------------------
+            -- Handle Snippets:
+            --------------------------------------------------------------------------------
+            local currentSnippet = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].snippetAction
+            if currentSnippet and currentSnippet.action then
+                local code = currentSnippet.action.code
+                if code then
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        currentEncodedIcon = result:encodeAsURLString(true)
+                    end
+                end
+            end
+
             if currentEncodedIcon and currentEncodedIcon ~= "" then
                 updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIcon .. [[")]] .. "\n"
             else
@@ -834,6 +854,7 @@ function mod.mt:updateUI(params)
         changeValueByID('right_touch_action', `]] .. escapeTilda(rightValue) .. [[`);
         changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
         changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
+        changeValueByID('snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
         changeValueByID('vibratePress', ']] .. vibratePressValue .. [[');
         changeValueByID('vibrateRelease', ']] .. vibrateReleaseValue .. [[');
         changeValueByID('vibrateLeft', ']] .. vibrateLeftValue .. [[');
@@ -847,16 +868,16 @@ function mod.mt:updateUI(params)
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
 end
 
--- processEncodedIcon(icon, controlType) -> string
--- Function
--- Processes an encoded icon.
---
--- Parameters:
---  * icon - The encoded icon as URL string or a hs.image object.
---  * controlType - The control type as string.
---
--- Returns:
---  * A new encoded icon as URL string.
+--- plugins.core.loupedeckctandlive.prefs:processEncodedIcon(icon, controlType) -> string
+--- Function
+--- Processes an encoded icon.
+---
+--- Parameters:
+---  * icon - The encoded icon as URL string or a hs.image object.
+---  * controlType - The control type as string.
+---
+--- Returns:
+---  * A new encoded icon as URL string.
 function mod.mt:processEncodedIcon(icon, controlType)
     local width, height = getScreenSizeFromControlType(controlType)
 
@@ -899,6 +920,46 @@ function mod.mt:processEncodedIcon(icon, controlType)
     return fixedImage:encodeAsURLString(true)
 end
 
+-- plugins.core.loupedeckctandlive.prefs:buildIconFromLabel(value, controlType) -> string
+-- Function
+-- Creates a new icon image from a string.
+--
+-- Parameters:
+--  * value - The label as a string.
+--  * controlType - The control type as string.
+--
+-- Returns:
+--  * A new encoded icon as URL string.
+local function buildIconFromLabel(value, controlType)
+    local width, height = getScreenSizeFromControlType(controlType)
+
+    local v = canvas.new{x = 0, y = 0, w = width, h = height }
+    v[1] = {
+        --------------------------------------------------------------------------------
+        -- Force Black background:
+        --------------------------------------------------------------------------------
+        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+        type = "rectangle",
+    }
+
+    v[2] = {
+        frame = { h = 100, w = 100, x = 0, y = 0 },
+        text = value,
+        textAlignment = "left",
+        textColor = { white = 1.0 },
+        textSize = 15,
+        type = "text",
+    }
+
+    local img = v:imageFromCanvas()
+
+    v:delete()
+    v = nil -- luacheck: ignore
+
+    return img:encodeAsURLString(true)
+end
+
 -- changeControl(controlType, id) -> none
 -- Function
 -- Triggers a JavaScript function to change the control on the UI.
@@ -932,67 +993,74 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
+            local buttonType = params["buttonType"]
             local activatorID = params["application"]
-            if not self.activator or self.activator and not self.activator[activatorID] then
+
+            if buttonType == "snippetAction" then
+                 activatorID = "snippet"
+            end
+
+            if not self.activator then
                 self.activator = {}
+            end
+
+            if buttonType == "snippetAction" and not self.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Snippet Activator:
+                --------------------------------------------------------------------------------
+                self.activator["snippet"] = mod._actionmanager.getActivator(self.id .. "_preferences_snippet")
+
+                --------------------------------------------------------------------------------
+                -- Only allow the Snippets action group:
+                --------------------------------------------------------------------------------
+                self.activator["snippet"]:allowHandlers("global_snippets")
+            elseif not self.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Action Activator:
+                --------------------------------------------------------------------------------
                 local handlerIds = mod._actionmanager.handlerIds()
 
                 --------------------------------------------------------------------------------
-                -- Get list of registered and custom apps:
+                -- Get list of legacy group IDs:
                 --------------------------------------------------------------------------------
-                local apps = {}
                 local legacyGroupIDs = {}
                 local registeredApps = mod._appmanager.getApplications()
                 for bundleID, v in pairs(registeredApps) do
-                    if v.displayName then
-                        apps[bundleID] = v.displayName
-                    end
                     legacyGroupIDs[bundleID] = v.legacyGroupID or bundleID
                 end
-                local items = self.items()
-                for bundleID, v in pairs(items) do
-                    if v.displayName then
-                        apps[bundleID] = v.displayName
-                    end
-                end
 
                 --------------------------------------------------------------------------------
-                -- Add allowance for "All Applications":
+                -- Create new Activator:
                 --------------------------------------------------------------------------------
-                apps["All Applications"] = "All Applications"
+                self.activator[activatorID] = mod._actionmanager.getActivator(self.id .. "_preferences_" .. activatorID)
 
-                for groupID,_ in pairs(apps) do
-                    --------------------------------------------------------------------------------
-                    -- Create new Activator:
-                    --------------------------------------------------------------------------------
-                    self.activator[groupID] = mod._actionmanager.getActivator("loupedeckCTPreferences" .. groupID)
-
-                    --------------------------------------------------------------------------------
-                    -- Restrict Allowed Handlers for Activator to current group (and global):
-                    --------------------------------------------------------------------------------
-                    local allowedHandlers = {}
-                    for _,v in pairs(handlerIds) do
-                        local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == legacyGroupIDs[groupID] or handlerTable[1] == "global" then
-                            --------------------------------------------------------------------------------
-                            -- Don't include "widgets" (that are used for the Touch Bar):
-                            --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" and v ~= "global_menuactions" then
-                                table.insert(allowedHandlers, v)
-                            end
-                        end
+                --------------------------------------------------------------------------------
+                -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
+                --------------------------------------------------------------------------------
+                local allowedHandlers = {}
+                for _,v in pairs(handlerIds) do
+                    local handlerTable = split(v, "_")
+                    local partB = handlerTable[2]
+                    if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
+                        table.insert(allowedHandlers, v)
                     end
-                    local unpack = table.unpack
-                    self.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-
-                    --------------------------------------------------------------------------------
-                    -- Gather Toolbar Icons for Search Console:
-                    --------------------------------------------------------------------------------
-                    local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
-                    local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID) or {}
-                    local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-                    self.activator[groupID]:toolbarIcons(searchConsoleToolbar)
                 end
+                local unpack = table.unpack
+                self.activator[activatorID]:allowHandlers(unpack(allowedHandlers))
+
+                --------------------------------------------------------------------------------
+                -- Gather Toolbar Icons for Search Console:
+                --------------------------------------------------------------------------------
+                local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+                local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(activatorID) or {}
+                local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+                self.activator[activatorID]:toolbarIcons(searchConsoleToolbar)
+
+                --------------------------------------------------------------------------------
+                -- Only enable handlers for the current app:
+                --------------------------------------------------------------------------------
+                local enabledHandlerID = legacyGroupIDs[activatorID] or activatorID
+                self.activator[activatorID]:enableAllHandlers(enabledHandlerID)
             end
 
             --------------------------------------------------------------------------------
@@ -1015,7 +1083,6 @@ function mod.mt:panelCallback(id, params)
                 local bank = params["bank"]
                 local controlType = params["controlType"]
                 local bid = params["id"]
-                local buttonType = params["buttonType"]
 
                 local result = {
                     ["actionTitle"] = actionTitle,
@@ -1026,9 +1093,10 @@ function mod.mt:panelCallback(id, params)
                 self:setItem(app, bank, controlType, bid, buttonType, result)
 
                 --------------------------------------------------------------------------------
-                -- If the action contains an image, apply it to the Touch Button:
+                -- If the action contains an image, apply it to the Touch Button (except
+                -- if it's a Snippet Action):
                 --------------------------------------------------------------------------------
-                if params.controlType == "touchButton" then
+                if params.controlType == "touchButton" and buttonType ~= "snippetAction" then
                     local choices = handler.choices():getChoices()
                     local preSuppliedImage
                     for _, v in pairs(choices) do
@@ -1044,54 +1112,20 @@ function mod.mt:panelCallback(id, params)
                         -- Write to file:
                         --------------------------------------------------------------------------------
                         local encodedIcon = self:processEncodedIcon(preSuppliedImage, controlType)
-                        self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+                        self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
-                        --------------------------------------------------------------------------------
-                        -- Update the preferences UI:
-                        --------------------------------------------------------------------------------
-                        injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]])
-
-                        --------------------------------------------------------------------------------
-                        -- Refresh the hardware:
-                        --------------------------------------------------------------------------------
-                        self.device:refresh()
                     end
                 end
 
                 --------------------------------------------------------------------------------
-                -- Update the webview:
+                -- Change the control and update the UI:
                 --------------------------------------------------------------------------------
-                if params["buttonType"] == "pressAction" then
-                    injectScript("changeValueByID('press_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "releaseAction" then
-                    injectScript("changeValueByID('release_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "leftAction" then
-                    injectScript("changeValueByID('left_action', `" .. escapeTilda(actionTitle) .. "`);")
-                    injectScript("changeValueByID('left_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "rightAction" then
-                    injectScript("changeValueByID('right_action', `" .. escapeTilda(actionTitle) .. "`);")
-                    injectScript("changeValueByID('right_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "upAction" then
-                    injectScript("changeValueByID('up_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "downAction" then
-                    injectScript("changeValueByID('down_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "doubleTapAction" then
-                    injectScript("changeValueByID('double_tap_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "twoFingerTapAction" then
-                    injectScript("changeValueByID('two_finger_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "topLeftAction" then
-                    injectScript("changeValueByID('top_left_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "bottomLeftAction" then
-                    injectScript("changeValueByID('bottom_left_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "topMiddleAction" then
-                    injectScript("changeValueByID('top_middle_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "bottomMiddleAction" then
-                    injectScript("changeValueByID('bottom_middle_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "topRightAction" then
-                    injectScript("changeValueByID('top_right_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "bottomRightAction" then
-                    injectScript("changeValueByID('bottom_right_action', `" .. escapeTilda(actionTitle) .. "`);")
-                end
+                changeControl(controlType, bid)
+
+                --------------------------------------------------------------------------------
+                -- Refresh the hardware:
+                --------------------------------------------------------------------------------
+                self.device:refresh()
             end)
 
             --------------------------------------------------------------------------------
@@ -1342,7 +1376,7 @@ function mod.mt:panelCallback(id, params)
                             table.remove(iconHistory,1)
                         end
                         local filename = getFilenameFromPath(path, true)
-                        table.insert(iconHistory, {filename, newEncodedIcon})
+                        table.insert(iconHistory, {filename, encodedIcon})
                         self.iconHistory(iconHistory)
 
                         --------------------------------------------------------------------------------
@@ -1606,40 +1640,7 @@ function mod.mt:panelCallback(id, params)
 
             local encodedImg = ""
             if value and trim(value) ~= "" then
-
-                --------------------------------------------------------------------------------
-                -- Set screen limitations:
-                --------------------------------------------------------------------------------
-                local width, height = getScreenSizeFromControlType(controlType)
-
-                --------------------------------------------------------------------------------
-                -- Make an icon using the label:
-                --------------------------------------------------------------------------------
-                local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                v[1] = {
-                    --------------------------------------------------------------------------------
-                    -- Force Black background:
-                    --------------------------------------------------------------------------------
-                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                    fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                    type = "rectangle",
-                }
-
-                v[2] = {
-                    frame = { h = 100, w = 100, x = 0, y = 0 },
-                    text = value,
-                    textAlignment = "left",
-                    textColor = { white = 1.0 },
-                    textSize = 15,
-                    type = "text",
-                }
-
-                local img = v:imageFromCanvas()
-
-                v:delete()
-                v = nil -- luacheck: ignore
-
-                encodedImg = img:encodeAsURLString(true)
+                encodedImg = buildIconFromLabel(value, controlType)
             end
 
             self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
@@ -1876,40 +1877,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     local value = items[app][b][controlType][bid].iconLabel
                     if value then
-                        --------------------------------------------------------------------------------
-                        -- Set screen limitations:
-                        --------------------------------------------------------------------------------
-                        local width, height = getScreenSizeFromControlType(controlType)
-
-                        --------------------------------------------------------------------------------
-                        -- Make an icon using the label:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                        v[1] = {
-                            --------------------------------------------------------------------------------
-                            -- Force Black background:
-                            --------------------------------------------------------------------------------
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                            type = "rectangle",
-                        }
-
-                        v[2] = {
-                            frame = { h = 100, w = 100, x = 0, y = 0 },
-                            text = value,
-                            textAlignment = "left",
-                            textColor = { white = 1.0 },
-                            textSize = 15,
-                            type = "text",
-                        }
-
-                        local img = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
-                        local encodedImg = img:encodeAsURLString(true)
-
+                        local encodedImg = buildIconFromLabel(value, controlType)
                         items[app][b][controlType][bid].encodedIconLabel = encodedImg
                     end
                 end
@@ -2313,6 +2281,62 @@ function mod.mt:panelCallback(id, params)
             -- Open Icon Folder:
             --------------------------------------------------------------------------------
             execute('open "' .. config.basePath .. '/extensions/cp/resources/assets/icons/"')
+        elseif callbackType == "editSnippet" then
+            --------------------------------------------------------------------------------
+            -- Edit Snippet:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
+            local items = self.items()
+
+            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
+                local snippetAction = items[app][bank][controlType][bid].snippetAction
+                local snippetID = snippetAction and snippetAction.action and snippetAction.action.id
+                if snippetID then
+                    local snippets = copy(mod._scriptingPreferences.snippets())
+
+                    if not snippets[snippetID] then
+                        --------------------------------------------------------------------------------
+                        -- This Snippet doesn't exist in the Snippets Preferences, so it must have
+                        -- been deleted or imported through one of the Control Surface panels.
+                        -- It will be reimported into the Snippets Preferences.
+                        --------------------------------------------------------------------------------
+                        snippets[snippetID] = {
+                            ["code"] = snippetAction.action.code
+                        }
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Change the selected Snippet:
+                    --------------------------------------------------------------------------------
+                    for label, _ in pairs(snippets) do
+                        if label == snippetID then
+                            snippets[label].selected = true
+                        else
+                            snippets[label].selected = false
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Write Preferences to disk:
+                    --------------------------------------------------------------------------------
+                    mod._scriptingPreferences.snippets(snippets)
+
+                    --------------------------------------------------------------------------------
+                    -- Open the Scripting Preferences Panel:
+                    --------------------------------------------------------------------------------
+                    mod._scriptingPreferences._manager.lastTab("scripting")
+                    mod._scriptingPreferences._manager.selectPanel("scripting")
+                    mod._scriptingPreferences._manager.show()
+
+                    return
+                end
+            end
+
+            playErrorSound()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -2332,6 +2356,7 @@ local plugin = {
         ["core.application.manager"]            = "appmanager",
         ["core.controlsurfaces.manager"]        = "manager",
         ["core.loupedeckctandlive.manager"]     = "deviceManager",
+        ["core.preferences.panels.scripting"]   = "scriptingPreferences",
     }
 }
 
@@ -2339,17 +2364,19 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
-    mod._appmanager     = deps.appmanager
+    mod._appmanager             = deps.appmanager
 
-    mod._deviceManager  = deps.deviceManager
+    mod._deviceManager          = deps.deviceManager
 
-    mod._manager        = deps.manager
-    mod._webviewLabel   = deps.manager.getLabel()
-    mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
+    mod._manager                = deps.manager
+    mod._webviewLabel           = deps.manager.getLabel()
+    mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
 
-    mod._actionmanager  = deps.actionmanager
+    mod._actionmanager          = deps.actionmanager
 
-    mod._env            = env
+    mod._scriptingPreferences   = deps.scriptingPreferences
+
+    mod._env                    = env
 
     --------------------------------------------------------------------------------
     -- Setup the seperate panels:

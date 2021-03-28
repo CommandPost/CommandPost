@@ -190,6 +190,7 @@
 		document.getElementById("spacerH").style.display = "none";
 		document.getElementById("spacerI").style.display = "none";
 		document.getElementById("spacerJ").style.display = "none";
+		document.getElementById("spacerK").style.display = "none";
 
 		document.getElementById("knobA").style.display = "none";
 		document.getElementById("knobB").style.display = "none";
@@ -212,6 +213,10 @@
 		document.getElementById("iconA").style.display = "none";
 		document.getElementById("iconB").style.display = "none";
 		document.getElementById("iconC").style.display = "none";
+
+		document.getElementById("snippetA").style.display = "none";
+		document.getElementById("snippetB").style.display = "none";
+		document.getElementById("snippetC").style.display = "none";
 
 		document.getElementById("ledColorA").style.display = "none";
 		document.getElementById("ledColorB").style.display = "none";
@@ -283,6 +288,7 @@
 		if (controlType == "touchButton") {
 			document.getElementById("spacerA").style.display = "block";
 			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("spacerK").style.display = "block";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
@@ -291,6 +297,10 @@
 			document.getElementById("iconA").style.display = "block";
 			document.getElementById("iconB").style.display = "block";
 			document.getElementById("iconC").style.display = "block";
+
+			document.getElementById("snippetA").style.display = "block";
+			document.getElementById("snippetB").style.display = "block";
+			document.getElementById("snippetC").style.display = "block";
 
 			document.getElementById("buttonResolution").style.display = "block";
 
@@ -522,6 +532,25 @@
 					bank: document.getElementById("bank").value,
 					selectedControl: document.getElementById("selectedControl").value,
 					buttonType: buttonType,
+					controlType: document.getElementById("controlType").value,
+					id: document.getElementById("id").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function editSnippet() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "editSnippet",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
 					controlType: document.getElementById("controlType").value,
 					id: document.getElementById("id").value,
 				},
@@ -965,8 +994,6 @@
 	}
 
 	function drag(ev) {
-		console.log("drag:")
-		console.log(ev)
 		ev.dataTransfer.setData("text", ev.target.parentElement.getAttribute("controlType") + ev.target.parentElement.getAttribute("controlID"));
 	}
 
@@ -1765,6 +1792,24 @@
 							<th width="229px">
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerK">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- USE SNIPPET TO GENERATE ICON: -->
+						<tr id="snippetA">
+							<th width="229px">Use Snippet to Generate Icon:</th>
+						</tr>
+						<tr id="snippetB">
+							<td width="229px"><input type="text" id="snippet_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="snippetC">
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">Examples</a></td>
 						</tr>
 
 						<!-- WHEEL SENSITIVITY: -->
