@@ -754,6 +754,15 @@ function mod.mt:updateUI(params)
             if currentSnippet and currentSnippet.action then
                 local code = currentSnippet.action.code
                 if code then
+                    --------------------------------------------------------------------------------
+                    -- Load Snippet from Snippet Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippetID = currentSnippet.action.id
+                    local snippets = mod._scriptingPreferences.snippets()
+                    if snippets[snippetID] then
+                        code = snippets[snippetID].code
+                    end
+
                     local successful, result = pcall(load(code))
                     if successful and isImage(result) then
                         currentEncodedIcon = result:encodeAsURLString(true)
