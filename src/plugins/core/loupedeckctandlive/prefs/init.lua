@@ -1346,7 +1346,7 @@ function mod.mt:panelCallback(id, params)
             -- Icon Drop Zone Clicked:
             --------------------------------------------------------------------------------
             if not doesDirectoryExist(self.lastIconPath()) then
-                self.lastIconPath(self.defaultIconPath())
+                self.lastIconPath(self.defaultIconPath)
             end
 
             local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), self.lastIconPath(), true, false, false, mod.supportedExtensions, true)
