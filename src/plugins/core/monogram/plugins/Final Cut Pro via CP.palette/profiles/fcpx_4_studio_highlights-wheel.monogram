@@ -1,0 +1,297 @@
+{
+    "version":"3.0",
+    "title":"Highlights Wheel",
+    "app":"org.latenitefilms.CommandPost.FinalCutPro",
+    "assignments":{
+        "core":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "button1":{
+                        "preset":"profiles.previous",
+                        "settings":{
+                            "info":"",
+                            "name":"profiles.previous",
+                            "press":{
+                                "dispatch":{
+                                    "type":"PREVIOUS_PROFILE"
+                                }
+                            },
+                            "pressAndHold":{
+                                "ui":{
+                                    "type":"SHOW_LAYOUT_PREVIEW"
+                                }
+                            },
+                            "pressUp":{
+                                "ui":{
+                                    "type":"HIDE_LAYOUT_PREVIEW"
+                                }
+                            }
+                        }
+                    },
+                    "button2":{
+                        "preset":"profiles.next",
+                        "settings":{
+                            "info":"",
+                            "name":"profiles.next",
+                            "press":{
+                                "dispatch":{
+                                    "type":"NEXT_PROFILE"
+                                }
+                            },
+                            "pressAndHold":{
+                                "ui":{
+                                    "type":"SHOW_LAYOUT_PREVIEW"
+                                }
+                            },
+                            "pressUp":{
+                                "ui":{
+                                    "type":"HIDE_LAYOUT_PREVIEW"
+                                }
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "button3x":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "button1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Highlights.Highlights Reset All",
+                        "settings":{
+                            "color":"#ffffff",
+                            "info":"Resets the Highlights Wheel Position, Saturation and Brightness",
+                            "name":"Color Wheels.Highlights.Highlights Reset All",
+                            "press":{
+                                "input":"Color Wheels.Highlights.Highlights Reset All"
+                            }
+                        }
+                    },
+                    "button2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Menu Items.Modify.Balance Color",
+                        "settings":{
+                            "color":"#ffffff",
+                            "info":"Triggers the Final Cut Pro Menu Item: Modify > Balance Color",
+                            "name":"Menu Items.Modify.Balance Color",
+                            "press":{
+                                "input":"Menu Items.Modify.Balance Color"
+                            }
+                        }
+                    },
+                    "button3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Menu Items.View.Show in Viewer.Video Scopes",
+                        "settings":{
+                            "color":"#ffffff",
+                            "info":"Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Video Scopes",
+                            "name":"Menu Items.View.Show in Viewer.Video Scopes",
+                            "press":{
+                                "input":"Menu Items.View.Show in Viewer.Video Scopes"
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "dial3x":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "dial1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Temperature",
+                        "settings":{
+                            "doubleTap":[
+                                "Color Wheels.Temperature",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Temperature slider",
+                            "name":"Color Wheels.Temperature",
+                            "press":[
+                                "Color Wheels.Temperature",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Temperature",
+                                "step":250
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Temperature",
+                                "step":25
+                            }
+                        }
+                    },
+                    "dial2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Tint",
+                        "settings":{
+                            "doubleTap":[
+                                "Color Wheels.Tint",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Tint slider",
+                            "name":"Color Wheels.Tint",
+                            "press":[
+                                "Color Wheels.Tint",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Tint",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Tint",
+                                "step":1
+                            }
+                        }
+                    },
+                    "dial3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Hue",
+                        "settings":{
+                            "doubleTap":[
+                                "Color Wheels.Hue",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Hue slider",
+                            "name":"Color Wheels.Hue",
+                            "press":[
+                                "Color Wheels.Hue",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Hue",
+                                "step":1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Hue",
+                                "step":0.1
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            },
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "dial1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Highlights.Highlights Saturation",
+                        "settings":{
+                            "doubleTap":[
+                                "Color Wheels.Highlights.Highlights Saturation",
+                                "reset"
+                            ],
+                            "info":"Changes the Highlights Saturation",
+                            "name":"Color Wheels.Highlights.Highlights Saturation",
+                            "press":[
+                                "Color Wheels.Highlights.Highlights Saturation",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Highlights.Highlights Saturation",
+                                "step":0.1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Highlights.Highlights Saturation",
+                                "step":0.01
+                            }
+                        }
+                    },
+                    "dial2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Highlights.Highlights Brightness",
+                        "settings":{
+                            "doubleTap":[
+                                "Color Wheels.Highlights.Highlights Brightness",
+                                "reset"
+                            ],
+                            "info":"Changes the Highlights Brightness",
+                            "name":"Color Wheels.Highlights.Highlights Brightness",
+                            "press":[
+                                "Color Wheels.Highlights.Highlights Brightness",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Highlights.Highlights Brightness",
+                                "step":0.1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Highlights.Highlights Brightness",
+                                "step":0.01
+                            }
+                        }
+                    },
+                    "dial3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Mix",
+                        "settings":{
+                            "color":"#ffffff",
+                            "doubleTap":[
+                                "Color Wheels.Mix",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Mix slider",
+                            "name":"Color Wheels.Mix",
+                            "press":{
+                                "action":"reset",
+                                "input":"Color Wheels.Mix"
+                            },
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Mix",
+                                "step":0.1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Mix",
+                                "step":0.01
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "orbiter":[
+            {
+                "fixedPosition":true,
+                "settings":{
+                    "info":"Adjusts the Highlights Color Wheel.<br><br>Turn = Highlights Brightness<br>Tilt X = Highlights Wheel Horizontal<br>Tilt Y = Highlights Wheel Vertical",
+                    "name":"Color Wheels.Highlights Color Wheel",
+                    "label": "Highlights Color Wheel",
+                    "nudgeSpeedMs":100,
+                    "tiltMode":2,
+                    "tiltSensitivity":2,
+                    "tiltX":{
+                    	"input":"Color Wheels.Highlights.Highlights Horizontal"
+                    },
+                    "tiltY":{
+                    	"input":"Color Wheels.Highlights.Highlights Vertical"
+                    },
+                    "turn":{
+                    	"input":"Color Wheels.Highlights.Highlights Brightness"
+                    },
+                    "turnSensitivity":9
+                }
+            }
+        ]
+    },
+    "tags":[
+        "Color Wheels"
+    ],
+    "notes":"Studio Console"
+}

@@ -1,0 +1,29 @@
+{
+    "bundle": [
+        "com.apple.FinalCut",
+        "com.apple.finalcut",
+        "com.apple.FinalCutTrial",
+        "com.apple.finalcuttrial"
+    ],
+    "category": [
+        "video"
+    ],
+    "connection": [
+        {
+            "name": "CommandPost",
+            "port": 51234,
+            "type": "udp"
+        }
+    ],
+    "help": {
+        "url": "https://commandpost.io"
+    },
+    "id": "org.latenitefilms.CommandPost.FinalCutPro",
+    "name": "Final Cut Pro (via CP)",
+    "workflows": [
+        "Color Board",
+        "Color Wheels",
+        "Info Inspector",
+        "Video Inspector"
+    ]
+}
