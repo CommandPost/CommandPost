@@ -1,0 +1,303 @@
+{
+    "version":"3.0",
+    "title":"Shadows Wheel",
+    "app":"org.latenitefilms.CommandPost.FinalCutPro",
+    "assignments":{
+        "core":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "button1":{
+                        "preset":"profiles.previous",
+                        "settings":{
+                            "info":"",
+                            "name":"profiles.previous",
+                            "press":{
+                                "dispatch":{
+                                    "type":"PREVIOUS_PROFILE"
+                                }
+                            },
+                            "pressAndHold":{
+                                "ui":{
+                                    "type":"SHOW_LAYOUT_PREVIEW"
+                                }
+                            },
+                            "pressUp":{
+                                "ui":{
+                                    "type":"HIDE_LAYOUT_PREVIEW"
+                                }
+                            }
+                        }
+                    },
+                    "button2":{
+                        "preset":"profiles.next",
+                        "settings":{
+                            "info":"",
+                            "name":"profiles.next",
+                            "press":{
+                                "dispatch":{
+                                    "type":"NEXT_PROFILE"
+                                }
+                            },
+                            "pressAndHold":{
+                                "ui":{
+                                    "type":"SHOW_LAYOUT_PREVIEW"
+                                }
+                            },
+                            "pressUp":{
+                                "ui":{
+                                    "type":"HIDE_LAYOUT_PREVIEW"
+                                }
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    "color":"#0000ff"
+                }
+            }
+        ],
+        "button3x":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "button1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Shadows.Shadows Reset All",
+                        "settings":{
+                            "color":"#0000ff",
+                            "info":"Resets the Shadows Wheel Position, Saturation and Brightness",
+                            "name":"Color Wheels.Shadows.Shadows Reset All",
+                            "press":{
+                                "input":"Color Wheels.Shadows.Shadows Reset All"
+                            }
+                        }
+                    },
+                    "button2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Menu Items.Modify.Balance Color",
+                        "settings":{
+                            "color":"#0000ff",
+                            "info":"Triggers the Final Cut Pro Menu Item: Modify > Balance Color",
+                            "name":"Menu Items.Modify.Balance Color",
+                            "press":{
+                                "input":"Menu Items.Modify.Balance Color"
+                            }
+                        }
+                    },
+                    "button3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Menu Items.View.Show in Viewer.Video Scopes",
+                        "settings":{
+                            "color":"#0000ff",
+                            "info":"Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Video Scopes",
+                            "name":"Menu Items.View.Show in Viewer.Video Scopes",
+                            "press":{
+                                "input":"Menu Items.View.Show in Viewer.Video Scopes"
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "dial3x":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "dial1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Temperature",
+                        "settings":{
+                            "color":"#0000ff",
+                            "doubleTap":[
+                                "Color Wheels.Temperature",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Temperature slider",
+                            "name":"Color Wheels.Temperature",
+                            "press":{
+                                "action":"reset",
+                                "input":"Color Wheels.Temperature"
+                            },
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Temperature",
+                                "step":250
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Temperature",
+                                "step":25
+                            }
+                        }
+                    },
+                    "dial2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Tint",
+                        "settings":{
+                            "color":"#0000ff",
+                            "doubleTap":[
+                                "Color Wheels.Tint",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Tint slider",
+                            "name":"Color Wheels.Tint",
+                            "press":{
+                                "action":"reset",
+                                "input":"Color Wheels.Tint"
+                            },
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Tint",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Tint",
+                                "step":1
+                            }
+                        }
+                    },
+                    "dial3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Hue",
+                        "settings":{
+                            "color":"#0000ff",
+                            "doubleTap":[
+                                "Color Wheels.Hue",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Hue slider",
+                            "name":"Color Wheels.Hue",
+                            "press":{
+                                "action":"reset",
+                                "input":"Color Wheels.Hue"
+                            },
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Hue",
+                                "step":1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Hue",
+                                "step":0.1
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            },
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "dial1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Shadows.Shadows Saturation",
+                        "settings":{
+                            "color":"#0000ff",
+                            "doubleTap":[
+                                "Color Wheels.Shadows.Shadows Saturation",
+                                "reset"
+                            ],
+                            "info":"Changes the Shadows Saturation",
+                            "name":"Color Wheels.Shadows.Shadows Saturation",
+                            "press":[
+                                "Color Wheels.Shadows.Shadows Saturation",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Shadows.Shadows Saturation",
+                                "step":0.1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Shadows.Shadows Saturation",
+                                "step":0.01
+                            }
+                        }
+                    },
+                    "dial2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Shadows.Shadows Brightness",
+                        "settings":{
+                            "color":"#0000ff",
+                            "doubleTap":[
+                                "Color Wheels.Shadows.Shadows Brightness",
+                                "reset"
+                            ],
+                            "info":"Changes the Shadows Brightness",
+                            "name":"Color Wheels.Shadows.Shadows Brightness",
+                            "press":[
+                                "Color Wheels.Shadows.Shadows Brightness",
+                                "reset"
+                            ],
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Shadows.Shadows Brightness",
+                                "step":0.1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Shadows.Shadows Brightness",
+                                "step":0.01
+                            }
+                        }
+                    },
+                    "dial3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Color Wheels.Mix",
+                        "settings":{
+                            "color":"#0000ff",
+                            "doubleTap":[
+                                "Color Wheels.Mix",
+                                "reset"
+                            ],
+                            "info":"Controls the Color Wheels Mix slider",
+                            "name":"Color Wheels.Mix",
+                            "press":{
+                                "action":"reset",
+                                "input":"Color Wheels.Mix"
+                            },
+                            "pressAndTurn":{
+                                "input":"Color Wheels.Mix",
+                                "step":0.1
+                            },
+                            "turn":{
+                                "input":"Color Wheels.Mix",
+                                "step":0.01
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "orbiter":[
+            {
+                "fixedPosition":true,
+                "settings":{
+                    "color":"#0000ff",
+                    "info":"Adjusts the Shadows Color Wheel.<br><br>Turn = Shadows Brightness<br>Tilt X = Shadows Wheel Horizontal<br>Tilt Y = Shadows Wheel Vertical",
+                    "name":"Color Wheels.Shadows Color Wheel",
+                    "label": "Shadows Color Wheel",
+                    "nudgeSpeedMs":100,
+                    "tiltMode":2,
+                    "tiltSensitivity":2,
+                    "tiltX":{
+                        "input":"Color Wheels.Shadows.Shadows Horizontal"
+                    },
+                    "tiltY":{
+                        "input":"Color Wheels.Shadows.Shadows Vertical"
+                    },
+                    "turn":{
+                        "input":"Color Wheels.Shadows.Shadows Brightness"
+                    },
+                    "turnSensitivity":9
+                }
+            }
+        ]
+    },
+    "tags":[
+        "Color Wheels"
+    ],
+    "notes":"Studio Console"
+}

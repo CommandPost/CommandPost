@@ -1,0 +1,287 @@
+{
+    "version":"3.0",
+    "title":"Editing",
+    "app":"org.latenitefilms.CommandPost.FinalCutPro",
+    "assignments":{
+        "core":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "button1":{
+                        "preset":"profiles.previous",
+                        "settings":{
+                            "info":"",
+                            "name":"profiles.previous",
+                            "press":{
+                                "dispatch":{
+                                    "type":"PREVIOUS_PROFILE"
+                                }
+                            },
+                            "pressAndHold":{
+                                "ui":{
+                                    "type":"SHOW_LAYOUT_PREVIEW"
+                                }
+                            },
+                            "pressUp":{
+                                "ui":{
+                                    "type":"HIDE_LAYOUT_PREVIEW"
+                                }
+                            }
+                        }
+                    },
+                    "button2":{
+                        "preset":"profiles.next",
+                        "settings":{
+                            "info":"",
+                            "name":"profiles.next",
+                            "press":{
+                                "dispatch":{
+                                    "type":"NEXT_PROFILE"
+                                }
+                            },
+                            "pressAndHold":{
+                                "ui":{
+                                    "type":"SHOW_LAYOUT_PREVIEW"
+                                }
+                            },
+                            "pressUp":{
+                                "ui":{
+                                    "type":"HIDE_LAYOUT_PREVIEW"
+                                }
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    "color":"#00ff00"
+                }
+            }
+        ],
+        "button3x":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "button1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Menu Items.Trim.Blade All",
+                        "settings":{
+                            "color":"#00ff00",
+                            "info":"Triggers the Final Cut Pro Menu Item: Trim > Blade All",
+                            "name":"Menu Items.Trim.Blade All",
+                            "press":{
+                                "input":"Menu Items.Trim.Blade All"
+                            }
+                        }
+                    },
+                    "button2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Command Set Shortcuts.Playback/Navigation.Play/Pause",
+                        "settings":{
+                            "color":"#00ff00",
+                            "info":"Start or pause playback",
+                            "name":"Command Set Shortcuts.Playback/Navigation.Play/Pause",
+                            "press":{
+                                "input":"Command Set Shortcuts.Playback/Navigation.Play/Pause"
+                            }
+                        }
+                    },
+                    "button3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Menu Items.Mark.Delete",
+                        "settings":{
+                            "color":"#00ff00",
+                            "info":"Triggers the Final Cut Pro Menu Item: Mark > Delete",
+                            "name":"Menu Items.Mark.Delete",
+                            "press":{
+                                "input":"Menu Items.Mark.Delete"
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "dial3x":[
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "dial1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Video Inspector.Compositing.Opacity",
+                        "settings":{
+                            "color":"#00ff00",
+                            "doubleTap":[
+                                "Video Inspector.Compositing.Opacity",
+                                "reset"
+                            ],
+                            "info":"Changes the opacity of the selected clip",
+                            "name":"Video Inspector.Compositing.Opacity",
+                            "press":{
+                                "action":"reset",
+                                "input":"Video Inspector.Compositing.Opacity"
+                            },
+                            "pressAndTurn":{
+                                "input":"Video Inspector.Compositing.Opacity",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Video Inspector.Compositing.Opacity",
+                                "step":1
+                            }
+                        }
+                    },
+                    "dial2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Video Inspector.Transform.Position X",
+                        "settings":{
+                            "color":"#00ff00",
+                            "doubleTap":[
+                                "Video Inspector.Transform.Position X",
+                                "reset"
+                            ],
+                            "info":"Transforms the X position of the selected clip",
+                            "name":"Video Inspector.Transform.Position X",
+                            "press":{
+                                "action":"reset",
+                                "input":"Video Inspector.Transform.Position X"
+                            },
+                            "pressAndTurn":{
+                                "input":"Video Inspector.Transform.Position X",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Video Inspector.Transform.Position X",
+                                "step":1
+                            }
+                        }
+                    },
+                    "dial3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Video Inspector.Transform.Position Y",
+                        "settings":{
+                            "color":"#00ff00",
+                            "doubleTap":[
+                                "Video Inspector.Transform.Position Y",
+                                "reset"
+                            ],
+                            "info":"Transforms the Y position of the selected clip",
+                            "name":"Video Inspector.Transform.Position Y",
+                            "press":{
+                                "action":"reset",
+                                "input":"Video Inspector.Transform.Position Y"
+                            },
+                            "pressAndTurn":{
+                                "input":"Video Inspector.Transform.Position Y",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Video Inspector.Transform.Position Y",
+                                "step":1
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            },
+            {
+                "fixedPosition":true,
+                "submodules":{
+                    "dial1":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Video Inspector.Transform.Rotation",
+                        "settings":{
+                            "color":"#00ff00",
+                            "doubleTap":[
+                                "Video Inspector.Transform.Rotation",
+                                "reset"
+                            ],
+                            "info":"Transforms the rotation of the selected clip",
+                            "name":"Video Inspector.Transform.Rotation",
+                            "press":{
+                                "action":"reset",
+                                "input":"Video Inspector.Transform.Rotation"
+                            },
+                            "pressAndTurn":{
+                                "input":"Video Inspector.Transform.Rotation",
+                                "step":-1
+                            },
+                            "turn":{
+                                "input":"Video Inspector.Transform.Rotation",
+                                "step":-0.1
+                            }
+                        }
+                    },
+                    "dial2":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Video Inspector.Transform.Scale (All)",
+                        "settings":{
+                            "color":"#00ff00",
+                            "doubleTap":[
+                                "Video Inspector.Transform.Scale (All)",
+                                "reset"
+                            ],
+                            "info":"Transforms the X and Y scale of the selected clip",
+                            "name":"Video Inspector.Transform.Scale (All)",
+                            "press":{
+                                "action":"reset",
+                                "input":"Video Inspector.Transform.Scale (All)"
+                            },
+                            "pressAndTurn":{
+                                "input":"Video Inspector.Transform.Scale (All)",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Video Inspector.Transform.Scale (All)",
+                                "step":1
+                            }
+                        }
+                    },
+                    "dial3":{
+                        "app":"org.latenitefilms.CommandPost.FinalCutPro",
+                        "preset":"Timeline.Nudge",
+                        "settings":{
+                            "color":"#00ff00",
+                            "info":"Turn the dial to nudge the select clip frame-by-frame. Press and turn to move 10 frames.",
+                            "name":"Timeline.Nudge",
+                            "pressAndTurn":{
+                                "input":"Timeline.Nudge",
+                                "step":10
+                            },
+                            "turn":{
+                                "input":"Timeline.Nudge",
+                                "step":1
+                            }
+                        }
+                    }
+                },
+                "settings":{
+                    
+                }
+            }
+        ],
+        "orbiter":[
+            {
+                "fixedPosition":true,
+                "settings":{
+                    "color":"#00ff00",
+                    "info":"Turn to move through the timeline by 10 frames at a time.\n\nNote: Tilt is unassigned.",
+                    "name":"Timeline.Jog (10 frames)",
+                    "label": "Jog (10 frames)",
+                    "turn":{
+                        "input":"Timeline.Jog",
+                        "step":10
+                    },
+                    "turnSensitivity":9
+                }
+            }
+        ]
+    },
+    "tags":[
+        "Info Inspector", "Video Inspector"
+    ],
+    "notes":"Studio Console, Master Console"
+}

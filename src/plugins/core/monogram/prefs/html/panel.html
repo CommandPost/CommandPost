@@ -1,0 +1,112 @@
+<style>{(css/monogram.css)}</style>
+<script>
+	function updateUI(){
+		try {
+			var result = {
+				id: "monogramPanelCallback",
+				params: {
+					type: "updateUI",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeEnabled(){
+		try {
+			var result = {
+				id: "monogramPanelCallback",
+				params: {
+					type: "changeEnabled",
+					enabled: document.getElementById("enabled").checked
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeApplication(){
+		try {
+			var result = {
+				id: "monogramPanelCallback",
+				params: {
+					type: "changeApplication",
+					application: document.getElementById("application").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressAction(buttonID){
+		try {
+			var result = {
+				id: "monogramPanelCallback",
+				params: {
+					type: "updateAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressClear(buttonID){
+		try {
+			var result = {
+				id: "monogramPanelCallback",
+				params: {
+					type: "clearAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<div id="monogramControls" class="uiItem">
+	<div id="monogramGroup" class="monogramGroup">
+		<table class="monogram">
+			<thead>
+				<tr>
+					<th class="monogramRowFavourite">{{ i18n("identification") }}</th>
+					<th class="monogramRowAction">{{ i18n("action") }}</th>
+					<th class="monogramRowActionButton"></th>
+				</tr>
+			</thead>
+			<tbody>
+			{%
+				for i=1,maxItems,1 do
+			%}
+				<tr>
+					<td class="monogramRowFavourite">
+						{{ i18n("monogram") }} {{ i18n("favourite") }} #{{ i }}
+					</td>
+					<td class="monogramRowAction">
+						<input type="text" id="label_{{ i }}" class="monogramActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td class="monogramRowActionButton">
+						<a href="#" class="button monogramActionButton" onclick="pressAction('{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button monogramActionButton" onclick="pressClear('{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+				</tr>
+			{%
+				end
+			%}
+			</tbody>
+		</table>
+	</div>
+</div>
+<script>
+	updateUI();
+</script>
