@@ -60,7 +60,7 @@ local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
 -- SNIPPET_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets"
+local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
 
 --- plugins.core.loupedeckctandlive.prefs.supportedExtensions -> string
 --- Variable
