@@ -385,6 +385,19 @@ function plugin.init(deps, env)
         :onExecute(function(action)
             local snippets = mod.snippets()
             local code = snippets[action.id] and snippets[action.id].code
+
+            --------------------------------------------------------------------------------
+            -- This Snippet doesn't exist in the Snippets Preferences, so it must have
+            -- been deleted or imported through one of the Control Surface panels.
+            -- It will be reimported into the Snippets Preferences.
+            --------------------------------------------------------------------------------
+            if not code then
+                snippets[action.id] = {
+                    ["code"] = action.code
+                }
+                code = action.code
+            end
+
             if code then
                 local successful, message = pcall(load(code))
                 if not successful then

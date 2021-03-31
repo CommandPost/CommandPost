@@ -10,6 +10,7 @@ local log                       = require "hs.logger".new "ldCT"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
+local canvas                    = require "hs.canvas"
 local eventtap                  = require "hs.eventtap"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
@@ -27,6 +28,7 @@ local prop                      = require "cp.prop"
 local tools                     = require "cp.tools"
 
 local applicationsForBundleID   = application.applicationsForBundleID
+local delayed                   = timer.delayed
 local displayNotification       = dialog.displayNotification
 local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
@@ -36,6 +38,7 @@ local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
+local isImage                   = tools.isImage
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
@@ -43,6 +46,11 @@ local readString                = plist.readString
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
+
+-- REFRESH_THE_SCREEN_FREQUENCY -> number
+-- Constant
+-- How often we should forcefully refresh the screen in seconds.
+local REFRESH_THE_SCREEN_FREQUENCY = 1
 
 -- LD_BUNDLE_ID -> string
 -- Constant
@@ -328,6 +336,13 @@ function mod.new(deviceType)
     --- Enable or disable the automatic switching of applications.
     o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function() o:refresh() end)
 
+    --- plugins.core.loupedeckctandlive.manager.refreshTimer -> hs.timer
+    --- Field
+    --- A timer to automatically refresh the screen.
+    o.refreshTimer = timer.new(REFRESH_THE_SCREEN_FREQUENCY, function()
+        o:refresh()
+    end)
+
     --- plugins.core.loupedeckctandlive.manager.enabled <cp.prop: boolean>
     --- Field
     --- Is Loupedeck support enabled?
@@ -336,6 +351,7 @@ function mod.new(deviceType)
             o.appWatcher:start()
             o.driveWatcher:start()
             o.sleepWatcher:start()
+            o.refreshTimer:start()
 
             local device = o.getDevice()
             device:connect()
@@ -346,6 +362,7 @@ function mod.new(deviceType)
             o.appWatcher:stop()
             o.driveWatcher:stop()
             o.sleepWatcher:stop()
+            o.refreshTimer:stop()
 
             if o.device then
                 --------------------------------------------------------------------------------
@@ -571,10 +588,10 @@ function mod.new(deviceType)
 
                 items = o.items() -- Reload items
                 local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
-                displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
+                displayNotification(i18n(o.i18nID) .. " " .. i18n("bank") .. ": " .. label)
             end
         end)
-        :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
+        :onActionId(function(action) return o.id .. "Bank" .. action.id end)
 
     --------------------------------------------------------------------------------
     -- Actions to Manually Change Application:
@@ -832,6 +849,65 @@ function mod.mt:refresh(dueToAppChange)
         end
 
         --------------------------------------------------------------------------------
+        -- If there's a Snippet to generate the icon, use that instead:
+        --------------------------------------------------------------------------------
+        local snippetAction = thisButton and thisButton.snippetAction
+        if snippetAction and snippetAction.action then
+            local code = snippetAction.action.code
+            if code then
+                --------------------------------------------------------------------------------
+                -- Use the latest Snippet from the Snippets Preferences if it exists:
+                --------------------------------------------------------------------------------
+                local snippets = mod.scriptingPreferences.snippets()
+                local savedSnippet = snippets[snippetAction.action.id]
+                if savedSnippet and savedSnippet.code then
+                    code = savedSnippet.code
+                end
+
+                local successful, result = pcall(load(code))
+                if successful and isImage(result) then
+                    local size = result:size()
+                    if size.w == 90 and size.h == 90 then
+                        --------------------------------------------------------------------------------
+                        -- The generated image is already 90x90 so proceed:
+                        --------------------------------------------------------------------------------
+                        encodedIcon = result:encodeAsURLString(true)
+                    else
+                        --------------------------------------------------------------------------------
+                        -- The generated image is not 90x90 so process:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
+
+                        --------------------------------------------------------------------------------
+                        -- Black Background:
+                        --------------------------------------------------------------------------------
+                        v[1] = {
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, hex = "#000000" },
+                            type = "rectangle",
+                        }
+
+                        --------------------------------------------------------------------------------
+                        -- Icon - Scaled as per preferences:
+                        --------------------------------------------------------------------------------
+                        v[2] = {
+                          type="image",
+                          image = result,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
+
+                        local fixedImage = v:imageFromCanvas()
+
+                        v:delete()
+                        v = nil -- luacheck: ignore
+
+                        encodedIcon = fixedImage:encodeAsURLString(true)
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
         -- Only update if the screen has changed to save bandwidth:
         --------------------------------------------------------------------------------
         if encodedIcon and self.cachedTouchScreenButtonValues[id] == encodedIcon then
@@ -857,6 +933,70 @@ function mod.mt:refresh(dueToAppChange)
     success = false
     local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
     local encodedIcon = thisWheel and thisWheel.encodedIcon
+
+
+    --------------------------------------------------------------------------------
+    -- If there's a Snippet to generate the icon, use that instead:
+    --------------------------------------------------------------------------------
+    local snippetAction = thisWheel and thisWheel.snippetAction
+    if snippetAction and snippetAction.action then
+        local code = snippetAction.action.code
+        if code then
+            --------------------------------------------------------------------------------
+            -- Use the latest Snippet from the Snippets Preferences if it exists:
+            --------------------------------------------------------------------------------
+            local snippets = mod.scriptingPreferences.snippets()
+            local savedSnippet = snippets[snippetAction.action.id]
+            if savedSnippet and savedSnippet.code then
+                code = savedSnippet.code
+            end
+
+            local successful, result = pcall(load(code))
+            if successful and isImage(result) then
+                local size = result:size()
+                if size.w == 240 and size.h == 240 then
+                    --------------------------------------------------------------------------------
+                    -- The generated image is already 240x240 so proceed:
+                    --------------------------------------------------------------------------------
+                    encodedIcon = result:encodeAsURLString(true)
+                else
+                    --------------------------------------------------------------------------------
+                    -- The generated image is not 240x240 so process:
+                    --------------------------------------------------------------------------------
+                    local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
+
+                    --------------------------------------------------------------------------------
+                    -- Black Background:
+                    --------------------------------------------------------------------------------
+                    v[1] = {
+                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                        fillColor = { alpha = 1, hex = "#000000" },
+                        type = "rectangle",
+                    }
+
+                    --------------------------------------------------------------------------------
+                    -- Icon - scaled to fit:
+                    --------------------------------------------------------------------------------
+                    v[2] = {
+                      type="image",
+                      image = result,
+                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                    }
+
+                    local fixedImage = v:imageFromCanvas()
+
+                    v:delete()
+                    v = nil -- luacheck: ignore
+
+                    encodedIcon = fixedImage:encodeAsURLString(true)
+                end
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Only update if the screen has changed to save bandwidth:
+    --------------------------------------------------------------------------------
     if encodedIcon and self.cachedWheelScreen == encodedIcon then
         success = true
     elseif encodedIcon and self.cachedWheelScreen ~= encodedIcon then
@@ -923,16 +1063,21 @@ function mod.mt:refresh(dueToAppChange)
     end
 end
 
--- executeAction(thisAction) -> boolean
--- Function
--- Executes an action.
---
--- Parameters:
---  * thisAction - The action to execute
---
--- Returns:
---  * `true` if successful otherwise `false`
-local function executeAction(thisAction)
+--- plugins.core.loupedeckctandlive.manager:executeAction(thisAction) -> boolean
+--- Function
+--- Executes an action.
+---
+--- Parameters:
+---  * thisAction - The action to execute
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
+function mod.mt:executeAction(thisAction)
+    if not self._delayedTimer then
+        self._delayedTimer = delayed.new(0.1, function()
+            self:refresh()
+        end)
+    end
     if thisAction then
         local handlerID = thisAction.handlerID
         local action = thisAction.action
@@ -941,6 +1086,7 @@ local function executeAction(thisAction)
             if handler then
                 doAfter(0, function()
                     handler:execute(action)
+                    self._delayedTimer:start()
                 end)
                 return true
             end
@@ -1116,42 +1262,65 @@ function mod.mt:callback(data)
             -- LED BUTTON PRESS:
             --------------------------------------------------------------------------------
             local thisButton = bank.ledButton and bank.ledButton[buttonID]
-            if thisButton and executeAction(thisButton.pressAction) then
 
+            --------------------------------------------------------------------------------
+            -- Vibrate if needed:
+            --------------------------------------------------------------------------------
+            if thisButton and thisButton.vibratePress then
+                self.device:vibrate(tonumber(thisButton.vibratePress))
+            end
+
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisButton and self:executeAction(thisButton.pressAction) then
+                --------------------------------------------------------------------------------
                 -- Repeat if necessary:
+                --------------------------------------------------------------------------------
                 if thisButton.repeatPressActionUntilReleased then
                     self.repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
-                        executeAction(thisButton.pressAction)
+                        self:executeAction(thisButton.pressAction)
                     end)
                 end
 
                 return
             end
 
-            -- Vibrate if needed:
-            if thisButton and thisButton.vibratePress then
-                self.device:vibrate(tonumber(thisButton.vibratePress))
-            end
-
             --------------------------------------------------------------------------------
             -- KNOB BUTTON PRESS:
             --------------------------------------------------------------------------------
             local thisKnob = bank.knob and bank.knob[buttonID]
-            if thisKnob and executeAction(thisKnob.pressAction) then
-                return
-            end
 
+            --------------------------------------------------------------------------------
             -- Vibrate if needed:
+            --------------------------------------------------------------------------------
             if thisKnob and thisKnob.vibratePress then
                 self.device:vibrate(tonumber(thisKnob.vibratePress))
             end
+
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisKnob and self:executeAction(thisKnob.pressAction) then
+                return
+            end
+
         elseif data.id == loupedeck.event.BUTTON_PRESS and data.direction == "up" then
             --------------------------------------------------------------------------------
             -- LED BUTTON RELEASE:
             --------------------------------------------------------------------------------
             local thisButton = bank.ledButton and bank.ledButton[buttonID]
 
+            --------------------------------------------------------------------------------
+            -- Vibrate if needed:
+            --------------------------------------------------------------------------------
+            if thisButton and thisButton.vibrateRelease then
+                self.device:vibrate(tonumber(thisButton.vibrateRelease))
+            end
+
+            --------------------------------------------------------------------------------
             -- Stop repeating:
+            --------------------------------------------------------------------------------
             if thisButton and thisButton.repeatPressActionUntilReleased then
                 if self.repeatTimers[buttonID] then
                     self.repeatTimers[buttonID]:stop()
@@ -1159,37 +1328,40 @@ function mod.mt:callback(data)
                 end
             end
 
-            if thisButton and executeAction(thisButton.releaseAction) then
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisButton and self:executeAction(thisButton.releaseAction) then
                 return
-            end
-
-            -- Vibrate if needed:
-            if thisButton and thisButton.vibrateRelease then
-                self.device:vibrate(tonumber(thisButton.vibrateRelease))
             end
 
             --------------------------------------------------------------------------------
             -- KNOB BUTTON RELEASE:
             --------------------------------------------------------------------------------
             local thisKnob = bank.knob and bank.knob[buttonID]
-            if thisKnob and executeAction(thisKnob.releaseAction) then
-                return
-            end
 
+            --------------------------------------------------------------------------------
             -- Vibrate if needed:
+            --------------------------------------------------------------------------------
             if thisKnob and thisKnob.vibrateRelease then
                 self.device:vibrate(tonumber(thisKnob.vibrateRelease))
+            end
+
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisKnob and self:executeAction(thisKnob.releaseAction) then
+                return
             end
         elseif data.id == loupedeck.event.ENCODER_MOVE then
             --------------------------------------------------------------------------------
             -- KNOB TURN:
             --------------------------------------------------------------------------------
             local thisKnob = bank.knob and bank.knob[buttonID]
-            if thisKnob and executeAction(thisKnob[data.direction.."Action"]) then
-                return
-            end
 
+            --------------------------------------------------------------------------------
             -- Vibrate if needed:
+            --------------------------------------------------------------------------------
             if data.direction == "left" and thisKnob and thisKnob.vibrateLeft then
                 self.device:vibrate(tonumber(thisKnob.vibrateLeft))
             end
@@ -1197,17 +1369,33 @@ function mod.mt:callback(data)
                 self.device:vibrate(tonumber(thisKnob.vibrateRight))
             end
 
-            local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
-            if thisJogWheel and executeAction(thisJogWheel[data.direction.."Action"]) then
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisKnob and self:executeAction(thisKnob[data.direction.."Action"]) then
                 return
             end
 
+            --------------------------------------------------------------------------------
+            -- JOG WHEEL TURN:
+            --------------------------------------------------------------------------------
+            local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
+
+            --------------------------------------------------------------------------------
             -- Vibrate if needed:
+            --------------------------------------------------------------------------------
             if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft then
                 self.device:vibrate(tonumber(thisJogWheel.vibrateLeft))
             end
             if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight then
                 self.device:vibrate(tonumber(thisJogWheel.vibrateRight))
+            end
+
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisJogWheel and self:executeAction(thisJogWheel[data.direction.."Action"]) then
+                return
             end
         elseif data.id == loupedeck.event.SCREEN_PRESSED then
             --------------------------------------------------------------------------------
@@ -1215,20 +1403,25 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
 
+            --------------------------------------------------------------------------------
             -- Vibrate if needed:
+            --------------------------------------------------------------------------------
             if thisTouchButton and thisTouchButton.vibratePress then
                 self.device:vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
-            if thisTouchButton and executeAction(thisTouchButton.pressAction) then
-
+            --------------------------------------------------------------------------------
+            -- Trigger Action:
+            --------------------------------------------------------------------------------
+            if thisTouchButton and self:executeAction(thisTouchButton.pressAction) then
+                --------------------------------------------------------------------------------
                 -- Repeat if necessary:
+                --------------------------------------------------------------------------------
                 if thisTouchButton.repeatPressActionUntilReleased then
                     self.repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
-                        executeAction(thisTouchButton.pressAction)
+                        self:executeAction(thisTouchButton.pressAction)
                     end)
                 end
-
                 return
             end
 
@@ -1245,9 +1438,9 @@ function mod.mt:callback(data)
                         -- already dragging. Which way?
                         local yDiff = data.y - self.cacheLeftScreenYAxis
                         if yDiff < 0-dragMinimumDiff then
-                            executeAction(thisSideScreen.upAction)
+                            self:executeAction(thisSideScreen.upAction)
                         elseif yDiff > 0+dragMinimumDiff then
-                            executeAction(thisSideScreen.downAction)
+                            self:executeAction(thisSideScreen.downAction)
                         end
                     end
                     self.cacheLeftScreenYAxis = data.y
@@ -1259,7 +1452,7 @@ function mod.mt:callback(data)
                         if self.leftScreenDoubleTapTriggered and self.tookFingerOffLeftScreen then
                             self.leftScreenDoubleTapTriggered = false
                             self.tookFingerOffLeftScreen = false
-                            executeAction(thisSideScreen.doubleTapAction)
+                            self:executeAction(thisSideScreen.doubleTapAction)
                         else
                             self.leftScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
@@ -1273,7 +1466,7 @@ function mod.mt:callback(data)
                     -- TWO FINGER TAP:
                     --------------------------------------------------------------------------------
                     if data.multitouch == 1 then
-                        executeAction(thisSideScreen.twoFingerTapAction)
+                        self:executeAction(thisSideScreen.twoFingerTapAction)
                     end
                 end
             end
@@ -1291,9 +1484,9 @@ function mod.mt:callback(data)
                         -- already dragging. Which way?
                         local yDiff = data.y - self.cacheRightScreenYAxis
                         if yDiff < 0-dragMinimumDiff then
-                            executeAction(thisSideScreen.upAction)
+                            self:executeAction(thisSideScreen.upAction)
                         elseif yDiff > 0+dragMinimumDiff then
-                            executeAction(thisSideScreen.downAction)
+                            self:executeAction(thisSideScreen.downAction)
                         end
                     end
                     self.cacheRightScreenYAxis = data.y
@@ -1305,7 +1498,7 @@ function mod.mt:callback(data)
                         if self.rightScreenDoubleTapTriggered and self.tookFingerOffRightScreen then
                             self.rightScreenDoubleTapTriggered = false
                             self.tookFingerOffRightScreen = false
-                            executeAction(thisSideScreen.doubleTapAction)
+                            self:executeAction(thisSideScreen.doubleTapAction)
                         else
                             self.rightScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
@@ -1319,7 +1512,7 @@ function mod.mt:callback(data)
                     -- TWO FINGER TAP:
                     --------------------------------------------------------------------------------
                     if data.multitouch == 1 then
-                        executeAction(thisSideScreen.twoFingerTapAction)
+                        self:executeAction(thisSideScreen.twoFingerTapAction)
                     end
                 end
             end
@@ -1337,7 +1530,9 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
 
+            --------------------------------------------------------------------------------
             -- Stop repeating:
+            --------------------------------------------------------------------------------
             if thisTouchButton and thisTouchButton.repeatPressActionUntilReleased then
                 if self.repeatTimers[buttonID] then
                     self.repeatTimers[buttonID]:stop()
@@ -1345,12 +1540,14 @@ function mod.mt:callback(data)
                 end
             end
 
+            --------------------------------------------------------------------------------
             -- Vibrate if needed:
+            --------------------------------------------------------------------------------
             if thisTouchButton and thisTouchButton.vibrateRelease then
                 self.device:vibrate(tonumber(thisTouchButton.vibrateRelease))
             end
 
-            if thisTouchButton and executeAction(thisTouchButton.releaseAction) then
+            if thisTouchButton and self:executeAction(thisTouchButton.releaseAction) then
                 return
             end
         elseif data.id == loupedeck.event.WHEEL_PRESSED then
@@ -1360,22 +1557,22 @@ function mod.mt:callback(data)
                 -- BUTTON PRESS:
                 --------------------------------------------------------------------------------
                 if wheelScreen.topLeftAction and buttonID == "1" then
-                    executeAction(wheelScreen.topLeftAction)
+                    self:executeAction(wheelScreen.topLeftAction)
                 end
                 if wheelScreen.topMiddleAction and buttonID == "2" then
-                    executeAction(wheelScreen.topMiddleAction)
+                    self:executeAction(wheelScreen.topMiddleAction)
                 end
                 if wheelScreen.topRightAction and buttonID == "3" then
-                    executeAction(wheelScreen.topRightAction)
+                    self:executeAction(wheelScreen.topRightAction)
                 end
                 if wheelScreen.bottomLeftAction and buttonID == "4" then
-                    executeAction(wheelScreen.bottomLeftAction)
+                    self:executeAction(wheelScreen.bottomLeftAction)
                 end
                 if wheelScreen.bottomMiddleAction and buttonID == "5" then
-                    executeAction(wheelScreen.bottomMiddleAction)
+                    self:executeAction(wheelScreen.bottomMiddleAction)
                 end
                 if wheelScreen.bottomRightAction and buttonID == "6" then
-                    executeAction(wheelScreen.bottomRightAction)
+                    self:executeAction(wheelScreen.bottomRightAction)
                 end
 
                 --------------------------------------------------------------------------------
@@ -1386,15 +1583,15 @@ function mod.mt:callback(data)
                     local xDiff, yDiff = data.x - self.cacheWheelXAxis, data.y - self.cacheWheelYAxis
                     -- dragging horizontally
                     if xDiff < 0-dragMinimumDiff then
-                        executeAction(wheelScreen.leftAction)
+                        self:executeAction(wheelScreen.leftAction)
                     elseif xDiff > 0+dragMinimumDiff then
-                        executeAction(wheelScreen.rightAction)
+                        self:executeAction(wheelScreen.rightAction)
                     end
                     -- dragging vertically
                     if yDiff < 0-dragMinimumDiff then
-                        executeAction(wheelScreen.upAction)
+                        self:executeAction(wheelScreen.upAction)
                     elseif yDiff > 0+dragMinimumDiff then
-                        executeAction(wheelScreen.downAction)
+                        self:executeAction(wheelScreen.downAction)
                     end
                 end
 
@@ -1418,7 +1615,7 @@ function mod.mt:callback(data)
                         self.tookFingerOffWheelScreen = false
                         self.lastWheelDoubleTapX = nil
                         self.lastWheelDoubleTapY = nil
-                        executeAction(wheelScreen.doubleTapAction)
+                        self:executeAction(wheelScreen.doubleTapAction)
                     else
                         self.wheelScreenDoubleTapTriggered = true
                         self.lastWheelDoubleTapX = nil
@@ -1436,7 +1633,7 @@ function mod.mt:callback(data)
                 -- TWO FINGER TAP:
                 --------------------------------------------------------------------------------
                 if data.multitouch then
-                    executeAction(wheelScreen.twoFingerTapAction)
+                    self:executeAction(wheelScreen.twoFingerTapAction)
                 end
             end
         elseif data.id == loupedeck.event.WHEEL_RELEASED then
@@ -1457,10 +1654,11 @@ local plugin = {
     group       = "core",
     required    = true,
     dependencies    = {
-        ["core.action.manager"]             = "actionmanager",
-        ["core.application.manager"]        = "applicationmanager",
-        ["core.commands.global"]            = "global",
-        ["core.controlsurfaces.manager"]    = "csman",
+        ["core.action.manager"]                 = "actionmanager",
+        ["core.application.manager"]            = "applicationmanager",
+        ["core.commands.global"]                = "global",
+        ["core.controlsurfaces.manager"]        = "csman",
+        ["core.preferences.panels.scripting"]   = "scriptingPreferences",
     }
 }
 
@@ -1468,13 +1666,13 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
-    mod.actionmanager       = deps.actionmanager
-    mod.applicationmanager  = deps.applicationmanager
-    mod.csman               = deps.csman
-    mod.global              = deps.global
+    mod.actionmanager           = deps.actionmanager
+    mod.applicationmanager      = deps.applicationmanager
+    mod.csman                   = deps.csman
+    mod.global                  = deps.global
+    mod.scriptingPreferences    = deps.scriptingPreferences
 
-    mod.env                 = env
-
+    mod.env                     = env
     --------------------------------------------------------------------------------
     -- Setup devices:
     --------------------------------------------------------------------------------

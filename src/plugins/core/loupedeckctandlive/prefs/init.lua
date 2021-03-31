@@ -32,9 +32,11 @@ local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
+local isImage                   = tools.isImage
 local mergeTable                = tools.mergeTable
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
+local split                     = tools.split
 local tableContains             = tools.tableContains
 local tableMatch                = tools.tableMatch
 local trim                      = tools.trim
@@ -52,7 +54,12 @@ local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
 -- BUY_MORE_ICONS_URL -> string
 -- Constant
 -- URL to SideshowFX Website
-local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
+local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Loupedeck"
+
+-- SNIPPET_HELP_URL -> string
+-- Constant
+-- URL to Snippet Support Site
+local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
 
 --- plugins.core.loupedeckctandlive.prefs.supportedExtensions -> string
 --- Variable
@@ -90,7 +97,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1055
+        o.height            = 1090
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -101,7 +108,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1020
+        o.height            = 1090
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -152,6 +159,16 @@ function mod.new(deviceType)
     --- Last Selected Control ID used in the Preferences Panel.
     o.lastID = config.prop(o.id .. ".preferences.lastID", "7")
 
+    --- plugins.core.loupedeckctandlive.prefs.resizeImagesOnImport <cp.prop: string>
+    --- Field
+    --- Resize Icons on Import Preference.
+    o.resizeImagesOnImport = config.prop(o.id .. ".preferences.resizeImagesOnImport", "100%")
+
+    --- plugins.core.loupedeckctandlive.prefs.backgroundColour <cp.prop: string>
+    --- Field
+    --- Background Colour.
+    o.backgroundColour = config.prop(o.id .. ".preferences.backgroundColour", "#000000")
+
     --- plugins.core.loupedeckctandlive.prefs.lastControlType <cp.prop: string>
     --- Field
     --- Last Selected Control Type used in the Preferences Panel.
@@ -197,7 +214,22 @@ function mod.new(deviceType)
         tooltip         = o.label,
         height          = o.height,
     })
-        :addHeading(6, o.label)
+
+        :addHeading(1, o.label)
+
+        :addContent(2, [[
+            <style>
+                .menubarRow {
+                    display: flex;
+                }
+
+                .menubarColumn {
+                    flex: 50%;
+                }
+            </style>
+            <div class="menubarRow">
+                <div class="menubarColumn">
+        ]], false)
 
         :addCheckbox(7.1,
             {
@@ -262,11 +294,44 @@ function mod.new(deviceType)
             }
         )
 
+        :addContent(11, [[
+                </div>
+                <div class="menubarColumn">
+                <style>
+                    .screensBacklightLevel select {
+                        margin-left: 85px;
+                        width: 80px;
+                    }
+                    .resizeImagesOnImport select {
+                        margin-left: 80px;
+                        width: 80px;
+                    }
 
-        :addSelect(11,
+                    .imageBackgroundColourOnImport input {
+                        margin-left: 10px;
+                        -webkit-appearance: none;
+                        text-shadow:0 1px 0 rgba(0,0,0,0.4);
+                        background-color: rgba(65,65,65,1);
+                        color: #bfbfbc;
+                        text-decoration: none;
+                        padding: 2px 18px 2px 5px;
+                        border:0.5px solid black;
+                        display: inline-block;
+                        border-radius: 3px;
+                        border-radius: 0px;
+                        cursor: default;
+                        font-family: -apple-system;
+                        font-size: 13px;
+                        width: 56px;
+                    }
+                </style>
+        ]], false)
+
+        :addSelect(12,
             {
                 label       =   i18n("screensBacklightLevel"),
                 value       =   o.screensBacklightLevel,
+                class       =   "screensBacklightLevel",
                 options     =   function()
                                     local options = {}
                                     for i=1, 10 do
@@ -285,10 +350,52 @@ function mod.new(deviceType)
             }
         )
 
+        :addSelect(12.1,
+            {
+                label       =   i18n("resizeImagesOnImport"),
+                class       =   "resizeImagesOnImport",
+                value       =   o.resizeImagesOnImport,
+                options     =   function()
+                                    local options = {
+                                        { value = "100%",   label = "100%" },
+                                        { value = "95%",    label = "95%" },
+                                        { value = "90%",    label = "90%" },
+                                        { value = "85%",    label = "85%" },
+                                        { value = "80%",    label = "80%" },
+                                        { value = "75%",    label = "75%" },
+                                        { value = "70%",    label = "70%" },
+                                        { value = "65%",    label = "65%" },
+                                        { value = "60%",    label = "60%" },
+                                        { value = "55%",    label = "55%" },
+                                        { value = "50%",    label = "50%" },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    o.resizeImagesOnImport(params.value)
+                                end,
+            }
+        )
 
-        :addParagraph(12, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
+        :addTextbox(12.2,
+            {
+                label       =   i18n("imageBackgroundColourOnImport") .. ":",
+                value       =   function() return o.backgroundColour() end,
+                class       =   "imageBackgroundColourOnImport jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                onchange    =   function(_, params) o.backgroundColour(params.value) end,
+            }
+        )
 
-        :addContent(13, function(...) return o:generateContent(...) end, false)
+        :addContent(13, [[
+                </div>
+            </div>
+            <br />
+        ]], false)
+
+        :addParagraph(14, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
+
+        :addContent(15, function(...) return o:generateContent(...) end, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
@@ -319,6 +426,11 @@ function mod.mt:renderPanel(context)
     return self._renderPanel(context)
 end
 
+-- insertImageCache -> table
+-- Variable
+-- A cache for commonly inserted images.
+local insertImageCache = {}
+
 -- insertImage(path)
 -- Function
 -- Encodes an image as a PNG URL String
@@ -329,9 +441,15 @@ end
 -- Returns:
 --  * The encoded URL string
 local function insertImage(path)
-    local p = mod._env:pathToAbsolute(path)
-    local i = imageFromPath(p)
-    return i:encodeAsURLString(false, "PNG")
+    if insertImageCache[path] then
+        return insertImageCache[path]
+    else
+        local p = mod._env:pathToAbsolute(path)
+        local i = imageFromPath(p)
+        local result = i:encodeAsURLString(false, "PNG")
+        insertImageCache[path] = result
+        return result
+    end
 end
 
 --- plugins.core.loupedeckctandlive.prefs:generateContent() -> string
@@ -504,8 +622,7 @@ function mod.mt:generateKnobImages(app, bank, bid)
         knobThreeImage = currentKnobThreeEncodedIconLabel
     end
 
-    local encodedKnobIcon = ""
-
+    local encodedKnobIcon
     if knobOneImage or knobTwoImage or knobThreeImage then
         local v = canvas.new{x = 0, y = 0, w = 60, h = 270 }
         v[1] = {
@@ -544,6 +661,8 @@ function mod.mt:generateKnobImages(app, bank, bid)
         v = nil -- luacheck: ignore
 
         encodedKnobIcon = knobImage:encodeAsURLString(true)
+    else
+        encodedKnobIcon = ""
     end
 
     self:setItem(app, bank, "sideScreen", whichScreen, "encodedKnobIcon", encodedKnobIcon)
@@ -608,6 +727,9 @@ function mod.mt:updateUI(params)
     local downValue = selectedID and selectedID.downAction and selectedID.downAction.actionTitle or ""
     local doubleTapValue = selectedID and selectedID.doubleTapAction and selectedID.doubleTapAction.actionTitle or ""
     local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
+
+    local snippetValue = selectedID and selectedID.snippetAction and selectedID.snippetAction.actionTitle or ""
+
     local colorValue = selectedID and selectedID.led or "FFFFFF"
     local encodedIcon = selectedID and selectedID.encodedIcon or ""
     local iconLabel = selectedID and selectedID.iconLabel or ""
@@ -634,6 +756,66 @@ function mod.mt:updateUI(params)
             local currentEncodedIcon = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIcon
             local currentIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].iconLabel
             local currentEncodedIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIconLabel
+
+            --------------------------------------------------------------------------------
+            -- Handle Snippets:
+            --------------------------------------------------------------------------------
+            local currentSnippet = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].snippetAction
+            if currentSnippet and currentSnippet.action then
+                local code = currentSnippet.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Load Snippet from Snippet Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippetID = currentSnippet.action.id
+                    local snippets = mod._scriptingPreferences.snippets()
+                    if snippets[snippetID] then
+                        code = snippets[snippetID].code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        local size = result:size()
+                        if size.w == 90 and size.h == 90 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 90x90 so proceed:
+                            --------------------------------------------------------------------------------
+                            currentEncodedIcon = result:encodeAsURLString(true)
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 90x90 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
+
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
+
+                            --------------------------------------------------------------------------------
+                            -- Icon - Scaled to fit:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
+
+                            local fixedImage = v:imageFromCanvas()
+
+                            v:delete()
+                            v = nil -- luacheck: ignore
+
+                            currentEncodedIcon = fixedImage:encodeAsURLString(true)
+                        end
+                    end
+                end
+            end
+
             if currentEncodedIcon and currentEncodedIcon ~= "" then
                 updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIcon .. [[")]] .. "\n"
             else
@@ -674,8 +856,73 @@ function mod.mt:updateUI(params)
         --------------------------------------------------------------------------------
         if self.id == "loupedeckct" then
             local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
+
+            local newEncodedIcon
             if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
+                newEncodedIcon = wheelScreen.encodedIcon
+            end
+
+            --------------------------------------------------------------------------------
+            -- Handle Snippets:
+            --------------------------------------------------------------------------------
+            local currentSnippet = selectedBank.wheelScreen and selectedBank.wheelScreen["1"] and selectedBank.wheelScreen["1"].snippetAction
+            if currentSnippet and currentSnippet.action then
+                local code = currentSnippet.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Load Snippet from Snippet Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippetID = currentSnippet.action.id
+                    local snippets = mod._scriptingPreferences.snippets()
+                    if snippets[snippetID] then
+                        code = snippets[snippetID].code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        local size = result:size()
+                        if size.w == 240 and size.h == 240 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 240x240 so proceed:
+                            --------------------------------------------------------------------------------
+                            encodedIcon = result:encodeAsURLString(true)
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 240x240 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
+
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
+
+                            --------------------------------------------------------------------------------
+                            -- Icon - Scaled as per preferences:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
+
+                            local fixedImage = v:imageFromCanvas()
+
+                            v:delete()
+                            v = nil -- luacheck: ignore
+
+                            newEncodedIcon = fixedImage:encodeAsURLString(true)
+                        end
+                    end
+                end
+            end
+
+            if newEncodedIcon then
+                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. newEncodedIcon .. [[")]] .. "\n"
             else
                 updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
             end
@@ -711,6 +958,9 @@ function mod.mt:updateUI(params)
         ]]
     end
 
+    --------------------------------------------------------------------------------
+    -- Inject Script:
+    --------------------------------------------------------------------------------
     injectScript([[
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
@@ -729,6 +979,8 @@ function mod.mt:updateUI(params)
         changeValueByID('right_touch_action', `]] .. escapeTilda(rightValue) .. [[`);
         changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
         changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
+        changeValueByID('snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
+        changeValueByID('wheel_snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
         changeValueByID('vibratePress', ']] .. vibratePressValue .. [[');
         changeValueByID('vibrateRelease', ']] .. vibrateReleaseValue .. [[');
         changeValueByID('vibrateLeft', ']] .. vibrateLeftValue .. [[');
@@ -740,6 +992,113 @@ function mod.mt:updateUI(params)
         changeColor(']] .. colorValue .. [[');
         setIcon("]] .. encodedIcon .. [[");
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
+end
+
+--- plugins.core.loupedeckctandlive.prefs:processEncodedIcon(icon, controlType) -> string
+--- Function
+--- Processes an encoded icon.
+---
+--- Parameters:
+---  * icon - The encoded icon as URL string or a hs.image object.
+---  * controlType - The control type as string.
+---
+--- Returns:
+---  * A new encoded icon as URL string.
+function mod.mt:processEncodedIcon(icon, controlType)
+    local width, height = getScreenSizeFromControlType(controlType)
+
+    local newImage
+    if type(icon) == "userdata" then
+        newImage = icon
+    else
+        newImage = imageFromURL(icon)
+    end
+
+    local backgroundColour = self.backgroundColour()
+    local resizeImagesOnImport = self.resizeImagesOnImport()
+    local offset = tostring( (100 - tonumber(resizeImagesOnImport:sub(1, -2))) /2 ) .. "%"
+
+    local v = canvas.new{x = 0, y = 0, w = width, h = height }
+
+    --------------------------------------------------------------------------------
+    -- Background:
+    --------------------------------------------------------------------------------
+    v[1] = {
+        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+        fillColor = { alpha = 1, hex = backgroundColour },
+        type = "rectangle",
+    }
+
+    --------------------------------------------------------------------------------
+    -- Icon - Scaled as per preferences:
+    --------------------------------------------------------------------------------
+    v[2] = {
+      type="image",
+      image = newImage,
+      frame = { x = offset, y = offset, h = resizeImagesOnImport, w = resizeImagesOnImport },
+    }
+
+    local fixedImage = v:imageFromCanvas()
+
+    v:delete()
+    v = nil -- luacheck: ignore
+
+    return fixedImage:encodeAsURLString(true)
+end
+
+-- plugins.core.loupedeckctandlive.prefs:buildIconFromLabel(value, controlType) -> string
+-- Function
+-- Creates a new icon image from a string.
+--
+-- Parameters:
+--  * value - The label as a string.
+--  * controlType - The control type as string.
+--
+-- Returns:
+--  * A new encoded icon as URL string.
+local function buildIconFromLabel(value, controlType)
+    local width, height = getScreenSizeFromControlType(controlType)
+
+    local v = canvas.new{x = 0, y = 0, w = width, h = height }
+    v[1] = {
+        --------------------------------------------------------------------------------
+        -- Force Black background:
+        --------------------------------------------------------------------------------
+        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+        type = "rectangle",
+    }
+
+    v[2] = {
+        frame = { h = 100, w = 100, x = 0, y = 0 },
+        text = value,
+        textAlignment = "left",
+        textColor = { white = 1.0 },
+        textSize = 15,
+        type = "text",
+    }
+
+    local img = v:imageFromCanvas()
+
+    v:delete()
+    v = nil -- luacheck: ignore
+
+    return img:encodeAsURLString(true)
+end
+
+-- changeControl(controlType, id) -> none
+-- Function
+-- Triggers a JavaScript function to change the control on the UI.
+--
+-- Parameters:
+--  * controlType - The control type.
+--  * id - The control ID.
+--
+-- Returns:
+--  * None
+local function changeControl(controlType, id)
+    local injectScript = mod._manager.injectScript
+    injectScript("changeControl('', '', '" .. controlType .. "', '" .. id .. "');")
 end
 
 --- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
@@ -760,67 +1119,74 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
+            local buttonType = params["buttonType"]
             local activatorID = params["application"]
-            if not self.activator or self.activator and not self.activator[activatorID] then
+
+            if buttonType == "snippetAction" then
+                 activatorID = "snippet"
+            end
+
+            if not self.activator then
                 self.activator = {}
+            end
+
+            if buttonType == "snippetAction" and not self.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Snippet Activator:
+                --------------------------------------------------------------------------------
+                self.activator["snippet"] = mod._actionmanager.getActivator(self.id .. "_preferences_snippet")
+
+                --------------------------------------------------------------------------------
+                -- Only allow the Snippets action group:
+                --------------------------------------------------------------------------------
+                self.activator["snippet"]:allowHandlers("global_snippets")
+            elseif not self.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Action Activator:
+                --------------------------------------------------------------------------------
                 local handlerIds = mod._actionmanager.handlerIds()
 
                 --------------------------------------------------------------------------------
-                -- Get list of registered and custom apps:
+                -- Get list of legacy group IDs:
                 --------------------------------------------------------------------------------
-                local apps = {}
                 local legacyGroupIDs = {}
                 local registeredApps = mod._appmanager.getApplications()
                 for bundleID, v in pairs(registeredApps) do
-                    if v.displayName then
-                        apps[bundleID] = v.displayName
-                    end
                     legacyGroupIDs[bundleID] = v.legacyGroupID or bundleID
                 end
-                local items = self.items()
-                for bundleID, v in pairs(items) do
-                    if v.displayName then
-                        apps[bundleID] = v.displayName
-                    end
-                end
 
                 --------------------------------------------------------------------------------
-                -- Add allowance for "All Applications":
+                -- Create new Activator:
                 --------------------------------------------------------------------------------
-                apps["All Applications"] = "All Applications"
+                self.activator[activatorID] = mod._actionmanager.getActivator(self.id .. "_preferences_" .. activatorID)
 
-                for groupID,_ in pairs(apps) do
-                    --------------------------------------------------------------------------------
-                    -- Create new Activator:
-                    --------------------------------------------------------------------------------
-                    self.activator[groupID] = mod._actionmanager.getActivator("loupedeckCTPreferences" .. groupID)
-
-                    --------------------------------------------------------------------------------
-                    -- Restrict Allowed Handlers for Activator to current group (and global):
-                    --------------------------------------------------------------------------------
-                    local allowedHandlers = {}
-                    for _,v in pairs(handlerIds) do
-                        local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == legacyGroupIDs[groupID] or handlerTable[1] == "global" then
-                            --------------------------------------------------------------------------------
-                            -- Don't include "widgets" (that are used for the Touch Bar):
-                            --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" and v ~= "global_menuactions" then
-                                table.insert(allowedHandlers, v)
-                            end
-                        end
+                --------------------------------------------------------------------------------
+                -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
+                --------------------------------------------------------------------------------
+                local allowedHandlers = {}
+                for _,v in pairs(handlerIds) do
+                    local handlerTable = split(v, "_")
+                    local partB = handlerTable[2]
+                    if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
+                        table.insert(allowedHandlers, v)
                     end
-                    local unpack = table.unpack
-                    self.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-
-                    --------------------------------------------------------------------------------
-                    -- Gather Toolbar Icons for Search Console:
-                    --------------------------------------------------------------------------------
-                    local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
-                    local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID) or {}
-                    local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-                    self.activator[groupID]:toolbarIcons(searchConsoleToolbar)
                 end
+                local unpack = table.unpack
+                self.activator[activatorID]:allowHandlers(unpack(allowedHandlers))
+
+                --------------------------------------------------------------------------------
+                -- Gather Toolbar Icons for Search Console:
+                --------------------------------------------------------------------------------
+                local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+                local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(activatorID) or {}
+                local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+                self.activator[activatorID]:toolbarIcons(searchConsoleToolbar)
+
+                --------------------------------------------------------------------------------
+                -- Only enable handlers for the current app:
+                --------------------------------------------------------------------------------
+                local enabledHandlerID = legacyGroupIDs[activatorID] or activatorID
+                self.activator[activatorID]:enableAllHandlers(enabledHandlerID)
             end
 
             --------------------------------------------------------------------------------
@@ -843,7 +1209,6 @@ function mod.mt:panelCallback(id, params)
                 local bank = params["bank"]
                 local controlType = params["controlType"]
                 local bid = params["id"]
-                local buttonType = params["buttonType"]
 
                 local result = {
                     ["actionTitle"] = actionTitle,
@@ -854,9 +1219,10 @@ function mod.mt:panelCallback(id, params)
                 self:setItem(app, bank, controlType, bid, buttonType, result)
 
                 --------------------------------------------------------------------------------
-                -- If the action contains an image, apply it to the Touch Button:
+                -- If the action contains an image, apply it to the Touch Button (except
+                -- if it's a Snippet Action):
                 --------------------------------------------------------------------------------
-                if params.controlType == "touchButton" then
+                if params.controlType == "touchButton" and buttonType ~= "snippetAction" then
                     local choices = handler.choices():getChoices()
                     local preSuppliedImage
                     for _, v in pairs(choices) do
@@ -869,85 +1235,23 @@ function mod.mt:panelCallback(id, params)
                     end
                     if preSuppliedImage then
                         --------------------------------------------------------------------------------
-                        -- Set screen limitations:
-                        --------------------------------------------------------------------------------
-                        local width, height = getScreenSizeFromControlType(controlType)
-
-                        --------------------------------------------------------------------------------
-                        -- Process the Icon to remove transparency:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                        v[1] = {
-                            --------------------------------------------------------------------------------
-                            -- Force Black background:
-                            --------------------------------------------------------------------------------
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                            type = "rectangle",
-                        }
-                        v[2] = {
-                          type="image",
-                          image = preSuppliedImage,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                        }
-                        local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
-                        local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
-
-                        --------------------------------------------------------------------------------
                         -- Write to file:
                         --------------------------------------------------------------------------------
-                        self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+                        local encodedIcon = self:processEncodedIcon(preSuppliedImage, controlType)
+                        self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
-                        --------------------------------------------------------------------------------
-                        -- Update the preferences UI:
-                        --------------------------------------------------------------------------------
-                        injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]])
-
-                        --------------------------------------------------------------------------------
-                        -- Refresh the hardware:
-                        --------------------------------------------------------------------------------
-                        self.device:refresh()
                     end
                 end
 
                 --------------------------------------------------------------------------------
-                -- Update the webview:
+                -- Change the control and update the UI:
                 --------------------------------------------------------------------------------
-                if params["buttonType"] == "pressAction" then
-                    injectScript("changeValueByID('press_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "releaseAction" then
-                    injectScript("changeValueByID('release_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "leftAction" then
-                    injectScript("changeValueByID('left_action', `" .. escapeTilda(actionTitle) .. "`);")
-                    injectScript("changeValueByID('left_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "rightAction" then
-                    injectScript("changeValueByID('right_action', `" .. escapeTilda(actionTitle) .. "`);")
-                    injectScript("changeValueByID('right_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "upAction" then
-                    injectScript("changeValueByID('up_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "downAction" then
-                    injectScript("changeValueByID('down_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "doubleTapAction" then
-                    injectScript("changeValueByID('double_tap_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "twoFingerTapAction" then
-                    injectScript("changeValueByID('two_finger_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "topLeftAction" then
-                    injectScript("changeValueByID('top_left_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "bottomLeftAction" then
-                    injectScript("changeValueByID('bottom_left_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "topMiddleAction" then
-                    injectScript("changeValueByID('top_middle_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "bottomMiddleAction" then
-                    injectScript("changeValueByID('bottom_middle_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "topRightAction" then
-                    injectScript("changeValueByID('top_right_action', `" .. escapeTilda(actionTitle) .. "`);")
-                elseif params["buttonType"] == "bottomRightAction" then
-                    injectScript("changeValueByID('bottom_right_action', `" .. escapeTilda(actionTitle) .. "`);")
-                end
+                changeControl(controlType, bid)
+
+                --------------------------------------------------------------------------------
+                -- Refresh the hardware:
+                --------------------------------------------------------------------------------
+                self.device:refresh()
             end)
 
             --------------------------------------------------------------------------------
@@ -1151,10 +1455,10 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
-            -- Icon Clicked:
+            -- Icon Drop Zone Clicked:
             --------------------------------------------------------------------------------
             if not doesDirectoryExist(self.lastIconPath()) then
-                self.lastIconPath(self.defaultIconPath())
+                self.lastIconPath(self.defaultIconPath)
             end
 
             local result = chooseFileOrFolder(i18n("pleaseSelectAnIcon"), self.lastIconPath(), true, false, false, mod.supportedExtensions, true)
@@ -1171,33 +1475,9 @@ function mod.mt:panelCallback(id, params)
                 local bundleID = appInfo and appInfo.CFBundleIdentifier
                 local icon = imageFromPath(path) or imageFromAppBundle(bundleID)
                 if icon then
-                    --------------------------------------------------------------------------------
-                    -- Set screen limitations:
-                    --------------------------------------------------------------------------------
                     local controlType = params["controlType"]
-                    local width, height = getScreenSizeFromControlType(controlType)
-
-                    local a = canvas.new{x = 0, y = 0, w = width, h = height }
-                    a[1] = {
-                        --------------------------------------------------------------------------------
-                        -- Force Black background:
-                        --------------------------------------------------------------------------------
-                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                        type = "rectangle",
-                    }
-                    a[2] = {
-                      type="image",
-                      image = icon,
-                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                    }
-                    local newImage = a:imageFromCanvas()
-
-                    a:delete()
-                    a = nil -- luacheck: ignore
-
-                    local newEncodedIcon = newImage:encodeAsURLString(true)
-                    if newEncodedIcon then
+                    local encodedIcon = self:processEncodedIcon(icon, controlType)
+                    if encodedIcon then
                         --------------------------------------------------------------------------------
                         -- Save Icon to file:
                         --------------------------------------------------------------------------------
@@ -1205,65 +1485,30 @@ function mod.mt:panelCallback(id, params)
                         local bank = params["bank"]
                         local bid = params["id"]
 
-                        self:setItem(app, bank, controlType, bid, "encodedIcon", newEncodedIcon)
-
-                        local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. newEncodedIcon .. [[")]]
+                        self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
                         --------------------------------------------------------------------------------
                         -- Process knobs:
                         --------------------------------------------------------------------------------
                         if controlType == "knob" then
-
                             self:generateKnobImages(app, bank, bid)
-
-                            --------------------------------------------------------------------------------
-                            -- Update preferences UI:
-                            --------------------------------------------------------------------------------
-                            local items = self.items()
-
-                            local currentApp = items[app]
-                            local currentBank = currentApp and currentApp[bank]
-                            local currentSideScreen = currentBank and currentBank.sideScreen
-
-                            local sideScreenOne = currentSideScreen["1"]
-                            local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
-                            local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
-                            if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
-                            elseif encodedIcon and encodedIcon ~= "" then
-                                changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
-                            end
-
-                            local sideScreenTwo = currentSideScreen["2"]
-                            encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
-                            encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
-                            if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
-                            elseif encodedIcon and encodedIcon ~= "" then
-                                changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
-                            end
-
                         end
-
-                        --------------------------------------------------------------------------------
-                        -- Update preference UI via JavaScript:
-                        --------------------------------------------------------------------------------
-                        injectScript([[setIcon("]] .. newEncodedIcon .. [[")]] .. "\n" .. changeImageScript)
 
                         --------------------------------------------------------------------------------
                         -- Write to history:
                         --------------------------------------------------------------------------------
                         local iconHistory = self.iconHistory()
-
                         while (#(iconHistory) >= 5) do
                             table.remove(iconHistory,1)
                         end
-
                         local filename = getFilenameFromPath(path, true)
-
-                        table.insert(iconHistory, {filename, newEncodedIcon})
-
+                        table.insert(iconHistory, {filename, encodedIcon})
                         self.iconHistory(iconHistory)
+
+                        --------------------------------------------------------------------------------
+                        -- Update the UI:
+                        --------------------------------------------------------------------------------
+                        self:updateUI(params)
 
                         --------------------------------------------------------------------------------
                         -- Refresh the hardware:
@@ -1281,45 +1526,16 @@ function mod.mt:panelCallback(id, params)
             end
         elseif callbackType == "badExtension" then
             --------------------------------------------------------------------------------
-            -- Bad Icon File Extension:
+            -- Bad Icon File Extension from a Drag & Drop:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("badStreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+            webviewAlert(mod._manager.getWebview(), function() end, i18n("badLoupedeckIcon"), i18n("badLoupedeckIconTip"), i18n("ok"))
         elseif callbackType == "updateIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = params["controlType"]
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = self:processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1328,7 +1544,17 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
 
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            self:generateKnobImages(app, bank, bid)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI(params)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1336,40 +1562,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateButtonIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Button Icon After A Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "touchButton"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = self:processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1377,8 +1574,12 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local bid = params["id"]
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            --------------------------------------------------------------------------------
+            -- Change the control and update the UI:
+            --------------------------------------------------------------------------------
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1386,40 +1587,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateSideScreenIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Side Screen Icons after a Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "sideScreen"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = self:processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1428,7 +1600,17 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
 
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            self:generateKnobImages(app, bank, bid)
+
+            --------------------------------------------------------------------------------
+            -- Change the control and update the UI:
+            --------------------------------------------------------------------------------
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1436,40 +1618,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateWheelIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Wheel Icon via Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "wheelScreen"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = self:processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1477,7 +1630,12 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local bid = params["id"]
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Change the control and update the UI:
+            --------------------------------------------------------------------------------
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1485,40 +1643,11 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateKnobIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Knob Icon After A Drag & Drop:
             --------------------------------------------------------------------------------
-            local encodedIcon = params["icon"]
-
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
+            local icon = params["icon"]
             local controlType = "knob"
-            local width, height = getScreenSizeFromControlType(controlType)
-
-            --------------------------------------------------------------------------------
-            -- Process the Icon to remove transparency:
-            --------------------------------------------------------------------------------
-            local newImage = imageFromURL(encodedIcon)
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
-                --------------------------------------------------------------------------------
-                -- Force Black background:
-                --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
-            v[2] = {
-              type="image",
-              image = newImage,
-              frame = { x = 0, y = 0, h = "100%", w = "100%" },
-            }
-            local fixedImage = v:imageFromCanvas()
-
-            v:delete()
-            v = nil -- luacheck: ignore
-
-            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+            local encodedIcon = self:processEncodedIcon(icon, controlType)
 
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1526,7 +1655,7 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local bid = params["id"]
-            self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+            self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
             --------------------------------------------------------------------------------
             -- Generate Knob Images:
@@ -1534,39 +1663,9 @@ function mod.mt:panelCallback(id, params)
             self:generateKnobImages(app, bank, bid)
 
             --------------------------------------------------------------------------------
-            -- Update Preferences Screen:
+            -- Change the control and update the UI:
             --------------------------------------------------------------------------------
-            local items = self.items()
-            local selectedApp = items[app]
-            local selectedBank = selectedApp and selectedApp[bank]
-
-            local updateIconsScript = ""
-
-            --------------------------------------------------------------------------------
-            -- Left Screen:
-            --------------------------------------------------------------------------------
-            local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
-            if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
-            elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
-            else
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
-            end
-
-            --------------------------------------------------------------------------------
-            -- Right Screen:
-            --------------------------------------------------------------------------------
-            local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
-            if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
-            elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
-            else
-                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
-            end
-
-            injectScript(updateIconsScript)
+            changeControl(controlType, bid)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1590,84 +1689,24 @@ function mod.mt:panelCallback(id, params)
                                 local bank = params["bank"]
                                 local bid = params["id"]
 
-                                --------------------------------------------------------------------------------
-                                -- Set screen limitations:
-                                --------------------------------------------------------------------------------
-                                local width, height = getScreenSizeFromControlType(controlType)
-
-                                --------------------------------------------------------------------------------
-                                -- Process the Icon to remove transparency:
-                                --------------------------------------------------------------------------------
-                                local newImage = imageFromURL(item[2])
-                                local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                                v[1] = {
-                                    --------------------------------------------------------------------------------
-                                    -- Force Black background:
-                                    --------------------------------------------------------------------------------
-                                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                                    fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                                    type = "rectangle",
-                                }
-                                v[2] = {
-                                  type="image",
-                                  image = newImage,
-                                  frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                                }
-                                local fixedImage = v:imageFromCanvas()
-
-                                v:delete()
-                                v = nil -- luacheck: ignore
-
-                                local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
-
-                                self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
-
-                                local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]]
+                                local encodedIcon = self:processEncodedIcon(item[2], controlType)
+                                self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
                                 --------------------------------------------------------------------------------
                                 -- Process knobs:
                                 --------------------------------------------------------------------------------
                                 if controlType == "knob" then
-
                                     self:generateKnobImages(app, bank, bid)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Update preferences UI:
-                                    --------------------------------------------------------------------------------
-                                    local items = self.items()
-
-                                    local currentApp = items[app]
-                                    local currentBank = currentApp and currentApp[bank]
-                                    local currentSideScreen = currentBank and currentBank.sideScreen
-
-                                    local sideScreenOne = currentSideScreen["1"]
-                                    local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
-                                    local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
-                                    if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
-                                    elseif encodedIcon and encodedIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
-                                    else
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                                    end
-
-                                    local sideScreenTwo = currentSideScreen["2"]
-                                    encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
-                                    encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
-                                    if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                        changeImageScript = changeImageScript .. "\n" ..  [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
-                                    elseif encodedIcon and encodedIcon ~= "" then
-                                        changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
-                                    else
-                                        changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
-                                    end
                                 end
 
                                 --------------------------------------------------------------------------------
-                                -- Update preference UI via JavaScript:
+                                -- Update the UI:
                                 --------------------------------------------------------------------------------
-                                injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. changeImageScript)
+                                self:updateUI(params)
 
+                                --------------------------------------------------------------------------------
+                                -- Refresh the hardware:
+                                --------------------------------------------------------------------------------
                                 self.device:refresh()
                             end,
                         })
@@ -1697,56 +1736,17 @@ function mod.mt:panelCallback(id, params)
 
             self:setItem(app, bank, controlType, bid, "encodedIcon", "")
 
-            local items = self.items()
-            local encodedImage = insertImage("images/" .. controlType .. bid .. ".png")
-            if items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid]["encodedIconLabel"] then
-                if items[app][bank][controlType][bid]["iconLabel"] ~= "" then
-                    encodedImage = items[app][bank][controlType][bid]["encodedIconLabel"]
-                end
-            end
-
-            local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImage .. [[")]]
-
             --------------------------------------------------------------------------------
             -- Process knobs:
             --------------------------------------------------------------------------------
             if controlType == "knob" then
-
                 self:generateKnobImages(app, bank, bid)
-
-                --------------------------------------------------------------------------------
-                -- Update preferences UI:
-                --------------------------------------------------------------------------------
-                items = self.items() -- Refresh items
-
-                local currentApp = items[app]
-                local currentBank = currentApp and currentApp[bank]
-                local currentSideScreen = currentBank and currentBank.sideScreen
-
-                local sideScreenOne = currentSideScreen["1"]
-                local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
-                local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
-                if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
-                elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
-                else
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                end
-
-                local sideScreenTwo = currentSideScreen["2"]
-                encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
-                encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
-                if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
-                elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
-                else
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                end
             end
 
-            injectScript([[setIcon("");]] .. "\n" .. changeImageScript)
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI(params)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1766,40 +1766,7 @@ function mod.mt:panelCallback(id, params)
 
             local encodedImg = ""
             if value and trim(value) ~= "" then
-
-                --------------------------------------------------------------------------------
-                -- Set screen limitations:
-                --------------------------------------------------------------------------------
-                local width, height = getScreenSizeFromControlType(controlType)
-
-                --------------------------------------------------------------------------------
-                -- Make an icon using the label:
-                --------------------------------------------------------------------------------
-                local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                v[1] = {
-                    --------------------------------------------------------------------------------
-                    -- Force Black background:
-                    --------------------------------------------------------------------------------
-                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                    fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                    type = "rectangle",
-                }
-
-                v[2] = {
-                    frame = { h = 100, w = 100, x = 0, y = 0 },
-                    text = value,
-                    textAlignment = "left",
-                    textColor = { white = 1.0 },
-                    textSize = 15,
-                    type = "text",
-                }
-
-                local img = v:imageFromCanvas()
-
-                v:delete()
-                v = nil -- luacheck: ignore
-
-                encodedImg = img:encodeAsURLString(true)
+                encodedImg = buildIconFromLabel(value, controlType)
             end
 
             self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
@@ -1890,7 +1857,16 @@ function mod.mt:panelCallback(id, params)
                             local combined = mergeTable(original, data)
                             self.items(combined)
                         end
+
+                        --------------------------------------------------------------------------------
+                        -- Reload Preferences:
+                        --------------------------------------------------------------------------------
                         mod._manager.refresh()
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        self.device:refresh()
                     end
                 end
             end
@@ -2027,40 +2003,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     local value = items[app][b][controlType][bid].iconLabel
                     if value then
-                        --------------------------------------------------------------------------------
-                        -- Set screen limitations:
-                        --------------------------------------------------------------------------------
-                        local width, height = getScreenSizeFromControlType(controlType)
-
-                        --------------------------------------------------------------------------------
-                        -- Make an icon using the label:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
-                        v[1] = {
-                            --------------------------------------------------------------------------------
-                            -- Force Black background:
-                            --------------------------------------------------------------------------------
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                            type = "rectangle",
-                        }
-
-                        v[2] = {
-                            frame = { h = 100, w = 100, x = 0, y = 0 },
-                            text = value,
-                            textAlignment = "left",
-                            textColor = { white = 1.0 },
-                            textSize = 15,
-                            type = "text",
-                        }
-
-                        local img = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
-                        local encodedImg = img:encodeAsURLString(true)
-
+                        local encodedImg = buildIconFromLabel(value, controlType)
                         items[app][b][controlType][bid].encodedIconLabel = encodedImg
                     end
                 end
@@ -2459,6 +2402,68 @@ function mod.mt:panelCallback(id, params)
             -- Buy More Icons:
             --------------------------------------------------------------------------------
             execute('open "' .. BUY_MORE_ICONS_URL .. '"')
+        elseif callbackType == "openIconFolder" then
+            --------------------------------------------------------------------------------
+            -- Open Icon Folder:
+            --------------------------------------------------------------------------------
+            execute('open "' .. config.basePath .. '/extensions/cp/resources/assets/icons/"')
+        elseif callbackType == "editSnippet" then
+            --------------------------------------------------------------------------------
+            -- Edit Snippet:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
+            local items = self.items()
+
+            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
+                local snippetAction = items[app][bank][controlType][bid].snippetAction
+                local snippetID = snippetAction and snippetAction.action and snippetAction.action.id
+                if snippetID then
+                    local snippets = copy(mod._scriptingPreferences.snippets())
+
+                    if not snippets[snippetID] then
+                        --------------------------------------------------------------------------------
+                        -- This Snippet doesn't exist in the Snippets Preferences, so it must have
+                        -- been deleted or imported through one of the Control Surface panels.
+                        -- It will be reimported into the Snippets Preferences.
+                        --------------------------------------------------------------------------------
+                        snippets[snippetID] = {
+                            ["code"] = snippetAction.action.code
+                        }
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Change the selected Snippet:
+                    --------------------------------------------------------------------------------
+                    for label, _ in pairs(snippets) do
+                        if label == snippetID then
+                            snippets[label].selected = true
+                        else
+                            snippets[label].selected = false
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Write Preferences to disk:
+                    --------------------------------------------------------------------------------
+                    mod._scriptingPreferences.snippets(snippets)
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Open the Scripting Preferences Panel:
+            --------------------------------------------------------------------------------
+            mod._scriptingPreferences._manager.lastTab("scripting")
+            mod._scriptingPreferences._manager.selectPanel("scripting")
+            mod._scriptingPreferences._manager.show()
+        elseif callbackType == "examples" then
+            --------------------------------------------------------------------------------
+            -- Examples Button:
+            --------------------------------------------------------------------------------
+            execute('open "' .. SNIPPET_HELP_URL .. '"')
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -2478,6 +2483,7 @@ local plugin = {
         ["core.application.manager"]            = "appmanager",
         ["core.controlsurfaces.manager"]        = "manager",
         ["core.loupedeckctandlive.manager"]     = "deviceManager",
+        ["core.preferences.panels.scripting"]   = "scriptingPreferences",
     }
 }
 
@@ -2485,17 +2491,19 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
-    mod._appmanager     = deps.appmanager
+    mod._appmanager             = deps.appmanager
 
-    mod._deviceManager  = deps.deviceManager
+    mod._deviceManager          = deps.deviceManager
 
-    mod._manager        = deps.manager
-    mod._webviewLabel   = deps.manager.getLabel()
-    mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
+    mod._manager                = deps.manager
+    mod._webviewLabel           = deps.manager.getLabel()
+    mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
 
-    mod._actionmanager  = deps.actionmanager
+    mod._actionmanager          = deps.actionmanager
 
-    mod._env            = env
+    mod._scriptingPreferences   = deps.scriptingPreferences
+
+    mod._env                    = env
 
     --------------------------------------------------------------------------------
     -- Setup the seperate panels:

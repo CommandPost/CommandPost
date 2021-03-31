@@ -1260,7 +1260,7 @@ function activator:show()
     --------------------------------------------------------------------------------
     -- Set Placeholder Text:
     --------------------------------------------------------------------------------
-    theChooser:placeholderText(i18n("appName"))
+    theChooser:placeholderText(i18n("searchConsole"))
 
     --------------------------------------------------------------------------------
     -- Update Selected Toolbar Icon:

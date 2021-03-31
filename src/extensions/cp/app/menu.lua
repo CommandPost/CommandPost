@@ -794,7 +794,7 @@ function menu:doFindMenuUI(path, options)
         If(self:app().running):Then(
             Throw("Unable to find the menu for %s.", self:app():displayName())
         ):Otherwise(
-            Throw("%s is not curently running.", self:app():displayName())
+            Throw("%s is not currently running.", self:app():displayName())
         )
     )
     :TimeoutAfter(5000, "Took too long.")
