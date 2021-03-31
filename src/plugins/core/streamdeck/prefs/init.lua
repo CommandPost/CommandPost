@@ -46,7 +46,7 @@ local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
 -- BUY_MORE_ICONS_URL -> string
 -- Constant
 -- URL to SideshowFX Website
-local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
+local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Stream+Deck"
 
 --- plugins.core.streamdeck.prefs.supportedExtensions -> string
 --- Variable
