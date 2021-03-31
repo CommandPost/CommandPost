@@ -351,7 +351,6 @@ function mod.new(deviceType)
             o.appWatcher:start()
             o.driveWatcher:start()
             o.sleepWatcher:start()
-            o.refreshTimer:start()
 
             local device = o.getDevice()
             device:connect()
@@ -751,6 +750,8 @@ function mod.mt:refresh(dueToAppChange)
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
+    local containsIconSnippets = false
+
     --------------------------------------------------------------------------------
     -- If we're refreshing due to an change in application focus, make sure things
     -- have actually changed:
@@ -872,6 +873,7 @@ function mod.mt:refresh(dueToAppChange)
                         -- The generated image is already 90x90 so proceed:
                         --------------------------------------------------------------------------------
                         encodedIcon = result:encodeAsURLString(true)
+                        containsIconSnippets = true
                     else
                         --------------------------------------------------------------------------------
                         -- The generated image is not 90x90 so process:
@@ -902,6 +904,7 @@ function mod.mt:refresh(dueToAppChange)
                         v = nil -- luacheck: ignore
 
                         encodedIcon = fixedImage:encodeAsURLString(true)
+                        containsIconSnippets = true
                     end
                 end
             end
@@ -934,7 +937,6 @@ function mod.mt:refresh(dueToAppChange)
     local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
     local encodedIcon = thisWheel and thisWheel.encodedIcon
 
-
     --------------------------------------------------------------------------------
     -- If there's a Snippet to generate the icon, use that instead:
     --------------------------------------------------------------------------------
@@ -959,6 +961,7 @@ function mod.mt:refresh(dueToAppChange)
                     -- The generated image is already 240x240 so proceed:
                     --------------------------------------------------------------------------------
                     encodedIcon = result:encodeAsURLString(true)
+                    containsIconSnippets = true
                 else
                     --------------------------------------------------------------------------------
                     -- The generated image is not 240x240 so process:
@@ -989,6 +992,7 @@ function mod.mt:refresh(dueToAppChange)
                     v = nil -- luacheck: ignore
 
                     encodedIcon = fixedImage:encodeAsURLString(true)
+                    containsIconSnippets = true
                 end
             end
         end
@@ -1060,6 +1064,15 @@ function mod.mt:refresh(dueToAppChange)
     if not success and self.cachedRightSideScreen ~= defaultColor then
         device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
         self.cachedRightSideScreen = defaultColor
+    end
+
+    --------------------------------------------------------------------------------
+    -- Enable or disable the refresh timer:
+    --------------------------------------------------------------------------------
+    if containsIconSnippets then
+        self.refreshTimer:start()
+    else
+        self.refreshTimer:stop()
     end
 end
 
