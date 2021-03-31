@@ -4,7 +4,7 @@
 
 local require                   = require
 
-local log                       = require "hs.logger".new "menubar"
+--local log                       = require "hs.logger".new "menubar"
 
 local image                     = require "hs.image"
 local dialog                    = require "hs.dialog"
@@ -17,6 +17,7 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local imageFromPath             = image.imageFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
+local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
 
@@ -207,11 +208,11 @@ function plugin.init(deps)
 
                                             local icon = imageFromPath(path)
                                             if icon then
-                                                local result = {
+                                                local data = {
                                                     id = "custom",
                                                     encoded = icon:encodeAsURLString()
                                                 }
-                                                mod.menubarIcon(result)
+                                                mod.menubarIcon(data)
                                                 manager.refresh()
                                                 return
                                             end
