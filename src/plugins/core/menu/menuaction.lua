@@ -340,6 +340,7 @@ function plugin.postInit(deps)
     -- Watch for changes:
     --------------------------------------------------------------------------------
     loupedeckCTItems:watch(function() scanPreferences() end)
+    loupedeckLiveItems:watch(function() scanPreferences() end)
     loupedeckItems:watch(function() scanPreferences() end)
     loupedeckPlusItems:watch(function() scanPreferences() end)
     midiItems:watch(function() scanPreferences() end)

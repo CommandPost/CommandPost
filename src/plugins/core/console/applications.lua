@@ -25,17 +25,18 @@ mod.appCache = {}
 local function modifyNameMap(info, add)
     for _, item in ipairs(info) do
         local icon = nil
-        local displayname = item.kMDItemDisplayName or (item.kMDItemPath and displayName(item.kMDItemPath))
-        if displayname then
+        local itemPath = item.kMDItemPath
+        local displayname = item.kMDItemDisplayName or (itemPath and displayName(itemPath))
+        if displayname and itemPath then
             displayname = displayname:gsub("%.app$", "", 1)
 
             --------------------------------------------------------------------------------
             -- Preferences Panel:
             --------------------------------------------------------------------------------
-            if string.find(item.kMDItemPath, "%.prefPane$") then
+            if string.find(itemPath, "%.prefPane$") then
                 displayname = displayname .. " preferences"
                 if add then
-                    icon = iconForFile(item.kMDItemPath)
+                    icon = iconForFile(itemPath)
                 end
             end
 
@@ -52,7 +53,7 @@ local function modifyNameMap(info, add)
                 -- Add application to cache:
                 --------------------------------------------------------------------------------
                 mod.appCache[displayname] = {
-                    path = item.kMDItemPath,
+                    path = itemPath,
                     bundleID = bundleID,
                     icon = icon
                 }

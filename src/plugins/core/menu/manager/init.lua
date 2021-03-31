@@ -2,28 +2,31 @@
 ---
 --- Menu Manager Plugin.
 
-local require   = require
-local hs        = _G.hs
+local require           = require
 
-local image     = require "hs.image"
-local menubar   = require "hs.menubar"
+local hs                = _G.hs
 
-local config    = require "cp.config"
-local i18n      = require "cp.i18n"
+local image             = require "hs.image"
+local menubar           = require "hs.menubar"
 
-local section   = require "section"
+local config            = require "cp.config"
+local i18n              = require "cp.i18n"
 
-local manager = {}
+local section           = require "section"
+
+local imageFromURL      = image.imageFromURL
+
+local mod = {}
 
 --- plugins.core.menu.manager.rootSection() -> section
 --- Variable
 --- A new Root Section
-manager.rootSection = section:new()
+mod.rootSection = section:new()
 
 --- plugins.core.menu.manager.titleSuffix() -> table
 --- Variable
 --- Table of Title Suffix's
-manager.titleSuffix = {}
+mod.titleSuffix = {}
 
 --- plugins.core.menu.manager.init() -> none
 --- Function
@@ -34,23 +37,23 @@ manager.titleSuffix = {}
 ---
 --- Returns:
 ---  * None
-function manager.init()
+function mod.init()
     -------------------------------------------------------------------------------
     -- Set up Menubar:
     --------------------------------------------------------------------------------
-    manager.menubar = menubar.new()
+    mod.menubar = menubar.new()
 
     --------------------------------------------------------------------------------
     -- Set Tool Tip:
     --------------------------------------------------------------------------------
-    manager.menubar:setTooltip(config.appName .. " " .. config.appVersion .. " (" .. config.appBuild .. ")")
+    mod.menubar:setTooltip(config.appName .. " " .. config.appVersion .. " (" .. config.appBuild .. ")")
 
     --------------------------------------------------------------------------------
     -- Work out Menubar Display Mode:
     --------------------------------------------------------------------------------
-    manager.updateMenubarIcon()
+    mod.updateMenubarIcon()
 
-    manager.menubar:setMenu(manager.generateMenuTable)
+    mod.menubar:setMenu(mod.generateMenuTable)
 
     return manager
 end
@@ -64,9 +67,9 @@ end
 ---
 --- Returns:
 ---  * the menubaritem
-function manager.disable()
-    if manager.menubar then
-        return manager.menubar:removeFromMenuBar()
+function mod.disable()
+    if mod.menubar then
+        return mod.menubar:removeFromMenuBar()
     end
 end
 
@@ -79,9 +82,9 @@ end
 ---
 --- Returns:
 ---  * the menubaritem
-function manager.enable()
-    if manager.menubar then
-        return manager.menubar:returnToMenuBar()
+function mod.enable()
+    if mod.menubar then
+        return mod.menubar:returnToMenuBar()
     end
 end
 
@@ -94,18 +97,19 @@ end
 ---
 --- Returns:
 ---  * None
-function manager.updateMenubarIcon()
-    if not manager.menubar then
+function mod.updateMenubarIcon()
+    if not mod.menubar then
         return
     end
 
-    local displayMenubarAsIcon = manager.displayMenubarAsIcon()
+    local displayMenubarAsIcon = mod.displayMenubarAsIcon()
 
-    local title = config.appName
+    local title = mod._prefs.menubarLabel()
     local icon = nil
 
     if displayMenubarAsIcon then
-        local iconImage = image.imageFromPath(config.menubarIconPath)
+        local encoded = mod._prefs.menubarIcon().encoded
+        local iconImage = imageFromURL(encoded)
         icon = iconImage:setSize({w=18,h=18})
         title = ""
     end
@@ -114,7 +118,7 @@ function manager.updateMenubarIcon()
     -- Add any Title Suffix's:
     --------------------------------------------------------------------------------
     local titleSuffix = ""
-    for _,v in ipairs(manager.titleSuffix) do
+    for _,v in ipairs(mod.titleSuffix) do
 
         if type(v) == "function" then
             titleSuffix = titleSuffix .. v()
@@ -124,20 +128,20 @@ function manager.updateMenubarIcon()
 
     title = title .. titleSuffix
 
-    manager.menubar:setIcon(icon)
+    mod.menubar:setIcon(icon)
     --------------------------------------------------------------------------------
     -- Issue #406:
     -- For some reason setting the title to " " temporarily fixes El Capitan.
     --------------------------------------------------------------------------------
-    manager.menubar:setTitle(" ")
-    manager.menubar:setTitle(title)
+    mod.menubar:setTitle(" ")
+    mod.menubar:setTitle(title)
 
 end
 
 --- plugins.core.menu.manager.displayMenubarAsIcon <cp.prop: boolean>
 --- Field
 --- If `true`, the menubar item will be the app icon. If not, it will be the app name.
-manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true):watch(manager.updateMenubarIcon)
+mod.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true):watch(mod.updateMenubarIcon)
 
 --- plugins.core.menu.manager.addSection(priority) -> section
 --- Function
@@ -148,8 +152,8 @@ manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true):watch(m
 ---
 --- Returns:
 ---  * section - The section that was created.
-function manager.addSection(priority)
-    return manager.rootSection:addSection(priority)
+function mod.addSection(priority)
+    return mod.rootSection:addSection(priority)
 end
 
 --- plugins.core.menu.manager.addTitleSuffix(fnTitleSuffix)
@@ -161,9 +165,9 @@ end
 ---
 --- Returns:
 ---  * None
-function manager.addTitleSuffix(fnTitleSuffix)
-    manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
-    manager.updateMenubarIcon()
+function mod.addTitleSuffix(fnTitleSuffix)
+    mod.titleSuffix[#mod.titleSuffix + 1] = fnTitleSuffix
+    mod.updateMenubarIcon()
 end
 
 --- plugins.core.menu.manager.generateMenuTable()
@@ -175,10 +179,9 @@ end
 ---
 --- Returns:
 ---  * The Menu Table
-function manager.generateMenuTable()
-    return manager.rootSection:generateMenuTable()
+function mod.generateMenuTable()
+    return mod.rootSection:generateMenuTable()
 end
-
 
 local plugin = {
     id          = "core.menu.manager",
@@ -188,7 +191,7 @@ local plugin = {
         ["core.preferences.panels.menubar"]     = "prefs",
         ["core.preferences.manager"]            = "prefsManager",
         ["core.controlsurfaces.manager"]        = "controlSurfaces",
-        ["core.toolbox.manager"]              = "toolbox",
+        ["core.toolbox.manager"]                = "toolbox",
     }
 }
 
@@ -197,26 +200,33 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Plugin Dependancies:
     --------------------------------------------------------------------------------
-    local prefs = deps.prefs
+    local prefs = deps.prefs.panel
     local prefsManager = deps.prefsManager
     local controlSurfaces = deps.controlSurfaces
     local toolbox = deps.toolbox
 
     --------------------------------------------------------------------------------
+    -- Watch for menubar label and icon changes in Preferences panel:
+    --------------------------------------------------------------------------------
+    mod._prefs = deps.prefs
+    mod._prefs.menubarLabel:watch(mod.updateMenubarIcon)
+    mod._prefs.menubarIcon:watch(mod.updateMenubarIcon)
+
+    --------------------------------------------------------------------------------
     -- Setup Menubar Manager:
     --------------------------------------------------------------------------------
-    manager.init()
-    manager.enable()
+    mod.init()
+    mod.enable()
 
     --------------------------------------------------------------------------------
     -- Top Section:
     --------------------------------------------------------------------------------
-    manager.top = manager.addSection(1)
+    mod.top = mod.addSection(1)
 
     --------------------------------------------------------------------------------
     -- Bottom Section:
     --------------------------------------------------------------------------------
-    manager.bottom = manager.addSection(9999999)
+    mod.bottom = mod.addSection(9999999)
         :addItem(0, function()
             return { title = "-" }
         end)
@@ -224,7 +234,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Tools Section:
     --------------------------------------------------------------------------------
-    local tools = manager.addSection(7777777)
+    local tools = mod.addSection(7777777)
     local toolsEnabled = config.prop("menubarToolsEnabled", true)
     tools:setDisabledFn(function() return not toolsEnabled() end)
     tools:addHeading(i18n("tools"))
@@ -235,12 +245,12 @@ function plugin.init(deps)
             checked = toolsEnabled,
         }
     )
-    manager.tools = tools
+    mod.tools = tools
 
     --------------------------------------------------------------------------------
     -- Help & Support Section:
     --------------------------------------------------------------------------------
-    local helpAndSupport = manager.addSection(8888888)
+    local helpAndSupport = mod.addSection(8888888)
     local helpAndSupportEnabled = config.prop("menubarHelpEnabled", true)
     helpAndSupport:setDisabledFn(function() return not helpAndSupportEnabled() end)
     helpAndSupport:addHeading(i18n("helpAndSupport"))
@@ -251,22 +261,22 @@ function plugin.init(deps)
             checked = helpAndSupportEnabled,
         }
     )
-    manager.helpAndSupport = helpAndSupport
+    mod.helpAndSupport = helpAndSupport
 
     --------------------------------------------------------------------------------
     -- Help & Support > CommandPost Section:
     --------------------------------------------------------------------------------
-    manager.commandPostHelpAndSupport = helpAndSupport:addMenu(10, function() return i18n("appName") end)
+    mod.commandPostHelpAndSupport = helpAndSupport:addMenu(10, function() return i18n("appName") end)
 
     --------------------------------------------------------------------------------
     -- Help & Support > Apple Section:
     --------------------------------------------------------------------------------
-    manager.appleHelpAndSupport = helpAndSupport:addMenu(20, function() return i18n("apple") end)
+    mod.appleHelpAndSupport = helpAndSupport:addMenu(20, function() return i18n("apple") end)
 
     --------------------------------------------------------------------------------
     -- Settings Section:
     --------------------------------------------------------------------------------
-    manager.settings = manager.bottom
+    mod.settings = mod.bottom
         :addHeading(i18n("settings"))
         :addItem(10.1, function()
             return { title = i18n("preferences"), fn = prefsManager.show }
@@ -287,28 +297,28 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Restart Menu Item:
     --------------------------------------------------------------------------------
-    manager.bottom:addSeparator(9999999):addItem(10000000, function()
+    mod.bottom:addSeparator(9999999):addItem(10000000, function()
         return { title = i18n("restart"),  fn = hs.reload }
     end)
 
     --------------------------------------------------------------------------------
     -- Quit Menu Item:
     --------------------------------------------------------------------------------
-    manager.bottom:addItem(99999999, function()
+    mod.bottom:addItem(99999999, function()
         return { title = i18n("quit"),  fn = function() config.application():kill() end }
     end)
 
     --------------------------------------------------------------------------------
     -- Version Info:
     --------------------------------------------------------------------------------
-    manager.bottom:addItem(99999999.1, function()
+    mod.bottom:addItem(99999999.1, function()
             return { title = "-" }
         end)
     :addItem(99999999.2, function()
         return { title = i18n("version") .. ": " .. config.appVersion .. " (" .. config.appBuild .. ")", disabled = true }
     end)
 
-    return manager
+    return mod
 end
 
 return plugin

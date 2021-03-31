@@ -124,11 +124,6 @@ mod.pluginPaths	= {
 --- Path to the Application Icon
 mod.iconPath = hs.processInfo["resourcePath"] .. "/AppIcon.icns"
 
---- cp.config.menubarIconPath -> string
---- Constant
---- Path to the Menubar Application Icon
-mod.menubarIconPath = mod.assetsPath .. "/CommandPost.png"
-
 --- cp.config.languagePath -> string
 --- Constant
 --- Path to the Languages Folder
