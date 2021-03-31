@@ -206,6 +206,9 @@
 		document.getElementById("touchWheelH").style.display = "none";
 		document.getElementById("touchWheelI").style.display = "none";
 
+		document.getElementById("wheelSnippetA").style.display = "none";
+		document.getElementById("wheelSnippetB").style.display = "none";
+
 		document.getElementById("pressActionA").style.display = "none";
 		document.getElementById("pressActionB").style.display = "none";
 		document.getElementById("pressActionC").style.display = "none";
@@ -223,6 +226,7 @@
 
 		document.getElementById("iconLabel").style.display = "none";
 		document.getElementById("iconLabelHeading").style.display = "none";
+		document.getElementById("iconLabelB").style.display = "none";
 
 		document.getElementById("vibrateA").style.display = "none";
 		document.getElementById("vibrateB").style.display = "none";
@@ -273,6 +277,7 @@
 
 			document.getElementById("iconLabel").style.display = "block";
 			document.getElementById("iconLabelHeading").style.display = "table-cell";
+			document.getElementById("iconLabelB").style.display = "table-cell";
 
 			document.getElementById("knobResolution").style.display = "block";
 
@@ -306,6 +311,7 @@
 
 			document.getElementById("iconLabel").style.display = "block";
 			document.getElementById("iconLabelHeading").style.display = "table-cell";
+			document.getElementById("iconLabelB").style.display = "table-cell";
 
 			document.getElementById("vibrateA").style.display = "block";
 			document.getElementById("vibrateB").style.display = "block";
@@ -378,6 +384,10 @@
 		// -------------------------------------------------
 		if (controlType == "wheelScreen") {
 			document.getElementById("wheelModes").style.display = "block";
+
+			document.getElementById("wheelSnippetA").style.display = "table-cell";
+			document.getElementById("wheelSnippetB").style.display = "table-cell";
+
 			if (selectedWheelMode == "slide") {
 				// -------------------------------------------------
 				// SLIDE ACTIONS:
@@ -1784,6 +1794,7 @@
 						<tr id="iconA">
 							<th width="229px">{{ i18n("imageDropZone") }}:</th>
 							<th width="229px" id="iconLabelHeading">{{ i18n("textLabel") }}:</th>
+							<th width="229px" id="wheelSnippetA">{{ i18n("useSnippetToGenerateIcon") }}:</th>
 						</tr>
 						<tr id="iconB">
 							<td width="229px">
@@ -1794,8 +1805,12 @@
 									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconDropZone(this)" onclick="pressIconDropZone()" />
 								</div>
 							</td>
-							<td width="229px" style="vertical-align: top;">
+							<td width="229px" style="vertical-align: top;" id="iconLabelB">
 								<textarea id="iconLabel" class="loupedeckActionTextbox" style="resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onchange="updateIconLabel()"></textarea>
+							</td>
+							<td width="229px" id="wheelSnippetB" style="vertical-align:top;">
+								<input type="text" id="wheel_snippet_action" class="loupedeckActionTextbox" style="margin-bottom: 10px;" value="" disabled="" placeholder="{{ i18n("none") }}"><br />
+								<a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a>
 							</td>
 						</tr>
 						<tr id="iconC">
@@ -1817,7 +1832,7 @@
 
 						<!-- USE SNIPPET TO GENERATE ICON: -->
 						<tr id="snippetA">
-							<th width="229px">Use Snippet to Generate Icon:</th>
+							<th width="229px">{{ i18n("useSnippetToGenerateIcon") }}:</th>
 						</tr>
 						<tr id="snippetB">
 							<td width="229px"><input type="text" id="snippet_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>

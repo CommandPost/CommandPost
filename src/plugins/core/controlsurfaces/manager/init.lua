@@ -372,6 +372,7 @@ function mod.new()
             :attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
+            :sizeMode("small")
             :darkMode(true)
     end
 

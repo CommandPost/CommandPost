@@ -55,7 +55,7 @@ local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
 -- BUY_MORE_ICONS_URL -> string
 -- Constant
 -- URL to SideshowFX Website
-local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
+local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Loupedeck"
 
 -- SNIPPET_HELP_URL -> string
 -- Constant
@@ -427,6 +427,11 @@ function mod.mt:renderPanel(context)
     return self._renderPanel(context)
 end
 
+-- insertImageCache -> table
+-- Variable
+-- A cache for commonly inserted images.
+local insertImageCache = {}
+
 -- insertImage(path)
 -- Function
 -- Encodes an image as a PNG URL String
@@ -437,9 +442,15 @@ end
 -- Returns:
 --  * The encoded URL string
 local function insertImage(path)
-    local p = mod._env:pathToAbsolute(path)
-    local i = imageFromPath(p)
-    return i:encodeAsURLString(false, "PNG")
+    if insertImageCache[path] then
+        return insertImageCache[path]
+    else
+        local p = mod._env:pathToAbsolute(path)
+        local i = imageFromPath(p)
+        local result = i:encodeAsURLString(false, "PNG")
+        insertImageCache[path] = result
+        return result
+    end
 end
 
 --- plugins.core.loupedeckctandlive.prefs:generateContent() -> string
@@ -765,7 +776,43 @@ function mod.mt:updateUI(params)
 
                     local successful, result = pcall(load(code))
                     if successful and isImage(result) then
-                        currentEncodedIcon = result:encodeAsURLString(true)
+                        local size = result:size()
+                        if size.w == 90 and size.h == 90 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 90x90 so proceed:
+                            --------------------------------------------------------------------------------
+                            currentEncodedIcon = result:encodeAsURLString(true)
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 90x90 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
+
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
+
+                            --------------------------------------------------------------------------------
+                            -- Icon - Scaled to fit:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
+
+                            local fixedImage = v:imageFromCanvas()
+
+                            v:delete()
+                            v = nil -- luacheck: ignore
+
+                            currentEncodedIcon = fixedImage:encodeAsURLString(true)
+                        end
                     end
                 end
             end
@@ -810,8 +857,73 @@ function mod.mt:updateUI(params)
         --------------------------------------------------------------------------------
         if self.id == "loupedeckct" then
             local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
+
+            local encodedIcon
             if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
-                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
+                encodedIcon = wheelScreen.encodedIcon
+            end
+
+            --------------------------------------------------------------------------------
+            -- Handle Snippets:
+            --------------------------------------------------------------------------------
+            local currentSnippet = selectedBank.wheelScreen and selectedBank.wheelScreen["1"] and selectedBank.wheelScreen["1"].snippetAction
+            if currentSnippet and currentSnippet.action then
+                local code = currentSnippet.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Load Snippet from Snippet Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippetID = currentSnippet.action.id
+                    local snippets = mod._scriptingPreferences.snippets()
+                    if snippets[snippetID] then
+                        code = snippets[snippetID].code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        local size = result:size()
+                        if size.w == 240 and size.h == 240 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 240x240 so proceed:
+                            --------------------------------------------------------------------------------
+                            encodedIcon = result:encodeAsURLString(true)
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 240x240 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
+
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
+
+                            --------------------------------------------------------------------------------
+                            -- Icon - Scaled as per preferences:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
+
+                            local fixedImage = v:imageFromCanvas()
+
+                            v:delete()
+                            v = nil -- luacheck: ignore
+
+                            encodedIcon = fixedImage:encodeAsURLString(true)
+                        end
+                    end
+                end
+            end
+
+            if encodedIcon then
+                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. encodedIcon .. [[")]] .. "\n"
             else
                 updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
             end
@@ -869,6 +981,7 @@ function mod.mt:updateUI(params)
         changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
         changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
         changeValueByID('snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
+        changeValueByID('wheel_snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
         changeValueByID('vibratePress', ']] .. vibratePressValue .. [[');
         changeValueByID('vibrateRelease', ']] .. vibrateReleaseValue .. [[');
         changeValueByID('vibrateLeft', ']] .. vibrateLeftValue .. [[');
@@ -2338,20 +2451,15 @@ function mod.mt:panelCallback(id, params)
                     -- Write Preferences to disk:
                     --------------------------------------------------------------------------------
                     mod._scriptingPreferences.snippets(snippets)
-
-                    --------------------------------------------------------------------------------
-                    -- Open the Scripting Preferences Panel:
-                    --------------------------------------------------------------------------------
-                    mod._scriptingPreferences._manager.lastTab("scripting")
-                    mod._scriptingPreferences._manager.selectPanel("scripting")
-                    mod._scriptingPreferences._manager.show()
-
-                    return
                 end
             end
 
-            playErrorSound()
-
+            --------------------------------------------------------------------------------
+            -- Open the Scripting Preferences Panel:
+            --------------------------------------------------------------------------------
+            mod._scriptingPreferences._manager.lastTab("scripting")
+            mod._scriptingPreferences._manager.selectPanel("scripting")
+            mod._scriptingPreferences._manager.show()
         elseif callbackType == "examples" then
             --------------------------------------------------------------------------------
             -- Examples Button:
