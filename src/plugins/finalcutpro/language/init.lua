@@ -95,7 +95,7 @@ function plugin.init(deps)
     -- New Menu Section:
     -------------------------------------------------------------------------------
     local enabled = config.prop("menubar.global.FinalCutPro.enabled", true)
-    local prefs = deps.prefs
+    local prefs = deps.prefs.panel
     prefs:addCheckbox(105,
         {
             label = i18n("show") .. " " .. i18n("finalCutPro"),

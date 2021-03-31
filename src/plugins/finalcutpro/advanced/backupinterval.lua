@@ -27,11 +27,22 @@ function plugin.init(deps)
     local panel = deps.prefs.panel
     if panel then
         panel
-            :addParagraph(2207, "<br />", false)
+            :addContent(2207.1, [[
+                <style>
+                    .backupInterval select {
+                        margin-left: 90px;
+                    }
+                    .backupMinimumDuration select {
+                        margin-left: 25px;
+                    }
+                </style>
+            ]], false)
+            :addParagraph(2207.2, "<br />", false)
             :addSelect(2208,
                 {
+                    class       = "backupInterval",
                     required    = true,
-                    width       = 200,
+                    width       = 100,
                     label       = i18n("backupInterval"),
                     value       = function() return fcp.preferences.FFPeriodicBackupInterval or "15" end,
                     options     = function()
@@ -53,8 +64,9 @@ function plugin.init(deps)
         panel
             :addSelect(2209,
                 {
+                    class       = "backupMinimumDuration",
                     required    = true,
-                    width       = 200,
+                    width       = 100,
                     label       = i18n("backupMinimumDuration"),
                     value       = function() return fcp.preferences.FFPeriodicBackupMinimumDuration or "5" end,
                     options     = function()

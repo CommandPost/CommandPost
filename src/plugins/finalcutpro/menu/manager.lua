@@ -32,7 +32,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
 
     local menuManager = deps.menuManager
-    local prefs = deps.prefs
+    local prefs = deps.prefs.panel
 
     local SECTION_DISABLED_PREFERENCES_KEY_PREFIX = "menubar.sectionDisabled."
 

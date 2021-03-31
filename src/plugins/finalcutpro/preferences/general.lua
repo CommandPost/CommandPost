@@ -8,6 +8,8 @@ local fcp           = require "cp.apple.finalcutpro"
 local html          = require "cp.web.html"
 local i18n          = require "cp.i18n"
 
+local execute       = os.execute
+
 local plugin = {
     id              = "finalcutpro.preferences.general",
     group           = "finalcutpro",
@@ -60,12 +62,28 @@ function plugin.init(deps)
             :addButton(8999,
                 {
                     label = i18n("moveableMarkers") .. "?",
-                    width = 200,
+                    width = 250,
                     onclick = function()
-                        os.execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-moveable-markers"')
+                        execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-moveable-markers"')
                     end,
                 })
 
+            :addButton(8999.1,
+                {
+                    label = i18n("showTimelineInViewers") .. "?",
+                    width = 250,
+                    onclick = function()
+                        execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-show-timeline-in-viewers"')
+                    end,
+                })
+            :addButton(8999.2,
+                {
+                    label = i18n("hiddenFCPXMLImportExportOptions") .. "?",
+                    width = 250,
+                    onclick = function()
+                        execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-the-hidden-fcpxml-import-export-option"')
+                    end,
+                })
             :addContent(9000, [[
                     </div>
                 </div>

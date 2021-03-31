@@ -1157,7 +1157,7 @@ function mod.mt:panelCallback(id, params)
                 self.lastIconPath(self.defaultIconPath())
             end
 
-            local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), self.lastIconPath(), true, false, false, mod.supportedExtensions, true)
+            local result = chooseFileOrFolder(i18n("pleaseSelectAnIcon"), self.lastIconPath(), true, false, false, mod.supportedExtensions, true)
             local failed = false
             if result and result["1"] then
                 local path = result["1"]
