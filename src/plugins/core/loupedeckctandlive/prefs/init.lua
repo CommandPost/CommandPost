@@ -34,7 +34,6 @@ local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
 local isImage                   = tools.isImage
 local mergeTable                = tools.mergeTable
-local playErrorSound            = tools.playErrorSound
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local split                     = tools.split
@@ -858,9 +857,9 @@ function mod.mt:updateUI(params)
         if self.id == "loupedeckct" then
             local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
 
-            local encodedIcon
+            local newEncodedIcon
             if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
-                encodedIcon = wheelScreen.encodedIcon
+                newEncodedIcon = wheelScreen.encodedIcon
             end
 
             --------------------------------------------------------------------------------
@@ -916,14 +915,14 @@ function mod.mt:updateUI(params)
                             v:delete()
                             v = nil -- luacheck: ignore
 
-                            encodedIcon = fixedImage:encodeAsURLString(true)
+                            newEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
                     end
                 end
             end
 
-            if encodedIcon then
-                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. encodedIcon .. [[")]] .. "\n"
+            if newEncodedIcon then
+                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. newEncodedIcon .. [[")]] .. "\n"
             else
                 updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
             end
