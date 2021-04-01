@@ -785,18 +785,40 @@ function activator:activeChoices()
     local queryLen = query and query:len() or 0
     local searchSubText = self:searchSubText()
 
+    local queryWords = {}
+    if queryLen > 0 then
+        for w in string.gmatch(query, "([^%s]+)") do
+            insert(queryWords, w)
+        end
+    end
+
     local results = moses.select(self:allChoices(), function(choice)
         if (showHidden or not choice.hidden) and not disabledHandlers[choice.type] then
-            -- Check if we are filtering by query
+            --------------------------------------------------------------------------------
+            -- Check if we are filtering by query:
+            --------------------------------------------------------------------------------
             if queryLen > 0 then
+                --------------------------------------------------------------------------------
                 -- Don't show deprecated actions in the Search Console:
+                --------------------------------------------------------------------------------
                 if choice.text:sub(1, 11) == "Deprecated:" then
                     return false
                 end
 
-                -- Store the match index for sorting later.
-                choice.textMatch = choice.text:lower():find(query, 1, true)
-                if choice.textMatch then
+                local textMatch = true
+                for _, v in pairs(queryWords) do
+                    if not choice.text:lower():find(v, 1, true) then
+                        textMatch = false
+                        break
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Store the match index for sorting later:
+                --------------------------------------------------------------------------------
+                choice.textMatch = textMatch
+
+                if textMatch then
                     return true
                 elseif searchSubText == true and choice.subText and choice.subText:lower():find(query, 1, true) then
                     return true

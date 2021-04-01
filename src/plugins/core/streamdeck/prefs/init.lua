@@ -1395,11 +1395,18 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 880,
+        height          = 890,
     })
+        :addContent(1, html.style ([[
+                .enableStreamDeck {
+                    padding-bottom:10px;
+                }
+
+            ]], true))
         :addHeading(6, i18n("streamDeck"))
         :addCheckbox(7,
             {
+                class       = "enableStreamDeck",
                 label       = i18n("enableStreamDeck"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)

@@ -1350,7 +1350,7 @@ function plugin.init(deps, env)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
-        priority        = 2035,
+        priority        = 2032.4,
         id              = panelID,
         label           = i18n("midi"),
         image           = imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
