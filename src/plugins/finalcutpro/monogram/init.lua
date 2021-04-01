@@ -21,6 +21,11 @@ local displayMessage    = dialog.displayMessage
 
 local mod = {}
 
+-- DEFER_VALUE -> number
+-- Constant
+-- How long we should defer all the update functions.
+local DEFER_VALUE = 0.01
+
 -- makeWheelHandler(puckFinderFn) -> function
 -- Function
 -- Creates a 'handler' for wheel controls, applying them to the puck returned by the `puckFinderFn`
@@ -31,22 +36,24 @@ local mod = {}
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeWheelHandler(wheelFinderFn, vertical)
+    local absolute
     local wheelRight = 0
     local wheelUp = 0
-
     local wheel = wheelFinderFn()
 
-    local updateUI = deferred.new(0.01):action(function()
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
         if wheel:isShowing() then
-            local current = wheel:colorOrientation()
-
-            current.right = current.right + wheelRight
-            current.up = current.up + wheelUp
-
-            wheel:colorOrientation(current)
-
-            wheelRight = 0
-            wheelUp = 0
+            if absolute then
+                wheel:colorOrientation(absolute)
+                absolute = nil
+            else
+                local current = wheel:colorOrientation()
+                current.right = current.right + wheelRight
+                current.up = current.up + wheelUp
+                wheel:colorOrientation(current)
+                wheelRight = 0
+                wheelUp = 0
+            end
         else
             wheel:show()
         end
@@ -55,13 +62,11 @@ local function makeWheelHandler(wheelFinderFn, vertical)
     return function(data)
         if data.operation == "+" then
             local increment = data.params and data.params[1]
-
             if vertical then
                 wheelUp = wheelUp + increment
             else
                 wheelRight = wheelRight + increment
             end
-
             updateUI()
         elseif data.operation == "=" then
             local value = data.params and data.params[1]
@@ -71,7 +76,8 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             else
                 current.right = value
             end
-            wheel:colorOrientation(current)
+            absolute = copy(current)
+            updateUI()
         end
     end
 end
@@ -172,14 +178,20 @@ end
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeSaturationHandler(wheelFinderFn)
+    local absolute
     local saturationShift = 0
     local wheel = wheelFinderFn()
 
-    local updateUI = deferred.new(0.01):action(function()
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
         if wheel:isShowing() then
-            local current = wheel:saturationValue()
-            wheel:saturationValue(current + saturationShift)
-            saturationShift = 0
+            if absolute then
+                wheel:saturationValue(absolute)
+                absolute = nil
+            else
+                local current = wheel:saturationValue()
+                wheel:saturationValue(current + saturationShift)
+                saturationShift = 0
+            end
         else
             wheel:show()
         end
@@ -191,8 +203,8 @@ local function makeSaturationHandler(wheelFinderFn)
             saturationShift = saturationShift + increment
             updateUI()
         elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            wheel:saturationValue(value)
+            absolute = data.params and data.params[1]
+            updateUI()
         end
     end
 end
@@ -207,14 +219,20 @@ end
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeBrightnessHandler(wheelFinderFn)
+    local absolute
     local brightnessShift = 0
     local wheel = wheelFinderFn()
 
-    local updateUI = deferred.new(0.01):action(function()
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
         if wheel:isShowing() then
-            local current = wheel:brightnessValue()
-            wheel:brightnessValue(current + brightnessShift)
-            brightnessShift = 0
+            if absolute then
+                wheel:brightnessValue(absolute)
+                absolute = nil
+            else
+                local current = wheel:brightnessValue()
+                wheel:brightnessValue(current + brightnessShift)
+                brightnessShift = 0
+            end
         else
             wheel:show()
         end
@@ -226,8 +244,8 @@ local function makeBrightnessHandler(wheelFinderFn)
             brightnessShift = brightnessShift + increment
             updateUI()
         elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            wheel:brightnessValue(value)
+            absolute = data.params and data.params[1]
+            updateUI()
         end
     end
 end
@@ -243,19 +261,29 @@ end
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeColourBoardHandler(boardFinderFn, angle)
+    local absolute
     local colorBoardShift = 0
     local board = boardFinderFn()
 
-    local updateUI = deferred.new(0.01):action(function()
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
         if board:isShowing() then
-            if angle then
-                local current = board:angle()
-                board:angle(current + colorBoardShift)
-                colorBoardShift = 0
+            if absolute then
+                if angle then
+                    board:angle(absolute)
+                else
+                    board:percent(absolute)
+                end
+                absolute = nil
             else
-                local current = board:percent()
-                board:percent(current + colorBoardShift)
-                colorBoardShift = 0
+                if angle then
+                    local current = board:angle()
+                    board:angle(current + colorBoardShift)
+                    colorBoardShift = 0
+                else
+                    local current = board:percent()
+                    board:percent(current + colorBoardShift)
+                    colorBoardShift = 0
+                end
             end
         else
             board:show()
@@ -268,12 +296,8 @@ local function makeColourBoardHandler(boardFinderFn, angle)
             colorBoardShift = colorBoardShift + increment
             updateUI()
         elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            if angle then
-                board:angle(value)
-            else
-                board:percent(value)
-            end
+            absolute = data.params and data.params[1]
+            updateUI()
         end
     end
 end
@@ -288,14 +312,20 @@ end
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeSliderHandler(finderFn)
+    local absolute
     local shift = 0
     local slider = finderFn()
 
-    local updateUI = deferred.new(0.01):action(function()
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
         if slider:isShowing() then
-            local current = slider:value()
-            slider:value(current + shift)
-            shift = 0
+            if absolute then
+                slider:value(absolute)
+                absolute = nil
+            else
+                local current = slider:value()
+                slider:value(current + shift)
+                shift = 0
+            end
         else
             slider:show()
         end
@@ -307,8 +337,8 @@ local function makeSliderHandler(finderFn)
             shift = shift + increment
             updateUI()
         elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            slider:value(value)
+            absolute = data.params and data.params[1]
+            updateUI()
         end
     end
 end
