@@ -927,14 +927,19 @@ function plugin.init(deps, env)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
-        priority        = 2033.1,
+        priority        = 2032.3,
         id              = "tourbox",
         label           = i18n("tourBox"),
         image           = imageFromPath(env:pathToAbsolute("/images/TourBox.icns")),
         tooltip         = i18n("tourBox"),
-        height          = 1060,
+        height          = 1070,
     })
-        :addHeading(1, i18n("tourBox"))
+        :addContent(1, html.style ([[
+                .displayMessageWhenChangingBanks {
+                    padding-bottom:10px;
+                }
+            ]], true))
+        :addHeading(1.1, i18n("tourBox"))
         :addCheckbox(2,
             {
                 label       = i18n("enableTourBoxSupport"),
@@ -955,6 +960,7 @@ function plugin.init(deps, env)
         )
         :addCheckbox(4,
             {
+                class       = "displayMessageWhenChangingBanks",
                 label       = i18n("displayMessageWhenChangingBanks"),
                 checked     = mod._tourboxManager.displayMessageWhenChangingBanks,
                 onchange    = function(_, params) mod._tourboxManager.displayMessageWhenChangingBanks(params.checked) end,

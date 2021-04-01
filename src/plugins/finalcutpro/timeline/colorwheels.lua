@@ -36,6 +36,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Define Ranges:
     --------------------------------------------------------------------------------
+    local RGB_SINGLE_INCREMENT  = 0.00392157
     local KEY_PRESS             = ColorWell.KEY_PRESS
     local MIX_RANGES            = {0.01, 0.02, 0.03, 0.04, 0.05, 0.1}
     local SATURATION_RANGES     = {0.01, 0.02, 0.03, 0.04, 0.05, 0.1}
@@ -921,6 +922,322 @@ function plugin.init(deps)
             colorWheels:mix(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("reset"))
+
+    --------------------------------------------------------------------------------
+    -- Color Wheels - RGB Control - Master:
+    --------------------------------------------------------------------------------
+    local colorWheelMasterRedValue = 0
+    local colorWheelMasterGreenValue = 0
+    local colorWheelMasterBlueValue = 0
+
+    local updateRGBColorWheelsMaster = deferred.new(0.01):action(function()
+        if not colorWheels:isShowing() then
+            colorWheels:show()
+        else
+            local currentValue = colorWheels.master:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelMasterRedValue
+            currentValue.green = currentValue.green + colorWheelMasterGreenValue
+            currentValue.blue = currentValue.blue + colorWheelMasterBlueValue
+
+            colorWheels.master:colorValue(currentValue)
+
+            colorWheelMasterRedValue = 0
+            colorWheelMasterGreenValue = 0
+            colorWheelMasterBlueValue = 0
+        end
+    end)
+
+    fcpxCmds
+        :add("colorWheelMasterRedUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMasterRedValue = colorWheelMasterRedValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("red") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelMasterRedDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMasterRedValue = colorWheelMasterRedValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("red") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelMasterGreenUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMasterGreenValue = colorWheelMasterGreenValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("green") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelMasterGreenDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMasterGreenValue = colorWheelMasterGreenValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("green") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelMasterBlueUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMasterBlueValue = colorWheelMasterBlueValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("blue") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelMasterBlueDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMasterBlueValue = colorWheelMasterBlueValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("blue") .. " " .. i18n("down"))
+
+    --------------------------------------------------------------------------------
+    -- Color Wheels - RGB Control - Shadows:
+    --------------------------------------------------------------------------------
+    local colorWheelShadowsRedValue = 0
+    local colorWheelShadowsGreenValue = 0
+    local colorWheelShadowsBlueValue = 0
+
+    local updateRGBColorWheelsShadows = deferred.new(0.01):action(function()
+        if not colorWheels:isShowing() then
+            colorWheels:show()
+        else
+            local currentValue = colorWheels.shadows:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelShadowsRedValue
+            currentValue.green = currentValue.green + colorWheelShadowsGreenValue
+            currentValue.blue = currentValue.blue + colorWheelShadowsBlueValue
+
+            colorWheels.shadows:colorValue(currentValue)
+
+            colorWheelShadowsRedValue = 0
+            colorWheelShadowsGreenValue = 0
+            colorWheelShadowsBlueValue = 0
+        end
+    end)
+
+    fcpxCmds
+        :add("colorWheelShadowsRedUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelShadowsRedValue = colorWheelShadowsRedValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("red") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelShadowsRedDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelShadowsRedValue = colorWheelShadowsRedValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("red") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelShadowsGreenUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelShadowsGreenValue = colorWheelShadowsGreenValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("green") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelShadowsGreenDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelShadowsGreenValue = colorWheelShadowsGreenValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("green") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelShadowsBlueUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelShadowsBlueValue = colorWheelShadowsBlueValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("blue") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelShadowsBlueDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelShadowsBlueValue = colorWheelShadowsBlueValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("blue") .. " " .. i18n("down"))
+
+    --------------------------------------------------------------------------------
+    -- Color Wheels - RGB Control - Midtones:
+    --------------------------------------------------------------------------------
+    local colorWheelMidtonesRedValue = 0
+    local colorWheelMidtonesGreenValue = 0
+    local colorWheelMidtonesBlueValue = 0
+
+    local updateRGBColorWheelsMidtones = deferred.new(0.01):action(function()
+        if not colorWheels:isShowing() then
+            colorWheels:show()
+        else
+            local currentValue = colorWheels.midtones:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelMidtonesRedValue
+            currentValue.green = currentValue.green + colorWheelMidtonesGreenValue
+            currentValue.blue = currentValue.blue + colorWheelMidtonesBlueValue
+
+            colorWheels.midtones:colorValue(currentValue)
+
+            colorWheelMidtonesRedValue = 0
+            colorWheelMidtonesGreenValue = 0
+            colorWheelMidtonesBlueValue = 0
+        end
+    end)
+
+    fcpxCmds
+        :add("colorWheelMidtonesRedUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMidtonesRedValue = colorWheelMidtonesRedValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("red") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesRedDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMidtonesRedValue = colorWheelMidtonesRedValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("red") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesGreenUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMidtonesGreenValue = colorWheelMidtonesGreenValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("green") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesGreenDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMidtonesGreenValue = colorWheelMidtonesGreenValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("green") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesBlueUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMidtonesBlueValue = colorWheelMidtonesBlueValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("blue") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesBlueDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelMidtonesBlueValue = colorWheelMidtonesBlueValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("blue") .. " " .. i18n("down"))
+
+    --------------------------------------------------------------------------------
+    -- Color Wheels - RGB Control - Highlights:
+    --------------------------------------------------------------------------------
+    local colorWheelHighlightsRedValue = 0
+    local colorWheelHighlightsGreenValue = 0
+    local colorWheelHighlightsBlueValue = 0
+
+    local updateRGBColorWheelsHighlights = deferred.new(0.01):action(function()
+        if not colorWheels:isShowing() then
+            colorWheels:show()
+        else
+            local currentValue = colorWheels.highlights:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelHighlightsRedValue
+            currentValue.green = currentValue.green + colorWheelHighlightsGreenValue
+            currentValue.blue = currentValue.blue + colorWheelHighlightsBlueValue
+
+            colorWheels.highlights:colorValue(currentValue)
+
+            colorWheelHighlightsRedValue = 0
+            colorWheelHighlightsGreenValue = 0
+            colorWheelHighlightsBlueValue = 0
+        end
+    end)
+
+    fcpxCmds
+        :add("colorWheelHighlightsRedUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelHighlightsRedValue = colorWheelHighlightsRedValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsHighlights()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("red") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsRedDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelHighlightsRedValue = colorWheelHighlightsRedValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsHighlights()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("red") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsGreenUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelHighlightsGreenValue = colorWheelHighlightsGreenValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsHighlights()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("green") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsGreenDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelHighlightsGreenValue = colorWheelHighlightsGreenValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsHighlights()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("green") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsBlueUp")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelHighlightsBlueValue = colorWheelHighlightsBlueValue + RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsHighlights()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("blue") .. " " .. i18n("up"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsBlueDown")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheelHighlightsBlueValue = colorWheelHighlightsBlueValue - RGB_SINGLE_INCREMENT
+            updateRGBColorWheelsHighlights()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("blue") .. " " .. i18n("down"))
 
 end
 
