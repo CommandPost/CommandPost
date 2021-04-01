@@ -202,12 +202,12 @@ function plugin.init(deps, env)
     mod.env             = env
 
     manager.addPanel({
-        priority        = 9010,
+        priority        = 2032.2,
         id              = "monogram",
         label           = i18n("monogram"),
         image           = imageFromPath(env:pathToAbsolute("/images/Monogram.icns")),
         tooltip         = i18n("monogram"),
-        height          = 730,
+        height          = 800,
     })
         :addContent(1, html.style ([[
                 .buttonOne {
@@ -221,6 +221,8 @@ function plugin.init(deps, env)
                 }
             ]], true))
         :addHeading(2, i18n("monogramSupport"))
+        :addParagraph(2.1, i18n("monogramPreferencesDescription"), false)
+        :addParagraph(2.2, html.br())
         :addCheckbox(3,
             {
                 label = i18n("enableMonogramSupport"),

@@ -36,7 +36,7 @@ local MONOGRAM_CREATOR_BUNDLE_ID = "com.monogramcc.Monogram-Creator"
 -- MONOGRAM_CREATOR_DOWNLOAD_URL -> string
 -- Constant
 -- The Monogram Creator Download URL.
-local MONOGRAM_CREATOR_DOWNLOAD_URL = "https://monogramcc.com/download"
+local MONOGRAM_CREATOR_DOWNLOAD_URL = "https://monogramcc.com/download/beta/"
 
 -- MONOGRAM_CREATOR_INTEGRATIONS_PATH -> string
 -- Constant
@@ -143,7 +143,7 @@ local function callbackFn(data, sockAddress)
         if action then
             action(decodedData)
         else
-            log.ef("Unknown Monogram Message:\n%s\n%s", inspect(decodedData))
+            log.ef("Unknown Monogram Message:\n%s\n%s", decodedData and inspect(decodedData))
         end
 
         --------------------------------------------------------------------------------
@@ -320,17 +320,17 @@ function plugin.init(deps)
     -- Register favourites:
     --------------------------------------------------------------------------------
     for i=1, mod.NUMBER_OF_FAVOURITES do
-        mod.registerAction("CommandPost Favourites.Favourite " .. i, function()
+        mod.registerAction("CommandPost Favourites.Favourite " .. string.format("%02d", i), function()
             local faves = mod.favourites()
             local fave = faves[tostring(i)]
             if fave then
                 local handler = deps.actionManager.getHandler(fave.handlerID)
                 if handler then
                     if not handler:execute(fave.action) then
-                        log.ef("Unable to execute Monogram Favourite #%s: %s", i, inspect(fave))
+                        log.ef("Unable to execute Monogram Favourite #%s: %s", i, fave and inspect(fave))
                     end
                 else
-                    log.ef("Unable to find handler to execute Monogram Favourite #%s: %s", i, inspect(fave))
+                    log.ef("Unable to find handler to execute Monogram Favourite #%s: %s", i, fave and inspect(fave))
                 end
             else
                 log.ef("No action is assigned to the favourite in the Monogram Control Surfaces Panel in CommandPost.")

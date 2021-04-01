@@ -1741,6 +1741,7 @@
         "scripting": "Scripting",
         "scriptingTools": "Scripting Tools",
         "scrollingTimelineActivated": "Scrolling Timeline Activated",
+        "monogramPreferencesDescription": "CommandPost uses the official Monogram Creator API to allow users to control both legacy Palette modules and the latest Monogram modules, such as Orbiter.<br /><br /><span style='color: #9d623a'><b>Monogram support requires the latest beta or alpha builds of Monogram Creator - it won't work on the public release yet.</b></span>",
         "scrollingTimelineDeactivated": "Scrolling Timeline Deactivated",
         "scrubTimeline": "Scrub Timeline",
         "scrubTimelineDescription": "Allows you to move the playhead one frame left or right.",
