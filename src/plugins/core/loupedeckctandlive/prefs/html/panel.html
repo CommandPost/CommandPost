@@ -14,6 +14,10 @@
 		document.getElementById('color').jscolor.fromString(value);
 	}
 
+	function changeFontColor(value) {
+		document.getElementById('fontColor').jscolor.fromString(value);
+	}
+
 	function changeImage(id, data) {
 		document.getElementById(id).getElementsByTagName('img')[0].src = data;
 	}
@@ -63,6 +67,25 @@
 				id: "{{ id }}",
 				params: {
 					type: "clearIcon",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function selectFont() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "selectFont",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					selectedControl: document.getElementById("selectedControl").value,
@@ -492,6 +515,26 @@
 		}
 	}
 
+	function updateFontColor() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateFontColor",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					value: document.getElementById('fontColor').jscolor.toString(),
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function updateIconLabel() {
 		try {
 			var result = {
@@ -831,6 +874,25 @@
 				id: "{{ id }}",
 				params: {
 					type: "buyMoreIcons",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateFontSize() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateFontSize",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("fontSize").value,
 				},
 			}
 			postMessage(result);
@@ -1180,8 +1242,8 @@
 	<tr>
 		<th style=text-align: left;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
-				<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
-					<option value="All Applications">{{ i18n("allApplications") }}</option>
+				<select id="application" style="width: 250px;" onchange="updateApplicationAndBank()">
+					<option value="All Applications">{{ i18n("unlistedAndIgnoredApplications") }}</option>
 					<option disabled>──────────</option>
 					{%
 					for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
@@ -1652,7 +1714,7 @@
 						<tr id="ledColorB">
 							<td width="229px">
 								<div>
-									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
+									<input id="color" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
 								</div>
 							</td>
 						</tr>
@@ -1806,7 +1868,17 @@
 								</div>
 							</td>
 							<td width="229px" style="vertical-align: top;" id="iconLabelB">
-								<textarea id="iconLabel" class="loupedeckActionTextbox" style="resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onchange="updateIconLabel()"></textarea>
+								<textarea id="iconLabel" class="loupedeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea>
+								<a href="#" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
+								<select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
+									{%
+									for i=1, 200 do
+									%}
+									<option value="{{i}}">{{i}}px</option>
+									{%
+									end
+									%}
+								</select><input style="width: 53px;" id="fontColor" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
 							</td>
 							<td width="229px" id="wheelSnippetB" style="vertical-align:top;">
 								<input type="text" id="wheel_snippet_action" class="loupedeckActionTextbox" style="margin-bottom: 10px;" value="" disabled="" placeholder="{{ i18n("none") }}"><br />

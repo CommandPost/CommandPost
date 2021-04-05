@@ -336,12 +336,10 @@ function mod.new(deviceType)
     --- Enable or disable the automatic switching of applications.
     o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function() o:refresh() end)
 
-    --- plugins.core.loupedeckctandlive.manager.refreshTimer -> hs.timer
+    --- plugins.core.loupedeckctandlive.prefs.snippetsRefreshFrequency <cp.prop: string>
     --- Field
-    --- A timer to automatically refresh the screen.
-    o.refreshTimer = timer.new(REFRESH_THE_SCREEN_FREQUENCY, function()
-        o:refresh()
-    end)
+    --- How often snippets are refreshed.
+    o.snippetsRefreshFrequency = config.prop(o.id .. ".preferences.snippetsRefreshFrequency", "1")
 
     --- plugins.core.loupedeckctandlive.manager.enabled <cp.prop: boolean>
     --- Field
@@ -361,7 +359,11 @@ function mod.new(deviceType)
             o.appWatcher:stop()
             o.driveWatcher:stop()
             o.sleepWatcher:stop()
-            o.refreshTimer:stop()
+
+            if o.refreshTimer then
+                o.refreshTimer:stop()
+                o.refreshTimer = nil
+            end
 
             if o.device then
                 --------------------------------------------------------------------------------
@@ -1070,6 +1072,12 @@ function mod.mt:refresh(dueToAppChange)
     -- Enable or disable the refresh timer:
     --------------------------------------------------------------------------------
     if containsIconSnippets then
+        if not self.refreshTimer then
+            local snippetsRefreshFrequency = tonumber(self.snippetsRefreshFrequency())
+            self.refreshTimer = timer.new(snippetsRefreshFrequency, function()
+                self:refresh()
+            end)
+        end
         self.refreshTimer:start()
     else
         self.refreshTimer:stop()

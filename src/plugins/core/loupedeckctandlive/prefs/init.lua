@@ -8,6 +8,7 @@ local log                       = require "hs.logger".new "prefsLoupedeckCT"
 
 local application               = require "hs.application"
 local canvas                    = require "hs.canvas"
+local chooser                   = require "hs.chooser"
 local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
@@ -15,6 +16,8 @@ local inspect                   = require "hs.inspect"
 local loupedeck                 = require "hs.loupedeck"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
+local styledtext                = require "hs.styledtext"
+local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local html                      = require "cp.web.html"
@@ -24,6 +27,7 @@ local tools                     = require "cp.tools"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
+local delayed                   = timer.delayed
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
@@ -71,6 +75,11 @@ mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp", "a
 --- Default Path where built-in icons are stored
 mod.defaultIconPath = config.assetsPath .. "/icons/"
 
+-- Icon Label Defaults:
+local DEFAULT_FONT_COLOR    = "FFFFFF"
+local DEFAULT_FONT_SIZE     = "15"
+local DEFAULT_FONT          = ".AppleSystemUIFont"
+
 --- plugins.core.loupedeckctandlive.prefs.new() -> Loupedeck
 --- Constructor
 --- Creates a new Loupedeck Preferences panel.
@@ -97,7 +106,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1090
+        o.height            = 1110
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -108,7 +117,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1090
+        o.height            = 1110
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -181,6 +190,7 @@ function mod.new(deviceType)
     o.enableFlashDrive                    = o.device.enableFlashDrive
     o.automaticallySwitchApplications     = o.device.automaticallySwitchApplications
     o.screensBacklightLevel               = o.device.screensBacklightLevel
+    o.snippetsRefreshFrequency            = o.device.snippetsRefreshFrequency
 
     --------------------------------------------------------------------------------
     -- Watch for Loupedeck CT connections and disconnects:
@@ -241,6 +251,16 @@ function mod.new(deviceType)
             }
         )
 
+        :addCheckbox(7.2,
+            {
+                label       = i18n("automaticallySwitchApplications"),
+                checked     = o.automaticallySwitchApplications,
+                onchange    = function(_, params)
+                    o.automaticallySwitchApplications(params.checked)
+                end,
+            }
+        )
+
     if deviceType == loupedeck.deviceTypes.CT then
         o.panel
             :addCheckbox(8,
@@ -284,27 +304,22 @@ function mod.new(deviceType)
     end
 
     o.panel
-        :addCheckbox(10,
-            {
-                label       = i18n("automaticallySwitchApplications"),
-                checked     = o.automaticallySwitchApplications,
-                onchange    = function(_, params)
-                    o.automaticallySwitchApplications(params.checked)
-                end,
-            }
-        )
-
         :addContent(11, [[
                 </div>
                 <div class="menubarColumn">
                 <style>
                     .screensBacklightLevel select {
                         margin-left: 85px;
-                        width: 80px;
+                        width: 100px;
                     }
                     .resizeImagesOnImport select {
                         margin-left: 80px;
-                        width: 80px;
+                        width: 100px;
+                    }
+
+                    .snippetsRefreshFrequency select {
+                        margin-left: 58.5px;
+                        width: 100px;
                     }
 
                     .imageBackgroundColourOnImport input {
@@ -322,12 +337,39 @@ function mod.new(deviceType)
                         cursor: default;
                         font-family: -apple-system;
                         font-size: 13px;
-                        width: 56px;
+                        width: 76px;
                     }
                 </style>
         ]], false)
 
         :addSelect(12,
+            {
+                label       =   i18n("snippetsRefreshFrequency"),
+                value       =   o.snippetsRefreshFrequency,
+                class       =   "snippetsRefreshFrequency",
+                options     =   function()
+                                    local options = {}
+                                    for i=1, 10 do
+                                        table.insert(options, {
+                                            value = tostring(i),
+                                            label = tostring(i) .. (i == 1 and " second" or " seconds")
+                                        })
+                                    end
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    o.snippetsRefreshFrequency(params.value)
+                                    if o.device.refreshTimer then
+                                        o.device.refreshTimer:stop()
+                                        o.device.refreshTimer = nil
+                                        o.device:refresh()
+                                    end
+                                end,
+            }
+        )
+
+        :addSelect(12.1,
             {
                 label       =   i18n("screensBacklightLevel"),
                 value       =   o.screensBacklightLevel,
@@ -350,7 +392,7 @@ function mod.new(deviceType)
             }
         )
 
-        :addSelect(12.1,
+        :addSelect(12.2,
             {
                 label       =   i18n("resizeImagesOnImport"),
                 class       =   "resizeImagesOnImport",
@@ -378,7 +420,7 @@ function mod.new(deviceType)
             }
         )
 
-        :addTextbox(12.2,
+        :addTextbox(12.3,
             {
                 label       =   i18n("imageBackgroundColourOnImport") .. ":",
                 value       =   function() return o.backgroundColour() end,
@@ -734,6 +776,9 @@ function mod.mt:updateUI(params)
     local encodedIcon = selectedID and selectedID.encodedIcon or ""
     local iconLabel = selectedID and selectedID.iconLabel or ""
 
+    local fontColorValue = selectedID and selectedID.fontColor or DEFAULT_FONT_COLOR
+    local fontSizeValue = selectedID and selectedID.fontSize or DEFAULT_FONT_SIZE
+
     local vibratePressValue = selectedID and selectedID.vibratePress or ""
     local vibrateReleaseValue = selectedID and selectedID.vibrateRelease or ""
     local vibrateLeftValue = selectedID and selectedID.vibrateLeft or ""
@@ -985,11 +1030,13 @@ function mod.mt:updateUI(params)
         changeValueByID('vibrateRelease', ']] .. vibrateReleaseValue .. [[');
         changeValueByID('vibrateLeft', ']] .. vibrateLeftValue .. [[');
         changeValueByID('vibrateRight', ']] .. vibrateRightValue .. [[');
+        changeValueByID('fontSize', ']] .. fontSizeValue .. [[');
         changeValueByID('wheelSensitivity', ']] .. wheelSensitivityValue .. [[');
         changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
         changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleasedValue) .. [[);
         changeColor(']] .. colorValue .. [[');
+        changeFontColor(']] .. fontColorValue .. [[');
         setIcon("]] .. encodedIcon .. [[");
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
 end
@@ -1046,17 +1093,34 @@ function mod.mt:processEncodedIcon(icon, controlType)
     return fixedImage:encodeAsURLString(true)
 end
 
--- plugins.core.loupedeckctandlive.prefs:buildIconFromLabel(value, controlType) -> string
--- Function
--- Creates a new icon image from a string.
---
--- Parameters:
---  * value - The label as a string.
---  * controlType - The control type as string.
---
--- Returns:
---  * A new encoded icon as URL string.
-local function buildIconFromLabel(value, controlType)
+--- plugins.core.loupedeckctandlive.prefs:buildIconFromLabel(params) -> string
+--- Function
+--- Creates a new icon image from a string.
+---
+--- Parameters:
+---  * params - A table of parameters.
+---
+--- Returns:
+---  * A new encoded icon as URL string.
+function mod.mt:buildIconFromLabel(params)
+    local app = params["application"]
+    local bank = params["bank"]
+    local controlType = params["controlType"]
+    local bid = params["id"]
+    local value = params["value"]
+
+    local items = self.items()
+    local selectedApp = items[app]
+
+    local selectedBank = selectedApp and selectedApp[bank]
+    local selectedControlType = selectedBank and selectedBank[controlType]
+    local selectedID = selectedControlType and selectedControlType[bid]
+
+    local fontColor = selectedID and selectedID.fontColor and "#" .. selectedID.fontColor or "#" .. DEFAULT_FONT_COLOR
+    local fontSize = selectedID and selectedID.fontSize or DEFAULT_FONT_SIZE
+    local font = selectedID and selectedID.font or DEFAULT_FONT
+    local value = selectedID and selectedID.iconLabel or ""
+
     local width, height = getScreenSizeFromControlType(controlType)
 
     local v = canvas.new{x = 0, y = 0, w = width, h = height }
@@ -1073,8 +1137,9 @@ local function buildIconFromLabel(value, controlType)
         frame = { h = 100, w = 100, x = 0, y = 0 },
         text = value,
         textAlignment = "left",
-        textColor = { white = 1.0 },
-        textSize = 15,
+        textColor = { hex = fontColor },
+        textSize = tonumber(fontSize),
+        textFont = font,
         type = "text",
     }
 
@@ -1100,6 +1165,8 @@ local function changeControl(controlType, id)
     local injectScript = mod._manager.injectScript
     injectScript("changeControl('', '', '" .. controlType .. "', '" .. id .. "');")
 end
+
+local delayedFn
 
 --- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
 --- Method
@@ -1754,86 +1821,92 @@ function mod.mt:panelCallback(id, params)
             self.device:refresh()
         elseif callbackType == "updateIconLabel" then
             --------------------------------------------------------------------------------
-            -- Write to file:
+            -- Delay screen and UI updates to avoid lag when the user's typing:
             --------------------------------------------------------------------------------
-            local app = params["application"]
-            local bank = params["bank"]
-            local controlType = params["controlType"]
-            local bid = params["id"]
-            local value = params["value"]
+            delayedFn = function()
+                --------------------------------------------------------------------------------
+                -- Write to file:
+                --------------------------------------------------------------------------------
+                local app = params["application"]
+                local bank = params["bank"]
+                local controlType = params["controlType"]
+                local bid = params["id"]
+                local value = params["value"]
 
-            self:setItem(app, bank, controlType, bid, "iconLabel", value)
+                self:setItem(app, bank, controlType, bid, "iconLabel", value)
 
-            local encodedImg = ""
-            if value and trim(value) ~= "" then
-                encodedImg = buildIconFromLabel(value, controlType)
-            end
+                --------------------------------------------------------------------------------
+                -- Generate encoded icon label:
+                --------------------------------------------------------------------------------
+                local encodedImg = ""
+                if value and trim(value) ~= "" then
+                    encodedImg = self:buildIconFromLabel(params)
+                end
 
-            self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+                self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
 
-            local items = self.items()
+                --------------------------------------------------------------------------------
+                -- Generate knob images if needed:
+                --------------------------------------------------------------------------------
+                if controlType == "knob" then
+                    self:generateKnobImages(app, bank, bid)
+                end
 
-            local currentApp = items[app]
-            local currentBank = currentApp and currentApp[bank]
-            local currentControlType = currentBank and currentBank[controlType]
-            local currentID = currentControlType and currentControlType[bid]
+                --------------------------------------------------------------------------------
+                -- Change the control and update the UI:
+                --------------------------------------------------------------------------------
+                local items = self.items()
+                local currentApp = items[app]
+                local currentBank = currentApp and currentApp[bank]
+                local currentControlType = currentBank and currentBank[controlType]
+                local currentID = currentControlType and currentControlType[bid]
 
-            if currentID and controlType ~= "knob" then
-                if not currentID.encodedIcon or currentID.encodedIcon == "" then
-                    if value ~= "" then
-                        injectScript([[
-                            changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImg .. [[")
-                        ]])
+                if controlType == "knob" then
+                    --------------------------------------------------------------------------------
+                    -- Update knobs:
+                    --------------------------------------------------------------------------------
+                    local whichScreen = "1"
+                    if bid == "4" or bid == "5" or bid == "6" then
+                        whichScreen = "2"
+                    end
+
+                    local currentSideScreen = currentBank and currentBank.sideScreen
+                    local sideScreen = currentSideScreen[whichScreen]
+                    local encodedKnobIcon = sideScreen and sideScreen.encodedKnobIcon
+                    local encodedIcon = sideScreen and sideScreen.encodedIcon
+                    if encodedKnobIcon and encodedKnobIcon ~= "" then
+                        injectScript([[changeImage("sideScreen]] .. whichScreen .. [[", "]] .. encodedKnobIcon .. [[")]])
+                    elseif encodedIcon and encodedIcon ~= "" then
+                        injectScript([[changeImage("sideScreen]] .. whichScreen .. [[", "]] .. encodedIcon .. [[")]])
                     else
-                        injectScript([[
-                            changeImage("]] .. controlType .. bid .. [[", "]] .. insertImage("images/" .. controlType .. bid .. ".png") .. [[")
-                        ]])
+                        injectScript([[changeImage("sideScreen]] .. whichScreen .. [[", "]] .. insertImage("images/sideScreen" .. whichScreen .. ".png") .. [[")]])
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Update buttons:
+                    --------------------------------------------------------------------------------
+                    local encodedIcon = currentID.encodedIcon
+                    local encodedIconLabel = currentID.encodedIconLabel
+                    if encodedIcon and encodedIcon ~= "" then
+                        injectScript([[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedIcon .. [[")]])
+                    elseif encodedIconLabel and encodedIconLabel ~= "" then
+                        injectScript([[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedIconLabel .. [[")]])
+                    else
+                        injectScript([[changeImage("]] .. controlType .. bid .. [[", "]] .. insertImage("images/" .. controlType .. bid .. ".png") .. [[")]])
                     end
                 end
-            elseif controlType == "knob" then
-                self:generateKnobImages(app, bank, bid)
 
                 --------------------------------------------------------------------------------
-                -- Refresh Items:
+                -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                items = self.items()
-                currentApp = items[app]
-                currentBank = currentApp and currentApp[bank]
-
-                --------------------------------------------------------------------------------
-                -- Update preferences UI:
-                --------------------------------------------------------------------------------
-                local changeImageScript
-                local currentSideScreen = currentBank and currentBank.sideScreen
-
-                local sideScreenOne = currentSideScreen["1"]
-                local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
-                local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
-                if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
-                elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
-                else
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
-                end
-
-                local sideScreenTwo = currentSideScreen["2"]
-                encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
-                encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
-                if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
-                elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
-                else
-                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
-                end
-                if changeImageScript then
-                    injectScript(changeImageScript)
-                end
-
+                self.device:refresh()
             end
 
-            self.device:refresh()
+            if not self.iconLabelDelayed then
+                self.iconLabelDelayed = delayed.new(0.2, function() delayedFn() end)
+            end
+
+            self.iconLabelDelayed:start()
         elseif callbackType == "importSettings" then
             --------------------------------------------------------------------------------
             -- Import Settings:
@@ -2003,7 +2076,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     local value = items[app][b][controlType][bid].iconLabel
                     if value then
-                        local encodedImg = buildIconFromLabel(value, controlType)
+                        local encodedImg = self:buildIconFromLabel(params)
                         items[app][b][controlType][bid].encodedIconLabel = encodedImg
                     end
                 end
@@ -2464,6 +2537,152 @@ function mod.mt:panelCallback(id, params)
             -- Examples Button:
             --------------------------------------------------------------------------------
             execute('open "' .. SNIPPET_HELP_URL .. '"')
+
+        elseif callbackType == "updateFontSize" then
+            --------------------------------------------------------------------------------
+            -- Update Font Size:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            self:setItem(app, bank, controlType, bid, "fontSize", value)
+
+            --------------------------------------------------------------------------------
+            -- Update encoded icon label:
+            --------------------------------------------------------------------------------
+            local encodedImg = ""
+            if value and trim(value) ~= "" then
+                encodedImg = self:buildIconFromLabel(params)
+            end
+
+            self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            if controlType == "knob" then
+                self:generateKnobImages(app, bank, bid)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Change the control and update the UI:
+            --------------------------------------------------------------------------------
+            changeControl(controlType, bid)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            self.device:refresh()
+        elseif callbackType == "selectFont" then
+            --------------------------------------------------------------------------------
+            -- Select a font:
+            --------------------------------------------------------------------------------
+            if not self.fontChooser then
+
+                local completionFn = function(result)
+                    if result then
+                        local value = result.id
+
+                        local app = params["application"]
+                        local bank = params["bank"]
+                        local controlType = params["controlType"]
+                        local bid = params["id"]
+
+                        self:setItem(app, bank, controlType, bid, "font", value)
+
+                        --------------------------------------------------------------------------------
+                        -- Update encoded icon label:
+                        --------------------------------------------------------------------------------
+                        local encodedImg = ""
+                        if value and trim(value) ~= "" then
+                            encodedImg = self:buildIconFromLabel(params)
+                        end
+
+                        self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+
+                        --------------------------------------------------------------------------------
+                        -- Process knobs:
+                        --------------------------------------------------------------------------------
+                        if controlType == "knob" then
+                            self:generateKnobImages(app, bank, bid)
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Change the control and update the UI:
+                        --------------------------------------------------------------------------------
+                        changeControl(controlType, bid)
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        self.device:refresh()
+                    end
+                end
+
+                local fontNames = styledtext.fontNames()
+
+                local choices = {}
+                for _, v in pairs(fontNames) do
+                    if string.sub(v, 1, 1) ~= "." then
+                        local fontName = styledtext.new(v, {
+                            font = { name = v, size = 18 },
+                            color = { white = 1, alpha = 1 },
+                        })
+                        table.insert(choices, {
+                            ["text"] = fontName,
+                            ["id"] = v,
+                        })
+                    end
+                end
+
+                self.fontChooser = chooser.new(completionFn)
+                    :bgDark(true)
+                    :choices(choices)
+            end
+
+            self.fontChooser:show()
+
+        elseif callbackType == "updateFontColor" then
+            --------------------------------------------------------------------------------
+            -- Update Font Color:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            self:setItem(app, bank, controlType, bid, "fontColor", value)
+
+            --------------------------------------------------------------------------------
+            -- Update encoded icon label:
+            --------------------------------------------------------------------------------
+            local encodedImg = ""
+            if value and trim(value) ~= "" then
+                encodedImg = self:buildIconFromLabel(params)
+            end
+
+            self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            if controlType == "knob" then
+                self:generateKnobImages(app, bank, bid)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Change the control and update the UI:
+            --------------------------------------------------------------------------------
+            changeControl(controlType, bid)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            self.device:refresh()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

@@ -1105,10 +1105,10 @@ function mod.show()
     --------------------------------------------------------------------------------
     if screen.accessibilitySettings()["ReduceTransparency"] then
         mod.chooser:fgColor(nil)
-                       :subTextColor(nil)
+                   :subTextColor(nil)
     else
         mod.chooser:fgColor(drawing.color.x11.snow)
-                       :subTextColor(drawing.color.x11.snow)
+                   :subTextColor(drawing.color.x11.snow)
     end
 
     --------------------------------------------------------------------------------
