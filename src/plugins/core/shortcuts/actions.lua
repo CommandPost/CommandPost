@@ -14,6 +14,7 @@ local keycodes          = require "hs.keycodes"
 local osascript         = require "hs.osascript"
 
 local config            = require "cp.config"
+local deferred          = require "cp.deferred"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
@@ -65,19 +66,29 @@ function plugin.init(deps)
         keyStroke(m, action.character)
     end
 
+    local keyRepeatInterval = eventtap.keyRepeatInterval()
+    local update = deferred.new(keyRepeatInterval)
+    local pressKeyDeferred = function(action)
+        update:action(function()
+            eventtap.keyStroke(action.modifiers, action.character)
+        end)
+        update()
+    end
+
     local actions = {
-        pressKey        = function(action) pressKey(action) end,
-        systemKey       = function(action) pressSystemKey(action.key) end,
-        pressTilda      = function() newKeyEvent("`", true):post() end,
-        releaseTilda    = function() newKeyEvent("`", false):post() end,
-        pressControl    = function() holdKey("control", true) end,
-        releaseControl  = function() holdKey("control", false) end,
-        pressOption     = function() holdKey("option", true) end,
-        releaseOption   = function() holdKey("option", false) end,
-        pressCommand    = function() holdKey("command", true) end,
-        releaseCommand  = function() holdKey("command", false) end,
-        pressShift      = function() holdKey("shift", true) end,
-        releaseShift    = function() holdKey("shift", false) end,
+        pressKey            = function(action) pressKey(action) end,
+        systemKey           = function(action) pressSystemKey(action.key) end,
+        pressTilda          = function() newKeyEvent("`", true):post() end,
+        releaseTilda        = function() newKeyEvent("`", false):post() end,
+        pressControl        = function() holdKey("control", true) end,
+        releaseControl      = function() holdKey("control", false) end,
+        pressOption         = function() holdKey("option", true) end,
+        releaseOption       = function() holdKey("option", false) end,
+        pressCommand        = function() holdKey("command", true) end,
+        releaseCommand      = function() holdKey("command", false) end,
+        pressShift          = function() holdKey("shift", true) end,
+        releaseShift        = function() holdKey("shift", false) end,
+        pressKeyDeferred    = function(action) pressKeyDeferred(action) end,
     }
 
     --------------------------------------------------------------------------------
@@ -87,45 +98,45 @@ function plugin.init(deps)
     mod._handler = actionmanager.addHandler("global_shortcuts", "global")
         :onChoices(function(choices)
             local modifiers = {
-                { description = "COMMAND",                                          label = "⌘", mods = {"cmd"} },
-                { description = "COMMAND + SHIFT",                                  label = "⇧⌘", mods = {"shift", "cmd"} },
-                { description = "OPTION + COMMAND + SHIFT",                         label = "⌥⇧⌘", mods = {"alt", "shift", "cmd"} },
-                { description = "CONTROL + OPTION + COMMAND + SHIFT",               label = "⌃⌥⇧⌘", mods = {"ctrl", "alt", "shift", "cmd"} },
-                { description = "CONTROL + COMMAND + SHIFT",                        label = "⌃⇧⌘", mods = {"ctrl", "shift", "cmd"} },
-                { description = "OPTION + COMMAND",                                 label = "⌥⌘", mods = {"alt", "cmd"} },
-                { description = "CONTROL + OPTION + COMMAND",                       label = "⌃⌥⌘", mods = {"ctrl", "alt", "cmd"} },
-                { description = "CONTROL + COMMAND",                                label = "⌃⌘", mods = {"ctrl", "cmd"} },
-                { description = "SHIFT",                                            label = "⇧", mods = {"shift"} },
-                { description = "OPTION + SHIFT",                                   label = "⌥⇧", mods = {"alt", "shift"} },
-                { description = "CONTROL + OPTION + SHIFT",                         label = "⌃⌥⇧", mods = {"ctrl", "alt", "shift"} },
-                { description = "CONTROL + SHIFT",                                  label = "⌃⇧", mods = {"ctrl", "shift"} },
-                { description = "OPTION",                                           label = "⌥", mods = {"alt"} },
-                { description = "CONTROL + OPTION",                                 label = "⌃⌥", mods = {"ctrl", "alt"} },
-                { description = "CONTROL",                                          label = "⌃", mods = {"ctrl"} },
-                { description = "COMMAND + RIGHT SHIFT",                            label = "R⇧⌘", mods = {"rightshift", "cmd"} },
-                { description = "OPTION + COMMAND + RIGHT SHIFT",                   label = "⌥R⇧⌘", mods = {"alt", "rightshift", "cmd"} },
-                { description = "CONTROL + OPTION + COMMAND + RIGHT SHIFT",         label = "⌃⌥R⇧⌘", mods = {"ctrl", "alt", "rightshift", "cmd"} },
-                { description = "CONTROL + COMMAND + RIGHT SHIFT",                  label = "⌃R⇧⌘", mods = {"ctrl", "rightshift", "cmd"} },
-                { description = "RIGHT SHIFT",                                      label = "R⇧", mods = {"rightshift"} },
-                { description = "OPTION + RIGHT SHIFT",                             label = "⌥R⇧", mods = {"alt", "rightshift"} },
-                { description = "CONTROL + OPTION + RIGHT SHIFT",                   label = "⌃⌥R⇧", mods = {"ctrl", "alt", "rightshift"} },
-                { description = "CONTROL + RIGHT SHIFT",                            label = "⌃R⇧", mods = {"ctrl", "rightshift"} },
-                { description = "COMMAND + FUNCTION",                               label = "Fn⌘", mods = {"cmd", "fn"} },
-                { description = "COMMAND + SHIFT + FUNCTION",                       label = "Fn⇧⌘", mods = {"shift", "cmd", "fn"} },
-                { description = "OPTION + COMMAND + SHIFT + FUNCTION",              label = "Fn⌥⇧⌘", mods = {"alt", "shift", "cmd", "fn"} },
-                { description = "CONTROL + OPTION + COMMAND + SHIFT + FUNCTION",    label = "Fn⌃⌥⇧⌘", mods = {"ctrl", "alt", "shift", "cmd", "fn"} },
-                { description = "CONTROL + COMMAND + SHIFT + FUNCTION",             label = "Fn⌃⇧⌘", mods = {"ctrl", "shift", "cmd", "fn"} },
-                { description = "OPTION + COMMAND + FUNCTION",                      label = "Fn⌥⌘", mods = {"alt", "cmd", "fn"} },
-                { description = "CONTROL + OPTION + COMMAND + FUNCTION",            label = "Fn⌃⌥⌘", mods = {"ctrl", "alt", "cmd", "fn"} },
-                { description = "CONTROL + COMMAND + FUNCTION",                     label = "Fn⌃⌘", mods = {"ctrl", "cmd", "fn"} },
-                { description = "SHIFT + FUNCTION",                                 label = "Fn⇧", mods = {"shift", "fn"} },
-                { description = "OPTION + SHIFT + FUNCTION",                        label = "Fn⌥⇧", mods = {"alt", "shift", "fn"} },
-                { description = "CONTROL + OPTION + SHIFT + FUNCTION",              label = "Fn⌃⌥⇧", mods = {"ctrl", "alt", "shift", "fn"} },
-                { description = "CONTROL + SHIFT + FUNCTION",                       label = "Fn⌃⇧", mods = {"ctrl", "shift", "fn"} },
-                { description = "OPTION + FUNCTION",                                label = "Fn⌥", mods = {"alt", "fn"} },
-                { description = "CONTROL + OPTION + FUNCTION",                      label = "Fn⌃⌥", mods = {"ctrl", "alt", "fn"} },
-                { description = "CONTROL + FUNCTION",                               label = "Fn⌃", mods = {"ctrl", "fn"} },
-                { description = "FUNCTION",                                         label = "Fn", mods = {"fn"} },
+                { description = "COMMAND",                                                  label = "⌘", mods = {"cmd"} },
+                { description = "COMMAND and SHIFT",                                        label = "⇧⌘", mods = {"shift", "cmd"} },
+                { description = "OPTION and COMMAND and SHIFT",                             label = "⌥⇧⌘", mods = {"alt", "shift", "cmd"} },
+                { description = "CONTROL and OPTION and COMMAND and SHIFT",                 label = "⌃⌥⇧⌘", mods = {"ctrl", "alt", "shift", "cmd"} },
+                { description = "CONTROL and COMMAND and SHIFT",                            label = "⌃⇧⌘", mods = {"ctrl", "shift", "cmd"} },
+                { description = "OPTION and COMMAND",                                       label = "⌥⌘", mods = {"alt", "cmd"} },
+                { description = "CONTROL and OPTION and COMMAND",                           label = "⌃⌥⌘", mods = {"ctrl", "alt", "cmd"} },
+                { description = "CONTROL and COMMAND",                                      label = "⌃⌘", mods = {"ctrl", "cmd"} },
+                { description = "SHIFT",                                                    label = "⇧", mods = {"shift"} },
+                { description = "OPTION and SHIFT",                                         label = "⌥⇧", mods = {"alt", "shift"} },
+                { description = "CONTROL and OPTION and SHIFT",                             label = "⌃⌥⇧", mods = {"ctrl", "alt", "shift"} },
+                { description = "CONTROL and SHIFT",                                        label = "⌃⇧", mods = {"ctrl", "shift"} },
+                { description = "OPTION",                                                   label = "⌥", mods = {"alt"} },
+                { description = "CONTROL and OPTION",                                       label = "⌃⌥", mods = {"ctrl", "alt"} },
+                { description = "CONTROL",                                                  label = "⌃", mods = {"ctrl"} },
+                { description = "COMMAND and RIGHT SHIFT",                                  label = "R⇧⌘", mods = {"rightshift", "cmd"} },
+                { description = "OPTION and COMMAND and RIGHT SHIFT",                       label = "⌥R⇧⌘", mods = {"alt", "rightshift", "cmd"} },
+                { description = "CONTROL and OPTION and COMMAND and RIGHT SHIFT",           label = "⌃⌥R⇧⌘", mods = {"ctrl", "alt", "rightshift", "cmd"} },
+                { description = "CONTROL and COMMAND and RIGHT SHIFT",                      label = "⌃R⇧⌘", mods = {"ctrl", "rightshift", "cmd"} },
+                { description = "RIGHT SHIFT",                                              label = "R⇧", mods = {"rightshift"} },
+                { description = "OPTION and RIGHT SHIFT",                                   label = "⌥R⇧", mods = {"alt", "rightshift"} },
+                { description = "CONTROL and OPTION and RIGHT SHIFT",                       label = "⌃⌥R⇧", mods = {"ctrl", "alt", "rightshift"} },
+                { description = "CONTROL and RIGHT SHIFT",                                  label = "⌃R⇧", mods = {"ctrl", "rightshift"} },
+                { description = "COMMAND and FUNCTION",                                     label = "Fn⌘", mods = {"cmd", "fn"} },
+                { description = "COMMAND and SHIFT and FUNCTION",                           label = "Fn⇧⌘", mods = {"shift", "cmd", "fn"} },
+                { description = "OPTION and COMMAND and SHIFT and FUNCTION",                label = "Fn⌥⇧⌘", mods = {"alt", "shift", "cmd", "fn"} },
+                { description = "CONTROL and OPTION and COMMAND and SHIFT and FUNCTION",    label = "Fn⌃⌥⇧⌘", mods = {"ctrl", "alt", "shift", "cmd", "fn"} },
+                { description = "CONTROL and COMMAND and SHIFT and FUNCTION",               label = "Fn⌃⇧⌘", mods = {"ctrl", "shift", "cmd", "fn"} },
+                { description = "OPTION and COMMAND and FUNCTION",                          label = "Fn⌥⌘", mods = {"alt", "cmd", "fn"} },
+                { description = "CONTROL and OPTION and COMMAND and FUNCTION",              label = "Fn⌃⌥⌘", mods = {"ctrl", "alt", "cmd", "fn"} },
+                { description = "CONTROL and COMMAND and FUNCTION",                         label = "Fn⌃⌘", mods = {"ctrl", "cmd", "fn"} },
+                { description = "SHIFT and FUNCTION",                                       label = "Fn⇧", mods = {"shift", "fn"} },
+                { description = "OPTION and SHIFT and FUNCTION",                            label = "Fn⌥⇧", mods = {"alt", "shift", "fn"} },
+                { description = "CONTROL and OPTION and SHIFT and FUNCTION",                label = "Fn⌃⌥⇧", mods = {"ctrl", "alt", "shift", "fn"} },
+                { description = "CONTROL and SHIFT and FUNCTION",                           label = "Fn⌃⇧", mods = {"ctrl", "shift", "fn"} },
+                { description = "OPTION and FUNCTION",                                      label = "Fn⌥", mods = {"alt", "fn"} },
+                { description = "CONTROL and OPTION and FUNCTION",                          label = "Fn⌃⌥", mods = {"ctrl", "alt", "fn"} },
+                { description = "CONTROL and FUNCTION",                                     label = "Fn⌃", mods = {"ctrl", "fn"} },
+                { description = "FUNCTION",                                                 label = "Fn", mods = {"fn"} },
             }
             local description = i18n("keyboardShortcutDescription")
             for keycode, _ in pairs(keycodes.map) do
@@ -156,7 +167,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     for _, modifier in pairs(modifiers) do
                         choices
-                            :add(modifier.description .. " + " .. keycode .. " (" .. modifier.label .. keycode .. ")")
+                            :add(modifier.description .. " " .. i18n("and") .. " " .. keycode .. " (" .. modifier.label .. keycode .. ")")
                             :subText(description)
                             :params({
                                 character = keycode,
@@ -166,6 +177,24 @@ function plugin.init(deps)
                             :id("global_shortcuts_" .. modifier.label .. "_" .. keycode)
                             :image(icon)
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- With Modifier(s):
+                    --------------------------------------------------------------------------------
+                    for _, modifier in pairs(modifiers) do
+                        choices
+                            :add(modifier.description .. " " .. i18n("and") .. " " .. keycode .. " (" .. modifier.label .. keycode .. ") - Deferred")
+                            :subText(description)
+                            :params({
+                                action = "pressKeyDeferred",
+                                character = keycode,
+                                modifiers = modifier.mods,
+                                id = modifier.label .. "_" .. keycode,
+                            })
+                            :id("global_shortcuts_" .. modifier.label .. "_" .. keycode)
+                            :image(icon)
+                    end
+
                 end
             end
 

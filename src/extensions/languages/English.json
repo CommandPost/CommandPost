@@ -803,6 +803,8 @@
         "fcpMediaWatchFolderTitle": "FCP Media Watch Folder",
         "fcpShortcut_NoShortcutAssigned": "No shortcut keys assigned for '%{id}'.",
         "fcpx_action_action": "Actions",
+        "actions": "Actions",
+        "vibrations": "Vibrations",
         "fcpx_audioEffect_action": "Audio Effects",
         "fcpx_cmds_action": "Commands",
         "fcpx_colorboard_action": "Color Board",

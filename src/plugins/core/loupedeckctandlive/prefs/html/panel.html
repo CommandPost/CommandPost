@@ -9,6 +9,7 @@
 
 <script>
 	var selectedWheelMode = "slide";
+	var selectedKnobMode = "actions";
 
 	function changeColor(value) {
 		document.getElementById('color').jscolor.fromString(value);
@@ -202,6 +203,7 @@
 		// HIDE EVERYTHING:
 		// -------------------------------------------------
 		document.getElementById("wheelModes").style.display = "none";
+		document.getElementById("knobModes").style.display = "none";
 
 		document.getElementById("spacerA").style.display = "none";
 		document.getElementById("spacerB").style.display = "none";
@@ -281,105 +283,111 @@
 		// KNOB:
 		// -------------------------------------------------
 		if (controlType == "knob") {
-			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerB").style.display = "block";
-			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("knobModes").style.display = "table";
+
 			document.getElementById("spacerD").style.display = "block";
+			document.getElementById("spacerK").style.display = "block";
 
-			document.getElementById("knobA").style.display = "table";
-			document.getElementById("knobB").style.display = "table";
-			document.getElementById("knobC").style.display = "table";
+			document.getElementById("iconA").style.display = "table";
+			document.getElementById("iconB").style.display = "table";
+			document.getElementById("iconC").style.display = "table";
 
-			document.getElementById("pressActionA").style.display = "table";
-			document.getElementById("pressActionB").style.display = "table";
-			document.getElementById("pressActionC").style.display = "table";
-
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
-
-			document.getElementById("iconLabel").style.display = "block";
-			document.getElementById("iconLabelHeading").style.display = "table-cell";
-			document.getElementById("iconLabelB").style.display = "table-cell";
+			document.getElementById("iconLabel").style.display = "table";
+			document.getElementById("iconLabelHeading").style.display = "table";
+			document.getElementById("iconLabelB").style.display = "table";
 
 			document.getElementById("knobResolution").style.display = "block";
 
-			document.getElementById("vibrateA").style.display = "block";
-			document.getElementById("vibrateB").style.display = "block";
-			document.getElementById("vibrateC").style.display = "block";
-			document.getElementById("vibrateD").style.display = "block";
+			document.getElementById("snippetA").style.display = "table";
+			document.getElementById("snippetB").style.display = "table";
+			document.getElementById("snippetC").style.display = "table";
+
+			if (selectedKnobMode == "actions") {
+				document.getElementById("knobA").style.display = "table";
+				document.getElementById("knobB").style.display = "table";
+				document.getElementById("knobC").style.display = "table";
+
+				document.getElementById("pressActionA").style.display = "table";
+				document.getElementById("pressActionB").style.display = "table";
+				document.getElementById("pressActionC").style.display = "table";
+			} else {
+				document.getElementById("vibrateA").style.display = "table";
+				document.getElementById("vibrateB").style.display = "table";
+				document.getElementById("vibrateC").style.display = "table";
+				document.getElementById("vibrateD").style.display = "table";
+			}
 		}
 
 		// -------------------------------------------------
 		// TOUCH BUTTON:
 		// -------------------------------------------------
 		if (controlType == "touchButton") {
-			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerC").style.display = "block";
-			document.getElementById("spacerK").style.display = "block";
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerC").style.display = "table";
+			document.getElementById("spacerK").style.display = "table";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
 			document.getElementById("pressActionC").style.display = "table";
 
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
+			document.getElementById("iconA").style.display = "table";
+			document.getElementById("iconB").style.display = "table";
+			document.getElementById("iconC").style.display = "table";
 
-			document.getElementById("snippetA").style.display = "block";
-			document.getElementById("snippetB").style.display = "block";
-			document.getElementById("snippetC").style.display = "block";
+			document.getElementById("snippetA").style.display = "table";
+			document.getElementById("snippetB").style.display = "table";
+			document.getElementById("snippetC").style.display = "table";
 
 			document.getElementById("buttonResolution").style.display = "block";
 
-			document.getElementById("iconLabel").style.display = "block";
-			document.getElementById("iconLabelHeading").style.display = "table-cell";
-			document.getElementById("iconLabelB").style.display = "table-cell";
+			document.getElementById("iconLabel").style.display = "table";
+			document.getElementById("iconLabelHeading").style.display = "table";
+			document.getElementById("iconLabelB").style.display = "table";
 
-			document.getElementById("vibrateA").style.display = "block";
-			document.getElementById("vibrateB").style.display = "block";
+			document.getElementById("vibrateA").style.display = "table";
+			document.getElementById("vibrateB").style.display = "table";
 
-			document.getElementById("repeatA").style.display = "block";
+			document.getElementById("repeatA").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// LED BUTTON:
 		// -------------------------------------------------
 		if (controlType == "ledButton") {
-			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerC").style.display = "table";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
 			document.getElementById("pressActionC").style.display = "table";
 
-			document.getElementById("ledColorA").style.display = "block";
-			document.getElementById("ledColorB").style.display = "block";
+			document.getElementById("ledColorA").style.display = "table";
+			document.getElementById("ledColorB").style.display = "table";
 
-			document.getElementById("vibrateA").style.display = "block";
-			document.getElementById("vibrateB").style.display = "block";
+			document.getElementById("vibrateA").style.display = "table";
+			document.getElementById("vibrateB").style.display = "table";
 
-			document.getElementById("repeatA").style.display = "block";
+			document.getElementById("repeatA").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// LEFT/RIGHT SCREENS:
 		// -------------------------------------------------
 		if (controlType == "sideScreen") {
-			document.getElementById("spacerE").style.display = "block";
-			document.getElementById("spacerG").style.display = "block";
+			document.getElementById("spacerE").style.display = "table";
+			document.getElementById("spacerG").style.display = "table";
 
-			document.getElementById("touchWheelA").style.display = "block";
-			document.getElementById("touchWheelB").style.display = "block";
-			document.getElementById("touchWheelC").style.display = "block";
+			document.getElementById("touchWheelA").style.display = "table";
+			document.getElementById("touchWheelB").style.display = "table";
+			document.getElementById("touchWheelC").style.display = "table";
 
-			document.getElementById("touchWheelG").style.display = "block";
-			document.getElementById("touchWheelH").style.display = "block";
-			document.getElementById("touchWheelI").style.display = "block";
+			document.getElementById("touchWheelG").style.display = "table";
+			document.getElementById("touchWheelH").style.display = "table";
+			document.getElementById("touchWheelI").style.display = "table";
 
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
+			document.getElementById("iconA").style.display = "table";
+			document.getElementById("iconB").style.display = "table";
+			document.getElementById("iconC").style.display = "table";
 
 			document.getElementById("sideResolution").style.display = "block";
 		}
@@ -388,73 +396,73 @@
 		// JOG WHEEL:
 		// -------------------------------------------------
 		if (controlType == "jogWheel") {
-			document.getElementById("spacerB").style.display = "block";
-			document.getElementById("spacerD").style.display = "block";
+			document.getElementById("spacerB").style.display = "table";
+			document.getElementById("spacerD").style.display = "table";
 
 			document.getElementById("knobA").style.display = "table";
 			document.getElementById("knobB").style.display = "table";
 			document.getElementById("knobC").style.display = "table";
 
-			document.getElementById("vibrateC").style.display = "block";
-			document.getElementById("vibrateD").style.display = "block";
+			document.getElementById("vibrateC").style.display = "table";
+			document.getElementById("vibrateD").style.display = "table";
 
-			document.getElementById("wheelSensitivityA").style.display = "block";
-			document.getElementById("wheelSensitivityB").style.display = "block";
+			document.getElementById("wheelSensitivityA").style.display = "table";
+			document.getElementById("wheelSensitivityB").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// WHEEL SCREEN:
 		// -------------------------------------------------
 		if (controlType == "wheelScreen") {
-			document.getElementById("wheelModes").style.display = "block";
+			document.getElementById("wheelModes").style.display = "table";
 
-			document.getElementById("wheelSnippetA").style.display = "table-cell";
-			document.getElementById("wheelSnippetB").style.display = "table-cell";
+			document.getElementById("wheelSnippetA").style.display = "table";
+			document.getElementById("wheelSnippetB").style.display = "table";
 
 			if (selectedWheelMode == "slide") {
 				// -------------------------------------------------
 				// SLIDE ACTIONS:
 				// -------------------------------------------------
-				document.getElementById("spacerE").style.display = "block";
-				document.getElementById("spacerF").style.display = "block";
-				document.getElementById("spacerG").style.display = "block";
+				document.getElementById("spacerE").style.display = "table";
+				document.getElementById("spacerF").style.display = "table";
+				document.getElementById("spacerG").style.display = "table";
 
-				document.getElementById("touchWheelA").style.display = "block";
-				document.getElementById("touchWheelB").style.display = "block";
-				document.getElementById("touchWheelC").style.display = "block";
-				document.getElementById("touchWheelD").style.display = "block";
-				document.getElementById("touchWheelE").style.display = "block";
-				document.getElementById("touchWheelF").style.display = "block";
-				document.getElementById("touchWheelG").style.display = "block";
-				document.getElementById("touchWheelH").style.display = "block";
-				document.getElementById("touchWheelI").style.display = "block";
+				document.getElementById("touchWheelA").style.display = "table";
+				document.getElementById("touchWheelB").style.display = "table";
+				document.getElementById("touchWheelC").style.display = "table";
+				document.getElementById("touchWheelD").style.display = "table";
+				document.getElementById("touchWheelE").style.display = "table";
+				document.getElementById("touchWheelF").style.display = "table";
+				document.getElementById("touchWheelG").style.display = "table";
+				document.getElementById("touchWheelH").style.display = "table";
+				document.getElementById("touchWheelI").style.display = "table";
 
-				document.getElementById("iconA").style.display = "block";
-				document.getElementById("iconB").style.display = "block";
-				document.getElementById("iconC").style.display = "block";
+				document.getElementById("iconA").style.display = "table";
+				document.getElementById("iconB").style.display = "table";
+				document.getElementById("iconC").style.display = "table";
 
 				document.getElementById("wheelResolution").style.display = "block";
 			} else {
 				// -------------------------------------------------
 				// PRESS ACTIONS:
 				// -------------------------------------------------
-				document.getElementById("iconA").style.display = "block";
-				document.getElementById("iconB").style.display = "block";
-				document.getElementById("iconC").style.display = "block";
+				document.getElementById("iconA").style.display = "table";
+				document.getElementById("iconB").style.display = "table";
+				document.getElementById("iconC").style.display = "table";
 
-				document.getElementById("spacerH").style.display = "block";
-				document.getElementById("spacerI").style.display = "block";
-				document.getElementById("spacerJ").style.display = "block";
+				document.getElementById("spacerH").style.display = "table";
+				document.getElementById("spacerI").style.display = "table";
+				document.getElementById("spacerJ").style.display = "table";
 
-				document.getElementById("touchWheelPressA").style.display = "block";
-				document.getElementById("touchWheelPressB").style.display = "block";
-				document.getElementById("touchWheelPressC").style.display = "block";
-				document.getElementById("touchWheelPressD").style.display = "block";
-				document.getElementById("touchWheelPressE").style.display = "block";
-				document.getElementById("touchWheelPressF").style.display = "block";
-				document.getElementById("touchWheelPressG").style.display = "block";
-				document.getElementById("touchWheelPressH").style.display = "block";
-				document.getElementById("touchWheelPressI").style.display = "block";
+				document.getElementById("touchWheelPressA").style.display = "table";
+				document.getElementById("touchWheelPressB").style.display = "table";
+				document.getElementById("touchWheelPressC").style.display = "table";
+				document.getElementById("touchWheelPressD").style.display = "table";
+				document.getElementById("touchWheelPressE").style.display = "table";
+				document.getElementById("touchWheelPressF").style.display = "table";
+				document.getElementById("touchWheelPressG").style.display = "table";
+				document.getElementById("touchWheelPressH").style.display = "table";
+				document.getElementById("touchWheelPressI").style.display = "table";
 
 				document.getElementById("wheelResolution").style.display = "block";
 			}
@@ -487,6 +495,16 @@
 
 	function setWheelMode(mode) {
 		selectedWheelMode = mode;
+
+		label = document.getElementById("selectedControl").value;
+		id = document.getElementById("id").value;
+		controlType = document.getElementById("controlType").value;
+
+		changeControl("", label, controlType, id)
+	}
+
+	function setKnobMode(mode) {
+		selectedKnobMode = mode;
 
 		label = document.getElementById("selectedControl").value;
 		id = document.getElementById("id").value;
@@ -1585,6 +1603,17 @@
 							</th>
 						</tr>
 
+						<!-- KNOB MODES -->
+						<tr id ="knobModes">
+							<th>
+								<a href="#" class="bottomButton" onclick="setKnobMode('actions')">{{ i18n("actions") }}</a>
+							</th>
+							<th>
+								<a href="#" class="bottomButton" onclick="setKnobMode('vibrations')">{{ i18n("vibrations") }}</a>
+							</th>
+						</tr>
+
+
 						<!-- PRESS & RELEASE ACTION: -->
 						<tr id="pressActionA">
 							<th width="229px">{{ i18n("pressAction") }}:</th>
@@ -1603,7 +1632,7 @@
 						<tr id="repeatA">
 							<td width="458px">
 								<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
-								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
 							</td>
 						</tr>
 
@@ -1889,8 +1918,8 @@
 							<th width="229px" id="buttonResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 90 pixels</i></th>
 							<th width="229px" id="sideResolution"><i style="color: #FFFFFF; padding-left: 14px;">60 x 270 pixels</i></th>
 							<th width="229px" id="wheelResolution"><i style="color: #FFFFFF; padding-left: 10px;">240 x 240 pixels</i></th>
-							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 60 pixels</i></th>
-							<th width="229px">
+							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 16px;">60 x 90 pixels</i></th>
+							<th width="229px" style="display:table;">
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
 						</tr>

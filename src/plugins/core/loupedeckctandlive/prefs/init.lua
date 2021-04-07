@@ -65,6 +65,11 @@ local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Loupedeck"
 -- URL to Snippet Support Site
 local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
 
+-- delayedFn -> hs.timer
+-- Variable
+-- A delayed timer used for the Icon Label updater.
+local delayedFn
+
 --- plugins.core.loupedeckctandlive.prefs.supportedExtensions -> string
 --- Variable
 --- Table of supported extensions for Icons.
@@ -75,10 +80,20 @@ mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp", "a
 --- Default Path where built-in icons are stored
 mod.defaultIconPath = config.assetsPath .. "/icons/"
 
--- Icon Label Defaults:
-local DEFAULT_FONT_COLOR    = "FFFFFF"
-local DEFAULT_FONT_SIZE     = "15"
-local DEFAULT_FONT          = ".AppleSystemUIFont"
+-- DEFAULT_FONT_COLOR -> string
+-- Constant
+-- The default font color value.
+local DEFAULT_FONT_COLOR = "FFFFFF"
+
+-- DEFAULT_FONT_SIZE -> string
+-- Constant
+-- The default font size value.
+local DEFAULT_FONT_SIZE = "15"
+
+-- DEFAULT_FONT -> string
+-- Constant
+-- The default font value.
+local DEFAULT_FONT = ".AppleSystemUIFont"
 
 --- plugins.core.loupedeckctandlive.prefs.new() -> Loupedeck
 --- Constructor
@@ -191,6 +206,7 @@ function mod.new(deviceType)
     o.automaticallySwitchApplications     = o.device.automaticallySwitchApplications
     o.screensBacklightLevel               = o.device.screensBacklightLevel
     o.snippetsRefreshFrequency            = o.device.snippetsRefreshFrequency
+    o.getScreenSizeFromControlType        = o.device.getScreenSizeFromControlType
 
     --------------------------------------------------------------------------------
     -- Watch for Loupedeck CT connections and disconnects:
@@ -584,40 +600,83 @@ function mod.mt:setItem(app, bank, controlType, id, valueA, valueB)
     self.items(items)
 end
 
--- getScreenSizeFromControlType(controlType) -> number, number
--- Function
--- Converts a controlType to a width and height.
---
--- Parameters:
---  * controlType - A string defining the control type.
---
--- Returns:
---  * width as a number
---  * height as a number
-local function getScreenSizeFromControlType(controlType)
-    if controlType == "touchButton" then
-        return 90, 90
-    elseif controlType == "knob" then
-        return 90, 90
-    elseif controlType == "sideScreen" then
-        return 60, 270
-    elseif controlType == "wheelScreen" then
-        return 240, 240
-    end
-end
+
+
 
 --- plugins.core.loupedeckctandlive.prefs:generateKnobImages(app, bank, id) -> none
 --- Method
---- Generates a combined image for all the knobs.
+--- Generates a combined image for all the knobs on a single side.
+--- Which side is generated is determined by the knob id.
 ---
 --- Parameters:
----  * app - The application bundle ID
----  * bank - The bank as a string
----  * id - The ID
+---  * app - The application bundle ID as a string.
+---  * bank - The bank as a string.
+---  * id - The knob ID as a string.
 ---
 --- Returns:
 ---  * None
 function mod.mt:generateKnobImages(app, bank, bid)
+    --------------------------------------------------------------------------------
+    -- Handle Snippets:
+    --------------------------------------------------------------------------------
+    local function getEncodedSnippet(b, i)
+        local currentSnippet = b.knob and b.knob[i] and b.knob[i].snippetAction
+        if currentSnippet and currentSnippet.action then
+            local code = currentSnippet.action.code
+            if code then
+                --------------------------------------------------------------------------------
+                -- Load Snippet from Snippet Preferences if it exists:
+                --------------------------------------------------------------------------------
+                local snippetID = currentSnippet.action.id
+                local snippets = mod._scriptingPreferences.snippets()
+                if snippets[snippetID] then
+                    code = snippets[snippetID].code
+                end
+
+                local successful, result = pcall(load(code))
+                if successful and isImage(result) then
+                    local size = result:size()
+                    if size.w == 60 and size.h == 90 then
+                        --------------------------------------------------------------------------------
+                        -- The generated image is already 60x90 so proceed:
+                        --------------------------------------------------------------------------------
+                        return result:encodeAsURLString(true)
+                    else
+                        --------------------------------------------------------------------------------
+                        -- The generated image is not 60x90 so process:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
+
+                        --------------------------------------------------------------------------------
+                        -- Black Background:
+                        --------------------------------------------------------------------------------
+                        v[1] = {
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, hex = "#000000" },
+                            type = "rectangle",
+                        }
+
+                        --------------------------------------------------------------------------------
+                        -- Icon - Scaled to fit:
+                        --------------------------------------------------------------------------------
+                        v[2] = {
+                          type="image",
+                          image = result,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
+
+                        local fixedImage = v:imageFromCanvas()
+
+                        v:delete()
+                        v = nil -- luacheck: ignore
+
+                        return fixedImage:encodeAsURLString(true)
+                    end
+                end
+            end
+        end
+    end
+
     local whichScreen = "1"
     local kA = "1"
     local kB = "2"
@@ -642,7 +701,11 @@ function mod.mt:generateKnobImages(app, bank, bid)
 
     local currentKnobOneEncodedIcon = currentKnob and currentKnob[kA] and currentKnob[kA].encodedIcon
     local currentKnobOneEncodedIconLabel = currentKnob and currentKnob[kA] and currentKnob[kA].encodedIconLabel
-    if currentKnobOneEncodedIcon and currentKnobOneEncodedIcon ~= "" then
+    local currentKnobOneEncodedSnippet = currentBank and getEncodedSnippet(currentBank, kA)
+
+    if currentKnobOneEncodedSnippet then
+        knobOneImage = currentKnobOneEncodedSnippet
+    elseif currentKnobOneEncodedIcon and currentKnobOneEncodedIcon ~= "" then
         knobOneImage = currentKnobOneEncodedIcon
     elseif currentKnobOneEncodedIconLabel and currentKnobOneEncodedIconLabel ~= "" then
         knobOneImage = currentKnobOneEncodedIconLabel
@@ -650,7 +713,10 @@ function mod.mt:generateKnobImages(app, bank, bid)
 
     local currentKnobTwoEncodedIcon = currentKnob and currentKnob[kB] and currentKnob[kB].encodedIcon
     local currentKnobTwoEncodedIconLabel = currentKnob and currentKnob[kB] and currentKnob[kB].encodedIconLabel
-    if currentKnobTwoEncodedIcon and currentKnobTwoEncodedIcon ~= "" then
+    local currentKnobTwoEncodedSnippet = currentBank and getEncodedSnippet(currentBank, kB)
+    if currentKnobTwoEncodedSnippet then
+        knobTwoImage = currentKnobTwoEncodedSnippet
+    elseif currentKnobTwoEncodedIcon and currentKnobTwoEncodedIcon ~= "" then
         knobTwoImage = currentKnobTwoEncodedIcon
     elseif currentKnobTwoEncodedIconLabel and currentKnobTwoEncodedIconLabel ~= "" then
         knobTwoImage = currentKnobTwoEncodedIconLabel
@@ -658,7 +724,10 @@ function mod.mt:generateKnobImages(app, bank, bid)
 
     local currentKnobThreeEncodedIcon = currentKnob and currentKnob[kC] and currentKnob[kC].encodedIcon
     local currentKnobThreeEncodedIconLabel = currentKnob and currentKnob[kC] and currentKnob[kC].encodedIconLabel
-    if currentKnobThreeEncodedIcon and currentKnobThreeEncodedIcon ~= "" then
+    local currentKnobThreeEncodedSnippet = currentBank and getEncodedSnippet(currentBank, kC)
+    if currentKnobThreeEncodedSnippet then
+        knobThreeImage = currentKnobThreeEncodedSnippet
+    elseif currentKnobThreeEncodedIcon and currentKnobThreeEncodedIcon ~= "" then
         knobThreeImage = currentKnobThreeEncodedIcon
     elseif currentKnobThreeEncodedIconLabel and currentKnobThreeEncodedIconLabel ~= "" then
         knobThreeImage = currentKnobThreeEncodedIconLabel
@@ -1052,7 +1121,7 @@ end
 --- Returns:
 ---  * A new encoded icon as URL string.
 function mod.mt:processEncodedIcon(icon, controlType)
-    local width, height = getScreenSizeFromControlType(controlType)
+    local width, height = self.getScreenSizeFromControlType(controlType)
 
     local newImage
     if type(icon) == "userdata" then
@@ -1121,7 +1190,7 @@ function mod.mt:buildIconFromLabel(params)
     local font = selectedID and selectedID.font or DEFAULT_FONT
     local value = selectedID and selectedID.iconLabel or ""
 
-    local width, height = getScreenSizeFromControlType(controlType)
+    local width, height = self.getScreenSizeFromControlType(controlType)
 
     local v = canvas.new{x = 0, y = 0, w = width, h = height }
     v[1] = {
@@ -1165,8 +1234,6 @@ local function changeControl(controlType, id)
     local injectScript = mod._manager.injectScript
     injectScript("changeControl('', '', '" .. controlType .. "', '" .. id .. "');")
 end
-
-local delayedFn
 
 --- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
 --- Method
@@ -1289,7 +1356,7 @@ function mod.mt:panelCallback(id, params)
                 -- If the action contains an image, apply it to the Touch Button (except
                 -- if it's a Snippet Action):
                 --------------------------------------------------------------------------------
-                if params.controlType == "touchButton" and buttonType ~= "snippetAction" then
+                if controlType == "touchButton" and buttonType ~= "snippetAction" then
                     local choices = handler.choices():getChoices()
                     local preSuppliedImage
                     for _, v in pairs(choices) do
@@ -1306,8 +1373,14 @@ function mod.mt:panelCallback(id, params)
                         --------------------------------------------------------------------------------
                         local encodedIcon = self:processEncodedIcon(preSuppliedImage, controlType)
                         self:setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
-
                     end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Process knobs:
+                --------------------------------------------------------------------------------
+                if controlType == "knob" then
+                    self:generateKnobImages(app, bank, bid)
                 end
 
                 --------------------------------------------------------------------------------
@@ -1336,6 +1409,13 @@ function mod.mt:panelCallback(id, params)
             local buttonType = params["buttonType"]
 
             self:setItem(app, bank, controlType, bid, buttonType, {})
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            if controlType == "knob" then
+                self:generateKnobImages(app, bank, bid)
+            end
 
             --------------------------------------------------------------------------------
             -- Update the UI:
