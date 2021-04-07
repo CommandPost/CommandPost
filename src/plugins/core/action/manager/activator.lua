@@ -1668,6 +1668,19 @@ function activator:rightClickAction(index)
         insert(choiceMenu, sections)
     end
 
+    insert(choiceMenu, { title = "-" })
+
+    insert(choiceMenu, {
+        title = i18n("searchConsoleShortcutTipOne"),
+        disabled = true,
+    })
+
+    insert(choiceMenu, {
+        title = "        " .. i18n("searchConsoleShortcutTipTwo"),
+        disabled = true,
+    })
+
+
     self._rightClickMenubar:setMenu(choiceMenu):removeFromMenuBar()
     self._rightClickMenubar:popupMenu(mouse.absolutePosition(), true)
 end
