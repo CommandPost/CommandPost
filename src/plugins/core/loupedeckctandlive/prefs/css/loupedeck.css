@@ -54,7 +54,7 @@ input[type="color"]::-webkit-color-swatch {
 .loupedeck {
 	margin-top: 10px;
 	table-layout: fixed;
-	width: 100%;
+	/* width: 100%; */
 	white-space: nowrap;
 	border: 1px solid #cccccc;
 	padding: 8px;
