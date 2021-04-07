@@ -1751,7 +1751,7 @@
         "searchAborted": "The search has been aborted.",
         "searchAbortedDescription": "The search failed to find anything after searching 500 cells, so it has been aborted.\n\nYou can try using a Smart Collection or use the 'Filter Browser Before Search' option in the HUD Search Panel to narrow your selection in the Browser.",
         "searchConsole": "Search Console",
-        "searchConsoleShortcutTipOne": "TIP: You can use OPTION+LEFT/RIGHT ARROW",
+        "searchConsoleShortcutTipOne": "TIP: You can use OPTION+LEFT/RIGHT ARROW keys",
         "searchConsoleShortcutTipTwo": "to change the selected action group in the toolbar.",
         "searchEntireLibrary": "Search Entire Library",
         "searchIn": "Search in",

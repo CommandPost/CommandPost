@@ -1676,7 +1676,7 @@ function activator:rightClickAction(index)
     })
 
     insert(choiceMenu, {
-        title = "        " .. i18n("searchConsoleShortcutTipTwo"),
+        title = i18n("searchConsoleShortcutTipTwo"),
         disabled = true,
     })
 
