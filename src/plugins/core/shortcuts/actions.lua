@@ -14,7 +14,6 @@ local keycodes          = require "hs.keycodes"
 local osascript         = require "hs.osascript"
 
 local config            = require "cp.config"
-local deferred          = require "cp.deferred"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
@@ -66,15 +65,6 @@ function plugin.init(deps)
         keyStroke(m, action.character)
     end
 
-    local keyRepeatInterval = eventtap.keyRepeatInterval()
-    local update = deferred.new(keyRepeatInterval)
-    local pressKeyDeferred = function(action)
-        update:action(function()
-            eventtap.keyStroke(action.modifiers, action.character)
-        end)
-        update()
-    end
-
     local actions = {
         pressKey            = function(action) pressKey(action) end,
         systemKey           = function(action) pressSystemKey(action.key) end,
@@ -88,7 +78,6 @@ function plugin.init(deps)
         releaseCommand      = function() holdKey("command", false) end,
         pressShift          = function() holdKey("shift", true) end,
         releaseShift        = function() holdKey("shift", false) end,
-        pressKeyDeferred    = function(action) pressKeyDeferred(action) end,
     }
 
     --------------------------------------------------------------------------------
@@ -177,24 +166,6 @@ function plugin.init(deps)
                             :id("global_shortcuts_" .. modifier.label .. "_" .. keycode)
                             :image(icon)
                     end
-
-                    --------------------------------------------------------------------------------
-                    -- With Modifier(s):
-                    --------------------------------------------------------------------------------
-                    for _, modifier in pairs(modifiers) do
-                        choices
-                            :add(modifier.description .. " " .. i18n("and") .. " " .. keycode .. " (" .. modifier.label .. keycode .. ") - Deferred")
-                            :subText(description)
-                            :params({
-                                action = "pressKeyDeferred",
-                                character = keycode,
-                                modifiers = modifier.mods,
-                                id = modifier.label .. "_" .. keycode,
-                            })
-                            :id("global_shortcuts_" .. modifier.label .. "_" .. keycode)
-                            :image(icon)
-                    end
-
                 end
             end
 
