@@ -95,7 +95,11 @@ end
 --  * A string or `nil` if an error occurred.
 local function colorToColorWellValue(value)
     if value then
-        value = asRGB(value)
+        -- Only convert from HSB to RGB if the value is actually HSB. This is because
+        -- asRGB() only support positive numbers.
+        if value and value.hue then
+            value = asRGB(value)
+        end
         return string.format("rgb %g %g %g %g", value.red, value.green, value.blue, value.alpha)
     end
     return ""

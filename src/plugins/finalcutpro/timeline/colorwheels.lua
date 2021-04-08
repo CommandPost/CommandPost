@@ -1002,6 +1002,51 @@ function plugin.init(deps)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("blue") .. " " .. i18n("down"))
 
+    fcpxCmds
+        :add("colorWheelMasterRedReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.master:colorValue()
+
+            currentValue.red = 0
+            currentValue.green = currentValue.green + colorWheelMasterGreenValue
+            currentValue.blue = currentValue.blue + colorWheelMasterBlueValue
+
+            colorWheels.master:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("red") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelMasterGreenReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.master:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelMasterRedValue
+            currentValue.green = 0
+            currentValue.blue = currentValue.blue + colorWheelMasterBlueValue
+
+            colorWheels.master:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("green") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelMasterBlueReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.master:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelMasterRedValue
+            currentValue.green = currentValue.green + colorWheelMasterGreenValue
+            currentValue.blue = 0
+
+            colorWheels.master:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("blue") .. " " .. i18n("reset"))
+
     --------------------------------------------------------------------------------
     -- Color Wheels - RGB Control - Shadows:
     --------------------------------------------------------------------------------
@@ -1080,6 +1125,51 @@ function plugin.init(deps)
             updateRGBColorWheelsShadows()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("blue") .. " " .. i18n("down"))
+
+    fcpxCmds
+        :add("colorWheelShadowsRedReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.shadows:colorValue()
+
+            currentValue.red = 0
+            currentValue.green = currentValue.green + colorWheelShadowsGreenValue
+            currentValue.blue = currentValue.blue + colorWheelShadowsBlueValue
+
+            colorWheels.shadows:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("red") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelShadowsGreenReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.shadows:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelShadowsRedValue
+            currentValue.green = 0
+            currentValue.blue = currentValue.blue + colorWheelShadowsBlueValue
+
+            colorWheels.shadows:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("green") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelShadowsBlueReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.shadows:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelShadowsRedValue
+            currentValue.green = currentValue.green + colorWheelShadowsGreenValue
+            currentValue.blue = 0
+
+            colorWheels.shadows:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("blue") .. " " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
     -- Color Wheels - RGB Control - Midtones:
@@ -1160,6 +1250,51 @@ function plugin.init(deps)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("blue") .. " " .. i18n("down"))
 
+    fcpxCmds
+        :add("colorWheelMidtonesRedReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.midtones:colorValue()
+
+            currentValue.red = 0
+            currentValue.green = currentValue.green + colorWheelMidtonesGreenValue
+            currentValue.blue = currentValue.blue + colorWheelMidtonesBlueValue
+
+            colorWheels.midtones:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("red") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesGreenReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.midtones:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelMidtonesRedValue
+            currentValue.green = 0
+            currentValue.blue = currentValue.blue + colorWheelMidtonesBlueValue
+
+            colorWheels.midtones:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("green") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelMidtonesBlueReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.midtones:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelMidtonesRedValue
+            currentValue.green = currentValue.green + colorWheelMidtonesGreenValue
+            currentValue.blue = 0
+
+            colorWheels.midtones:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("blue") .. " " .. i18n("reset"))
+
     --------------------------------------------------------------------------------
     -- Color Wheels - RGB Control - Highlights:
     --------------------------------------------------------------------------------
@@ -1239,6 +1374,50 @@ function plugin.init(deps)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("blue") .. " " .. i18n("down"))
 
+    fcpxCmds
+        :add("colorWheelHighlightsRedReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.highlights:colorValue()
+
+            currentValue.red = 0
+            currentValue.green = currentValue.green + colorWheelHighlightsGreenValue
+            currentValue.blue = currentValue.blue + colorWheelHighlightsBlueValue
+
+            colorWheels.highlights:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("red") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsGreenReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.highlights:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelHighlightsRedValue
+            currentValue.green = 0
+            currentValue.blue = currentValue.blue + colorWheelHighlightsBlueValue
+
+            colorWheels.highlights:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("green") .. " " .. i18n("reset"))
+
+    fcpxCmds
+        :add("colorWheelHighlightsBlueReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            colorWheels:show()
+            local currentValue = colorWheels.highlights:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelHighlightsRedValue
+            currentValue.green = currentValue.green + colorWheelHighlightsGreenValue
+            currentValue.blue = 0
+
+            colorWheels.highlights:colorValue(currentValue)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("blue") .. " " .. i18n("reset"))
 end
 
 return plugin
