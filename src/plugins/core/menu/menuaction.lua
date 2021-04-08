@@ -248,7 +248,7 @@ function plugin.postInit(deps)
     local setupHandler = function(bundleID)
         if not mod._handlers[bundleID] then
             local handlerID = registeredApps[bundleID] and registeredApps[bundleID].legacyGroupID or bundleID
-            mod._handlers[bundleID] = actionmanager.addHandler(handlerID .. "_menuactions", handlerID, "Menu Items")
+            mod._handlers[bundleID] = actionmanager.addHandler(handlerID .. "_menuactions", handlerID, i18n("menuItemsScanned"))
             :onChoices(function(choices)
                 local menuItems = mod._cache[bundleID]
                 if menuItems then

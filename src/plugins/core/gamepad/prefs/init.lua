@@ -8,6 +8,7 @@ local require           = require
 
 local image             = require "hs.image"
 
+local html              = require "cp.web.html"
 local i18n              = require "cp.i18n"
 
 local imageFromPath     = image.imageFromPath
@@ -44,13 +45,26 @@ function plugin.init(deps, env)
 
         :addContent(2, [[<p style="padding-left:20px;">We are planning to add built-in Gamepad support in a future release.<br />
         <br />
-        In the meantime, you can use the free <strong>Enjoyable</strong> app to assign virtual keyboard presses to Gamepad controllers.
+        In the meantime, you can use the free <strong>Enjoyable</strong> or <strong>Controlly</strong> apps to assign virtual keyboard presses to Gamepad controllers.
         </p>]], false)
-        :addButton(3,
+        :addContent(3, html.style ([[
+                .downloadEnjoyable {
+                    float:left;
+                }
+            ]], true))
+        :addButton(4,
             {
+                class       = "downloadEnjoyable",
                 label 	    = "Download Enjoyable",
                 width       = 240,
                 onclick	    = function() execute([[open https://yukkurigames.com/enjoyable/]]) end,
+            }
+        )
+        :addButton(5,
+            {
+                label 	    = "Download Controlly",
+                width       = 240,
+                onclick	    = function() execute([[open https://hugolispector.com/controlly/]]) end,
             }
         )
 

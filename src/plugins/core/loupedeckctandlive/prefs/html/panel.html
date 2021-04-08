@@ -9,9 +9,14 @@
 
 <script>
 	var selectedWheelMode = "slide";
+	var selectedKnobMode = "actions";
 
 	function changeColor(value) {
 		document.getElementById('color').jscolor.fromString(value);
+	}
+
+	function changeFontColor(value) {
+		document.getElementById('fontColor').jscolor.fromString(value);
 	}
 
 	function changeImage(id, data) {
@@ -63,6 +68,25 @@
 				id: "{{ id }}",
 				params: {
 					type: "clearIcon",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function selectFont() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "selectFont",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					selectedControl: document.getElementById("selectedControl").value,
@@ -179,6 +203,7 @@
 		// HIDE EVERYTHING:
 		// -------------------------------------------------
 		document.getElementById("wheelModes").style.display = "none";
+		document.getElementById("knobModes").style.display = "none";
 
 		document.getElementById("spacerA").style.display = "none";
 		document.getElementById("spacerB").style.display = "none";
@@ -258,105 +283,111 @@
 		// KNOB:
 		// -------------------------------------------------
 		if (controlType == "knob") {
-			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerB").style.display = "block";
-			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("knobModes").style.display = "table";
+
 			document.getElementById("spacerD").style.display = "block";
+			document.getElementById("spacerK").style.display = "block";
 
-			document.getElementById("knobA").style.display = "table";
-			document.getElementById("knobB").style.display = "table";
-			document.getElementById("knobC").style.display = "table";
+			document.getElementById("iconA").style.display = "table";
+			document.getElementById("iconB").style.display = "table";
+			document.getElementById("iconC").style.display = "table";
 
-			document.getElementById("pressActionA").style.display = "table";
-			document.getElementById("pressActionB").style.display = "table";
-			document.getElementById("pressActionC").style.display = "table";
-
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
-
-			document.getElementById("iconLabel").style.display = "block";
-			document.getElementById("iconLabelHeading").style.display = "table-cell";
-			document.getElementById("iconLabelB").style.display = "table-cell";
+			document.getElementById("iconLabel").style.display = "table";
+			document.getElementById("iconLabelHeading").style.display = "table";
+			document.getElementById("iconLabelB").style.display = "table";
 
 			document.getElementById("knobResolution").style.display = "block";
 
-			document.getElementById("vibrateA").style.display = "block";
-			document.getElementById("vibrateB").style.display = "block";
-			document.getElementById("vibrateC").style.display = "block";
-			document.getElementById("vibrateD").style.display = "block";
+			document.getElementById("snippetA").style.display = "table";
+			document.getElementById("snippetB").style.display = "table";
+			document.getElementById("snippetC").style.display = "table";
+
+			if (selectedKnobMode == "actions") {
+				document.getElementById("knobA").style.display = "table";
+				document.getElementById("knobB").style.display = "table";
+				document.getElementById("knobC").style.display = "table";
+
+				document.getElementById("pressActionA").style.display = "table";
+				document.getElementById("pressActionB").style.display = "table";
+				document.getElementById("pressActionC").style.display = "table";
+			} else {
+				document.getElementById("vibrateA").style.display = "table";
+				document.getElementById("vibrateB").style.display = "table";
+				document.getElementById("vibrateC").style.display = "table";
+				document.getElementById("vibrateD").style.display = "table";
+			}
 		}
 
 		// -------------------------------------------------
 		// TOUCH BUTTON:
 		// -------------------------------------------------
 		if (controlType == "touchButton") {
-			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerC").style.display = "block";
-			document.getElementById("spacerK").style.display = "block";
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerC").style.display = "table";
+			document.getElementById("spacerK").style.display = "table";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
 			document.getElementById("pressActionC").style.display = "table";
 
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
+			document.getElementById("iconA").style.display = "table";
+			document.getElementById("iconB").style.display = "table";
+			document.getElementById("iconC").style.display = "table";
 
-			document.getElementById("snippetA").style.display = "block";
-			document.getElementById("snippetB").style.display = "block";
-			document.getElementById("snippetC").style.display = "block";
+			document.getElementById("snippetA").style.display = "table";
+			document.getElementById("snippetB").style.display = "table";
+			document.getElementById("snippetC").style.display = "table";
 
 			document.getElementById("buttonResolution").style.display = "block";
 
-			document.getElementById("iconLabel").style.display = "block";
-			document.getElementById("iconLabelHeading").style.display = "table-cell";
-			document.getElementById("iconLabelB").style.display = "table-cell";
+			document.getElementById("iconLabel").style.display = "table";
+			document.getElementById("iconLabelHeading").style.display = "table";
+			document.getElementById("iconLabelB").style.display = "table";
 
-			document.getElementById("vibrateA").style.display = "block";
-			document.getElementById("vibrateB").style.display = "block";
+			document.getElementById("vibrateA").style.display = "table";
+			document.getElementById("vibrateB").style.display = "table";
 
-			document.getElementById("repeatA").style.display = "block";
+			document.getElementById("repeatA").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// LED BUTTON:
 		// -------------------------------------------------
 		if (controlType == "ledButton") {
-			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerC").style.display = "table";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
 			document.getElementById("pressActionC").style.display = "table";
 
-			document.getElementById("ledColorA").style.display = "block";
-			document.getElementById("ledColorB").style.display = "block";
+			document.getElementById("ledColorA").style.display = "table";
+			document.getElementById("ledColorB").style.display = "table";
 
-			document.getElementById("vibrateA").style.display = "block";
-			document.getElementById("vibrateB").style.display = "block";
+			document.getElementById("vibrateA").style.display = "table";
+			document.getElementById("vibrateB").style.display = "table";
 
-			document.getElementById("repeatA").style.display = "block";
+			document.getElementById("repeatA").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// LEFT/RIGHT SCREENS:
 		// -------------------------------------------------
 		if (controlType == "sideScreen") {
-			document.getElementById("spacerE").style.display = "block";
-			document.getElementById("spacerG").style.display = "block";
+			document.getElementById("spacerE").style.display = "table";
+			document.getElementById("spacerG").style.display = "table";
 
-			document.getElementById("touchWheelA").style.display = "block";
-			document.getElementById("touchWheelB").style.display = "block";
-			document.getElementById("touchWheelC").style.display = "block";
+			document.getElementById("touchWheelA").style.display = "table";
+			document.getElementById("touchWheelB").style.display = "table";
+			document.getElementById("touchWheelC").style.display = "table";
 
-			document.getElementById("touchWheelG").style.display = "block";
-			document.getElementById("touchWheelH").style.display = "block";
-			document.getElementById("touchWheelI").style.display = "block";
+			document.getElementById("touchWheelG").style.display = "table";
+			document.getElementById("touchWheelH").style.display = "table";
+			document.getElementById("touchWheelI").style.display = "table";
 
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
+			document.getElementById("iconA").style.display = "table";
+			document.getElementById("iconB").style.display = "table";
+			document.getElementById("iconC").style.display = "table";
 
 			document.getElementById("sideResolution").style.display = "block";
 		}
@@ -365,73 +396,73 @@
 		// JOG WHEEL:
 		// -------------------------------------------------
 		if (controlType == "jogWheel") {
-			document.getElementById("spacerB").style.display = "block";
-			document.getElementById("spacerD").style.display = "block";
+			document.getElementById("spacerB").style.display = "table";
+			document.getElementById("spacerD").style.display = "table";
 
 			document.getElementById("knobA").style.display = "table";
 			document.getElementById("knobB").style.display = "table";
 			document.getElementById("knobC").style.display = "table";
 
-			document.getElementById("vibrateC").style.display = "block";
-			document.getElementById("vibrateD").style.display = "block";
+			document.getElementById("vibrateC").style.display = "table";
+			document.getElementById("vibrateD").style.display = "table";
 
-			document.getElementById("wheelSensitivityA").style.display = "block";
-			document.getElementById("wheelSensitivityB").style.display = "block";
+			document.getElementById("wheelSensitivityA").style.display = "table";
+			document.getElementById("wheelSensitivityB").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// WHEEL SCREEN:
 		// -------------------------------------------------
 		if (controlType == "wheelScreen") {
-			document.getElementById("wheelModes").style.display = "block";
+			document.getElementById("wheelModes").style.display = "table";
 
-			document.getElementById("wheelSnippetA").style.display = "table-cell";
-			document.getElementById("wheelSnippetB").style.display = "table-cell";
+			document.getElementById("wheelSnippetA").style.display = "table";
+			document.getElementById("wheelSnippetB").style.display = "table";
 
 			if (selectedWheelMode == "slide") {
 				// -------------------------------------------------
 				// SLIDE ACTIONS:
 				// -------------------------------------------------
-				document.getElementById("spacerE").style.display = "block";
-				document.getElementById("spacerF").style.display = "block";
-				document.getElementById("spacerG").style.display = "block";
+				document.getElementById("spacerE").style.display = "table";
+				document.getElementById("spacerF").style.display = "table";
+				document.getElementById("spacerG").style.display = "table";
 
-				document.getElementById("touchWheelA").style.display = "block";
-				document.getElementById("touchWheelB").style.display = "block";
-				document.getElementById("touchWheelC").style.display = "block";
-				document.getElementById("touchWheelD").style.display = "block";
-				document.getElementById("touchWheelE").style.display = "block";
-				document.getElementById("touchWheelF").style.display = "block";
-				document.getElementById("touchWheelG").style.display = "block";
-				document.getElementById("touchWheelH").style.display = "block";
-				document.getElementById("touchWheelI").style.display = "block";
+				document.getElementById("touchWheelA").style.display = "table";
+				document.getElementById("touchWheelB").style.display = "table";
+				document.getElementById("touchWheelC").style.display = "table";
+				document.getElementById("touchWheelD").style.display = "table";
+				document.getElementById("touchWheelE").style.display = "table";
+				document.getElementById("touchWheelF").style.display = "table";
+				document.getElementById("touchWheelG").style.display = "table";
+				document.getElementById("touchWheelH").style.display = "table";
+				document.getElementById("touchWheelI").style.display = "table";
 
-				document.getElementById("iconA").style.display = "block";
-				document.getElementById("iconB").style.display = "block";
-				document.getElementById("iconC").style.display = "block";
+				document.getElementById("iconA").style.display = "table";
+				document.getElementById("iconB").style.display = "table";
+				document.getElementById("iconC").style.display = "table";
 
 				document.getElementById("wheelResolution").style.display = "block";
 			} else {
 				// -------------------------------------------------
 				// PRESS ACTIONS:
 				// -------------------------------------------------
-				document.getElementById("iconA").style.display = "block";
-				document.getElementById("iconB").style.display = "block";
-				document.getElementById("iconC").style.display = "block";
+				document.getElementById("iconA").style.display = "table";
+				document.getElementById("iconB").style.display = "table";
+				document.getElementById("iconC").style.display = "table";
 
-				document.getElementById("spacerH").style.display = "block";
-				document.getElementById("spacerI").style.display = "block";
-				document.getElementById("spacerJ").style.display = "block";
+				document.getElementById("spacerH").style.display = "table";
+				document.getElementById("spacerI").style.display = "table";
+				document.getElementById("spacerJ").style.display = "table";
 
-				document.getElementById("touchWheelPressA").style.display = "block";
-				document.getElementById("touchWheelPressB").style.display = "block";
-				document.getElementById("touchWheelPressC").style.display = "block";
-				document.getElementById("touchWheelPressD").style.display = "block";
-				document.getElementById("touchWheelPressE").style.display = "block";
-				document.getElementById("touchWheelPressF").style.display = "block";
-				document.getElementById("touchWheelPressG").style.display = "block";
-				document.getElementById("touchWheelPressH").style.display = "block";
-				document.getElementById("touchWheelPressI").style.display = "block";
+				document.getElementById("touchWheelPressA").style.display = "table";
+				document.getElementById("touchWheelPressB").style.display = "table";
+				document.getElementById("touchWheelPressC").style.display = "table";
+				document.getElementById("touchWheelPressD").style.display = "table";
+				document.getElementById("touchWheelPressE").style.display = "table";
+				document.getElementById("touchWheelPressF").style.display = "table";
+				document.getElementById("touchWheelPressG").style.display = "table";
+				document.getElementById("touchWheelPressH").style.display = "table";
+				document.getElementById("touchWheelPressI").style.display = "table";
 
 				document.getElementById("wheelResolution").style.display = "block";
 			}
@@ -472,6 +503,16 @@
 		changeControl("", label, controlType, id)
 	}
 
+	function setKnobMode(mode) {
+		selectedKnobMode = mode;
+
+		label = document.getElementById("selectedControl").value;
+		id = document.getElementById("id").value;
+		controlType = document.getElementById("controlType").value;
+
+		changeControl("", label, controlType, id)
+	}
+
 	function updateColor() {
 		try {
 			var result = {
@@ -482,6 +523,26 @@
 					bank: document.getElementById("bank").value,
 					selectedControl: document.getElementById("selectedControl").value,
 					value: document.getElementById('color').jscolor.toString(),
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateFontColor() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateFontColor",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					value: document.getElementById('fontColor').jscolor.toString(),
 					id: document.getElementById("id").value,
 					controlType: document.getElementById("controlType").value,
 				},
@@ -552,7 +613,7 @@
 		}
 	}
 
-	function editSnippet() {
+	function editSnippet(actionType) {
 		try {
 			var result = {
 				id: "{{ id }}",
@@ -563,6 +624,7 @@
 					selectedControl: document.getElementById("selectedControl").value,
 					controlType: document.getElementById("controlType").value,
 					id: document.getElementById("id").value,
+					actionType: actionType,
 				},
 			}
 			postMessage(result);
@@ -831,6 +893,25 @@
 				id: "{{ id }}",
 				params: {
 					type: "buyMoreIcons",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateFontSize() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateFontSize",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("fontSize").value,
 				},
 			}
 			postMessage(result);
@@ -1180,8 +1261,8 @@
 	<tr>
 		<th style=text-align: left;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
-				<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
-					<option value="All Applications">{{ i18n("allApplications") }}</option>
+				<select id="application" style="width: 250px;" onchange="updateApplicationAndBank()">
+					<option value="All Applications">{{ i18n("unlistedAndIgnoredApplications") }}</option>
 					<option disabled>──────────</option>
 					{%
 					for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
@@ -1523,6 +1604,17 @@
 							</th>
 						</tr>
 
+						<!-- KNOB MODES -->
+						<tr id ="knobModes">
+							<th>
+								<a href="#" class="bottomButton" onclick="setKnobMode('actions')">{{ i18n("actions") }}</a>
+							</th>
+							<th>
+								<a href="#" class="bottomButton" onclick="setKnobMode('vibrations')">{{ i18n("vibrations") }}</a>
+							</th>
+						</tr>
+
+
 						<!-- PRESS & RELEASE ACTION: -->
 						<tr id="pressActionA">
 							<th width="229px">{{ i18n("pressAction") }}:</th>
@@ -1533,15 +1625,15 @@
 							<td width="229px"><input type="text" id="release_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="pressActionC">
-							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- PRESS REPEAT: -->
 						<tr id="repeatA">
 							<td width="458px">
 								<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
-								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
 							</td>
 						</tr>
 
@@ -1562,8 +1654,8 @@
 							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="knobC">
-							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('leftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('rightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1652,7 +1744,7 @@
 						<tr id="ledColorB">
 							<td width="229px">
 								<div>
-									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
+									<input id="color" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
 								</div>
 							</td>
 						</tr>
@@ -1674,8 +1766,8 @@
 							<td width="229px"><input type="text" id="down_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('upAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('upAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('downAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('downAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('upAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('upAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('upAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('downAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('downAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('downAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1695,8 +1787,8 @@
 							<td width="229px"><input type="text" id="right_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelF">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('leftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('rightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1716,8 +1808,8 @@
 							<td width="229px"><input type="text" id="two_finger_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelI">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('doubleTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('doubleTapAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('twoFingerTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('twoFingerTapAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('doubleTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('doubleTapAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('doubleTapAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('twoFingerTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('twoFingerTapAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('twoFingerTapAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1737,8 +1829,8 @@
 							<td width="229px"><input type="text" id="bottom_left_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelPressC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topLeftAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomLeftAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('topLeftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('bottomLeftAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1758,8 +1850,8 @@
 							<td width="229px"><input type="text" id="bottom_middle_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelPressF">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topMiddleAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomMiddleAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topMiddleAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('topMiddleAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomMiddleAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('bottomMiddleAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1779,8 +1871,8 @@
 							<td width="229px"><input type="text" id="bottom_right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelPressI">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topRightAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomRightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('topRightAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('bottomRightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1806,19 +1898,29 @@
 								</div>
 							</td>
 							<td width="229px" style="vertical-align: top;" id="iconLabelB">
-								<textarea id="iconLabel" class="loupedeckActionTextbox" style="resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onchange="updateIconLabel()"></textarea>
+								<textarea id="iconLabel" class="loupedeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea>
+								<a href="#" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
+								<select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
+									{%
+									for i=1, 200 do
+									%}
+									<option value="{{i}}">{{i}}px</option>
+									{%
+									end
+									%}
+								</select><input style="width: 53px;" id="fontColor" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
 							</td>
 							<td width="229px" id="wheelSnippetB" style="vertical-align:top;">
 								<input type="text" id="wheel_snippet_action" class="loupedeckActionTextbox" style="margin-bottom: 10px;" value="" disabled="" placeholder="{{ i18n("none") }}"><br />
-								<a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a>
+								<a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a>
 							</td>
 						</tr>
 						<tr id="iconC">
 							<th width="229px" id="buttonResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 90 pixels</i></th>
 							<th width="229px" id="sideResolution"><i style="color: #FFFFFF; padding-left: 14px;">60 x 270 pixels</i></th>
 							<th width="229px" id="wheelResolution"><i style="color: #FFFFFF; padding-left: 10px;">240 x 240 pixels</i></th>
-							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 60 pixels</i></th>
-							<th width="229px">
+							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 16px;">60 x 90 pixels</i></th>
+							<th width="229px" style="display:table;">
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
 						</tr>
@@ -1838,7 +1940,7 @@
 							<td width="229px"><input type="text" id="snippet_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="snippetC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
 						</tr>
 
 						<!-- WHEEL SENSITIVITY: -->

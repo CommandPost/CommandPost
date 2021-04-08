@@ -224,7 +224,7 @@
 				<option value="Mini" {{ lastDevice == "Mini" and "selected" or ""}}>Stream Deck Mini</option>
 			</select>
 		</th>
-		<th style="width: 40px;"></th>
+		<th style="width: 140px;"></th>
 		<th style="width: 80px;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("unit") }}:</span>
 		</th>
@@ -247,8 +247,8 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 		</th>
 		<th style="width: 150px;">
-			<select id="application" style="width: 150px;" onchange="changeDeviceUnitApplicationBank()">
-				<option value="All Applications">{{ i18n("allApplications") }}</option>
+			<select id="application" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
+				<option value="All Applications">{{ i18n("unlistedAndIgnoredApplications") }}</option>
 				<option disabled>──────────</option>
 				{%
 				for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
@@ -310,7 +310,7 @@
 				{% end %}
 			</select>
 		</th>
-		<th style="width: 40px;"></th>
+		<th style="width: 140px;"></th>
 		<th style="width: 80px;">
 			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
 		</th>

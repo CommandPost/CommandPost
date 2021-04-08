@@ -1407,6 +1407,32 @@ function mod.mt:updateScreenButtonImage(buttonID, imageBytes, callbackFn)
     self:updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
 end
 
+--- hs.loupedeck:updateKnobImage(knobID, imageBytes[, callbackFn]) -> boolean
+--- Method
+--- Sends an image to the specified knob on the left or right screen.
+---
+--- Parameters:
+---  * knobID       - The knob number (left to right, top to bottom)
+---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
+function mod.mt:updateKnobImage(knobID, imageBytes, callbackFn)
+    local whichScreen = knobID > 3 and mod.screens.right or mod.screens.left
+    local y = 0
+    if knobID == 2 or knobID == 5 then
+        y = 90
+    elseif knobID == 3 or knobID == 6 then
+        y = 180
+    end
+    self:updateScreenImage(whichScreen, imageBytes, {x=0, y=y, w=60,h=90}, callbackFn)
+end
+
 -- solidColorImage(width, height, color) -> string
 -- Function
 -- Creates a solid-color image for the specified screen with the specified RGB value.
@@ -1428,7 +1454,7 @@ local function solidColorBytes(width, height, color)
     return concat(result)
 end
 
---- hs.loupedeck:updateScreenColor(screen, color[, callbackFn]) -> boolean
+--- hs.loupedeck:updateScreenColor(screen, color, frame[, callbackFn]) -> boolean
 --- Method
 --- Sends an image to the specified screen and refreshes the specified screen.
 ---
@@ -1472,6 +1498,32 @@ end
 function mod.mt:updateScreenButtonColor(buttonID, color, callbackFn)
     local x, y = convertButtonIDtoXYCoordinates(buttonID)
     self:updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+end
+
+--- hs.loupedeck:updateScreenKnobColor(knobID, color[, callbackFn]) -> boolean
+--- Method
+--- Sends an image to the specified knob and refreshes the specified screen.
+---
+--- Parameters:
+---  * knobID       - The knob number (left to right, top to bottom)
+---  * color        - either a 16-bit RGB integer or an `hs.drawing.color
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
+function mod.mt:updateScreenKnobColor(knobID, color, callbackFn)
+    local whichScreen = knobID > 3 and mod.screens.right or mod.screens.left
+    local y = 0
+    if knobID == 2 or knobID == 5 then
+        y = 90
+    elseif knobID == 3 or knobID == 6 then
+        y = 180
+    end
+    self:updateScreenColor(whichScreen, color, {x=0, y=y, w=60,h=90}, callbackFn)
 end
 
 --- hs.loupdeckct.buttonID -> table

@@ -47,11 +47,6 @@ local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
 
--- REFRESH_THE_SCREEN_FREQUENCY -> number
--- Constant
--- How often we should forcefully refresh the screen in seconds.
-local REFRESH_THE_SCREEN_FREQUENCY = 1
-
 -- LD_BUNDLE_ID -> string
 -- Constant
 -- The official Loupedeck App bundle identifier.
@@ -87,6 +82,28 @@ local wheelDoubleTapXTolerance = 12
 -- Last Wheel Double Tap Y Tolerance
 local wheelDoubleTapYTolerance = 7
 
+-- getScreenSizeFromControlType(controlType) -> number, number
+-- Function
+-- Converts a controlType to a width and height.
+--
+-- Parameters:
+--  * controlType - A string defining the control type.
+--
+-- Returns:
+--  * width as a number
+--  * height as a number
+local function getScreenSizeFromControlType(controlType)
+    if controlType == "touchButton" then
+        return 90, 90
+    elseif controlType == "knob" then
+        return 60, 90
+    elseif controlType == "sideScreen" then
+        return 60, 270
+    elseif controlType == "wheelScreen" then
+        return 240, 240
+    end
+end
+
 --- plugins.core.loupedeckctandlive.manager.new() -> Loupedeck
 --- Constructor
 --- Creates a new Loupedeck object.
@@ -103,6 +120,18 @@ local wheelDoubleTapYTolerance = 7
 function mod.new(deviceType)
 
     local o = {}
+
+    --- plugins.core.loupedeckctandlive.manager.getScreenSizeFromControlType() -> number, number
+    --- Function
+    --- Converts a controlType to a width and height.
+    ---
+    --- Parameters:
+    ---  * controlType - A string defining the control type.
+    ---
+    --- Returns:
+    ---  * width as a number
+    ---  * height as a number
+    o.getScreenSizeFromControlType = getScreenSizeFromControlType
 
     --- plugins.core.loupedeckctandlive.manager.getDevice() -> hs.loupedeck
     --- Function
@@ -192,6 +221,11 @@ function mod.new(deviceType)
     --- Variable
     --- Table of cached Touch Screen button values.
     o.cachedTouchScreenButtonValues = {}
+
+    --- plugins.core.loupedeckctandlive.manager.cachedKnobValues -> table
+    --- Variable
+    --- Table of cached Knob values.
+    o.cachedKnobValues = {}
 
     --- plugins.core.loupedeckctandlive.manager.cachedWheelScreen -> string
     --- Variable
@@ -336,12 +370,10 @@ function mod.new(deviceType)
     --- Enable or disable the automatic switching of applications.
     o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function() o:refresh() end)
 
-    --- plugins.core.loupedeckctandlive.manager.refreshTimer -> hs.timer
+    --- plugins.core.loupedeckctandlive.prefs.snippetsRefreshFrequency <cp.prop: string>
     --- Field
-    --- A timer to automatically refresh the screen.
-    o.refreshTimer = timer.new(REFRESH_THE_SCREEN_FREQUENCY, function()
-        o:refresh()
-    end)
+    --- How often snippets are refreshed.
+    o.snippetsRefreshFrequency = config.prop(o.id .. ".preferences.snippetsRefreshFrequency", "1")
 
     --- plugins.core.loupedeckctandlive.manager.enabled <cp.prop: boolean>
     --- Field
@@ -361,7 +393,11 @@ function mod.new(deviceType)
             o.appWatcher:stop()
             o.driveWatcher:stop()
             o.sleepWatcher:stop()
-            o.refreshTimer:stop()
+
+            if o.refreshTimer then
+                o.refreshTimer:stop()
+                o.refreshTimer = nil
+            end
 
             if o.device then
                 --------------------------------------------------------------------------------
@@ -828,8 +864,8 @@ function mod.mt:refresh(dueToAppChange)
             -- Only update if the colour has changed to save bandwidth:
             --------------------------------------------------------------------------------
             device:buttonColor(i, {hex="#" .. ledColor})
+            self.cachedLEDButtonValues[id] = ledColor
         end
-        self.cachedLEDButtonValues[id] = ledColor
     end
 
     --------------------------------------------------------------------------------
@@ -1017,62 +1053,205 @@ function mod.mt:refresh(dueToAppChange)
     end
 
     --------------------------------------------------------------------------------
-    -- UPDATE LEFT SIDE SCREEN:
+    -- UPDATE KNOB IMAGES:
     --------------------------------------------------------------------------------
-    success = false
-    local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
-    if thisSideScreen and thisSideScreen.encodedKnobIcon and thisSideScreen.encodedKnobIcon ~= "" then
-        encodedIcon = thisSideScreen.encodedKnobIcon
-    else
-        encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-    end
-    if encodedIcon and self.cachedLeftSideScreen == encodedIcon then
-        success = true
-    elseif encodedIcon and self.cachedLeftSideScreen ~= encodedIcon then
-        self.cachedLeftSideScreen = encodedIcon
-        local decodedImage = imageFromURL(encodedIcon)
-        if decodedImage then
-            device:updateScreenImage(loupedeck.screens.left, decodedImage)
-            success = true
+    local knob = bank and bank.knob
+    local hasLeftKnob = false
+    local hasRightKnob = false
+    for i=1, 6 do
+        local id = tostring(i)
+        success = false
+        local thisKnob = knob and knob[id]
+        encodedIcon = thisKnob and thisKnob.encodedIcon
+
+        --------------------------------------------------------------------------------
+        -- If there's no encodedIcon, then try encodedIconLabel:
+        --------------------------------------------------------------------------------
+        if not encodedIcon or (encodedIcon and encodedIcon == "") then
+            encodedIcon = thisKnob and thisKnob.encodedIconLabel
         end
-    end
-    if not success and self.cachedLeftSideScreen ~= defaultColor then
-        device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
-        self.cachedLeftSideScreen = defaultColor
+
+        --------------------------------------------------------------------------------
+        -- If there's a Snippet to generate the icon, use that instead:
+        --------------------------------------------------------------------------------
+        snippetAction = thisKnob and thisKnob.snippetAction
+        if snippetAction and snippetAction.action then
+            local code = snippetAction.action.code
+            if code then
+                --------------------------------------------------------------------------------
+                -- Use the latest Snippet from the Snippets Preferences if it exists:
+                --------------------------------------------------------------------------------
+                local snippets = mod.scriptingPreferences.snippets()
+                local savedSnippet = snippets[snippetAction.action.id]
+                if savedSnippet and savedSnippet.code then
+                    code = savedSnippet.code
+                end
+
+                local successful, result = pcall(load(code))
+                if successful and isImage(result) then
+                    local size = result:size()
+                    if size.w == 60 and size.h == 90 then
+                        --------------------------------------------------------------------------------
+                        -- The generated image is already 60x90 so proceed:
+                        --------------------------------------------------------------------------------
+                        encodedIcon = result:encodeAsURLString(true)
+                        containsIconSnippets = true
+                    else
+                        --------------------------------------------------------------------------------
+                        -- The generated image is not 60x90 so process:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
+
+                        --------------------------------------------------------------------------------
+                        -- Black Background:
+                        --------------------------------------------------------------------------------
+                        v[1] = {
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, hex = "#000000" },
+                            type = "rectangle",
+                        }
+
+                        --------------------------------------------------------------------------------
+                        -- Icon - Scaled as per preferences:
+                        --------------------------------------------------------------------------------
+                        v[2] = {
+                          type="image",
+                          image = result,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
+
+                        local fixedImage = v:imageFromCanvas()
+
+                        v:delete()
+                        v = nil -- luacheck: ignore
+
+                        encodedIcon = fixedImage:encodeAsURLString(true)
+                        containsIconSnippets = true
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Only update if the screen has changed to save bandwidth:
+        --------------------------------------------------------------------------------
+        if encodedIcon and self.cachedKnobValues[id] == encodedIcon then
+            success = true
+        elseif encodedIcon and self.cachedKnobValues[id] ~= encodedIcon then
+            self.cachedKnobValues[id] = encodedIcon
+            local decodedImage = imageFromURL(encodedIcon)
+            local size = decodedImage and decodedImage:size()
+            if size and size.w ~= 60 or size.h ~= 90 then
+                --------------------------------------------------------------------------------
+                -- The Knob Icon isn't 60x90 pixels, so it must be a legacy icon that needs
+                -- to be scaled:
+                --------------------------------------------------------------------------------
+                local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
+
+                v[1] = {
+                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                    fillColor = { alpha = 1, hex = "#000000" },
+                    type = "rectangle",
+                }
+
+                v[1] = {
+                  type = "image",
+                  image = decodedImage:croppedCopy({ x = 15, y = 0, h = 90, w = 60 }),
+                  frame = { x = 0, y = 0, h = 90, w = 60 },
+                }
+
+                local fixedImage = v:imageFromCanvas()
+
+                --------------------------------------------------------------------------------
+                -- NOTE: We do this encode/decode dance because otherwise something
+                --       screws up with the scale. Hopefully this will eventually be
+                --       addressed with Hammerspoon Issue #2807.
+                --------------------------------------------------------------------------------
+                local encoded = fixedImage:encodeAsURLString(true)
+                decodedImage = imageFromURL(encoded)
+
+                v:delete()
+                v = nil -- luacheck: ignore
+            end
+            if decodedImage then
+                device:updateKnobImage(i, decodedImage)
+                success = true
+            end
+        end
+        if not success and self.cachedKnobValues[id] ~= defaultColor then
+            device:updateScreenKnobColor(i, {hex="#"..defaultColor})
+            self.cachedKnobValues[id] = defaultColor
+        end
+        if success then
+            if i > 3 then
+                hasRightKnob = true
+            else
+                hasLeftKnob = true
+            end
+        end
     end
 
     --------------------------------------------------------------------------------
-    -- UPDATE RIGHT SIDE SCREEN:
+    -- If no individual knob icons, use the left/right screen icons instead:
     --------------------------------------------------------------------------------
-    success = false
-    thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
-    if thisSideScreen and thisSideScreen.encodedKnobIcon and thisSideScreen.encodedKnobIcon ~= "" then
-        encodedIcon = thisSideScreen.encodedKnobIcon
-    else
+    if not hasLeftKnob then
+        success = false
+        local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
         encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-    end
-    if encodedIcon and self.cachedRightSideScreen == encodedIcon then
-        success = true
-    elseif encodedIcon and self.cachedRightSideScreen ~= encodedIcon then
-        self.cachedRightSideScreen = encodedIcon
-        local decodedImage = imageFromURL(encodedIcon)
-        if decodedImage then
-            device:updateScreenImage(loupedeck.screens.right, decodedImage)
+        if encodedIcon and self.cachedLeftSideScreen == encodedIcon then
             success = true
+        elseif encodedIcon and self.cachedLeftSideScreen ~= encodedIcon then
+            self.cachedLeftSideScreen = encodedIcon
+            local decodedImage = imageFromURL(encodedIcon)
+            if decodedImage then
+                device:updateScreenImage(loupedeck.screens.left, decodedImage)
+                success = true
+            end
         end
+        if not success and self.cachedLeftSideScreen ~= defaultColor then
+            device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
+            self.cachedLeftSideScreen = defaultColor
+        end
+    else
+        self.cachedLeftSideScreen = nil
     end
-    if not success and self.cachedRightSideScreen ~= defaultColor then
-        device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
-        self.cachedRightSideScreen = defaultColor
+    if not hasRightKnob then
+        success = false
+        local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
+        encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+        if encodedIcon and self.cachedRightSideScreen == encodedIcon then
+            success = true
+        elseif encodedIcon and self.cachedRightSideScreen ~= encodedIcon then
+            self.cachedRightSideScreen = encodedIcon
+            local decodedImage = imageFromURL(encodedIcon)
+            if decodedImage then
+                device:updateScreenImage(loupedeck.screens.right, decodedImage)
+                success = true
+            end
+        end
+        if not success and self.cachedRightSideScreen ~= defaultColor then
+            device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
+            self.cachedRightSideScreen = defaultColor
+        end
+    else
+        self.cachedRightSideScreen = nil
     end
 
     --------------------------------------------------------------------------------
     -- Enable or disable the refresh timer:
     --------------------------------------------------------------------------------
     if containsIconSnippets then
+        if not self.refreshTimer then
+            local snippetsRefreshFrequency = tonumber(self.snippetsRefreshFrequency())
+            self.refreshTimer = timer.new(snippetsRefreshFrequency, function()
+                self:refresh()
+            end)
+        end
         self.refreshTimer:start()
     else
-        self.refreshTimer:stop()
+        if self.refreshTimer then
+            self.refreshTimer:stop()
+        end
     end
 end
 
@@ -1137,6 +1316,7 @@ function mod.mt:clearCache()
 
     self.cachedLEDButtonValues = {}
     self.cachedTouchScreenButtonValues = {}
+    self.cachedKnobValues = {}
 
     self.cachedWheelScreen = ""
     self.cachedLeftSideScreen = ""

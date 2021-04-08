@@ -1,5 +1,5 @@
 globals = { -- luacheck:ignore
-	"hs", "cp",
+	"hs", "cp", "ls",
 	"rawrequire",
 	"table",
 	"cpLoaded",
