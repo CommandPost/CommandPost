@@ -324,8 +324,8 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 		</th>
 		<th style="width: 150px;">
-			<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
-				<option value="All Applications">{{ i18n("allApplications") }}</option>
+			<select id="application" style="width: 250px;" onchange="updateApplicationAndBank()">
+				<option value="All Applications">{{ i18n("unlistedAndIgnoredApplications") }}</option>
 				<option disabled>──────────</option>
 				{%
 				for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
@@ -386,7 +386,7 @@
 				{% end %}
 			</select>
 		</th>
-		<th style="width: 40px;"></th>
+		<th style="width: 140px;"></th>
 		<th style="width: 80px;">
 			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
 		</th>
