@@ -47,11 +47,6 @@ local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
 
--- REFRESH_THE_SCREEN_FREQUENCY -> number
--- Constant
--- How often we should forcefully refresh the screen in seconds.
-local REFRESH_THE_SCREEN_FREQUENCY = 1
-
 -- LD_BUNDLE_ID -> string
 -- Constant
 -- The official Loupedeck App bundle identifier.
@@ -1067,7 +1062,7 @@ function mod.mt:refresh(dueToAppChange)
         local id = tostring(i)
         success = false
         local thisKnob = knob and knob[id]
-        local encodedIcon = thisKnob and thisKnob.encodedIcon
+        encodedIcon = thisKnob and thisKnob.encodedIcon
 
         --------------------------------------------------------------------------------
         -- If there's no encodedIcon, then try encodedIconLabel:
@@ -1079,7 +1074,7 @@ function mod.mt:refresh(dueToAppChange)
         --------------------------------------------------------------------------------
         -- If there's a Snippet to generate the icon, use that instead:
         --------------------------------------------------------------------------------
-        local snippetAction = thisKnob and thisKnob.snippetAction
+        snippetAction = thisKnob and thisKnob.snippetAction
         if snippetAction and snippetAction.action then
             local code = snippetAction.action.code
             if code then
@@ -1222,7 +1217,7 @@ function mod.mt:refresh(dueToAppChange)
     end
     if not hasRightKnob then
         success = false
-        thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
+        local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
         encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
         if encodedIcon and self.cachedRightSideScreen == encodedIcon then
             success = true
