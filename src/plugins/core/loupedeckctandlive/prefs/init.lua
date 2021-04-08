@@ -65,6 +65,11 @@ local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Loupedeck"
 -- URL to Snippet Support Site
 local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
 
+-- SNIPPET_LED_HELP_URL -> string
+-- Constant
+-- URL to Snippet Support Site
+local SNIPPET_LED_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_led_colors"
+
 -- delayedFn -> hs.timer
 -- Variable
 -- A delayed timer used for the Icon Label updater.
@@ -840,6 +845,7 @@ function mod.mt:updateUI(params)
     local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
 
     local snippetValue = selectedID and selectedID.snippetAction and selectedID.snippetAction.actionTitle or ""
+    local ledSnippetActionValue = selectedID and selectedID.ledSnippetAction and selectedID.ledSnippetAction.actionTitle or ""
 
     local colorValue = selectedID and selectedID.led or "FFFFFF"
     local encodedIcon = selectedID and selectedID.encodedIcon or ""
@@ -1094,6 +1100,7 @@ function mod.mt:updateUI(params)
         changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
         changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
         changeValueByID('snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
+        changeValueByID('led_snippet_action', `]] .. escapeTilda(ledSnippetActionValue) .. [[`);
         changeValueByID('wheel_snippet_action', `]] .. escapeTilda(snippetValue) .. [[`);
         changeValueByID('vibratePress', ']] .. vibratePressValue .. [[');
         changeValueByID('vibrateRelease', ']] .. vibrateReleaseValue .. [[');
@@ -2621,7 +2628,11 @@ function mod.mt:panelCallback(id, params)
             -- Examples Button:
             --------------------------------------------------------------------------------
             execute('open "' .. SNIPPET_HELP_URL .. '"')
-
+        elseif callbackType == "ledExamples" then
+            --------------------------------------------------------------------------------
+            -- Examples Button:
+            --------------------------------------------------------------------------------
+            execute('open "' .. SNIPPET_LED_HELP_URL .. '"')
         elseif callbackType == "updateFontSize" then
             --------------------------------------------------------------------------------
             -- Update Font Size:

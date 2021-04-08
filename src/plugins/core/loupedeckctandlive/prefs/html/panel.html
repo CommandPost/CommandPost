@@ -1065,6 +1065,20 @@
 		}
 	}
 
+	function ledExamples() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "ledExamples",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function updateIgnoreVisibility() {
 		if (document.getElementById("application").value == "All Applications") {
 			document.getElementById("ignoreApp").style.display = "none";
@@ -1739,13 +1753,18 @@
 						<!-- LED COLOR -->
 						<tr id="ledColorA">
 							<th width="229px">{{ i18n("ledColor") }}:</th>
+							<th width="229px">{{ i18n("useSnippetToSetLEDColor") }}:</th>
 						</tr>
 
 						<tr id="ledColorB">
-							<td width="229px">
+							<td width="229px" style="vertical-align:top;">
 								<div>
 									<input id="color" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
 								</div>
+							</td>
+							<td width="229px" style="vertical-align:top;">
+								<input type="text" id="led_snippet_action" class="loupedeckActionTextbox" style="margin-bottom: 10px;" value="" disabled="" placeholder="{{ i18n("none") }}"><br />
+								<a href="#" class="button loupedeckActionButton" onclick="selectButton('ledSnippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('ledSnippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('ledSnippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="ledExamples()">{{ i18n("examples") }}</a>
 							</td>
 						</tr>
 

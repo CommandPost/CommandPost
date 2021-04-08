@@ -1997,4 +1997,17 @@ function tools.isImage(object)
     return object and getmetatable(object) == getObjectMetatable("hs.image") or false
 end
 
+--- cp.tools.isColor(object) -> boolean
+--- Function
+--- Is the supplied object an `hs.drawing.color`?
+---
+--- Parameters:
+---  * object - An object to check
+---
+--- Returns:
+---  * A boolean
+function tools.isColor(object)
+    return object and getmetatable(object) == getObjectMetatable("hs.drawing.color") or false
+end
+
 return tools

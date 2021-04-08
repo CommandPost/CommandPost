@@ -38,6 +38,7 @@ local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
+local isColor                   = tools.isColor
 local isImage                   = tools.isImage
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
@@ -858,12 +859,44 @@ function mod.mt:refresh(dueToAppChange)
     local ledButton = bank and bank.ledButton
     for i=7, 26 do
         local id = tostring(i)
-        local ledColor = ledButton and ledButton[id] and ledButton[id].led or defaultColor
+
+        --------------------------------------------------------------------------------
+        -- If there's a Snippet to assign the LED color, use that instead:
+        --------------------------------------------------------------------------------
+        local currentLEDButton = ledButton and ledButton[id]
+        local snippetAction = currentLEDButton and currentLEDButton.ledSnippetAction
+        local snippetResult
+        if snippetAction and snippetAction.action then
+            local code = snippetAction.action.code
+            if code then
+                --------------------------------------------------------------------------------
+                -- Use the latest Snippet from the Snippets Preferences if it exists:
+                --------------------------------------------------------------------------------
+                local snippets = mod.scriptingPreferences.snippets()
+                local savedSnippet = snippets[snippetAction.action.id]
+                if savedSnippet and savedSnippet.code then
+                    code = savedSnippet.code
+                end
+
+                local successful, result = pcall(load(code))
+                if type(successful) and isColor(result) then
+                    snippetResult = result
+                    containsIconSnippets = true
+                end
+            end
+        end
+
+        local ledColor = snippetResult or (ledButton and ledButton[id] and ledButton[id].led) or defaultColor
+
         if self.cachedLEDButtonValues[id] ~= ledColor then
             --------------------------------------------------------------------------------
             -- Only update if the colour has changed to save bandwidth:
             --------------------------------------------------------------------------------
-            device:buttonColor(i, {hex="#" .. ledColor})
+            if isColor(ledColor) then
+                device:buttonColor(i, ledColor)
+            else
+                device:buttonColor(i, {hex="#" .. ledColor})
+            end
             self.cachedLEDButtonValues[id] = ledColor
         end
     end
