@@ -661,8 +661,8 @@ local function _sortChoices(choices, query)
         -- Exact query match gets first priority:
         --------------------------------------------------------------------------------
         if queryLen > 0 then
-            local aExact = a.textMatch == 1 and a.text:len() == queryLen
-            local bExact = b.textMatch == 1 and b.text:len() == queryLen
+            local aExact = a.exactMatch == 1 and a.text:len() == queryLen
+            local bExact = b.exactMatch == 1 and b.text:len() == queryLen
 
             if aExact and not bExact then
                 return true
@@ -688,8 +688,8 @@ local function _sortChoices(choices, query)
         -- REMINDER: a.text could be a hs.styledtext object
         --------------------------------------------------------------------------------
         if queryLen > 0 then
-            local aStartsWithQ = a.textMatch == 1
-            local bStartsWithQ = b.textMatch == 1
+            local aStartsWithQ = a.exactMatch == 1
+            local bStartsWithQ = b.exactMatch == 1
 
             if aStartsWithQ and not bStartsWithQ then
                 return true
@@ -801,13 +801,18 @@ function activator:activeChoices()
                 --------------------------------------------------------------------------------
                 -- Don't show deprecated actions in the Search Console:
                 --------------------------------------------------------------------------------
-                if choice.text:sub(1, 11) == "Deprecated:" then
+                local choiceText = choice.text
+                local choiceTextLower = choiceText:lower()
+
+                if choiceText:sub(1, 11) == "Deprecated:" then
                     return false
                 end
 
+                local exactMatch = choice.text:lower():find(query, 1, true)
+
                 local textMatch = true
                 for _, v in pairs(queryWords) do
-                    if not choice.text:lower():find(v, 1, true) then
+                    if not choiceTextLower:find(v, 1, true) then
                         textMatch = false
                         break
                     end
@@ -817,8 +822,9 @@ function activator:activeChoices()
                 -- Store the match index for sorting later:
                 --------------------------------------------------------------------------------
                 choice.textMatch = textMatch
+                choice.exactMatch = exactMatch
 
-                if textMatch then
+                if exactMatch or textMatch then
                     return true
                 elseif searchSubText == true and choice.subText and choice.subText:lower():find(query, 1, true) then
                     return true
@@ -826,6 +832,7 @@ function activator:activeChoices()
                 return false
             else
                 choice.textMatch = nil
+                choice.exactMatch = nil
             end
             return true
         end
