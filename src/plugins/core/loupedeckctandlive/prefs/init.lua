@@ -1249,6 +1249,10 @@ function mod.mt:panelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
+        --------------------------------------------------------------------------------
+        -- TODO: One day, instead of using a crazy if...else statement, it would be
+        --       better and cleaner to use a table of functions.
+        --------------------------------------------------------------------------------
         if callbackType == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
@@ -2568,11 +2572,12 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
             local controlType = params["controlType"]
             local bid = params["id"]
+            local actionType = params["actionType"]
 
             local items = self.items()
 
             if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
-                local snippetAction = items[app][bank][controlType][bid].snippetAction
+                local snippetAction = items[app][bank][controlType][bid][actionType]
                 local snippetID = snippetAction and snippetAction.action and snippetAction.action.id
                 if snippetID then
                     local snippets = copy(mod._scriptingPreferences.snippets())

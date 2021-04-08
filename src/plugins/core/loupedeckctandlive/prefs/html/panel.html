@@ -613,7 +613,7 @@
 		}
 	}
 
-	function editSnippet() {
+	function editSnippet(actionType) {
 		try {
 			var result = {
 				id: "{{ id }}",
@@ -624,6 +624,7 @@
 					selectedControl: document.getElementById("selectedControl").value,
 					controlType: document.getElementById("controlType").value,
 					id: document.getElementById("id").value,
+					actionType: actionType,
 				},
 			}
 			postMessage(result);
@@ -1624,8 +1625,8 @@
 							<td width="229px"><input type="text" id="release_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="pressActionC">
-							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- PRESS REPEAT: -->
@@ -1653,8 +1654,8 @@
 							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="knobC">
-							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('leftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('rightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1765,8 +1766,8 @@
 							<td width="229px"><input type="text" id="down_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('upAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('upAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('downAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('downAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('upAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('upAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('upAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('downAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('downAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('downAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1786,8 +1787,8 @@
 							<td width="229px"><input type="text" id="right_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelF">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('leftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('rightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1807,8 +1808,8 @@
 							<td width="229px"><input type="text" id="two_finger_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelI">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('doubleTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('doubleTapAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('twoFingerTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('twoFingerTapAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('doubleTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('doubleTapAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('doubleTapAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('twoFingerTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('twoFingerTapAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('twoFingerTapAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1828,8 +1829,8 @@
 							<td width="229px"><input type="text" id="bottom_left_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelPressC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topLeftAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomLeftAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('topLeftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('bottomLeftAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1849,8 +1850,8 @@
 							<td width="229px"><input type="text" id="bottom_middle_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelPressF">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topMiddleAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomMiddleAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topMiddleAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('topMiddleAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomMiddleAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('bottomMiddleAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1870,8 +1871,8 @@
 							<td width="229px"><input type="text" id="bottom_right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelPressI">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topRightAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomRightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('topRightAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('bottomRightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1911,7 +1912,7 @@
 							</td>
 							<td width="229px" id="wheelSnippetB" style="vertical-align:top;">
 								<input type="text" id="wheel_snippet_action" class="loupedeckActionTextbox" style="margin-bottom: 10px;" value="" disabled="" placeholder="{{ i18n("none") }}"><br />
-								<a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a>
+								<a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a>
 							</td>
 						</tr>
 						<tr id="iconC">
@@ -1939,7 +1940,7 @@
 							<td width="229px"><input type="text" id="snippet_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="snippetC">
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet()">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
 						</tr>
 
 						<!-- WHEEL SENSITIVITY: -->
