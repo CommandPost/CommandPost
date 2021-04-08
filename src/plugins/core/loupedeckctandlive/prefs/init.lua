@@ -1176,7 +1176,6 @@ function mod.mt:buildIconFromLabel(params)
     local bank = params["bank"]
     local controlType = params["controlType"]
     local bid = params["id"]
-    local value = params["value"]
 
     local items = self.items()
     local selectedApp = items[app]
