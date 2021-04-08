@@ -1320,6 +1320,7 @@
         "menubarPanelTooltip": "Menubar Preferences",
         "menuChoiceSubText": "Menu: %{path}",
         "menuItemsLoading": "The menu items will populate once the selected application is opened and scanned.",
+        "menuItemsScanned": "Menu Items (Scanned)",
         "merge": "Merge",
         "method": "Method",
         "methods": "Methods",
