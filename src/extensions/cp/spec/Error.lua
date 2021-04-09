@@ -9,6 +9,12 @@ local Error         = Message:subclass("cp.spec.Error")
 --- cp.spec.Error.is(other) -> boolean
 --- Function
 --- Checks if the `other` is an instance of the `Error` class.
+---
+--- Parameters:
+---  * other - An object to check
+---
+--- Returns:
+---  * A boolean
 function Error.static.is(other)
     return other ~= nil and type(other) == "table" and other.isInstanceOf ~= nil and other:isInstanceOf(Error)
 end

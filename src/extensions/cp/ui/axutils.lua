@@ -459,9 +459,9 @@ end
 --- Function
 --- Returns `true` if element `a` is left of element `b`. May be used with `table.sort`.
 ---
---- Parameters
----  * a    - The first element
----  * b    - The second element
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is left of `b`.
@@ -474,9 +474,9 @@ end
 --- Function
 --- Returns `true` if element `a` is right of element `b`. May be used with `table.sort`.
 ---
---- Parameters
----  * a    - The first element
----  * b    - The second element
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is right of `b`.
@@ -489,9 +489,9 @@ end
 --- Function
 --- Returns `true` if element `a` is above element `b`. May be used with `table.sort`.
 ---
---- Parameters
----  * a    - The first element
----  * b    - The second element
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is above `b`.
@@ -504,9 +504,9 @@ end
 --- Function
 --- Returns `true` if element `a` is below element `b`. May be used with `table.sort`.
 ---
---- Parameters
----  * a    - The first element
----  * b    - The second element
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is below `b`.

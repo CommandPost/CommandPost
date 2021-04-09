@@ -37,6 +37,12 @@ end
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText(cpApp, upProp)
 --- Constructor
 --- Creates a new "Find and Replace Title Text" [Dialog](cp.ui.Dialog.md)
+---
+--- Parameters:
+---  * cpApp - The cpApp
+---
+--- Returns:
+---  * None
 function FindAndReplace:initialize(cpApp)
     Dialog.initialize(self, cpApp, cpApp.UI:mutate(function(original)
         return cache(self, "_window", function()
@@ -169,6 +175,12 @@ end
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText:doShow() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to show the "Find And Replace Title Text" dialog.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function FindAndReplace.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:app():doLaunch())
@@ -181,6 +193,12 @@ end
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText:doHide() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the "Find And Replace Title Text" dialog.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function FindAndReplace.lazy.method:doHide()
     return If(self.isShowing)
     :Then(self:doClose())
@@ -232,6 +250,12 @@ end
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText:doFindAndReplaceAll(find, replace) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to find all titles containing `find` and replace them with `replace`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function FindAndReplace:doFindAndReplaceAll(find, replace)
     return Do(self:app():doLaunch())
     :Then(

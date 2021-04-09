@@ -1,12 +1,12 @@
-local require               = require
-
-local class                 = require "middleclass"
-
 --- === cp.spec.Definition ===
 ---
 --- A [Definition](cp.spec.Definition.md) is a superclass for a "runnable" specification.
 --- It doesn't do anything itself, but provides a common ancestor for all implementation
 --- classes like [Specification](cp.spec.Specification.md) and [Scenario](cp.spec.Scenario.md).
+
+local require               = require
+
+local class                 = require "middleclass"
 
 local Definition = class("cp.spec.Definition")
 

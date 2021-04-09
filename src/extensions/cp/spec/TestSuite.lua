@@ -1,3 +1,7 @@
+--- === cp.spec.TestSuite ===
+---
+--- Test Suite.
+
 local require           = require
 
 local Specification     = require "cp.spec.Specification"

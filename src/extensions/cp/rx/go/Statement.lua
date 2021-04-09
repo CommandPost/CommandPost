@@ -386,6 +386,9 @@ end
 --- Method
 --- Returns the Statement name.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
 ---  * The Statement name.
 function Statement.mt:name()
@@ -399,6 +402,9 @@ end
 --- cp.rx.go.Statement:fullName()
 --- Method
 --- Returns the Statement's full name.
+---
+--- Parameters:
+---  * None
 ---
 --- Returns:
 ---  * The full Statement name.

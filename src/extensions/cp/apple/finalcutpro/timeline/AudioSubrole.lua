@@ -12,6 +12,12 @@ local AudioSubrole = Role:subclass("cp.apple.finalcutpro.timeline.AudioSubrole")
 --- cp.apple.finalcutpro.timeline.AudioSubrole.matches(element) -> boolean
 --- Function
 --- Checks if the element is a "Audio" Subrole.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function AudioSubrole.static.matches(element)
     return Role.matches(element)
     and AudioRole.matches(element:attributeValue("AXDisclosedByRow"))
@@ -22,11 +28,11 @@ end
 --- Creates a new instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * parent - the parent `Element`.
+---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
 ---
 --- Returns:
---- * The new `Row`.
+---  * The new `Row`.
 function AudioSubrole:initialize(parent, uiFinder)
     Role.initialize(self, parent, uiFinder, Role.TYPE.AUDIO)
 end

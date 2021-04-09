@@ -55,8 +55,11 @@ end
 --- Method
 --- Returns a `table` containing the layout configuration for this class.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The layout configuration `table`.
+---  * The layout configuration `table`.
 function IndexCaptions:saveLayout()
     return {
         showing = self:isShowing(),
@@ -68,10 +71,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
 ---
 --- Parameters:
---- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---  * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function IndexCaptions:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)

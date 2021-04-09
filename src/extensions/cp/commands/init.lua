@@ -42,7 +42,7 @@ commands._groups = {}
 --- Returns an array of IDs of command groups which have been created.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * `table` - The array of group IDs.
@@ -59,7 +59,7 @@ end
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
 ---
 --- Parameters:
---- * `id`      - The ID to retrieve
+---  * `id`      - The ID to retrieve
 ---
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
@@ -72,7 +72,7 @@ end
 --- Returns a table with the set of commands.
 ---
 --- Parameters:
---- * `id`      - The ID to retrieve
+---  * `id`      - The ID to retrieve
 ---
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
@@ -127,10 +127,10 @@ end
 --- Returns the unique ID of the command group.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The command group ID string.
+---  * The command group ID string.
 function commands.mt:id()
     return self._id
 end
@@ -145,10 +145,10 @@ end
 --- ```
 ---
 --- Parameters:
---- * `commandId`   - The unique ID for the new command.
+---  * `commandId`   - The unique ID for the new command.
 ---
 --- Returns:
---- * The new `cp.commands.command` instance.
+---  * The new `cp.commands.command` instance.
 function commands.mt:add(commandId)
     local cmd = command.new(commandId, self)
     self._commands[commandId] = cmd
@@ -162,10 +162,10 @@ end
 --- Returns the command with the specified ID, or `nil` if none exists.
 ---
 --- Parameters:
---- * `commandId`   - The command ID to retrieve.
+---  * `commandId`   - The command ID to retrieve.
 ---
 --- Returns:
---- * The `cp.commands.command`, or `nil`.
+---  * The `cp.commands.command`, or `nil`.
 function commands.mt:get(commandId)
     return self._commands[commandId]
 end
@@ -179,6 +179,12 @@ end
 ---     ...
 --- end
 --- ```
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function commands.mt:getAll()
     return self._commands
 end
@@ -188,10 +194,10 @@ end
 --- Clears all commands and their shortcuts.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The command group instance.
+---  * The command group instance.
 function commands.mt:clear()
     self:deleteShortcuts()
     self._commands = {}
@@ -203,10 +209,10 @@ end
 --- Clears all shortcuts associated with commands in this command group.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The command group instance.
+---  * The command group instance.
 function commands.mt:deleteShortcuts()
     for _,cmd in pairs(self._commands) do
         cmd:deleteShortcuts()
@@ -219,10 +225,10 @@ end
 --- Enables the command group.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The command group instance.
+---  * The command group instance.
 function commands.mt:enable()
     self:isEnabled(true)
     return self
@@ -233,10 +239,10 @@ end
 --- Disables the command group.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The command group instance.
+---  * The command group instance.
 function commands.mt:disable()
     self:isEnabled(false)
     return self
@@ -247,17 +253,17 @@ end
 --- Adds an event watcher to the command group.
 ---
 --- Parameters:
---- * events    - The table of events to watch for (see Notes).
+---  * events    - The table of events to watch for (see Notes).
 ---
 --- Returns:
---- * The command group instance.
+---  * The command group instance.
 ---
 --- Notes:
---- * The table can have properties with the following functions, which will be called for the specific event:
---- ** `add(command)`:      Called after the provided `cp.commands.command` instance has been added.
---- ** `activate()`         Called when the command group is activated.
---- ** `enable()`:          Called when the command group is enabled.
---- ** `disable()`:         Called when the command group is disabled.
+---  * The table can have properties with the following functions, which will be called for the specific event:
+---  ** `add(command)`:      Called after the provided `cp.commands.command` instance has been added.
+---  ** `activate()`         Called when the command group is activated.
+---  ** `enable()`:          Called when the command group is enabled.
+---  ** `disable()`:         Called when the command group is disabled.
 function commands.mt:watch(events)
     if not self.watchers then
         self.watchers = {}
@@ -292,11 +298,11 @@ end
 --- command group is not enabled within 5 seconds.
 ---
 --- Parameters:
---- * successFn     - the function to call if successfully activated.
---- * failureFn     - the function to call if not activated after 5 seconds.
+---  * successFn     - the function to call if successfully activated.
+---  * failureFn     - the function to call if not activated after 5 seconds.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 commands._count = 0
 function commands.mt:activate(successFn, failureFn)
     self:_notify('activate')
@@ -326,10 +332,10 @@ end
 --- for all contained `cp.commands.command` instances.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The table of shortcuts for commands.
+---  * The table of shortcuts for commands.
 function commands.mt:saveShortcuts()
     local data = {}
 
@@ -352,10 +358,10 @@ end
 --- The data should probably come from the `saveShortcuts` method.
 ---
 --- Parameters:
---- * data      - The data table containing shortcuts.
+---  * data      - The data table containing shortcuts.
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function commands.mt:loadShortcuts(data)
     self:deleteShortcuts()
     for id,commandData in pairs(data) do
@@ -371,6 +377,12 @@ end
 --- cp.commands.getShortcutsPath(name) -> string
 --- Function
 --- Returns the path to the named shortcut set.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string
 function commands.getShortcutsPath(name)
     local shortcutsPath = config.userConfigRootPath .. "/Shortcuts/"
 
@@ -392,10 +404,10 @@ end
 --- Loads a shortcut set from the standard location with the specified name.
 ---
 --- Parameters:
---- * name      - The name of the shortcut set. E.g. "My Custom Shortcuts"
+---  * name      - The name of the shortcut set. E.g. "My Custom Shortcuts"
 ---
 --- Returns:
---- * `true` if the file was found and loaded successfully.
+---  * `true` if the file was found and loaded successfully.
 function commands.loadFromFile(name)
     local groupData
 
@@ -444,10 +456,10 @@ end
 --- Saves the current shortcuts for all groups to a file in the standard location with the provided name.
 ---
 --- Parameters:
---- * name      - The name of the command set. E.g. "My Custom Commands"
+---  * name      - The name of the command set. E.g. "My Custom Commands"
 ---
 --- Returns:
---- * `true` if the shortcuts were saved successfully.
+---  * `true` if the shortcuts were saved successfully.
 function commands.saveToFile(name)
     --------------------------------------------------------------------------------
     -- Get the shortcuts:

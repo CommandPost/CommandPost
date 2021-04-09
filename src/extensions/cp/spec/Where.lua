@@ -1,3 +1,14 @@
+-- === cp.spec.RunWhere ===
+--
+-- Private implementation class.
+--
+-- This will run the provided [Definition](cp.spec.Definition.cp) once for each
+-- data row in the provided data table, where the first row are all `string` values
+-- providing the property names, and subsequent rows contain the data for those
+-- values for each run.
+--
+-- Extends [Run](cp.spec.Run.md).
+
 local require                   = require
 
 local inspect                   = require "hs.inspect"
@@ -9,16 +20,6 @@ local insert                    = table.insert
 
 local WHERE_NAME = "[WHERE]"
 
--- === cp.spec.RunWhere ===
---
--- Private implementation class.
---
--- This will run the provided [Definition](cp.spec.Definition.cp) once for each
--- data row in the provided data table, where the first row are all `string` values
--- providing the property names, and subsequent rows contain the data for those
--- values for each run.
---
--- Extends [Run](cp.spec.Run.md).
 local RunWhere = Run:subclass("cp.spec.RunWhere")
 
 function RunWhere:initialize(where)

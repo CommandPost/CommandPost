@@ -1,12 +1,3 @@
-local require               = require
-
--- local log                   = require "hs.logger" .new "Specification"
-
-local Definition            = require "cp.spec.Definition"
-local Run                   = require "cp.spec.Run"
-
-local insert                = table.insert
-
 --- === cp.spec.Specification ===
 ---
 --- A Specification is a list of [definitions](cp.spec.Definition.md) which
@@ -25,17 +16,27 @@ local insert                = table.insert
 ---     end),
 --- }
 --- ```
+
+local require               = require
+
+-- local log                   = require "hs.logger" .new "Specification"
+
+local Definition            = require "cp.spec.Definition"
+local Run                   = require "cp.spec.Run"
+
+local insert                = table.insert
+
 local Specification = Definition:subclass("cp.spec.Specification")
 
 --- cp.spec.Specification.is(instance) -> boolean
 --- Function
 --- Checks if the `instance` is an instance of `Specification`.
 ---
---- Presentation:
---- * instance - The instance to check
+--- Parameters:
+---  * instance - The instance to check
 ---
 --- Returns:
---- * `true` if it's a `Specification` instance.
+---  * `true` if it's a `Specification` instance.
 function Specification.static.is(instance)
     return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(Specification)
 end
@@ -43,6 +44,12 @@ end
 --- cp.spec.Specification(name) -> cp.spec.Specification
 --- Constructor
 --- Creates a new test suite.
+---
+--- Parameters:
+---  * name - The name os the specification.
+---
+--- Returns:
+---  * A `cp.spec.Specification` object
 function Specification:initialize(name)
     self.definitions = {}
     Definition.initialize(self, name)
@@ -54,10 +61,10 @@ end
 --- The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
 ---
 --- Parameters:
---- * beforeEachFn - The function to run before each child runs.
+---  * beforeEachFn - The function to run before each child runs.
 ---
 --- Returns:
---- * The same `cp.spec.Specification` instance.
+---  * The same `cp.spec.Specification` instance.
 function Specification:onBeforeEach(beforeEachFn)
     self._beforeEach = beforeEachFn
     return self
@@ -69,10 +76,10 @@ end
 --- The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
 ---
 --- Parameters:
---- * afterEachFn - The function to run after each child runs.
+---  * afterEachFn - The function to run after each child runs.
 ---
 --- Returns:
---- * The same `cp.spec.Specification` instance.
+---  * The same `cp.spec.Specification` instance.
 function Specification:onAfterEach(afterEachFn)
     self._afterEach = afterEachFn
     return self
@@ -82,8 +89,11 @@ end
 --- Method
 --- Runs the specification, returning the [Run](cp.spec.Run.md) instance, already running.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The [Run](cp.spec.Run.md) instance.
+---  * The [Run](cp.spec.Run.md) instance.
 function Specification:run()
     return Run(self.name, self)
     :onRunning(function(this)
@@ -130,10 +140,10 @@ end
 --- May also pass a single `table` containing a list of definitions.
 ---
 --- Parameters:
---- * ...           - the [definitions](cp.spec.Definition.md) to add.
+---  * ...           - the [definitions](cp.spec.Definition.md) to add.
 ---
 --- Returns:
---- * The same `Specification` instance, with the definitions added.
+---  * The same `Specification` instance, with the definitions added.
 function Specification:with(...)
     local count = select("#", ...)
     if count == 1 then

@@ -76,6 +76,12 @@ end
 --- cp.apple.finalcutpro.timeline.Index:doShow() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will show the Index if possible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function Index.lazy.method:doShow()
     return self:parent().toolbar.index:doCheck()
 end
@@ -83,6 +89,12 @@ end
 --- cp.apple.finalcutpro.timeline.Index:doHide() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will hide the Index if possible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function Index.lazy.method:doHide()
     return self:parent().toolbar.index:doUncheck()
 end

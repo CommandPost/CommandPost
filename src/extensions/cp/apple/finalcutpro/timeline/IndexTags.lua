@@ -69,10 +69,10 @@ IndexTags.static.Type = RadioGroup:subclass("cp.apple.finalcutpro.timeline.Index
 --- Checks if the `element` is the `IndexTags.Type` group.
 ---
 --- Parameters:
---- * element - The `axuielement` to check.
+---  * element - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function IndexTags.Type.static.matches(element)
     return RadioGroup.matches(element) and #element == 6
 end
@@ -194,6 +194,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowAll() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "All" media types.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowAll()
     return If(self:doShow())
     :Then(self.all:doPress())
@@ -204,6 +210,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowStandardMarkers() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Standard" markers.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowStandardMarkers()
     return If(self:doShow())
     :Then(self.standardMarkers:doPress())
@@ -214,6 +226,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowKeywords() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Keywords".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowKeywords()
     return If(self:doShow())
     :Then(self.keywords:doPress())
@@ -224,6 +242,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowAnalysisKeywords() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Analysis Keywords".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowAnalysisKeywords()
     return If(self:doShow())
     :Then(self.analysisKeywords:doPress())
@@ -234,6 +258,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowIncompleteTodos() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Incomplete Todo Markers".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowIncompleteTodos()
     return If(self:doShow())
     :Then(self.incompleteTodos:doPress())
@@ -244,6 +274,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowCompleteTodos() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Complete Todos".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowCompleteTodos()
     return If(self:doShow())
     :Then(self.completeTodos:doPress())
@@ -254,6 +290,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowChapters() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Chapter" markers.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function IndexTags.lazy.method:doShowChapters()
     return If(self:doShow())
     :Then(self.chapters:doPress())
@@ -265,8 +307,11 @@ end
 --- Method
 --- Returns a `table` containing the layout configuration for this class.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The layout configuration `table`.
+---  * The layout configuration `table`.
 function IndexTags:saveLayout()
     return {
         showing = self:isShowing(),
@@ -285,10 +330,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
 ---
 --- Parameters:
---- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---  * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function IndexTags:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)

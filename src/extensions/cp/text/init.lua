@@ -277,6 +277,13 @@ end
 --- Returns the substring of this text that starts at `i` and continues until `j`; `i` and `j` can be negative.
 --- If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length).
 --- In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
+---
+--- Parameters:
+---  * i - See above
+---  * j - See above
+---
+--- Returns:
+---  * None
 function text.mt:sub(i, j)
     j = j or -1
     return text.fromCodepoints(getCodes(self), i, j)
@@ -288,7 +295,7 @@ end
 ---
 --- If the pattern has captures, then in a successful match the captured values are also returned, after the two indices.
 ---
---- Preferences:
+--- Parameters:
 ---  * `pattern`		- The pattern to find.
 ---  * `init`			- The index to start matching from. Defaults to `1`.
 ---  * `plain`			- If `true`, the pattern is treated as plain text.

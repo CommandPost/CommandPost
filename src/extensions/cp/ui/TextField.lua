@@ -99,6 +99,12 @@ end
 --- Method
 --- Configures the TextField to force a focus on the field before editing.
 --- Some fields seem to require this to actually update the
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
 function TextField:forceFocus()
     self._forceFocus = true
     return self
@@ -148,6 +154,12 @@ end
 --- cp.ui.TextField:doConfirm() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will confirm the current text value.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function TextField.lazy.method:doConfirm()
     return If(self.UI)
     :Then(function(ui)
@@ -162,6 +174,12 @@ end
 --- cp.ui.TextField:doFocus() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the current `TextField`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function TextField.lazy.method:doFocus()
     return If(self.focused):Is(false)
     :Then(function()

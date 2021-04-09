@@ -1,3 +1,7 @@
+--- === cp.spec.Report ===
+---
+--- The results of a test [run](cp.spec.Run.md).
+
 local require               = require
 
 local class                 = require "middleclass"
@@ -7,14 +11,17 @@ local Handler               = require "cp.spec.Handler"
 
 local format                = string.format
 
---- === cp.spec.Report ===
----
---- The results of a test [run](cp.spec.Run.md).
 local Report = class("cp.spec.Report")
 
 --- cp.spec.Report(run) -> cp.spec.Report
 --- Constructor
 --- Creates a new test report.
+---
+--- Parameters:
+---  * run
+---
+--- Returns:
+---  * A new `cp.spec.Report` object
 function Report:initialize(run)
 
 --- cp.spec.Report.run <cp.spec.Run>
@@ -56,6 +63,12 @@ end
 --- cp.spec.Report:start() -> nil
 --- Method
 --- Logs the start time.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function Report:start()
     self.startTime = timer.secondsSinceEpoch()
     Handler.default():start(self.run)
@@ -64,6 +77,12 @@ end
 --- cp.spec.Report:stop() -> nil
 --- Method
 --- Logs the end time.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function Report:stop()
     self.stopTime = timer.secondsSinceEpoch()
     self.totalTime = self.stopTime - self.startTime
@@ -75,7 +94,10 @@ end
 --- Records a pass, with the specified message.
 ---
 --- Parameters:
---- * message       - an optional additional message to output.
+---  * message       - an optional additional message to output.
+---
+--- Returns:
+---  * None
 function Report:passed(message)
     self.passes = self.passes + 1
     Handler.default():passed(self.run, message)
@@ -86,7 +108,10 @@ end
 --- Records a fail, with the specified message.
 ---
 --- Parameters:
---- * message       - The related message to output.
+---  * message       - The related message to output.
+---
+--- Returns:
+---  * None
 function Report:failed(message)
     self.failures = self.failures + 1
     Handler.default():failed(self.run, message)
@@ -97,7 +122,10 @@ end
 --- Records an abort, with the specified message.
 ---
 --- Parameters:
---- * message       - The related message to output.
+---  * message       - The related message to output.
+---
+--- Returns:
+---  * None
 function Report:aborted(message)
     self.aborts = self.aborts + 1
     Handler.default():aborted(self.run, message)
@@ -108,7 +136,10 @@ end
 --- Records that a run is waiting for up to the specified amount of time.
 ---
 --- Parameters:
---- * timeout   - The timeout to wait for, in seconds.
+---  * timeout   - The timeout to wait for, in seconds.
+---
+--- Returns:
+---  * None
 function Report:waiting(timeout)
     Handler.default():waiting(self.run, timeout)
 end
@@ -116,6 +147,12 @@ end
 --- cp.spec.Report:summary()
 --- Method
 --- Summarise the reports.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function Report:summary()
     Handler.default():summary(self.run, self)
 end
@@ -125,7 +162,10 @@ end
 --- Adds the passes/failures/aborts from the other report into this one.
 ---
 --- Parameters:
---- * otherReport   - The other report to add.
+---  * otherReport   - The other report to add.
+---
+--- Returns:
+---  * None
 function Report:add(otherReport)
     self.passes = self.passes + otherReport.passes
     self.failures = self.failures + otherReport.failures

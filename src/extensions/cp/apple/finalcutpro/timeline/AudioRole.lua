@@ -20,6 +20,12 @@ local AudioRole = Role:subclass("cp.apple.finalcutpro.timeline.AudioRole")
 --- cp.apple.finalcutpro.timeline.AudioRole.matches(element) -> boolean
 --- Function
 --- Checks if the element is a "Audio" Role.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function AudioRole.static.matches(element)
     return Role.matches(element)
     and valueOf(element, "AXDisclosureLevel") == 0
@@ -73,6 +79,12 @@ end
 --- cp.apple.finalcutpro.timeline.AudioRole:doFocusInTimeline() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on this audio role in the timeline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function AudioRole.lazy.method:doFocusInTimeline()
     return self.focusedInTimeline:doCheck()
 end
@@ -80,6 +92,12 @@ end
 --- cp.apple.finalcutpro.timeline.AudioRole:doUnfocusInTimeline() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to unfocus on this audio role in the timeline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function AudioRole.lazy.method:doUnfocusInTimeline()
     return self.focusedInTimeline:doUncheck()
 end
@@ -87,6 +105,12 @@ end
 --- cp.apple.finalcutpro.timeline.AudioRole:doShowSubroleLanes() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to show the subrole lanes on this audio role in the timeline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function AudioRole.lazy.method:doShowSubroleLanes()
     return self.subroleLanes:doCheck()
 end
@@ -94,6 +118,12 @@ end
 --- cp.apple.finalcutpro.timeline.AudioRole:doHideSubroleLanes() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the subrole lanes on this audio role in the timeline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function AudioRole.lazy.method:doHideSubroleLanes()
     return self.subroleLanes:doUncheck()
 end

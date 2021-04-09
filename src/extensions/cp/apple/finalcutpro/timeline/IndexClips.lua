@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.IndexClips ===
 ---
---- *Extends [IndexSection](cp.apple.finalcutpro.timeline.IndexSection.md)*
+---  *Extends [IndexSection](cp.apple.finalcutpro.timeline.IndexSection.md)*
 ---
 --- Provides access to the 'Clips' section of the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md)
 
@@ -29,7 +29,7 @@ local IndexClips = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexCli
 --- Creates the `IndexClips` instance.
 ---
 --- Parameters:
---- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
+---  * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
 
 --- cp.apple.finalcutpro.timeline.IndexClips.activate <cp.ui.RadioButton>
 --- Field
@@ -92,10 +92,10 @@ end
 --- Checks if the `element` is the `IndexClips.Type` group.
 ---
 --- Parameters:
---- * element - The `axuielement` to check.
+---  * element - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function IndexClips.Type.static.matches(element)
     return RadioGroup.matches(element)
     and hasChild(element, function(child)
@@ -172,6 +172,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowAll() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "All" media types.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doShowAll()
     return If(self:doShow())
     :Then(self.all:doPress())
@@ -182,6 +188,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowVideo() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Video" media types.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doShowVideo()
     return If(self:doShow())
     :Then(self.video:doPress())
@@ -192,6 +204,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowAudio() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Audio" media types.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doShowAudio()
     return If(self:doShow())
     :Then(self.audio:doPress())
@@ -202,6 +220,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowTitles() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Titles" media types.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doShowTitles()
     return If(self:doShow())
     :Then(self.titles:doPress())
@@ -214,13 +238,13 @@ end
 --- Returns a [Statement](cp.go.rx.Statement.md) that will use the index to search for clips containing the specified text.
 ---
 --- Parameters:
---- * text - The text to search for.
+---  * text - The text to search for.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * Because the `text` can change each time, this result is not cached automatically. However as long as you are searching for the same text the result can be safely cached. The [#toFindMissingMedia] method does this, for example.
+---  * Because the `text` can change each time, this result is not cached automatically. However as long as you are searching for the same text the result can be safely cached. The [#toFindMissingMedia] method does this, for example.
 function IndexClips:doFindClipsContaining(text)
     return If(self:doShowClips())
     :Then(function()
@@ -235,6 +259,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindMissingMedia() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Missing Media".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doFindMissingMedia()
     return self:doFindClipsContaining(strings:find("FFTimelineIndexMissingMediaSearch"))
     :Label("IndexClips:doFindMissingMedia")
@@ -243,6 +273,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindAuditions() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Auditions".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doFindAuditions()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeAudition"))
     :Label("IndexClips:doFindAuditions")
@@ -251,6 +287,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindMulticams() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Multicam" clips.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doFindMulticams()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeMultiCam"))
     :Label("IndexClips:doFindMulticams")
@@ -259,6 +301,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindCompoundClips() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Compound Clips".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doFindCompoundClips()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeCompound"))
     :Label("IndexClips:doFindCompoundClips")
@@ -267,6 +315,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindSynchronized() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Synchronized" Clips.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexClips.lazy.method:doFindSynchronized()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeSynchronized"))
     :Label("IndexClips:doFindSynchronized")
@@ -276,8 +330,11 @@ end
 --- Method
 --- Returns a `table` containing the layout configuration for this class.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The layout configuration `table`.
+---  * The layout configuration `table`.
 function IndexClips:saveLayout()
     return {
         showing = self:isShowing(),
@@ -293,10 +350,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
 ---
 --- Parameters:
---- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---  * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function IndexClips:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)

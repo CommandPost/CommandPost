@@ -3,9 +3,9 @@
 --- A support class for `hs.axuielement` management.
 ---
 --- See:
---- * [Button](cp.ui.Button.md)
---- * [CheckBox](cp.rx.CheckBox.md)
---- * [MenuButton](cp.rx.MenuButton.md)
+---  * [Button](cp.ui.Button.md)
+---  * [CheckBox](cp.rx.CheckBox.md)
+---  * [MenuButton](cp.rx.MenuButton.md)
 local require           = require
 
 -- local log               = require "hs.logger".new("Element")
@@ -28,10 +28,10 @@ local Element = class("cp.ui.Element"):include(lazy)
 --- Matches to any valid `hs.axuielement`. Sub-types should provide their own `matches` method.
 ---
 --- Parameters:
---- * The element to check
+---  * The element to check
 ---
 --- Returns:
---- * `true` if the element is a valid instance of an `hs.axuielement`.
+---  * `true` if the element is a valid instance of an `hs.axuielement`.
 function Element.static.matches(element)
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
 end
@@ -47,11 +47,11 @@ end
 --- The `uiFinder` may be either a `function` that returns an `axuielement`, or a [cp.prop](cp.prop.md).
 ---
 --- Parameters:
---- * parent - The parent Element (may be `nil`)
---- * uiFinder - The `function` or `prop` that actually provides the current `axuielement` instance.
+---  * parent - The parent Element (may be `nil`)
+---  * uiFinder - The `function` or `prop` that actually provides the current `axuielement` instance.
 ---
 --- Returns:
---- * The new `Element` instance.
+---  * The new `Element` instance.
 function Element:initialize(parent, uiFinder)
     self._parent = parent
 
@@ -101,10 +101,10 @@ end
 --- Checks if the current value of this element is the provided value.
 ---
 --- Parameters:
---- * value - The value to compare to.
+---  * value - The value to compare to.
 ---
 --- Returns:
---- * `true` if the current [#value] is equal to the provided `value`.
+---  * `true` if the current [#value] is equal to the provided `value`.
 function Element:valueIs(value)
     return self:value() == value
 end
@@ -131,6 +131,12 @@ end
 --- cp.ui.Element:doShow() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will ensure the Element is showing.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function Element.lazy.method:doShow()
     return If(function() return self:parent() end)
     :Then(function(parent) return parent.doShow and parent:doShow() end)
@@ -269,8 +275,14 @@ end
 --- Method
 --- Returns a `table` containing the current configuration details for this Element (or subclass).
 ---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+---
 --- Notes:
---- * When subclassing, the overriding `saveLayout` method should call the parent's saveLayout method,
+---  * When subclassing, the overriding `saveLayout` method should call the parent's saveLayout method,
 --- then add values to it, like so:
 ---    ```
 ---    function MyElement:saveLayout()
@@ -289,10 +301,13 @@ end
 --- provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
 ---
 --- Parameters:
---- * layout - a `table` of parameters that will be used to layout the element.
+---  * layout - a `table` of parameters that will be used to layout the element.
+---
+--- Returns:
+---  * None
 ---
 --- Notes:
---- * When subclassing, the overriding `loadLayout` method should call the parent's `loadLayout` method,
+---  * When subclassing, the overriding `loadLayout` method should call the parent's `loadLayout` method,
 --- then process any custom values from it, like so:
 ---    ```
 ---    function MyElement:loadLayout(layout)
@@ -314,14 +329,14 @@ end
 --- provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
 ---
 --- Parameters:
---- * layout - a `table` of parameters that will be used to layout the element.
+---  * layout - a `table` of parameters that will be used to layout the element.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md) to execute.
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 ---
 --- Notes:
---- * By default, to enable backwards-compatibility, this method will simply call the [#loadLayout]. Override it to provide more optimal asynchonous behaviour if required.
---- * When subclassing, the overriding `doLayout` method should call the parent class's `doLayout` method,
+---  * By default, to enable backwards-compatibility, this method will simply call the [#loadLayout]. Override it to provide more optimal asynchonous behaviour if required.
+---  * When subclassing, the overriding `doLayout` method should call the parent class's `doLayout` method,
 --- then process any custom values from it, like so:
 ---    ```lua
 ---    function MyElement:doLayout(layout)

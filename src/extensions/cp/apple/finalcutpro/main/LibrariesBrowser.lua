@@ -258,6 +258,12 @@ end
 --- cp.apple.finalcutpro.main.Browser.appearanceAndFiltering <cp.apple.finalcutpro.main.AppearanceAndFiltering>
 --- Method
 --- The Clip [AppearanceAndFiltering](cp.apple.finalcutpro.main.AppearanceAndFiltering.md) Menu Popover
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function LibrariesBrowser.lazy.value:appearanceAndFiltering()
     return AppearanceAndFiltering(self)
 end
@@ -279,6 +285,12 @@ end
 --- cp.apple.finalcutpro.main.LibrariesBrowser.sidebar <cp.apple.finalcutpro.main.LibrariesSidebar>
 --- Method
 --- The  [LibrariesSidebar](cp.apple.finalcutpro.main.LibrariesSidebar.md) Table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function LibrariesBrowser.lazy.value:sidebar()
     return LibrariesSidebar(self)
 end

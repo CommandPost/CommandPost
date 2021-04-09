@@ -50,6 +50,12 @@ end
 --- cp.ui.List:items() -> table of values
 --- Method
 --- Returns the children as items, as adapted by the `itemAdaptor` in the constructor
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function List:items()
     local items = {}
     local childrenUI = self:childrenUI()

@@ -120,6 +120,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexRoles:doShowAudioLanes() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will show the Audio Lanes when executed.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexRoles.lazy.method:doShowAudioLanes()
     local show = self.showAudioLanes
     return Do(self:doShow())
@@ -130,6 +136,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexRoles:doCollapseSubroles() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will collapse subroles, if they are currently expanded.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexRoles.lazy.method:doCollapseSubroles()
     local collapse = self.collapseSubroles
     return Do(self:doShow())
@@ -140,6 +152,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexRoles:doHideAudioLanes() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will collapse subroles (if necessary) and hide the audio lanes.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function IndexRoles.lazy.method:doHideAudioLanes()
     local hide = self.hideAudioLanes
     return Do(self:doShow())
@@ -152,8 +170,11 @@ end
 --- Method
 --- Returns a `table` containing the layout configuration for this class.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The layout configuration `table`.
+---  * The layout configuration `table`.
 function IndexRoles:saveLayout()
     return {
         showing = self:isShowing(),
@@ -167,10 +188,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
 ---
 --- Parameters:
---- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---  * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function IndexRoles:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)
@@ -190,10 +211,10 @@ end
 --- Finds all Roles, optionally including all Subroles
 ---
 --- Parameters:
---- * includeSubroles - (defaults to `false`) if `true` include subroles.
+---  * includeSubroles - (defaults to `false`) if `true` include subroles.
 ---
 --- Returns:
---- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
+---  * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:allRoles(includeSubroles)
     return self.list:allRoles(includeSubroles)
 end
@@ -203,10 +224,10 @@ end
 --- Finds all Video Roles, optionally including all Subroles
 ---
 --- Parameters:
---- * includeSubroles - (defaults to `false`) if `true` include subroles.
+---  * includeSubroles - (defaults to `false`) if `true` include subroles.
 ---
 --- Returns:
---- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
+---  * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:videoRoles(includeSubroles)
     return self.list:videoRoles(includeSubroles)
 end
@@ -216,10 +237,10 @@ end
 --- Finds all Audio Roles, optionally including all Subroles
 ---
 --- Parameters:
---- * includeSubroles - (defaults to `false`) if `true` include subroles.
+---  * includeSubroles - (defaults to `false`) if `true` include subroles.
 ---
 --- Returns:
---- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
+---  * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:audioRoles(includeSubroles)
     return self.list:audioRoles(includeSubroles)
 end
@@ -229,10 +250,10 @@ end
 --- Finds all Caption Roles, optionally including all Subroles
 ---
 --- Parameters:
---- * includeSubroles - (defaults to `false`) if `true` include subroles.
+---  * includeSubroles - (defaults to `false`) if `true` include subroles.
 ---
 --- Returns:
---- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
+---  * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:captionRoles(includeSubroles)
     return self.list:captionRoles(includeSubroles)
 end
@@ -242,13 +263,13 @@ end
 --- Finds the [Role](cp.apple.finalcutpro.timeline.Role.md) with the specified title.
 ---
 --- Parameters:
---- * title - The title to match.
+---  * title - The title to match.
 ---
 --- Returns:
---- * The [Role](cp.apple.finalcutpro.timeline.Role.md) with the title, or `nil`.
+---  * The [Role](cp.apple.finalcutpro.timeline.Role.md) with the title, or `nil`.
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:findRoleTitled(title)
     return self.list:findRoleTitled(title)
 end
@@ -259,13 +280,13 @@ end
 --- This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
---- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doActivate(title)
     return Do(self.index:doStoreLayout("doActivate"))
     :Then(self:doShow())
@@ -280,13 +301,13 @@ end
 --- This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
---- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doDeactivate(title)
     return Do(self.index:doStoreLayout("doDeactivate"))
     :Then(self:doShow())
@@ -310,13 +331,13 @@ end
 --- This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
---- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doFocusInTimeline(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
@@ -331,13 +352,13 @@ end
 --- This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
---- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doUnfocusInTimeline(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
@@ -352,13 +373,13 @@ end
 --- This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
---- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
+---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doShowSubroleLanes(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
@@ -373,13 +394,13 @@ end
 --- This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
---- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
+---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doHideSubroleLanes(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())

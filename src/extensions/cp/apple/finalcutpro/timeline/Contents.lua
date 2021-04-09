@@ -157,6 +157,9 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to show the Timeline Contents.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
 --- * The `Statement`.
 function Contents.lazy.method:doShow()
@@ -172,6 +175,9 @@ end
 --- cp.apple.finalcutpro.timeline.Contents:doHide() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the Timeline Contents.
+---
+--- Parameters:
+---  * None
 ---
 --- Returns:
 --- * The `Statement`.

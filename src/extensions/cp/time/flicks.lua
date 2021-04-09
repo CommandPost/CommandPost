@@ -290,6 +290,12 @@ setmetatable(flicks, {
 --- cp.time.flicks:toFrames(framerate) --> number
 --- Method
 --- Converts the flicks into a number for the specific framerate.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the number of frames
 
 --- cp.time.flicks:toSeconds() -> number
 --- Method

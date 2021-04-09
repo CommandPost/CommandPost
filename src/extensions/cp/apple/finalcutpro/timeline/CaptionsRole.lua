@@ -21,6 +21,12 @@ local CaptionsRole = Role:subclass("cp.apple.finalcutpro.timeline.CaptionsRole")
 --- cp.apple.finalcutpro.timeline.CaptionsRole.matches(element) -> boolean
 --- Function
 --- Checks if the element is a "Captions" Role.
+---
+--- Parameters:
+---  * element - The element to check
+---
+--- Returns:
+---  * A boolean
 function CaptionsRole.static.matches(element)
     return Role.matches(element)
     and valueOf(element, "AXDisclosureLevel") == 0

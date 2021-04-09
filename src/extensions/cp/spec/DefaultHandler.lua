@@ -1,3 +1,7 @@
+--- === cp.spec.DefaultHandler ===
+---
+--- Default Handler.
+
 local Handler           = require "cp.spec.Handler"
 local format            = string.format
 
@@ -18,6 +22,12 @@ local DefaultHandler = Handler:subclass("cp.spec.DefaultHandler")
 --- cp.spec.DefaultHandler:printSpacer()
 --- Method
 --- Prints a blank line if this is not the first time it has been called.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function DefaultHandler:printSpacer()
     if self.spacerSkipped then
         print()
@@ -31,8 +41,11 @@ end
 --- optionally formatted with the provided parameters.
 ---
 --- Parameters:
---- * text      - The message to print.
---- * ...       - The parameters to interpolate into the text message.
+---  * text      - The message to print.
+---  * ...       - The parameters to interpolate into the text message.
+---
+--- Returns:
+---  * None
 function DefaultHandler:printf(text, ...)
     self:printSpacer()
     printf(text, ...)
@@ -43,7 +56,10 @@ end
 --- If the handler or run is verbose, prints a "[START]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
+---  * run      - the [run](cp.spec.Run.md)
+---
+--- Returns:
+---  * None
 function DefaultHandler:start(run)
     if self:checkVerbose(run) then self:printf(" [START] %s", run) end
 end
@@ -53,7 +69,10 @@ end
 --- If the handler or run is verbose, prints a "[STOP]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
+---  * run      - the [run](cp.spec.Run.md)
+---
+--- Returns:
+---  * None
 function DefaultHandler:stop(run)
     if self:checkVerbose(run) then self:printf("  [STOP] %s", run) end
 end
@@ -63,8 +82,11 @@ end
 --- If the handler or run is verbose, prints a "[PASS]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
---- * msg       - the message string.
+---  * run      - the [run](cp.spec.Run.md)
+---  * msg       - the message string.
+---
+--- Returns:
+---  * None
 function DefaultHandler:passed(run, msg)
     if self:checkVerbose(run) then
         local tag = msg and ": " .. msg or ""
@@ -77,8 +99,8 @@ end
 --- Prints a "[FAIL]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
---- * msg       - the message string.
+---  * run      - the [run](cp.spec.Run.md)
+---  * msg       - the message string.
 function DefaultHandler:failed(run, msg)
     self:printf("  [FAIL] %s: %s", run, msg)
 end
@@ -88,8 +110,11 @@ end
 --- Prints an "[ABORT]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
---- * msg       - the message string.
+---  * run      - the [run](cp.spec.Run.md)
+---  * msg       - the message string.
+---
+--- Returns:
+---  * None
 function DefaultHandler:aborted(run, msg)
     self:printf(" [ABORT] %s: %s", run, msg)
 end
@@ -97,6 +122,12 @@ end
 --- cp.spec.DefaultHandler:waiting(run, timeout)
 --- Method
 --- Prints a "[WAIT]" message with the timeout value..
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function DefaultHandler:waiting(run, timeout)
     if self:checkVerbose(run) then
         local seconds = timeout == 1 and "second" or "seconds"
@@ -109,8 +140,11 @@ end
 --- Prints a "[FILTER]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
---- * msg       - the message string.
+---  * run      - the [run](cp.spec.Run.md)
+---  * msg       - the message string.
+---
+--- Returns:
+---  * None
 function DefaultHandler:filter(run, msg)
     self:printf("[FILTER] %s: %s", run, msg)
 end
@@ -120,8 +154,11 @@ end
 --- If the handler or run is verbose, prints a "[RESULT]" message.
 ---
 --- Parameters:
---- * run      - the [run](cp.spec.Run.md)
---- * report    - the [report](cp.spec.Report.md)
+---  * run      - the [run](cp.spec.Run.md)
+---  * report    - the [report](cp.spec.Report.md)
+---
+--- Returns:
+---  * None
 function DefaultHandler:summary(run, report)
     self:printf("[RESULT] %s: %s", run, report)
 end

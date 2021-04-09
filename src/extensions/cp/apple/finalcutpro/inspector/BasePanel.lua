@@ -18,11 +18,11 @@ local BasePanel = Element:subclass("cp.apple.finalcutpro.inspector.BasePanel")
 --- Constructs the panel, initialising the parent and the [UI](cp.ui.Element.md#UI).
 ---
 --- Parameters:
---- * parent        - The parent [Element](cp.ui.Element.md).
---- * panelType     - The panel type string, as defined in [Inspector.INSPECTOR_TABS](cp.apple.finalcutpro.inspector.Inspector.md#INSPECTOR_TABS).
+---  * parent        - The parent [Element](cp.ui.Element.md).
+---  * panelType     - The panel type string, as defined in [Inspector.INSPECTOR_TABS](cp.apple.finalcutpro.inspector.Inspector.md#INSPECTOR_TABS).
 ---
 --- Returns:
---- * The new `BasePanel` instance.
+---  * The new `BasePanel` instance.
 function BasePanel:initialize(parent, panelType)
     local UI = parent.panelUI:mutate(function(original)
         return cache(self, "_ui",
@@ -42,8 +42,11 @@ end
 --- Method
 --- Gets the type of panel this is.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The panel type identifier.
+---  * The panel type identifier.
 function BasePanel:panelType()
     return self._panelType
 end

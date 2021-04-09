@@ -295,8 +295,11 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the `PropertyRow`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The `Statement`.
+---  * The `Statement`.
 function PropertyRow.lazy.method:doHide()
     return self:parent():doHide():Label("PropertyRow:doHide")
 end

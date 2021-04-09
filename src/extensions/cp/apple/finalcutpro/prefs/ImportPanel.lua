@@ -61,6 +61,12 @@ end
 --- cp.apple.finalcutpro.prefs.ImportPanel:toggleMediaLocation() -> boolean
 --- Method
 --- Toggles between the "Copy to library storage location" and "Leave files in place" options.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function ImportPanel:toggleMediaLocation()
     if self:show():isShowing() then
         if self:copyToLibraryStorageLocation():checked() then
@@ -76,6 +82,12 @@ end
 --- cp.apple.finalcutpro.prefs.ImportPanel:toggleMediaLocation() -> cp.rx.go.Statement
 --- Method
 --- A `Statement` that toggles between the "Copy to library storage location" and "Leave files in place" options.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function ImportPanel.lazy.method:doToggleMediaLocation()
     return Do(self:doShow())
     :Then(

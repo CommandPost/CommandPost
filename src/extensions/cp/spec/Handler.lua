@@ -1,10 +1,10 @@
-
 --- === cp.spec.Handler ===
 ---
 --- Subclasses of this can customise how reports are handled.
 --- All methods do nothing.
 ---
 --- See [DefaultHandler](cp.spec.DefaultHandler.md).
+
 local require               = require
 
 local class                 = require "middleclass"
@@ -37,6 +37,12 @@ end
 --- cp.spec.Handler() -> cp.spec.Handler
 --- Constructor
 --- Creates a new `Handler`
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function Handler.initialized() end
 
 --- cp.spec.Handler:verbose([isVerbose]) -> self
@@ -58,6 +64,12 @@ end
 --- Method
 --- Indicates if either the handler or the individual [Run](cp.spec.Run.md) is
 --- "verbose". If so, more messages may be output by the handler.
+---
+--- Parameters:
+---  * run
+---
+--- Returns:
+---  * None
 function Handler:checkVerbose(run)
     return self._verbose or run and run:verbose()
 end

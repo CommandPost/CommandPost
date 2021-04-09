@@ -89,6 +89,12 @@ end
 --- cp.ui.Outline.matches(element) -> boolean
 --- Function
 --- Checks if the `element` is an `Outline`.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function Outline.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXOutline"
 end
@@ -98,11 +104,11 @@ end
 --- Creates a new `Outline` with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - The parent instance.
---- * uiFinder - A `function` or a `cp.prop` which will return the `AXOutline` `axuielement`.
+---  * parent - The parent instance.
+---  * uiFinder - A `function` or a `cp.prop` which will return the `AXOutline` `axuielement`.
 ---
 --- Returns:
---- * The new `Outline` instance.
+---  * The new `Outline` instance.
 function Outline:initialize(parent, uiFinder)
     Element.initialize(self, parent, uiFinder)
     self._rowCache = {}
@@ -112,6 +118,12 @@ end
 --- cp.ui.Outline:childrenUI() -> table
 --- Method
 --- Provides a `table` containing the `axuielement`s which are children of the outline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Outline:childrenUI()
     return valueOf(self:UI(), "AXChildren")
 end
@@ -119,6 +131,12 @@ end
 --- cp.ui.Outline:columnsUI() -> table
 --- Method
 --- Provides a `table` containing the `axuielement`s which are columns of the outline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Table
 function Outline:columnsUI()
     return valueOf(self:UI(), "AXColumns")
 end
@@ -129,13 +147,13 @@ end
 --- If there is a problem, an `error` is thrown.
 ---
 --- Parameters:
---- * columnUI - the `AXColumn` `axuielement` to create a [Column](cp.ui.Column.md) for.
+---  * columnUI - the `AXColumn` `axuielement` to create a [Column](cp.ui.Column.md) for.
 ---
 --- Returns:
---- * The [Column](cp.ui.Column.md) or an error if a problem occurred.
+---  * The [Column](cp.ui.Column.md) or an error if a problem occurred.
 ---
 --- Notes:
---- * Subclasses which want to provide a custom [Column](cp.ui.Column.md) implementation should override this method.
+---  * Subclasses which want to provide a custom [Column](cp.ui.Column.md) implementation should override this method.
 function Outline:createColumn(columnUI)
     assert(Column.matches(columnUI), "The provided columnUI is not an AXColumn")
     assert(columnUI:attributeValue("AXParent") == self:UI(), "The provided `columnUI` is not in this Outline.")
@@ -145,6 +163,12 @@ end
 --- cp.ui.Outline:columns() -> table of cp.ui.Columns
 --- Method
 --- Returns the list of [Column](cp.ui.Column.md)s in this `Outline`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Outline:columns()
     return self:fetchColumns(self:columnsUI())
 end
@@ -155,10 +179,10 @@ end
 --- in the `Outline`.
 ---
 --- Parameters:
---- * columnUI - The `axuielement` for the `AXColumn` to find a [Column](cp.ui.Column.md) for.
+---  * columnUI - The `axuielement` for the `AXColumn` to find a [Column](cp.ui.Column.md) for.
 ---
 --- Returns:
---- * The [Column](cp.ui.Column.md), or `nil` if the `columnUI` is not in this `Outline`.
+---  * The [Column](cp.ui.Column.md), or `nil` if the `columnUI` is not in this `Outline`.
 function Outline:fetchColumn(columnUI)
     return _fetchElement(self._columnCache, columnUI, self, self.createColumn)
 end
@@ -170,10 +194,10 @@ end
 --- Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
---- * columnsUI - The list of `AXColumn` `axuielement`s to find.
+---  * columnsUI - The list of `AXColumn` `axuielement`s to find.
 ---
 --- Returns:
---- * A `table` with the same number of elements, containing the matching [Column](cp.ui.Column.md) instances.
+---  * A `table` with the same number of elements, containing the matching [Column](cp.ui.Column.md) instances.
 function Outline:fetchColumns(columnsUI)
     return _fetchElements(self._columnCache, columnsUI, self, self.createColumn)
 end
@@ -181,6 +205,12 @@ end
 --- cp.ui.Outline:rowsUI() -> table of axuielement
 --- Method
 --- Provides a `table` containing the `axuielement`s which are rows in the outline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Outline:rowsUI()
     return valueOf(self:UI(), "AXRows")
 end
@@ -191,13 +221,13 @@ end
 --- If there is a problem, an `error` is thrown.
 ---
 --- Parameters:
---- * rowUI - the `AXRow` `axuielement` to create a [Row](cp.ui.Row.md) for.
+---  * rowUI - the `AXRow` `axuielement` to create a [Row](cp.ui.Row.md) for.
 ---
 --- Returns:
---- * The [Row](cp.ui.Row.md) or an error if a problem occurred.
+---  * The [Row](cp.ui.Row.md) or an error if a problem occurred.
 ---
 --- Notes:
---- * Subclasses which want to provide a custom [Row](cp.ui.Row.md) implementation should override this method.
+---  * Subclasses which want to provide a custom [Row](cp.ui.Row.md) implementation should override this method.
 function Outline:createRow(rowUI)
     assert(rowUI:attributeValue("AXParent") == self:UI(), "The provided `rowUI` is not in this Outline.")
     return Row(self, prop.THIS(rowUI))
@@ -207,8 +237,11 @@ end
 --- Method
 --- Provides a `table` with the list of `cp.ui.Row` elements for the rows.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * A table containing the list of [Row](cp.ui.Row.md)s in the `Outline`, or `nil` if the `Outline` is not presently available.
+---  * A table containing the list of [Row](cp.ui.Row.md)s in the `Outline`, or `nil` if the `Outline` is not presently available.
 function Outline:rows()
     return self:fetchRows(self:rowsUI())
 end
@@ -219,10 +252,10 @@ end
 --- in the `Outline`.
 ---
 --- Parameters:
---- * rowUI - The `axuielement` for the `AXRow` to find a [Row](cp.ui.Row.md) for.
+---  * rowUI - The `axuielement` for the `AXRow` to find a [Row](cp.ui.Row.md) for.
 ---
 --- Returns:
---- * The [Row](cp.ui.Row.md), or `nil` if the `rowUI` is not in this `Outline`.
+---  * The [Row](cp.ui.Row.md), or `nil` if the `rowUI` is not in this `Outline`.
 function Outline:fetchRow(rowUI)
     return _fetchElement(self._rowCache, rowUI, self, self.createRow)
 end
@@ -234,10 +267,10 @@ end
 --- Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
---- * rowsUI - The list of `AXRow` `axuielement`s to find.
+---  * rowsUI - The list of `AXRow` `axuielement`s to find.
 ---
 --- Returns:
---- * A `table` with the same number of elements, containing the matching [Row](cp.ui.Row.md) instances.
+---  * A `table` with the same number of elements, containing the matching [Row](cp.ui.Row.md) instances.
 function Outline:fetchRows(rowsUI)
     return _fetchElements(self._rowCache, rowsUI, self, self.createRow)
 end
@@ -248,10 +281,10 @@ end
 --- The function is passed the row and returns a boolean.
 ---
 --- Parameters:
---- * matcherFn	- the `function` that will accept a [Row](cp.ui.Row.md) and return a `boolean`.
+---  * matcherFn	- the `function` that will accept a [Row](cp.ui.Row.md) and return a `boolean`.
 ---
 --- Returns:
---- * A `table` of [Row](cp.ui.Row.md)s, or `nil` if no UI is currently available.
+---  * A `table` of [Row](cp.ui.Row.md)s, or `nil` if no UI is currently available.
 function Outline:filterRows(matcherFn)
     local rows = self:rows()
     return rows and ifilter(rows, matcherFn)

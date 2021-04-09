@@ -32,6 +32,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexSection:parent() -> cp.apple.finalcutpro.timeline.Index
 --- Method
 --- The parent index.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent index.
 function IndexSection:parent()
     return self.index
 end
@@ -39,6 +45,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexSection:app() -> cp.apple.finalcutpro
 --- Method
 --- The [Final Cut Pro](cp.apple.finalcutpro.md) instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Final Cut Pro](cp.apple.finalcutpro.md) instance.
 function IndexSection:app()
     return self:parent():app()
 end
@@ -81,6 +93,9 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will show the Clips section in the Timeline Index, if possible.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
 --- * The [Statement](cp.rx.go.Statement.md)
 function IndexSection.lazy.method:doShow()
@@ -98,6 +113,12 @@ end
 --- cp.apple.finalcutpro.timeline.IndexSection:doActivateSearch() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will show the Clips in the Timeline Index and focus on the Search field.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Returns a [Statement](cp.rx.go.Statement.md)
 function IndexSection.lazy.method:doActivateSearch()
     return If(self:doShow())
     :Then(self.search:doFocus())

@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.SpeedPopover ==
 ---
---- *Extends [Timeline](cp.apple.finalcutpro.timeline.md)*
+---  *Extends [Timeline](cp.apple.finalcutpro.timeline.md)*
 ---
 --- Represents the Speed Popover.
 
@@ -31,6 +31,12 @@ local SpeedPopover = Popover:subclass("cp.apple.finalcutpro.timeline.SpeedPopove
 --- cp.apple.finalcutpro.timeline.SpeedPopover.matches(element) -> boolean
 --- Function
 --- Checks if the element is a "Video" Role.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function SpeedPopover.static.matches(element)
     return Popover.matches(element)
     and childWith(element, "AXValue", strings:find("FFHeliumXFormCustomSpeed"))
@@ -41,11 +47,11 @@ end
 --- Creates a new instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * parent - the parent `Element`.
+---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
 ---
 --- Returns:
---- * The new `SpeedPopover`.
+---  * The new `SpeedPopover`.
 function SpeedPopover:initialize(timeline)
     local uiFinder = timeline.UI:mutate(function(original)
         return cache(self, "_ui", function()

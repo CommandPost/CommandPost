@@ -89,6 +89,12 @@ end
 --- Checks if FCPX is not currently running in English, it will check if the title is one
 --- of the default English Role titles, and return the current language instead. If it's not found,
 --- unmodified `title` is returned.
+---
+--- Parameters:
+---  * title - A string to find.
+---
+--- Returns:
+---  * A string
 function Role.findTitle(title)
     local fcpLocale = fcpApp:currentLocale()
     if en:matches(fcpLocale) == 0 then -- not in english
@@ -126,6 +132,12 @@ end
 --- cp.apple.finalcutpro.timeline.Role:type() -> cp.apple.finalcut.timeline.Role.TYPE
 --- Method
 --- Returns the type of Role this is.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Role Type
 function Role:type()
     return self._type
 end
@@ -169,6 +181,12 @@ end
 --- cp.apple.finalcutpro.timeline.Role:doActivate() -> cp.rx.go.Statement.md
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will activate the current role, if possible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function Role.lazy.method:doActivate()
     return self.active:doCheck()
 end
@@ -176,6 +194,12 @@ end
 --- cp.apple.finalcutpro.timeline.Role:doDeactivate() -> cp.rx.go.Statement.md
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will deactivate the current role, if possible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Statement
 function Role.lazy.method:doDeactivate()
     return self.active:doUncheck()
 end

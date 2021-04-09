@@ -163,6 +163,12 @@ end
 --- cp.ui.CheckBox:doCheck() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will ensure the `CheckBox` is checked.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function CheckBox.lazy.method:doCheck()
     return Do(self:parent():doShow())
         :Then(
@@ -177,6 +183,12 @@ end
 --- cp.ui.CheckBox:doUncheck() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will ensure the `CheckBox` is unchecked.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function CheckBox.lazy.method:doUncheck()
     return Do(self:parent():doShow())
         :Then(

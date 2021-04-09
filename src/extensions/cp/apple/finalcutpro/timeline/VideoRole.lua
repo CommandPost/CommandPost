@@ -21,6 +21,12 @@ local VideoRole = Role:subclass("cp.apple.finalcutpro.timeline.VideoRole")
 --- cp.apple.finalcutpro.timeline.VideoRole.matches(element) -> boolean
 --- Function
 --- Checks if the element is a "Video" Role.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function VideoRole.static.matches(element)
     return Role.matches(element)
     and valueOf(element, "AXDisclosureLevel") == 0
@@ -32,11 +38,11 @@ end
 --- Creates a new instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * parent - the parent `Element`.
+---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
 ---
 --- Returns:
---- * The new `Row`.
+---  * The new `Row`.
 function VideoRole:initialize(parent, uiFinder)
     Role.initialize(self, parent, uiFinder, Role.TYPE.VIDEO)
 end
@@ -46,7 +52,7 @@ end
 --- A [Button](cp.ui.Button.md) that toggles whether the sub-captions are visible.
 ---
 --- Note:
---- * This [Button](cp.ui.Button.md) is only visible when the pointer is hovering over the Role.
+---  * This [Button](cp.ui.Button.md) is only visible when the pointer is hovering over the Role.
 function VideoRole.lazy.value:subrolesExpanded()
     return Button(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, Button.matches)

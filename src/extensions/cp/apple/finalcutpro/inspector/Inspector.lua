@@ -269,8 +269,11 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that attempts to show the `Inspector`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The `Statement`, resolving to `true` if the Inspector was shown successfully, or an error if not.
+---  * The `Statement`, resolving to `true` if the Inspector was shown successfully, or an error if not.
 function Inspector.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:parent():doShow())
@@ -302,8 +305,11 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that attempts to hide the `Inspector`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The `Statement`, resolving to `true` if the Inspector was hidden successfully, or an error if not.
+---  * The `Statement`, resolving to `true` if the Inspector was hidden successfully, or an error if not.
 function Inspector.lazy.method:doHide()
     return If(self.isShowing):Is(true)
     :Then(self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
@@ -366,10 +372,10 @@ end
 --- Finds the named Inspector tab button, or sends an error if the type is unsupported.
 ---
 --- Parameters:
---- * type - the type of the button to return. (e.g. "Video")
+---  * type - the type of the button to return. (e.g. "Video")
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) to execute.
+---  * A [Statement](cp.rx.go.Statement.md) to execute.
 ---
 --- Notes:
 ---  * Valid strings for `type` are as follows:
@@ -383,7 +389,7 @@ end
 ---    * Title
 ---    * Transition
 ---    * Video
---- * Not all button types are available in all contexts.
+---  * Not all button types are available in all contexts.
 function Inspector:doFindTabButton(type)
     local code = Inspector.INSPECTOR_TABS[type]
     if not code then
@@ -406,10 +412,10 @@ end
 --- A Statement that selects the specified tab title.
 ---
 --- Parameters:
---- * title     - The title of the tab to select.
+---  * title     - The title of the tab to select.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 function Inspector:doSelectTab(title)
     return Do(self:doShow())
     :Then(

@@ -13,10 +13,10 @@ local Column = Element:subclass("cp.ui.Column")
 --- Checks if the `axuielement` is a `Column`.
 ---
 --- Parameters:
---- * element - The `axuielement` to check.
+---  * element - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if the element is a Column.
+---  * `true` if the element is a Column.
 function Column.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXColumn"
 end
@@ -39,8 +39,11 @@ end
 --- Method
 --- Returns a `table` of [Row](cp.ui.Row.md)s contained in the Column.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The `table`, or `nil` if the column's UI is not available.
+---  * The `table`, or `nil` if the column's UI is not available.
 function Column:rows()
     local ui = self:UI()
     if ui then
@@ -53,8 +56,11 @@ end
 --- Method
 --- Returns a `table` of [Row](cp.ui.Row.md)s which are currently visible on screen.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The `table`, or `nil` if the column's UI is not available.
+---  * The `table`, or `nil` if the column's UI is not available.
 function Column:visibleRows()
     local ui = self:UI()
     if ui then

@@ -36,6 +36,12 @@ end
 --- cp.ui.Grid.matches(element) -> boolean
 --- Function
 --- Checks if the `element` is an `Grid`.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function Grid.static.matches(element)
     return Element.matches(element) and (element:attributeValue("AXRows") ~= nil or element:attributeValue("AXColumns") ~= nil)
 end
@@ -45,11 +51,11 @@ end
 --- Creates a new `Grid` with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - The parent instance.
---- * uiFinder - A `function` or a `cp.prop` which will return the `axuielement`.
+---  * parent - The parent instance.
+---  * uiFinder - A `function` or a `cp.prop` which will return the `axuielement`.
 ---
 --- Returns:
---- * The new `Grid` instance.
+---  * The new `Grid` instance.
 function Grid:initialize(parent, uiFinder)
     Element.initialize(self, parent, uiFinder)
     self._rowCache = ElementCache(self, self.createRow)
@@ -59,6 +65,12 @@ end
 --- cp.ui.Grid:childrenUI() -> table of axuielements
 --- Method
 --- Provides a `table` containing the `axuielement`s which are children of the outline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Grid:childrenUI()
     return valueOf(self:UI(), "AXChildren")
 end
@@ -66,6 +78,12 @@ end
 --- cp.ui.Grid:columnsUI() -> table of axuielements
 --- Method
 --- Provides a `table` containing the `axuielement`s which are columns of the outline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Grid:columnsUI()
     return valueOf(self:UI(), "AXColumns")
 end
@@ -76,13 +94,13 @@ end
 --- If there is a problem, an `error` is thrown.
 ---
 --- Parameters:
---- * columnUI - the `AXColumn` `axuielement` to create a [Column](cp.ui.Column.md) for.
+---  * columnUI - the `AXColumn` `axuielement` to create a [Column](cp.ui.Column.md) for.
 ---
 --- Returns:
---- * The [Column](cp.ui.Column.md) or an error if a problem occurred.
+---  * The [Column](cp.ui.Column.md) or an error if a problem occurred.
 ---
 --- Notes:
---- * Subclasses which want to provide a custom [Column](cp.ui.Column.md) implementation should override this method.
+---  * Subclasses which want to provide a custom [Column](cp.ui.Column.md) implementation should override this method.
 function Grid:createColumn(columnUI)
     assert(Column.matches(columnUI), "The provided columnUI is not an AXColumn")
     assert(columnUI:attributeValue("AXParent") == self:UI(), "The provided `columnUI` belongs to someone else.")
@@ -92,6 +110,12 @@ end
 --- cp.ui.Grid:columns() -> table of cp.ui.Columns
 --- Method
 --- Returns the list of [Column](cp.ui.Column.md)s.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Grid:columns()
     return self:fetchColumns(self:columnsUI())
 end
@@ -99,6 +123,12 @@ end
 --- cp.ui.Grid:column(index) -> cp.ui.Column or nil
 --- Method
 --- Provides the [Column](cp.ui.Column.md) at the specified index, or `nil` if it's not available.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * cp.ui.Column or nil
 function Grid:column(index)
     local columns = self:columns()
     return columns and columns[index]
@@ -109,10 +139,10 @@ end
 --- Returns the [Column](cp.ui.Column.md) that represents the provided `columnUI`, if it is actually present.
 ---
 --- Parameters:
---- * columnUI - The `axuielement` for the `AXColumn` to find a [Column](cp.ui.Column.md) for.
+---  * columnUI - The `axuielement` for the `AXColumn` to find a [Column](cp.ui.Column.md) for.
 ---
 --- Returns:
---- * The [Column](cp.ui.Column.md), or `nil` if the `columnUI` is not available.
+---  * The [Column](cp.ui.Column.md), or `nil` if the `columnUI` is not available.
 function Grid:fetchColumn(columnUI)
     return self._columnCache:fetchElement(columnUI)
 end
@@ -124,10 +154,10 @@ end
 --- Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
---- * columnsUI - The list of `AXColumn` `axuielement`s to find.
+---  * columnsUI - The list of `AXColumn` `axuielement`s to find.
 ---
 --- Returns:
---- * A `table` with the same number of elements, containing the matching [Column](cp.ui.Column.md) instances.
+---  * A `table` with the same number of elements, containing the matching [Column](cp.ui.Column.md) instances.
 function Grid:fetchColumns(columnsUI)
     return self._columnCache:fetchElements(columnsUI)
 end
@@ -135,6 +165,12 @@ end
 --- cp.ui.Grid:rowsUI() -> table of axuielement
 --- Method
 --- Provides a `table` containing the `axuielement`s which are rows in the outline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
 function Grid:rowsUI()
     return valueOf(self:UI(), "AXRows")
 end
@@ -145,13 +181,13 @@ end
 --- If there is a problem, an `error` is thrown.
 ---
 --- Parameters:
---- * rowUI - the `AXRow` `axuielement` to create a [Row](cp.ui.Row.md) for.
+---  * rowUI - the `AXRow` `axuielement` to create a [Row](cp.ui.Row.md) for.
 ---
 --- Returns:
---- * The [Row](cp.ui.Row.md) or an error if a problem occurred.
+---  * The [Row](cp.ui.Row.md) or an error if a problem occurred.
 ---
 --- Notes:
---- * Subclasses which want to provide a custom [Row](cp.ui.Row.md) implementation should override this method.
+---  * Subclasses which want to provide a custom [Row](cp.ui.Row.md) implementation should override this method.
 function Grid:createRow(rowUI)
     assert(rowUI:attributeValue("AXParent") == self:UI(), "The provided `rowUI` not from here.")
     return Row(self, prop.THIS(rowUI))
@@ -161,8 +197,11 @@ end
 --- Method
 --- Provides a `table` with the list of `cp.ui.Row` elements for the rows.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * A table containing the list of [Row](cp.ui.Row.md)s, or `nil` if not presently available.
+---  * A table containing the list of [Row](cp.ui.Row.md)s, or `nil` if not presently available.
 function Grid:rows()
     return self:fetchRows(self:rowsUI())
 end
@@ -170,6 +209,12 @@ end
 --- cp.ui.Grid:row(index) -> cp.ui.Row or nil
 --- Method
 --- Provides the [Row](cp.ui.Row.md) at the specified index, or `nil` if it's not available.
+---
+--- Parameters:
+---  * index - The index
+---
+--- Returns:
+---  * The [Row](cp.ui.Row.md), or `nil` if the `rowUI` is not available.
 function Grid:row(index)
     local rows = self:rows()
     return rows and rows[index]
@@ -180,10 +225,10 @@ end
 --- Returns the [Row](cp.ui.Row.md) that represents the provided `rowUI`, if it is actually present.
 ---
 --- Parameters:
---- * rowUI - The `axuielement` for the `AXRow` to find a [Row](cp.ui.Row.md) for.
+---  * rowUI - The `axuielement` for the `AXRow` to find a [Row](cp.ui.Row.md) for.
 ---
 --- Returns:
---- * The [Row](cp.ui.Row.md), or `nil` if the `rowUI` is not available.
+---  * The [Row](cp.ui.Row.md), or `nil` if the `rowUI` is not available.
 function Grid:fetchRow(rowUI)
     return self._rowCache:fetchElement(rowUI)
 end
@@ -195,10 +240,10 @@ end
 --- Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
---- * rowsUI - The list of `AXRow` `axuielement`s to find.
+---  * rowsUI - The list of `AXRow` `axuielement`s to find.
 ---
 --- Returns:
---- * A `table` with the same number of elements, containing the matching [Row](cp.ui.Row.md) instances.
+---  * A `table` with the same number of elements, containing the matching [Row](cp.ui.Row.md) instances.
 function Grid:fetchRows(rowsUI)
     return self._rowCache:fetchElements(rowsUI)
 end
@@ -209,10 +254,10 @@ end
 --- The function is passed the row and returns a boolean.
 ---
 --- Parameters:
---- * matcherFn	- the `function` that will accept a [Row](cp.ui.Row.md) and return a `boolean`.
+---  * matcherFn	- the `function` that will accept a [Row](cp.ui.Row.md) and return a `boolean`.
 ---
 --- Returns:
---- * A `table` of [Row](cp.ui.Row.md)s, or `nil` if no UI is currently available.
+---  * A `table` of [Row](cp.ui.Row.md)s, or `nil` if no UI is currently available.
 function Grid:filterRows(matcherFn)
     local rows = self:rows()
     return rows and ifilter(rows, matcherFn)
@@ -224,10 +269,10 @@ end
 --- or `nil` if none was matched.
 ---
 --- Parameters:
---- * matcherFn - The function to check the [Row](cp.ui.Row.md) with.
+---  * matcherFn - The function to check the [Row](cp.ui.Row.md) with.
 ---
 --- Returns:
---- * The matching [Row](cp.ui.Row.md) or `nil`.
+---  * The matching [Row](cp.ui.Row.md) or `nil`.
 function Grid:findRow(matcherFn)
     local rows = self:rows()
     return rows and find(rows, matcherFn)
@@ -312,10 +357,10 @@ end
 --- Selects the row at the sub-level named in the `path` table.
 ---
 --- Parameters:
---- * path - A `table` of names to navigate through to find the [Row](cp.ui.Row.md) to select.
+---  * path - A `table` of names to navigate through to find the [Row](cp.ui.Row.md) to select.
 ---
 --- Returns:
---- * The selected [Row](cp.ui.Row.md), or `nil` if not found.
+---  * The selected [Row](cp.ui.Row.md), or `nil` if not found.
 function Grid:selectRow(path)
     return self:visitRow(path, function(row) row:selected(true) end)
 end
@@ -325,10 +370,10 @@ end
 --- Selects the row at the sub-level named in the `path` table.
 ---
 --- Parameters:
---- * path - A `table` of names to navigate through to find the [Row](cp.ui.Row.md) to select.
+---  * path - A `table` of names to navigate through to find the [Row](cp.ui.Row.md) to select.
 ---
 --- Returns:
---- * The selected [Row](cp.ui.Row.md), or `nil` if not found.
+---  * The selected [Row](cp.ui.Row.md), or `nil` if not found.
 function Grid:doSelectRow(path)
     return Do(function()
         return self:visitRow(path, function(row) row:selected(true) end)
@@ -340,7 +385,7 @@ end
 --- Contains the list of currently-selected row `axuilements`. Can be set.
 ---
 --- Notes:
---- * Also see [#selectedRows]
+---  * Also see [#selectedRows]
 function Grid.lazy.prop:selectedRowsUI()
     return axutils.prop(self.UI, "AXSelectedRows", true)
 end

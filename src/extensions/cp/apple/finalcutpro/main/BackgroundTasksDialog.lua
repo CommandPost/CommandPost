@@ -20,10 +20,10 @@ local BackgroundTasksDialog = Dialog:subclass("cp.apple.finalcutpro.main.Backgro
 --- Checks if the element is an `BackgroundTasksDialog` instance.
 ---
 --- Parameters:
---- * element       - The `axuielement` to check.
+---  * element - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches the pattern for a `BackgroundTasksDialog``.
+---  * `true` if it matches the pattern for a `BackgroundTasksDialog``.
 function BackgroundTasksDialog.static.matches(element)
     if Dialog.matches(element) and #element == 6 then
         local backgroundTasksString = strings:find("FFTranscodeMissingOpticalFlowMessageText")
@@ -38,6 +38,12 @@ end
 --- cp.apple.finalcutpro.main.BackgroundTasksDialog(cpApp)
 --- Constructor
 --- Creates a new Background Tasks [Dialog](cp.ui.Dialog.md)
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function BackgroundTasksDialog:initialize(cpApp)
     Dialog.initialize(self, cpApp, cpApp.UI:mutate(function(original)
         return cache(self, "_window", function()

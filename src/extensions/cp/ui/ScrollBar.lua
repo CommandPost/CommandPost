@@ -22,10 +22,10 @@ ScrollBar.static.HORIZONTAL_ORIENTATION = "AXHorizontalOrientation"
 --- Checks if the element is a `ScrollBar`.
 ---
 --- Parameters:
---- * element - The `axuielement` being matched.
+---  * element - The `axuielement` being matched.
 ---
 --- Returns:
---- * `true` if matches, otherwise `false`.
+---  * `true` if matches, otherwise `false`.
 function ScrollBar.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollBar"
 end
@@ -35,11 +35,11 @@ end
 --- Creates a new `ScrollBar` instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent object.
---- * uiFinder - a `function` or `cp.prop` that provides the `AXScrollBar` `axuielement`.
+---  * parent - the parent object.
+---  * uiFinder - a `function` or `cp.prop` that provides the `AXScrollBar` `axuielement`.
 ---
 --- Returns:
---- * The new `ScrollBar`.
+---  * The new `ScrollBar`.
 
 --- cp.ui.ScrollBar.orientation <cp.prop: string; read-only>
 --- Field
@@ -101,8 +101,11 @@ end
 --- Method
 --- Saves the `ScrollBar` layout configuration.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * a `table` with the configuration parameters.
+---  * a `table` with the configuration parameters.
 function ScrollBar:saveLayout()
     local layout = Element.saveLayout(self)
     layout.value = self:value()
@@ -114,7 +117,7 @@ end
 --- Loads the provided `layout` table of configuration parameters.
 ---
 --- Parameters:
---- * layout - the table of parameters.
+---  * layout - the table of parameters.
 function ScrollBar:loadLayout(layout)
     layout = layout or {}
     if layout.value then

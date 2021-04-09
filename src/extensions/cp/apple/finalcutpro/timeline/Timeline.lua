@@ -201,6 +201,12 @@ end
 --- cp.apple.finalcutpro.timeline.Timeline:doFocus() -> cp.rx.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the Timeline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function Timeline.lazy.method:doFocus()
     return self:app().menu:doSelectMenu({"Window", "Go To", "Timeline"})
 end

@@ -150,6 +150,9 @@ end
 --- Method
 --- Shows the `ColorWheel`, if possible.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
 --- * The same `ColorWheel` instance, for chaining.
 function ColorWheel:show()
@@ -165,6 +168,9 @@ end
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:doShow() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that attempts to show the `ColorWheel`.
+---
+--- Parameters:
+---  * None
 ---
 --- Returns:
 --- * The `Statement`, resolving to `true` if shown, `false` if not.
@@ -197,6 +203,9 @@ end
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:doSelect() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that attempts to select this `ColorWheel`.
+---
+--- Parameters:
+---  * None
 ---
 --- Returns:
 --- * The `Statement`, resolving to `true` if selected, otherwise `false`.

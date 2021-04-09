@@ -569,6 +569,12 @@ local ID_SEARCH_PATTERN = "(.*)%.%*$"
 --- or if those don't exist it will see if there is a `foo/bar_test.lua` or `foo/bar/._test.lua` and load that via [test](#test) instead.
 --- However, if the pattern is "foo.bar.*", it will not only look for those specs, but will also check under that folder for other
 --- `_spec.lua` or `_test.lua` files to add to the collection to run.
+---
+--- Parameters:
+---  * idPattern - the ID pattern
+---
+--- Returns:
+---  * The spec or `nil` and an error message.
 local function find(idPattern)
     local id = idPattern:match(ID_SEARCH_PATTERN)
     local result, err

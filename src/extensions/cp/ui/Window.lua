@@ -24,6 +24,12 @@ local Window = class("cp.ui.Window"):include(lazy)
 --- cp.ui.Window.matches(element) -> boolean
 --- Function
 --- Checks if the provided element is a valid window.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function Window.static.matches(element)
     return element ~= nil and element:attributeValue("AXRole") == "AXWindow"
 end

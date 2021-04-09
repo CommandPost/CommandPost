@@ -10,6 +10,12 @@ local Cell = Element:subclass("cp.ui.Cell")
 --- cp.ui.Cell.matches(element) ->  boolean
 --- Function
 --- Checks if the `element` is an `AXCell`.
+---
+--- Parameters:
+---  * element - An element to check
+---
+--- Returns:
+---  * A boolean
 function Cell.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXCell"
 end

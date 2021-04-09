@@ -2,9 +2,8 @@
 ---
 --- Represents an `AXRow` `axuielement`.
 
-local axutils	            = require "cp.ui.axutils"
-local Element	            = require "cp.ui.Element"
-
+local axutils   = require "cp.ui.axutils"
+local Element	= require "cp.ui.Element"
 
 local Row = Element:subclass("cp.ui.Row")
 
@@ -13,10 +12,10 @@ local Row = Element:subclass("cp.ui.Row")
 --- Checks if the element is a `Row`.
 ---
 --- Parameters:
---- * element - the `axuielement` to check.
+---  * element - the `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function Row.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRow"
 end
@@ -26,11 +25,11 @@ end
 --- Creates a new `Row` instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * parent - the parent `Element`.
+---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
 ---
 --- Returns:
---- * The new `Row`.
+---  * The new `Row`.
 
 --- cp.ui.Row.disclosing <cp.prop: boolean>
 --- Field
@@ -49,6 +48,12 @@ end
 --- cp.ui.Row:disclosedByRow() -> cp.ui.Row
 --- Method
 --- The `Row` which is disclosing this `Row`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `cp.ui.Row` object
 function Row.lazy.prop:disclosedByRow()
     return axutils.prop(self.UI, "AXDisclosedByRow"):mutate(function(original)
         return self:parent():fetchRow(original())
@@ -60,8 +65,11 @@ end
 --- If available, returns a table of [Row](cp.ui.Row.md)s that are disclosed by this `Row`.
 --- If this row is currently unavailable, `nil` is returned.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The `table` of Rows, or `nil`.
+---  * The `table` of Rows, or `nil`.
 function Row:disclosedRows()
     local ui = self:UI()
     if ui then

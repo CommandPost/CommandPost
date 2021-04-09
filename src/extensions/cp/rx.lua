@@ -4,8 +4,8 @@
 ---
 --- RxLua gives Lua the power of Observables, which are data structures that represent a stream of values that arrive over time. They're very handy when dealing with events, streams of data, asynchronous requests, and concurrency.
 ---
---- * Originally forked from: https://github.com/bjornbytes/rxlua
---- * MIT License: https://github.com/bjornbytes/RxLua/blob/master/LICENSE
+---  * Originally forked from: https://github.com/bjornbytes/rxlua
+---  * MIT License: https://github.com/bjornbytes/RxLua/blob/master/LICENSE
 
 local require           = require
 
@@ -79,10 +79,10 @@ Reference.__tostring = util.constant('Reference')
 --- Creates a new Reference.
 ---
 --- Parameters:
---- * action - The action to run when the reference is canceld. It will only be run once.
+---  * action - The action to run when the reference is canceld. It will only be run once.
 ---
 --- Returns:
---- * the [Reference](cp.rx.Reference.md).
+---  * the [Reference](cp.rx.Reference.md).
 function Reference.create(action)
   local self = {
     action = action or util.noop,
@@ -97,10 +97,10 @@ end
 --- Unsubscribes the reference, performing any necessary cleanup work.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function Reference:cancel()
   if self.cancelled then return end
   self.action(self)
@@ -119,10 +119,10 @@ Observer.__tostring = util.constant('Observer')
 --- Tests if the `thing` is an `Observer`.
 ---
 --- Parameters:
---- * thing   - The thing to test.
+---  * thing   - The thing to test.
 ---
 --- Returns:
---- * `true` if the thing is an `Observer`, otherwise `false`.
+---  * `true` if the thing is an `Observer`, otherwise `false`.
 function Observer.is(thing)
     return util.isa(thing, Observer)
 end
@@ -132,12 +132,12 @@ end
 --- Creates a new Observer.
 ---
 --- Parameters:
---- * onNext      - Called when the Observable produces a value.
---- * onError     - Called when the Observable terminates due to an error.
---- * onCompleted - Called when the Observable completes normally.
+---  * onNext      - Called when the Observable produces a value.
+---  * onError     - Called when the Observable terminates due to an error.
+---  * onCompleted - Called when the Observable completes normally.
 ---
 --- Returns:
---- * The new Observer.
+---  * The new Observer.
 function Observer.create(onNext, onError, onCompleted)
   local self = {
     _onNext = onNext or util.noop,
@@ -154,10 +154,10 @@ end
 --- Pushes zero or more values to the Observer.
 ---
 --- Parameters:
---- * ...     - The list of values to send.
+---  * ...     - The list of values to send.
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function Observer:onNext(...)
   if not self.stopped then
     self._onNext(...)
@@ -169,10 +169,10 @@ end
 --- Notify the Observer that an error has occurred.
 ---
 --- Parameters:
---- * message  - A string describing what went wrong.
+---  * message  - A string describing what went wrong.
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function Observer:onError(message)
   if not self.stopped then
     self.stopped = true
@@ -185,10 +185,10 @@ end
 --- Notify the Observer that the sequence has completed and will produce no more values.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function Observer:onCompleted()
   if not self.stopped then
     self.stopped = true
@@ -208,10 +208,10 @@ Observable.__tostring = util.constant('Observable')
 --- Checks if the thing is an instance of [Observable](cp.rx.Observable.md).
 ---
 --- Parameters:
---- * thing   - The thing to check.
+---  * thing   - The thing to check.
 ---
 --- Returns:
---- * `true` if the thing is an `Observable`.
+---  * `true` if the thing is an `Observable`.
 function Observable.is(thing)
     return util.isa(thing, Observable)
 end
@@ -221,10 +221,10 @@ end
 --- Creates a new Observable.
 ---
 --- Parameters:
---- * onSubscription  - The reference function that produces values.
+---  * onSubscription  - The reference function that produces values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.create(onSubscription)
   local self = {
     _subscribe = onSubscription
@@ -238,12 +238,12 @@ end
 --- Shorthand for creating an [Observer](cp.rx.Observer.md) and passing it to this Observable's [subscription](#subscri) function.
 ---
 --- Parameters:
---- * observer | onNext     - Either an [Observer](cp.rx.Observer.md) or a `function` to be called when the Observable produces a value.
---- * onError               - A `function` to be called when the Observable terminates due to an error.
---- * onCompleted           - A 'function` to be called when the Observable completes normally.
+---  * observer | onNext     - Either an [Observer](cp.rx.Observer.md) or a `function` to be called when the Observable produces a value.
+---  * onError               - A `function` to be called when the Observable terminates due to an error.
+---  * onCompleted           - A 'function` to be called when the Observable completes normally.
 ---
 --- Returns:
---- * A [Reference](cp.rx.Reference.md) which can be used to cancel the subscription.
+---  * A [Reference](cp.rx.Reference.md) which can be used to cancel the subscription.
 function Observable:subscribe(onNext, onError, onCompleted)
   if Observer.is(onNext) then
     return self._subscribe(onNext)
@@ -257,10 +257,10 @@ end
 --- Returns an Observable that immediately completes without producing a value.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.empty()
   return Observable.create(function(observer)
     observer:onCompleted()
@@ -272,10 +272,10 @@ end
 --- Returns an Observable that never produces values and never completes.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.never()
   return Observable.create(function(_) end)
 end
@@ -285,11 +285,11 @@ end
 --- Returns an Observable that immediately produces an error.
 ---
 --- Parameters:
---- * message   - The message to send.
---- * ...       - The additional values to apply to the message, using `string.format` syntax.
+---  * message   - The message to send.
+---  * ...       - The additional values to apply to the message, using `string.format` syntax.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.throw(message, ...)
   if select("#", ...) > 0 then
     message = string.format(message, ...)
@@ -304,10 +304,10 @@ end
 --- Creates an Observable that produces a set of values.
 ---
 --- Parameters:
---- * ...     - The list of values to send as individual `onNext` values.
+---  * ...     - The list of values to send as individual `onNext` values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.of(...)
   local args = {...}
   local argCount = select('#', ...)
@@ -325,12 +325,12 @@ end
 --- Creates an Observable that produces a range of values in a manner similar to a Lua `for` loop.
 ---
 --- Parameters:
---- * initial   - The first value of the range, or the upper limit if no other arguments are specified.
---- * limit     - The second value of the range. Defaults to no limit.
---- * step      - An amount to increment the value by each iteration. Defaults to `1`.
+---  * initial   - The first value of the range, or the upper limit if no other arguments are specified.
+---  * limit     - The second value of the range. Defaults to no limit.
+---  * step      - An amount to increment the value by each iteration. Defaults to `1`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.fromRange(initial, limit, step)
   if not limit and not step then
     initial, limit = 1, initial
@@ -352,12 +352,12 @@ end
 --- Creates an `Observable` that produces values from a table.
 ---
 --- Parameters:
---- * t         - The `table` used to create the `Observable`.
---- * iterator  - An iterator used to iterate the table, e.g. `pairs` or `ipairs`. Defaults to `pairs`.
---- * keys      - If `true`, also emit the keys of the table. Defaults to `false`.
+---  * t         - The `table` used to create the `Observable`.
+---  * iterator  - An iterator used to iterate the table, e.g. `pairs` or `ipairs`. Defaults to `pairs`.
+---  * keys      - If `true`, also emit the keys of the table. Defaults to `false`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.fromTable(t, iterator, keys)
   iterator = iterator or pairs
   return Observable.create(function(observer)
@@ -378,10 +378,10 @@ end
 --- Creates an Observable that produces values when the specified coroutine yields.
 ---
 --- Parameters:
---- * fn - A `coroutine` or `function` to use to generate values.  Note that if a coroutine is used, the values it yields will be shared by all subscribed [Observers](cp.rx.Observer.md) (influenced by the [Scheduler](cp.rx.Scheduler.md)), whereas a new coroutine will be created for each Observer when a `function` is used.
+---  * fn - A `coroutine` or `function` to use to generate values.  Note that if a coroutine is used, the values it yields will be shared by all subscribed [Observers](cp.rx.Observer.md) (influenced by the [Scheduler](cp.rx.Scheduler.md)), whereas a new coroutine will be created for each Observer when a `function` is used.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.fromCoroutine(fn, scheduler)
   scheduler = scheduler or util.defaultScheduler()
   return Observable.create(function(observer)
@@ -411,10 +411,10 @@ end
 --- Creates an Observable that produces values from a file, line by line.
 ---
 --- Parameters:
---- * filename    - The name of the file used to create the Observable.
+---  * filename    - The name of the file used to create the Observable.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.fromFileByLine(filename)
   return Observable.create(function(observer)
     local f = io.open(filename, 'r')
@@ -437,10 +437,10 @@ end
 --- Creates an `Observable` that executes the `function` to create a new `Observable` each time an [Observer](cp.rx.Observer.md) subscribes.
 ---
 --- Parameters:
---- * fn    - A function that returns an `Observable`.
+---  * fn    - A function that returns an `Observable`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.defer(fn)
   return setmetatable({
     subscribe = function(_, ...)
@@ -455,12 +455,12 @@ end
 --- Creates an `Observable` that repeats a value a specified number of times.
 ---
 --- Parameters:
---- * value     - The value to repeat.
---- * count     - The number of times to repeat the value.  If left unspecified, the value
+---  * value     - The value to repeat.
+---  * count     - The number of times to repeat the value.  If left unspecified, the value
 ---                        is repeated an infinite number of times.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.replicate(value, count)
   return Observable.create(function(observer)
     while count == nil or count > 0 do
@@ -478,11 +478,11 @@ end
 --- Subscribes to this Observable and prints values it produces.
 ---
 --- Parameters:
---- * name      - Prefixes the printed messages with a name.
---- * formatter - A function that formats one or more values to be printed. Defaults to `tostring`.
+---  * name      - Prefixes the printed messages with a name.
+---  * formatter - A function that formats one or more values to be printed. Defaults to `tostring`.
 ---
 --- Returns:
---- * A [Reference](cp.rx.Reference.md) for the subscription.
+---  * A [Reference](cp.rx.Reference.md) for the subscription.
 function Observable:dump(name, formatter)
   name = name and (name .. ' ') or ''
   formatter = formatter or tostring
@@ -499,10 +499,10 @@ end
 --- Determine whether all items emitted by an Observable meet some criteria.
 ---
 --- Parameters:
---- * predicate - The predicate used to evaluate objects. Defaults to the `identity`.
+---  * predicate - The predicate used to evaluate objects. Defaults to the `identity`.
 ---
 --- Returns:
---- * A new `Observable`.
+---  * A new `Observable`.
 function Observable:all(predicate)
   predicate = predicate or util.identity
 
@@ -557,10 +557,10 @@ end
 --- Given a set of Observables, produces values from only the first one to produce a value or complete.
 ---
 --- Parameters:
---- * ...   - list of [Observables](cp.rx.Observable.md)
+---  * ...   - list of [Observables](cp.rx.Observable.md)
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.firstEmitting(a, b, ...)
   if not a or not b then return a end
 
@@ -634,8 +634,11 @@ end
 --- Method
 --- Returns an Observable that produces the average of all values produced by the original.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:average()
   return Observable.create(function(observer)
     local sum, count = 0, 0
@@ -666,10 +669,10 @@ end
 --- Returns an Observable that buffers values from the original and produces them as multiple values.
 ---
 --- Parameters:
---- * size    - The size of the buffer.
+---  * size    - The size of the buffer.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:buffer(size)
   return Observable.create(function(observer)
     local buffer = {}
@@ -725,11 +728,11 @@ end
 --- produced by a new Observable.
 ---
 --- Parameters:
---- * handler - An `Observable` or a `function` that returns an `Observable` to
+---  * handler - An `Observable` or a `function` that returns an `Observable` to
 ---             replace the source `Observable` in the event of an error.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:catch(handler)
   handler = handler and (type(handler) == 'function' and handler or util.constant(handler))
 
@@ -787,12 +790,12 @@ end
 --- are produced by the new `Observable`.
 ---
 --- Parameters:
---- * ...         - One or more `Observables` to combine.
---- * combinator  - A `function` that combines the latest result from each `Observable` and
+---  * ...         - One or more `Observables` to combine.
+---  * combinator  - A `function` that combines the latest result from each `Observable` and
 ---                              returns a single value.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:combineLatest(...)
   local sources = {...}
   local combinator = remove(sources)
@@ -851,8 +854,11 @@ end
 --- Method
 --- Returns a new `Observable` that produces the values of the first with falsy values removed.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:compact()
   return self:filter(util.identity)
 end
@@ -863,10 +869,10 @@ end
 --- the order they are specified.
 ---
 --- Parameters:
---- * ...     - The list of `Observables` to concatenate.
+---  * ...     - The list of `Observables` to concatenate.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:concat(other, ...)
   if not other then return self end
 
@@ -923,10 +929,10 @@ end
 --- specified value was produced by the original.
 ---
 --- Parameters:
---- * value       - The value to search for.  `==` is used for equality testing.
+---  * value       - The value to search for.  `==` is used for equality testing.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:contains(value)
   return Observable.create(function(observer)
     local active, reference = true
@@ -985,10 +991,10 @@ end
 --- by the source value that satisfy an optional predicate.
 ---
 --- Parameters:
---- * predicate   - The predicate `function` used to match values.
+---  * predicate   - The predicate `function` used to match values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:count(predicate)
   predicate = predicate or util.constant(true)
 
@@ -1041,11 +1047,11 @@ end
 --- The timer resets on each emission.
 ---
 --- Parameters:
---- * time        - The number of milliseconds.
---- * scheduler   - The scheduler. Uses the [defaultScheduler](cp.rx.util#defaultScheduler) by default.
+---  * time        - The number of milliseconds.
+---  * scheduler   - The scheduler. Uses the [defaultScheduler](cp.rx.util#defaultScheduler) by default.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:debounce(time, scheduler)
   time = time or 0
   scheduler = scheduler or util.defaultScheduler()
@@ -1083,11 +1089,11 @@ end
 --- Returns a new `Observable` that produces a default set of items if the source `Observable` produces
 --- no values.
 ---
---- Patameters:
---- * ...     - Zero or more values to produce if the source completes without emitting anything.
+--- Parameters:
+---  * ...     - Zero or more values to produce if the source completes without emitting anything.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:defaultIfEmpty(...)
   local defaults = util.pack(...)
 
@@ -1138,12 +1144,12 @@ end
 --- Returns a new `Observable` that produces the values of the original delayed by a time period.
 ---
 --- Parameters:
---- * time      - An amount in milliseconds to delay by, or a `function` which returns
+---  * time      - An amount in milliseconds to delay by, or a `function` which returns
 ---               this value.
---- * scheduler - The [Scheduler](cp.rx.Scheduler.md) to run the `Observable` on.
+---  * scheduler - The [Scheduler](cp.rx.Scheduler.md) to run the `Observable` on.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:delay(time, scheduler)
   time = type(time) ~= 'function' and util.constant(time) or time
   scheduler = scheduler or util.defaultScheduler()
@@ -1177,8 +1183,11 @@ end
 --- Method
 --- Returns a new `Observable` that produces the values from the original with duplicates removed.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:distinct()
   return Observable.create(function(observer)
     local values = {}
@@ -1209,10 +1218,10 @@ end
 --- the previous value.
 ---
 --- Parameters:
---- * comparator    - A `function` used to compare 2 values. If unspecified, `==` is used.
+---  * comparator    - A `function` used to compare 2 values. If unspecified, `==` is used.
 ---
 --- Returns:
---- * The new `Observable`
+---  * The new `Observable`
 function Observable:distinctUntilChanged(comparator)
   comparator = comparator or util.eq
 
@@ -1248,10 +1257,10 @@ end
 --- Returns an `Observable` that produces the `n`th element produced by the source `Observable`.
 ---
 --- Parameters:
---- * index     - The index of the item, with an index of `1` representing the first.
+---  * index     - The index of the item, with an index of `1` representing the first.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:elementAt(index)
   return Observable.create(function(observer)
     local reference
@@ -1287,10 +1296,10 @@ end
 --- Returns a new `Observable` that only produces values of the first that satisfy a predicate.
 ---
 --- Parameters:
---- * predicate - The predicate `function` used to filter values.
+---  * predicate - The predicate `function` used to filter values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:filter(predicate)
   predicate = predicate or util.identity
 
@@ -1344,10 +1353,10 @@ end
 --- Switch to an alternate `Observable` if this one sends an `onCompleted` without any `onNext`s.
 ---
 --- Parameters:
---- * alternate  - An `Observable` to switch to if this does not send any `onNext` values before the `onCompleted`.
+---  * alternate  - An `Observable` to switch to if this does not send any `onNext` values before the `onCompleted`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:switchIfEmpty(alternate)
   return Observable.create(function(observer)
     local active, ref = true
@@ -1399,10 +1408,10 @@ end
 --- when the source terminates on complete or error.
 ---
 --- Parameters:
---- * handler   - The handler `function` to call when `onError`/`onCompleted` occurs.
+---  * handler   - The handler `function` to call when `onError`/`onCompleted` occurs.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:finalize(handler)
   return Observable.create(function(observer)
     local active, ref = true
@@ -1453,10 +1462,10 @@ end
 --- predicate.
 ---
 --- Parameters:
---- * predicate   - The predicate `function` used to find a value.
+---  * predicate   - The predicate `function` used to find a value.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:find(predicate)
   predicate = predicate or util.identity
 
@@ -1509,11 +1518,14 @@ end
 --- Returns a new `Observable` that only produces the first result of the original.
 --- If no values are produced, an error is thrown.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 ---
 --- Note:
---- * This is similar to [#next], but will throw an error if no `onNext` signal is sent before `onCompleted`.
+---  * This is similar to [#next], but will throw an error if no `onNext` signal is sent before `onCompleted`.
 function Observable:first()
   return self:take(1)
 end
@@ -1523,8 +1535,14 @@ end
 --- Returns a new `Observable` that produces at most the first result from the original and then completes.
 --- Will not send an error if zero values are sent.
 ---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+---
 --- Note:
---- * This is similar to [#first], but will not throw an error if no `onNext` signal is sent before `onCompleted`.
+---  * This is similar to [#first], but will not throw an error if no `onNext` signal is sent before `onCompleted`.
 function Observable:next()
   return Observable.create(function(observer)
     local active, ref = true
@@ -1571,10 +1589,10 @@ end
 --- then flatten the emissions from those into a single `Observable`.
 ---
 --- Parameters:
---- * callback - The `function` to transform values from the original `Observable`.
+---  * callback - The `function` to transform values from the original `Observable`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:flatMap(callback)
   callback = callback or util.identity
   return self:map(callback):flatten()
@@ -1586,10 +1604,10 @@ end
 --- the source, then produces values from the most recent of these `Observables`.
 ---
 --- Parameters:
---- @arg {function=identity} callback - The function used to convert values to Observables. Defaults to the [identity](cp.rx.util#identity) function.
+---  * callback - The function used to convert values to Observables. Defaults to the [identity](cp.rx.util#identity) function.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:flatMapLatest(callback)
   callback = callback or util.identity
   return Observable.create(function(observer)
@@ -1657,8 +1675,11 @@ end
 --- Returns a new `Observable` that subscribes to the `Observables` produced by the original and
 --- produces their values.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:flatten()
   local stopped = false
   local outerCompleted = false
@@ -1731,8 +1752,11 @@ end
 --- Returns an `Observable` that terminates when the source terminates but does not produce any
 --- elements.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:ignoreElements()
   return Observable.create(function(observer)
     local function onError(message)
@@ -1751,8 +1775,11 @@ end
 --- Method
 --- Returns a new `Observable` that only produces the last result of the original.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:last()
   return Observable.create(function(observer)
     local value
@@ -1784,10 +1811,10 @@ end
 --- Returns a new `Observable` that produces the values of the original transformed by a `function`.
 ---
 --- Parameters:
---- * callback    - The `function` to transform values from the original `Observable`.
+---  * callback    - The `function` to transform values from the original `Observable`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:map(callback)
   return Observable.create(function(observer)
     callback = callback or util.identity
@@ -1835,8 +1862,11 @@ end
 --- Method
 --- Returns a new `Observable` that produces the maximum value produced by the original.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:max()
   return self:reduce(math.max)
 end
@@ -1847,10 +1877,10 @@ end
 --- the order they are produced.
 ---
 --- Parameters:
---- * ...       - One or more `Observables` to merge.
+---  * ...       - One or more `Observables` to merge.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:merge(...)
   return Observable.of(self, ...):flatten()
 end
@@ -1859,8 +1889,11 @@ end
 --- Method
 --- Returns a new `Observable` that produces the minimum value produced by the original.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:min()
   return self:reduce(math.min)
 end
@@ -1869,8 +1902,11 @@ end
 --- Method
 --- Returns an `Observable` that produces the values of the original inside tables.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:pack()
   return self:map(util.pack)
 end
@@ -1881,11 +1917,11 @@ end
 --- and another that produces values for which the predicate returns falsy.
 ---
 --- Parameters:
---- * predicate   - The predicate `function` used to partition the values.
+---  * predicate   - The predicate `function` used to partition the values.
 ---
 --- Returns:
---- * The 'truthy' `Observable`.
---- * The 'falsy' `Observable`.
+---  * The 'truthy' `Observable`.
+---  * The 'falsy' `Observable`.
 function Observable:partition(predicate)
   return self:filter(predicate), self:reject(predicate)
 end
@@ -1896,11 +1932,11 @@ end
 --- tables produced by the original.
 ---
 --- Parameters:
---- * ...       - The key to extract from the `table`. Multiple keys can be specified to
+---  * ...       - The key to extract from the `table`. Multiple keys can be specified to
 ---               recursively pluck values from nested tables.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:pluck(key, ...)
   if not key then return self end
 
@@ -1931,13 +1967,13 @@ end
 --- running a `function` on each value produced by the original `Observable`.
 ---
 --- Parameters:
---- * accumulator - Accumulates the values of the original `Observable`. Will be passed
+---  * accumulator - Accumulates the values of the original `Observable`. Will be passed
 ---                 the return value of the last call as the first argument and the
 ---                 current values as the rest of the arguments.
---- * seed        - A value to pass to the accumulator the first time it is run.
+---  * seed        - A value to pass to the accumulator the first time it is run.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:reduce(accumulator, seed)
   return Observable.create(function(observer)
     local active, ref = true, nil
@@ -1996,10 +2032,10 @@ end
 --- Returns a new `Observable` that produces values from the original which do not satisfy a predicate.
 ---
 --- Parameters:
---- * predicate     - The predicate `function` used to reject values.
+---  * predicate     - The predicate `function` used to reject values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:reject(predicate)
   predicate = predicate or util.identity
 
@@ -2052,11 +2088,11 @@ function Observable:reject(predicate)
 --- Returns an `Observable` that restarts in the event of an error.
 ---
 --- Parameters:
---- * count     - The maximum number of times to retry.  If left unspecified, an infinite
+---  * count     - The maximum number of times to retry.  If left unspecified, an infinite
 ---               number of retries will be attempted.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:retry(count)
   return Observable.create(function(observer)
     local active, ref = true, nil
@@ -2111,14 +2147,14 @@ end
 --- Returns an `Observable` that restarts in the event of an error.
 ---
 --- Parameters:
---- * count     - The maximum number of times to retry.  If left unspecified, an infinite
+---  * count     - The maximum number of times to retry.  If left unspecified, an infinite
 ---               number of retries will be attempted.
---- * delay     - The `function` returning or a `number` representing the delay in milliseconds or a `function`. If left unspecified, defaults to 1000 ms (1 second).
---- * scheduler - The [Scheduler](cp.rx.Scheduler.md) to use.
+---  * delay     - The `function` returning or a `number` representing the delay in milliseconds or a `function`. If left unspecified, defaults to 1000 ms (1 second).
+---  * scheduler - The [Scheduler](cp.rx.Scheduler.md) to use.
 ---               If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:retryWithDelay(count, delay, scheduler)
   delay = type(delay) == "function" and delay or util.constant(delay or 1000)
   return Observable.create(function(observer)
@@ -2178,10 +2214,10 @@ end
 --- produces a value.
 ---
 --- Parameters:
---- * sampler     - The `Observable` that is used to sample values from this `Observable`.
+---  * sampler     - The `Observable` that is used to sample values from this `Observable`.
 ---
 --- Returns:.
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:sample(sampler)
   if not Observable.is(sampler) then error('Expected an Observable') end
 
@@ -2244,14 +2280,14 @@ end
 --- `function` on each value produced by the original `Observable`.
 ---
 --- Parameters:
---- * accumulator     - Accumulates the values of the original `Observable`. Will be passed
+---  * accumulator     - Accumulates the values of the original `Observable`. Will be passed
 ---                     the return value of the last call as the first argument and the
 ---                     current values as the rest of the arguments.  Each value returned
 ---                     from this `function` will be emitted by the `Observable`.
---- * seed            - A value to pass to the accumulator the first time it is run.
+---  * seed            - A value to pass to the accumulator the first time it is run.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:scan(accumulator, seed)
   return Observable.create(function(observer)
     local active, ref = true
@@ -2309,10 +2345,10 @@ end
 --- and produces the rest.
 ---
 --- Parameters:
---- * n       - The number of values to ignore. Defaults to `1`.
+---  * n       - The number of values to ignore. Defaults to `1`.
 ---
 --- Returns:
---- * The new `Observable`
+---  * The new `Observable`
 function Observable:skip(n)
   n = n or 1
 
@@ -2372,10 +2408,10 @@ end
 --- Returns an `Observable` that omits a specified number of values from the end of the original `Observable`.
 ---
 --- Parameters:
---- * count     - The number of items to omit from the end.
+---  * count     - The number of items to omit from the end.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:skipLast(count)
   return Observable.create(function(observer)
     -- cycling buffer
@@ -2430,10 +2466,10 @@ end
 --- `Observable` produces a value.
 ---
 --- Parameters:
---- * other     - The `Observable` that triggers the production of values.
+---  * other     - The `Observable` that triggers the production of values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:skipUntil(other)
   return Observable.create(function(observer)
     local active, ref, otherRef = true
@@ -2492,10 +2528,10 @@ end
 --- Returns a new `Observable` that skips elements until the predicate returns `falsy` for one of them.
 ---
 --- Parameters:
---- * predicate     - The predicate `function` used to continue skipping values.
+---  * predicate     - The predicate `function` used to continue skipping values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:skipWhile(predicate)
   predicate = predicate or util.identity
 
@@ -2554,10 +2590,10 @@ end
 --- the source `Observable`.
 ---
 --- Parameters:
---- * values    - The values to produce before the Observable begins producing values normally.
+---  * values    - The values to produce before the Observable begins producing values normally.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:startWith(...)
   local values = util.pack(...)
   return Observable.create(function(observer)
@@ -2571,8 +2607,11 @@ end
 --- Returns an `Observable` that produces a single value representing the sum of the values produced
 --- by the original.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:sum()
   return self:reduce(function(x, y) return x + y end, 0)
 end
@@ -2582,8 +2621,11 @@ end
 --- Given an `Observable` that produces `Observables`, returns an `Observable` that produces the values
 --- produced by the most recently produced `Observable`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:switch()
   return Observable.create(function(observer)
     local active, ref, sourceRef = true
@@ -2641,10 +2683,10 @@ end
 --- Returns a new `Observable` that only produces the first n results of the original.
 ---
 --- Parameters:
---- * n       - The number of elements to produce before completing. Defaults to `1`.
+---  * n       - The number of elements to produce before completing. Defaults to `1`.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:take(n)
   n = n or 1
 
@@ -2710,10 +2752,10 @@ end
 --- `Observable`.
 ---
 --- Parameters:
---- * count   - The number of elements to produce.
+---  * count   - The number of elements to produce.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:takeLast(count)
   return Observable.create(function(observer)
     local active, ref = true
@@ -2765,10 +2807,10 @@ end
 --- Returns a new `Observable` that completes when the specified `Observable` fires.
 ---
 --- Parameters:
---- * other     - The `Observable` that triggers completion of the original.
+---  * other     - The `Observable` that triggers completion of the original.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:takeUntil(other)
   return Observable.create(function(observer)
     local active, ref, otherRef = true
@@ -2815,10 +2857,10 @@ end
 --- Returns a new `Observable` that produces elements until the predicate returns `falsy`.
 ---
 --- Parameters:
---- * predicate       - The predicate `function` used to continue production of values.
+---  * predicate       - The predicate `function` used to continue production of values.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:takeWhile(predicate)
   predicate = predicate or util.identity
 
@@ -2878,12 +2920,12 @@ end
 --- create a subscription.
 ---
 --- Parameters:
---- * onNext        - Run when the `Observable` produces values.
---- * onError       - Run when the `Observable` encounters a problem.
---- * onCompleted   - Run when the `Observable` completes.
+---  * onNext        - Run when the `Observable` produces values.
+---  * onError       - Run when the `Observable` encounters a problem.
+---  * onCompleted   - Run when the `Observable` completes.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:tap(_onNext, _onError, _onCompleted)
   _onNext = _onNext or util.noop
   _onError = _onError or util.noop
@@ -2948,12 +2990,12 @@ end
 --- Returns an `Observable` that will emit an error if the specified time is exceded since the most recent `next` value.
 ---
 --- Parameters:
---- * timeInMs          - The time in milliseconds to wait before an error is emitted.
---- * next              - If a `string`, it will be sent as an error. If an `Observable`, switch to that `Observable` instead of sending an error.
---- * scheduler         - The scheduler to use. Uses the [defaultScheduler](cp.rx.util#defaultSubscriber) if not provided.
+---  * timeInMs          - The time in milliseconds to wait before an error is emitted.
+---  * next              - If a `string`, it will be sent as an error. If an `Observable`, switch to that `Observable` instead of sending an error.
+---  * scheduler         - The scheduler to use. Uses the [defaultScheduler](cp.rx.util#defaultSubscriber) if not provided.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:timeout(timeInMs, next, scheduler)
   timeInMs = type(timeInMs) == "function" and timeInMs or util.constant(timeInMs)
   scheduler = scheduler or util.defaultScheduler()
@@ -3042,8 +3084,11 @@ end
 --- Method
 --- Returns an `Observable` that unpacks the `tables` produced by the original.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:unpack()
   return self:map(util.unpack)
 end
@@ -3053,8 +3098,11 @@ end
 --- Returns an `Observable` that takes any values produced by the original that consist of multiple
 --- return values and produces each value individually.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:unwrap()
   return Observable.create(function(observer)
     local function onNext(...)
@@ -3083,10 +3131,10 @@ end
 --- source `Observable` is used.
 ---
 --- Parameters:
---- * ...       - The `Observables` to include the most recent values from.
+---  * ...       - The `Observables` to include the most recent values from.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable:with(...)
   local sources = {...}
 
@@ -3168,10 +3216,10 @@ end
 --- fewest number of values.
 ---
 --- Parameters:
---- * ...       - The `Observables` to zip.
+---  * ...       - The `Observables` to zip.
 ---
 --- Returns:
---- * The new `Observable`.
+---  * The new `Observable`.
 function Observable.zip(...)
   local sources = util.pack(...)
   local count = #sources
@@ -3279,8 +3327,11 @@ ImmediateScheduler.__tostring = util.constant('ImmediateScheduler')
 --- Constructor
 --- Creates a new `ImmediateScheduler`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `ImmediateScheduler`.
+---  * The new `ImmediateScheduler`.
 function ImmediateScheduler.create()
   return setmetatable({}, ImmediateScheduler)
 end
@@ -3290,10 +3341,10 @@ end
 --- Schedules a `function` to be run on the scheduler. It is executed immediately.
 ---
 --- Parameters:
---- * action    - The `function` to execute.
+---  * action    - The `function` to execute.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md).
+---  * The [Reference](cp.rx.Reference.md).
 function ImmediateScheduler:schedule(action) --luacheck: ignore
   action()
   return Reference.create()
@@ -3312,10 +3363,10 @@ CooperativeScheduler.__tostring = util.constant('CooperativeScheduler')
 --- Creates a new `CooperativeScheduler`.
 ---
 --- Parameters:
---- * currentTime     - A time to start the scheduler at. Defaults to `0`.
+---  * currentTime     - A time to start the scheduler at. Defaults to `0`.
 ---
 --- Returns:
---- * The new `CooperativeScheduler`.
+---  * The new `CooperativeScheduler`.
 function CooperativeScheduler.create(currentTime)
   local self = {
     tasks = {},
@@ -3331,13 +3382,13 @@ end
 --- the action from running.
 ---
 --- Parameters:
---- * action      - The `function` to execute. Will be converted into a coroutine. The
+---  * action      - The `function` to execute. Will be converted into a coroutine. The
 ---                 coroutine may yield execution back to the scheduler with an optional
 ---                 number, which will put it to sleep for a time period.
---- * delay       - Delay execution of the action by a virtual time period. Defaults to `0`.
+---  * delay       - Delay execution of the action by a virtual time period. Defaults to `0`.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md).
+---  * The [Reference](cp.rx.Reference.md).
 function CooperativeScheduler:schedule(action, delay)
   local task = {
     thread = coroutine.create(action),
@@ -3365,7 +3416,7 @@ end
 --- will run any coroutines that are due to be run.
 ---
 --- Parameters:
---- * delta     - An amount of time to advance the clock by. It is common to pass in the
+---  * delta     - An amount of time to advance the clock by. It is common to pass in the
 --                time in seconds or milliseconds elapsed since this function was last
 --                called. Defaults to `0`.
 function CooperativeScheduler:update(delta)
@@ -3398,8 +3449,11 @@ end
 --- Method
 --- Returns whether or not the `CooperativeScheduler`'s queue is empty.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * `true` if the scheduler is empty, otherwise `false`.
+---  * `true` if the scheduler is empty, otherwise `false`.
 function CooperativeScheduler:isEmpty()
   return not next(self.tasks)
 end
@@ -3415,8 +3469,11 @@ TimeoutScheduler.__tostring = util.constant('TimeoutScheduler')
 --- Method
 --- Creates a new `TimeoutScheduler`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `TimeoutScheduler`.
+---  * The new `TimeoutScheduler`.
 function TimeoutScheduler.create()
   return setmetatable({_timers = {}}, TimeoutScheduler)
 end
@@ -3426,11 +3483,11 @@ end
 --- Schedules an action to run at a future point in time.
 ---
 --- Parameters:
---- * action  - The action to run.
---- * delay   - The delay, in milliseconds. Defaults to `0`.
+---  * action  - The action to run.
+---  * delay   - The delay, in milliseconds. Defaults to `0`.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md).
+---  * The [Reference](cp.rx.Reference.md).
 function TimeoutScheduler:schedule(action, delay)
   delay = delay or 0
   local t = doAfter(delay/1000.0, action)
@@ -3445,6 +3502,12 @@ end
 --- cp.rx.TimeoutScheduler:stopAll() -> nil
 --- Method
 --- Stops all future timers from running and clears them.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function TimeoutScheduler:stopAll()
     for t,_ in pairs(self._timers) do
         t:stop()
@@ -3480,13 +3543,13 @@ end
 --- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the Subject.
 ---
 --- Parameters:
---- * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a `function` called
+---  * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a `function` called
 ---                           when the `Subject` produces a value.
---- * onError               - A `function` called when the `Subject` terminates due to an error.
---- * onCompleted           - A `function` called when the `Subject` completes normally.
+---  * onError               - A `function` called when the `Subject` terminates due to an error.
+---  * onCompleted           - A `function` called when the `Subject` completes normally.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md)
+---  * The [Reference](cp.rx.Reference.md)
 function Subject:subscribe(onNext, onError, onCompleted)
   local observer
 
@@ -3528,7 +3591,7 @@ end
 --- Pushes zero or more values to the `Subject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
 ---
 --- Parameters:
---- * ...       - The values to send.
+---  * ...       - The values to send.
 function Subject:onNext(...)
   if not self.stopped then
     local observer
@@ -3544,7 +3607,7 @@ end
 --- Signal to all `Observers` that an error has occurred.
 ---
 --- Parameters:
---- * message     - A string describing what went wrong.
+---  * message     - A string describing what went wrong.
 function Subject:onError(message)
   if not self.stopped then
     self.stopping = true
@@ -3561,6 +3624,12 @@ end
 --- cp.rx.Subject:onCompleted() -> nil
 --- Method
 --- Signal to all [Observers](cp.rx.Observer.md) that the `Subject` will not produce any more values.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function Subject:onCompleted()
   if not self.stopped then
     self.stopping = true
@@ -3591,8 +3660,11 @@ AsyncSubject.__tostring = util.constant('AsyncSubject')
 --- Constructor
 --- Creates a new `AsyncSubject`.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The new `AsyncSubject`.
+---  * The new `AsyncSubject`.
 function AsyncSubject.create()
   local self = {
     observers = {},
@@ -3609,13 +3681,13 @@ end
 --- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `AsyncSubject`.
 ---
 --- Parameters:
---- * onNext | observer - A `function` called when the `AsyncSubject` produces a value
+---  * onNext | observer - A `function` called when the `AsyncSubject` produces a value
 ---                       or an existing [Observer](cp.rx.Observer.md) to attach to the `AsyncSubject`.
---- * onError           - A `function` called when the `AsyncSubject` terminates due to an error.
---- * onCompleted       - A `funtion` called when the `AsyncSubject` completes normally.
+---  * onError           - A `function` called when the `AsyncSubject` terminates due to an error.
+---  * onCompleted       - A `funtion` called when the `AsyncSubject` completes normally.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md).
+---  * The [Reference](cp.rx.Reference.md).
 function AsyncSubject:subscribe(onNext, onError, onCompleted)
   local observer
 
@@ -3651,7 +3723,7 @@ end
 --- Pushes zero or more values to the `AsyncSubject`.
 ---
 --- Parameters:
---- * ...       - The values to send.
+---  * ...       - The values to send.
 function AsyncSubject:onNext(...)
   if not self.stopped then
     self.value = util.pack(...)
@@ -3663,7 +3735,7 @@ end
 --- Signal to all [Observers](cp.rx.Observer.md) that an error has occurred.
 ---
 --- Parameters:
---- * message     - A string describing what went wrong.
+---  * message     - A string describing what went wrong.
 function AsyncSubject:onError(message)
   if not self.stopped then
     self.errorMessage = message
@@ -3680,6 +3752,12 @@ end
 --- cp.rx.AsyncSubject:onCompleted() -> nil
 --- Method
 --- Signal to all [Observers](cp.rx.Observers.md) that the `AsyncSubject` will not produce any more values.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function AsyncSubject:onCompleted()
   if not self.stopped then
     for i = 1, #self.observers do
@@ -3710,10 +3788,10 @@ BehaviorSubject.__tostring = util.constant('BehaviorSubject')
 --- Creates a new `BehaviorSubject`.
 ---
 --- Parameters:
---- * ...     - The initial values.
+---  * ...     - The initial values.
 ---
 --- Returns:
---- * The new `BehaviorSubject`.
+---  * The new `BehaviorSubject`.
 function BehaviorSubject.create(...)
   local self = {
     observers = {},
@@ -3733,13 +3811,13 @@ end
 --- recent value to the [Observer](cp.rx.Observer.md).
 ---
 --- Parameters:
---- * observer | onNext       - The [Observer](cp.rx.Observer.md) subscribing, or the `function` called when the
+---  * observer | onNext       - The [Observer](cp.rx.Observer.md) subscribing, or the `function` called when the
 ---                             `BehaviorSubject` produces a value.
---- * onError                 - A `function` called when the `BehaviorSubject` terminates due to an error.
---- * onCompleted             - A `function` called when the `BehaviorSubject` completes normally.
+---  * onError                 - A `function` called when the `BehaviorSubject` terminates due to an error.
+---  * onCompleted             - A `function` called when the `BehaviorSubject` completes normally.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md)
+---  * The [Reference](cp.rx.Reference.md)
 function BehaviorSubject:subscribe(onNext, onError, onCompleted)
   local observer
 
@@ -3763,7 +3841,7 @@ end
 --- Pushes zero or more values to the `BehaviorSubject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
 ---
 --- Parameters:
---- * ...     - The values to send.
+---  * ...     - The values to send.
 function BehaviorSubject:onNext(...)
   self.value = util.pack(...)
   return Subject.onNext(self, ...)
@@ -3774,11 +3852,14 @@ end
 --- Returns the last value emitted by the `BehaviorSubject`, or the initial value passed to the
 --- constructor if nothing has been emitted yet.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The last value.
+---  * The last value.
 ---
 --- Note:
---- * You can also call the `BehaviorSubject` as a function to retrieve the value. E.g. `mySubject()`.
+---  * You can also call the `BehaviorSubject` as a function to retrieve the value. E.g. `mySubject()`.
 function BehaviorSubject:getValue()
   if self.value ~= nil then
     return util.unpack(self.value)
@@ -3800,11 +3881,11 @@ ReplaySubject.__tostring = util.constant('ReplaySubject')
 --- Creates a new `ReplaySubject`.
 ---
 --- Parameters:
---- * bufferSize      - The number of values to send to new subscribers. If `nil`, an infinite
+---  * bufferSize      - The number of values to send to new subscribers. If `nil`, an infinite
 ---                     buffer is used (note that this could lead to memory issues).
 ---
 --- Returns:
---- * The new `ReplaySubject.
+---  * The new `ReplaySubject.
 function ReplaySubject.create(n)
   local self = {
     observers = {},
@@ -3824,13 +3905,13 @@ end
 --- Immediately broadcasts the most recent contents of the buffer to the Observer.
 ---
 --- Parameters:
---- * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a
+---  * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a
 ---                           `function` to call when the `ReplaySubject` produces a value.
---- * onError               - A `function` to call when the `ReplaySubject` terminates due to an error.
---- * onCompleted           - A `function` to call when the ReplaySubject completes normally.
+---  * onError               - A `function` to call when the `ReplaySubject` terminates due to an error.
+---  * onCompleted           - A `function` to call when the ReplaySubject completes normally.
 ---
 --- Returns:
---- * The [Reference](cp.rx.Reference.md).
+---  * The [Reference](cp.rx.Reference.md).
 function ReplaySubject:subscribe(onNext, onError, onCompleted)
   local observer
 
@@ -3863,7 +3944,7 @@ end
 --- Pushes zero or more values to the `ReplaySubject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
 ---
 --- Parameters:
---- * ...   - The values to send.
+---  * ...   - The values to send.
 function ReplaySubject:onNext(...)
   if not self.stopped then
     self.buffer:pushRight(util.pack(...))

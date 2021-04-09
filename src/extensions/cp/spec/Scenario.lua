@@ -1,14 +1,3 @@
-local require               = require
-
--- local log                   = require "hs.logger" .new "Scenario"
-
-local Definition            = require "cp.spec.Definition"
-local Handled               = require "cp.spec.Handled"
-local Run                   = require "cp.spec.Run"
-local Where                 = require "cp.spec.Where"
-
-local format                = string.format
-
 --- === cp.spec.Scenario ===
 ---
 --- A [Definition](cp.spec.Definition.md) which describes a specific scenario.
@@ -77,6 +66,18 @@ local format                = string.format
 ---
 --- **Note:** "where" parameters will not override built-in functions and fields in the [this](cp.spec.Run.This.md)
 --- instance (such as "async" or "done") so ensure that you pick names that don't clash.
+
+local require               = require
+
+-- local log                   = require "hs.logger" .new "Scenario"
+
+local Definition            = require "cp.spec.Definition"
+local Handled               = require "cp.spec.Handled"
+local Run                   = require "cp.spec.Run"
+local Where                 = require "cp.spec.Where"
+
+local format                = string.format
+
 local Scenario = Definition:subclass("cp.spec.Scenario")
 
 -- default `doing` function for Definitions.

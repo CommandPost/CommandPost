@@ -580,6 +580,12 @@ end
 --- cp.ui.notifier:reset() -> self
 --- Method
 --- Resets the notifier
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
 function mod.mt:reset()
     self:_stopObserving()
 

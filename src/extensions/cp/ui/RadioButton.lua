@@ -34,10 +34,10 @@ local RadioButton = Element:subclass("cp.ui.RadioButton")
 --- Checks if the provided `hs.axuielement` is a RadioButton.
 ---
 --- Parameters:
---- * element		- The `axuielement` to check.
+---  * element		- The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it's a match, or `false` if not.
+---  * `true` if it's a match, or `false` if not.
 function RadioButton.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioButton"
 end
@@ -47,11 +47,11 @@ end
 --- Creates a new RadioButton.
 ---
 --- Parameters:
---- * parent		- The parent object.
---- * finderFn		- A function which will return the `hs.axuielement` when available.
+---  * parent		- The parent object.
+---  * finderFn		- A function which will return the `hs.axuielement` when available.
 ---
 --- Returns:
---- * The new `RadioButton`.
+---  * The new `RadioButton`.
 function RadioButton:initialize(parent, finderFn)
     Element.initialize(self, parent, finderFn)
 end
@@ -80,10 +80,10 @@ end
 --- Toggles the `checked` status of the button.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `RadioButton` instance.
+---  * The `RadioButton` instance.
 function RadioButton:toggle()
     self.checked:toggle()
     return self
@@ -146,7 +146,7 @@ end
 --- Attempts to press the button. May fail if the `UI` is not available.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 --- The `RadioButton` instance.
@@ -183,8 +183,11 @@ end
 --- Returns a `table` with the button's current state. This can be passed to [#loadLayout]
 --- later to restore the original state.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The table of the layout state.
+---  * The table of the layout state.
 function RadioButton:saveLayout()
     local layout = Element.saveLayout(self)
     layout.checked = self:checked()
@@ -196,7 +199,7 @@ end
 --- Processes the `layout` table to restore this to match the provided `layout`.
 ---
 --- Parameters:
---- * layout - the table of state values to restore to.
+---  * layout - the table of state values to restore to.
 function RadioButton:loadLayout(layout)
     Element.loadLayout(self, layout)
     if layout then
@@ -209,10 +212,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
 ---
 --- Parameters:
---- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---  * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function RadioButton:doLayout(layout)
     layout = layout or {}
     return Do(Element.doLayout(self, layout))

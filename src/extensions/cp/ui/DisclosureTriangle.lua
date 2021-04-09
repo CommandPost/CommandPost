@@ -163,6 +163,12 @@ end
 --- cp.ui.DisclosureTriangle:doOpen() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will ensure the `DisclosureTriangle` is opened.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function DisclosureTriangle.lazy.method:doOpen()
     return Do(self:parent():doShow())
         :Then(
@@ -177,6 +183,12 @@ end
 --- cp.ui.DisclosureTriangle:doClose() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will ensure the `DisclosureTriangle` is unopened.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A Statement
 function DisclosureTriangle.lazy.method:doClose()
     return Do(self:parent():doShow())
         :Then(

@@ -37,6 +37,12 @@ end
 --- cp.apple.finalcutpro.export.ExportDialogTitleText(parent)
 --- Constructor
 --- Creates a new Export [Dialog](cp.ui.Dialog.md)
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function ExportDialog:initialize(parent)
     Dialog.initialize(self, parent, parent.windowsUI:mutate(function(original)
         return cache(self, "_window", function()
