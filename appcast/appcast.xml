@@ -6,16 +6,41 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.1.5</title>
+			<title>Version 1.2.0</title>
 			<description><![CDATA[
+				<h1>CommandPost 1.2.0</h1>
+
+				<h2>New Features:</h2>
+				<ul><li>We have a new dock and menubar icon by the incredible Matthew Skiles. Woohoo!</li>
+				<li>We have also added the option to select 5 new built-in menubar icons, or select any image from your machine to use as a menubar icon. You can also now customise the menubar text label for full control.</li>
+				<li>We now support the Monogram and Palette control surfaces. CommandPost integrates closely with the Monogram Creator, so once you enable Monogram support in CommandPost, you can jump into Monogram Creator to set up your layout. It also supports Automatic Profile Switching. Monogram support requires the latest beta or alpha builds of Monogram Creator - it won't work on the public release yet. Any ideas, comments, suggestions welcome!</li>
+				<li>You can now use Lua Snippets to programatically generate Loupedeck CT/Live icons, and also define the LED color. With some simple lines of code, you can now make your Loupedeck device appear exactly how you want it. There's a new option in the preferences to adjust the refresh frequency (defaults to 1 second).</li>
+				<li>Added option to "Resize Images on Import" and set a custom "Image Background Colour on Import" in the Loupedeck CT/Live Preferences panel.</li>
+				<li>Added ability to customise the font, font size and colour of text labels in the Loupedeck CT/Live Preferences panel.</li>
+				<li>Added the ability to consolidate images when using the Shot Data Toolbox. This means if you have any images "connected" to the Shot Data Motion Template in your timeline, they'll be copied to the same location as the CSV export. Thanks for the suggestion Vigneswaran Rajkumar!</li>
+				<li>Added actions to control the individual red, green and blue parameters for the Color Wheels in Final Cut Pro. Thanks for suggesting Eric Badura!</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>We've renamed "All Applications" to "Unlisted & Ignored Applications" in the Control Surfaces panels to better describe what this option does.</li>
+				<li>We've improved how the Search Console searches and orders the results.</li>
+				<li>Updated all the translations, and improved the Lua documentation.</li>
+				<li>Various user interface improvements in the Preferences and Control Surfaces windows.</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed a bug in both the Shot Data Toolbox, Save Browser Contents to CSV and Save Timeline Index to CSV. Thanks for reporting Aaron Villa!</li>
+
+				<li>Various improvements and bug fixes in the Loupedeck CT/Live Preferences panels - especially in regards to dragging and dropping icons. Thanks to Eric Badura for all your testing and ideas!</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Due to a suspected bug in Xcode 12, the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. We've contacted Apple to try and come up with a fix.</li></ul>
+
+				<hr />
+
 				<h1>CommandPost 1.1.5</h1>
 
 				<h2>New Features:</h2>
 				<ul><li>If you assign an action to a Loupedeck CT/Live Touchscreen button that has an image in the Search Console, that image will now be automatically applied to the button. For example, if you apply the action to launch Disk Utility to a Loupedeck CT/Live Touchscreen Button, the Disk Utility icon will be automatically applied. Thanks for suggesting Eric Badura!</li>
 				<li>You can now select Applications (in addition to image files) when you click the Image Drop Zone in the Loupedeck CT/Live Control Surfaces panel.</li></ul>
-
-				<h2>Known Issues:</h2>
-				<ul><li>Due to a suspected bug in Xcode 12, the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. We've contacted Apple to try and come up with a fix.</li></ul>
 
 				<hr />
 
@@ -162,11 +187,11 @@
 				<li>Fixed a bug that would cause an error if you tried to Restore a Browser Layout that wasn&#39;t previously saved. Thanks for reporting Gábor Kertai!</li></ul>
 			]]>
 			</description>
-			<pubDate>Sun, 28 Feb 2021 22:52:55 +1100</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.1.5/CommandPost_1.1.5.dmg"
-				sparkle:version="6565"
-                sparkle:shortVersionString="1.1.5"
-				sparkle:dsaSignature="MC0CFG9Qk2Td91S5ucbVBGmhcZkRUpRtAhUA7+Uhr2G7SUMNT79PIkG+XxwSn0I="
+			<pubDate>Fri,  9 Apr 2021 17:01:45 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.0/CommandPost_1.2.0.dmg"
+				sparkle:version="6772"
+                sparkle:shortVersionString="1.2.0"
+				sparkle:dsaSignature="MC0CFQC6M6avaEMdhypoe3iKtqKKphXCCgIUQH1Sx0Ed0K4ZhEW4q0kWWnt3iXY="
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
