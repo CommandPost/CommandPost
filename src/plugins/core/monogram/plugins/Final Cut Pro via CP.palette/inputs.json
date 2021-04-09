@@ -700,8 +700,8 @@
         "info": "Controls the Color Wheels Temperature slider",
         "name": "Color Wheels.Temperature",
         "range": [
-            10000,
-            2500
+        	2500,
+            10000
         ],
         "reset": 5000,
         "step": 25,
@@ -2668,6 +2668,38 @@
     },
     {
         "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 02"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 03"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 04"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 05"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 06"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 07"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 08"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 09"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
         "name": "CommandPost Favourites.Favourite 10"
     },
     {
@@ -2708,39 +2740,7 @@
     },
     {
         "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 02"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
         "name": "CommandPost Favourites.Favourite 20"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 03"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 04"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 05"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 06"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 07"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 08"
-    },
-    {
-        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
-        "name": "CommandPost Favourites.Favourite 09"
     },
     {
         "info": "Triggers the Final Cut Pro Menu Item: Clip > Add to Soloed Clips",
