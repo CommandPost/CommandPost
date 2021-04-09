@@ -1,4 +1,4 @@
-<a href="http://commandpost.io/" ><img src="https://github.com/CommandPost/CommandPost-Website/blob/master/assets/images/CommandPost_Icon_128%402x.png" align="right"  width="15%" height="15%" /> </a>
+<a href="http://commandpost.io/" ><img src="https://github.com/CommandPost/CommandPost-Website/blob/master/assets/images/CommandPost_512x512@2x.png" align="right"  width="15%" height="15%" /> </a>
 
 # [CommandPost](http://commandpost.io/)
 [![Latest-Release](https://img.shields.io/github/v/release/CommandPost/CommandPost?include_prereleases)](https://github.com/CommandPost/CommandPost/releases) [![Platform](https://img.shields.io/badge/platform-MacOS-lightgrey.svg)](https://commandpost.io/#system-requirements) [![Website](https://img.shields.io/website?down_message=offline&up_message=online&url=https%3A%2F%2Fcommandpost.io)](https://commandpost.io/)
