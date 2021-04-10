@@ -375,7 +375,33 @@ function activator:enableHandler(id)
     return true
 end
 
---- plugins.core.action.activator:enableAllHandlers([groupID]]) -> none
+--- plugins.core.action.activator:enableHandlers(groupID) -> none
+--- Method
+--- Enables the all allowed handlers of a specific group, and disables the
+--- everything else.
+---
+--- Parameters:
+---  * groupID - The group ID to enable
+---
+--- Returns:
+---  * None
+function activator:enableHandlers(groupID)
+    local disabledHandlers = {}
+    local allowedHandlers = self:allowedHandlers()
+    for id,_ in pairs(allowedHandlers) do
+        local idComponents = split(id, "_")
+        local currentGroupID = idComponents and idComponents[1]
+        if currentGroupID == groupID then
+            disabledHandlers[id] = nil
+        else
+            disabledHandlers[id] = true
+        end
+    end
+    self:_disabledHandlers(disabledHandlers)
+    self:refreshChooser()
+end
+
+--- plugins.core.action.activator:enableAllHandlers([groupID]) -> none
 --- Method
 --- Enables the all allowed handlers.
 ---

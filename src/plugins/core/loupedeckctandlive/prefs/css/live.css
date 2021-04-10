@@ -8,6 +8,8 @@
 	height:482px;
 	font-size:0px;
 	background-image: url({* insertImage('images/live/loupedecklive.png') *});
+	background-repeat: no-repeat;
+	background-size: 447px 482px;
 }
 
 #knob1 {
