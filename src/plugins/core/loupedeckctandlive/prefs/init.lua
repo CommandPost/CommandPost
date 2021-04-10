@@ -1267,6 +1267,11 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
             local buttonType = params["buttonType"]
             local activatorID = params["application"]
 
@@ -1334,7 +1339,10 @@ function mod.mt:panelCallback(id, params)
                 -- Only enable handlers for the current app:
                 --------------------------------------------------------------------------------
                 local enabledHandlerID = legacyGroupIDs[activatorID] or activatorID
-                self.activator[activatorID]:enableAllHandlers(enabledHandlerID)
+                if enabledHandlerID and enabledHandlerID == "All Applications" then
+                    enabledHandlerID = "global"
+                end
+                self.activator[activatorID]:enableHandlers(enabledHandlerID)
             end
 
             --------------------------------------------------------------------------------
@@ -1407,6 +1415,16 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 self.device:refresh()
             end)
+
+            --------------------------------------------------------------------------------
+            -- Set the Query String to the currently selected action:
+            --------------------------------------------------------------------------------
+            local items = self.items()
+            local currentAction = items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid][buttonType]
+            local currentActionTitle = currentAction and currentAction.actionTitle
+            if currentActionTitle and currentActionTitle ~= "" then
+                self.activator[activatorID]:lastQueryValue(currentActionTitle)
+            end
 
             --------------------------------------------------------------------------------
             -- Show Activator:
