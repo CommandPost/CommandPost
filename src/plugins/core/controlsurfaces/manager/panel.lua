@@ -349,7 +349,7 @@ function panel:addSelect(priority, params)
     --------------------------------------------------------------------------------
     local result
     if params.label then
-        result = html(params.label) .. ": " .. ui.select(params)
+        result = html.label(params.label .. ":") .. " " .. ui.select(params)
     else
        result = ui.select(params)
     end

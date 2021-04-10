@@ -330,21 +330,25 @@ function mod.new(deviceType)
                 <div class="menubarColumn">
                 <style>
                     .screensBacklightLevel select {
-                        margin-left: 85px;
                         width: 100px;
                     }
                     .resizeImagesOnImport select {
-                        margin-left: 80px;
                         width: 100px;
                     }
 
                     .snippetsRefreshFrequency select {
-                        margin-left: 58.5px;
                         width: 100px;
                     }
 
+                    .restrictRightTopSectionSize label {
+                        width: 223px;
+                        overflow:hidden;
+                        display:inline-block;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
                     .imageBackgroundColourOnImport input {
-                        margin-left: 10px;
                         -webkit-appearance: none;
                         text-shadow:0 1px 0 rgba(0,0,0,0.4);
                         background-color: rgba(65,65,65,1);
@@ -367,7 +371,7 @@ function mod.new(deviceType)
             {
                 label       =   i18n("snippetsRefreshFrequency"),
                 value       =   o.snippetsRefreshFrequency,
-                class       =   "snippetsRefreshFrequency",
+                class       =   "snippetsRefreshFrequency restrictRightTopSectionSize",
                 options     =   function()
                                     local options = {}
                                     for i=1, 10 do
@@ -394,7 +398,7 @@ function mod.new(deviceType)
             {
                 label       =   i18n("screensBacklightLevel"),
                 value       =   o.screensBacklightLevel,
-                class       =   "screensBacklightLevel",
+                class       =   "screensBacklightLevel restrictRightTopSectionSize",
                 options     =   function()
                                     local options = {}
                                     for i=1, 10 do
@@ -416,7 +420,7 @@ function mod.new(deviceType)
         :addSelect(12.2,
             {
                 label       =   i18n("resizeImagesOnImport"),
-                class       =   "resizeImagesOnImport",
+                class       =   "resizeImagesOnImport restrictRightTopSectionSize",
                 value       =   o.resizeImagesOnImport,
                 options     =   function()
                                     local options = {
@@ -445,7 +449,7 @@ function mod.new(deviceType)
             {
                 label       =   i18n("imageBackgroundColourOnImport") .. ":",
                 value       =   function() return o.backgroundColour() end,
-                class       =   "imageBackgroundColourOnImport jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                class       =   "restrictRightTopSectionSize imageBackgroundColourOnImport jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params) o.backgroundColour(params.value) end,
             }
         )
