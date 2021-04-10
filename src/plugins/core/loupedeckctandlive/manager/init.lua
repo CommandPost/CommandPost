@@ -1174,7 +1174,7 @@ function mod.mt:refresh(dueToAppChange)
             self.cachedKnobValues[id] = encodedIcon
             local decodedImage = imageFromURL(encodedIcon)
             local size = decodedImage and decodedImage:size()
-            if size and size.w ~= 60 or size.h ~= 90 then
+            if size and (size.w ~= 60 or size.h ~= 90) then
                 --------------------------------------------------------------------------------
                 -- The Knob Icon isn't 60x90 pixels, so it must be a legacy icon that needs
                 -- to be scaled:
