@@ -943,47 +943,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:hue(0)
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("reset"))
-
-    --------------------------------------------------------------------------------
-    -- Color Wheel - Hue:
-    --------------------------------------------------------------------------------
-    local colorWheelHueValue = 0
-    local updateColorWheelHue = deferred.new(0.01):action(function()
-        colorWheels:show()
-        local currentValue = colorWheels:hue()
-        colorWheels:hue(currentValue + colorWheelHueValue)
-        colorWheelHueValue = 0
-    end)
-
-    for _, v in pairs(MIX_RANGES) do
-        fcpxCmds
-            :add("colorWheelHueUp" .. v)
-            :groupedBy("colorWheels")
-            :whenActivated(function()
-                colorWheelHueValue = colorWheelHueValue + v
-                updateColorWheelHue()
-            end)
-            :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
-
-        fcpxCmds
-            :add("colorWheelHueDown" .. v)
-            :groupedBy("colorWheels")
-            :whenActivated(function()
-                colorWheelHueValue = colorWheelHueValue - v
-                updateColorWheelHue()
-            end)
-            :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
-    end
-
-    fcpxCmds
-        :add("colorWheelHueReset")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:hue(0)
+            colorWheels.hueTextField:value(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("reset"))
 
