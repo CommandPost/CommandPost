@@ -1387,6 +1387,17 @@ function mod.mt:panelCallback(id, params)
                 self:setItem(app, bank, controlType, bid, buttonType, result)
 
                 --------------------------------------------------------------------------------
+                -- Automatically add an icon label based on the action title:
+                --------------------------------------------------------------------------------
+                self:setItem(app, bank, controlType, bid, "iconLabel", actionTitle)
+
+                --------------------------------------------------------------------------------
+                -- Generate encoded icon label:
+                --------------------------------------------------------------------------------
+                local encodedImg = self:buildIconFromLabel(params) or ""
+                self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+
+                --------------------------------------------------------------------------------
                 -- If the action contains an image, apply it to the Touch Button (except
                 -- if it's a Snippet Action or if "Automatically Apply Icon From Action" is
                 -- disabled):
