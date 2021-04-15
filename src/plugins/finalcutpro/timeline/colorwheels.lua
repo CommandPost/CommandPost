@@ -227,6 +227,8 @@ function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Reset Color Wheel Tint:
+    --
+    -- NOTE: This has just been left in here for legacy reasons.
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpResetColorWheelTint")
@@ -235,9 +237,12 @@ function plugin.init(deps)
             if not colorWheels:isShowing() then colorWheels:show() end
             colorWheels:tint(0)
         end)
+        :titled("Deprecated: Reset Color Wheel Tint")
 
     --------------------------------------------------------------------------------
     -- Reset Color Wheel Mix:
+    --
+    -- NOTE: This has just been left in here for legacy reasons.
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpResetColorWheelMix")
@@ -246,6 +251,7 @@ function plugin.init(deps)
             if not colorWheels:isShowing() then colorWheels:show() end
             colorWheels:mix(1)
         end)
+        :titled("Deprecated: Reset Color Wheel Mix")
 
     --------------------------------------------------------------------------------
     -- Color Wheel Master - Wheels:
