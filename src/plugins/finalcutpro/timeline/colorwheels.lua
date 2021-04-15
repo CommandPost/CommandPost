@@ -248,6 +248,17 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Reset Color Wheel Mix:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("cpResetColorWheelMix")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            if not colorWheels:isShowing() then colorWheels:show() end
+            colorWheels:mix(1)
+        end)
+
+    --------------------------------------------------------------------------------
     -- Color Wheel Master - Wheels:
     --------------------------------------------------------------------------------
     local colorWheelMasterVerticalValue = 0
