@@ -943,7 +943,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:mix(0)
+            colorWheels:mix(1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("reset"))
 
