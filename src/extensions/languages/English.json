@@ -118,6 +118,7 @@
         "audioSwiftDescriptionThree": "You can setup AudioSwift in the MIDI Preferences Panel using the 'Learn' feature.",
         "audioSwiftDescriptionTwo": "It has several modes, so you can use it for sliders, buttons and two axis controls (such as for colour wheels).",
         "automatic": "Automatic",
+        "automaticallyApplyIconFromAction": "Automatically Apply Icon From Action",
         "automaticallyCheckForUpdates": "Automatically Check for Updates",
         "automaticallyImport": "Automatically Import without Notification",
         "automaticallySwitchApplications": "Automatically Switch Applications",

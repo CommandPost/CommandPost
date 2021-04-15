@@ -269,10 +269,10 @@ loupedeckRowType {
   border-radius: 5px;
   color: white;
   font: bold 12px/50px arial;
-  height: 95px;
+  height: 90px;
   /* margin: 7.5px auto; */
   text-align: center;
-  width: 95px;
+  width: 90px;
 }
 
 .dropzone.hover {
@@ -294,10 +294,11 @@ loupedeckRowType {
 }
 
 .dropzone img {
-  border-radius: 2.5px;
-  vertical-align: middle;
-  max-width: 95%;
-  max-height: 95%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: 0 auto;
+  height: 90px;
 }
 
 .dropzone [type="file"] {

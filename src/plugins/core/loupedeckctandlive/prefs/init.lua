@@ -203,6 +203,11 @@ function mod.new(deviceType)
     --- Last Selected Control Type used in the Preferences Panel.
     o.lastControlType = config.prop(o.id .. ".preferences.lastControlType", "ledButton")
 
+    --- plugins.core.loupedeckctandlive.prefs.automaticallyApplyIconFromAction <cp.prop: boolean>
+    --- Field
+    --- Automatically Apply Icon from Action
+    o.automaticallyApplyIconFromAction = config.prop(o.id .. ".preferences.automaticallyApplyIconFromAction", true)
+
     o.loupedeck                           = o.device.device
     o.items                               = o.device.items
     o.enabled                             = o.device.enabled
@@ -278,6 +283,16 @@ function mod.new(deviceType)
                 checked     = o.automaticallySwitchApplications,
                 onchange    = function(_, params)
                     o.automaticallySwitchApplications(params.checked)
+                end,
+            }
+        )
+
+        :addCheckbox(7.3,
+            {
+                label       = i18n("automaticallyApplyIconFromAction"),
+                checked     = o.automaticallyApplyIconFromAction,
+                onchange    = function(_, params)
+                    o.automaticallyApplyIconFromAction(params.checked)
                 end,
             }
         )
@@ -608,9 +623,6 @@ function mod.mt:setItem(app, bank, controlType, id, valueA, valueB)
 
     self.items(items)
 end
-
-
-
 
 --- plugins.core.loupedeckctandlive.prefs:generateKnobImages(app, bank, id) -> none
 --- Method
@@ -1376,9 +1388,10 @@ function mod.mt:panelCallback(id, params)
 
                 --------------------------------------------------------------------------------
                 -- If the action contains an image, apply it to the Touch Button (except
-                -- if it's a Snippet Action):
+                -- if it's a Snippet Action or if "Automatically Apply Icon From Action" is
+                -- disabled):
                 --------------------------------------------------------------------------------
-                if controlType == "touchButton" and buttonType ~= "snippetAction" then
+                if controlType == "touchButton" and buttonType ~= "snippetAction" and self.automaticallyApplyIconFromAction() then
                     local choices = handler.choices():getChoices()
                     local preSuppliedImage
                     for _, v in pairs(choices) do
