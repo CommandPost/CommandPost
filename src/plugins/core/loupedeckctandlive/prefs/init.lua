@@ -1387,15 +1387,24 @@ function mod.mt:panelCallback(id, params)
                 self:setItem(app, bank, controlType, bid, buttonType, result)
 
                 --------------------------------------------------------------------------------
-                -- Automatically add an icon label based on the action title:
+                -- If it's a press action, and no icon label already exists:
                 --------------------------------------------------------------------------------
-                self:setItem(app, bank, controlType, bid, "iconLabel", actionTitle)
+                if buttonType == "pressAction" then
+                    local items = self.items()
+                    local iconLabel = items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid]["iconLabel"]
+                    if (iconLabel and iconLabel == "") or not iconLabel then
+                        --------------------------------------------------------------------------------
+                        -- Automatically add an icon label based on the action title:
+                        --------------------------------------------------------------------------------
+                        self:setItem(app, bank, controlType, bid, "iconLabel", actionTitle)
 
-                --------------------------------------------------------------------------------
-                -- Generate encoded icon label:
-                --------------------------------------------------------------------------------
-                local encodedImg = self:buildIconFromLabel(params) or ""
-                self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+                        --------------------------------------------------------------------------------
+                        -- Generate encoded icon label:
+                        --------------------------------------------------------------------------------
+                        local encodedImg = self:buildIconFromLabel(params) or ""
+                        self:setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+                    end
+                end
 
                 --------------------------------------------------------------------------------
                 -- If the action contains an image, apply it to the Touch Button (except

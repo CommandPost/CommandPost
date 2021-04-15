@@ -43,9 +43,45 @@ function plugin.init(deps)
     local BRIGHTNESS_RANGES     = {0.01, 0.02, 0.03, 0.04, 0.05, 0.1}
     local TINT_RANGES           = {0.1, 0.2, 0.3, 0.4, 0.5, 1, 5, 10}
     local TEMPERATURE_RANGES    = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200}
+    local HUE_RANGES            = {0.1, 0.2, 0.3, 0.4, 0.5, 1, 5, 10}
 
     local fcpxCmds = deps.fcpxCmds
     local colorWheels = fcp.inspector.color.colorWheels
+
+    --------------------------------------------------------------------------------
+    -- Reset Color Wheel:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("colorWheelReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            if not colorWheels:isShowing() then colorWheels:show() end
+            colorWheels.master:colorOrientation({right=0, up=0})
+            colorWheels.master:saturationValue(1)
+            colorWheels.master:brightnessValue(0)
+
+            colorWheels.shadows:colorOrientation({right=0, up=0})
+            colorWheels.shadows:saturationValue(1)
+            colorWheels.shadows:brightnessValue(0)
+
+            colorWheels.midtones:colorOrientation({right=0, up=0})
+            colorWheels.midtones:saturationValue(1)
+            colorWheels.midtones:brightnessValue(0)
+
+            colorWheels.highlights:colorOrientation({right=0, up=0})
+            colorWheels.highlights:saturationValue(1)
+            colorWheels.highlights:brightnessValue(0)
+
+            colorWheels:temperature(5000)
+
+            colorWheels:tint(0)
+
+            colorWheels:mix(1)
+
+            colorWheels.hueTextField:value(0)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("reset"))
+
     --------------------------------------------------------------------------------
     -- Reset Master Color Wheel Color:
     --------------------------------------------------------------------------------
@@ -191,6 +227,8 @@ function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Reset Color Wheel Tint:
+    --
+    -- NOTE: This has just been left in here for legacy reasons.
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpResetColorWheelTint")
@@ -199,21 +237,12 @@ function plugin.init(deps)
             if not colorWheels:isShowing() then colorWheels:show() end
             colorWheels:tint(0)
         end)
+        :titled("Deprecated: Reset Color Wheel Tint")
 
     --------------------------------------------------------------------------------
     -- Reset Color Wheel Mix:
-    --------------------------------------------------------------------------------
-    fcpxCmds
-        :add("cpResetColorWheelMix")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:mix(0)
-        end)
-
-
-    --------------------------------------------------------------------------------
-    -- Reset Color Wheel Mix:
+    --
+    -- NOTE: This has just been left in here for legacy reasons.
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpResetColorWheelMix")
@@ -222,6 +251,7 @@ function plugin.init(deps)
             if not colorWheels:isShowing() then colorWheels:show() end
             colorWheels:mix(1)
         end)
+        :titled("Deprecated: Reset Color Wheel Mix")
 
     --------------------------------------------------------------------------------
     -- Color Wheel Master - Wheels:
@@ -919,9 +949,49 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:mix(0)
+            colorWheels:mix(1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("reset"))
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel - Hue:
+    --------------------------------------------------------------------------------
+    local colorWheelHueValue = 0
+    local updateColorWheelHue = deferred.new(0.01):action(function()
+        colorWheels:show()
+        local currentValue = colorWheels.hueTextField:value()
+        colorWheels.hueTextField:value(currentValue + colorWheelHueValue)
+        colorWheelHueValue = 0
+    end)
+
+    for _, v in pairs(HUE_RANGES) do
+        fcpxCmds
+            :add("colorWheelHueUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelHueValue = colorWheelHueValue + v
+                updateColorWheelHue()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
+
+        fcpxCmds
+            :add("colorWheelHueDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelHueValue = colorWheelHueValue - v
+                updateColorWheelHue()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
+
+    fcpxCmds
+        :add("colorWheelHueReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            if not colorWheels:isShowing() then colorWheels:show() end
+            colorWheels.hueTextField:value(0)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("hue") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
     -- Color Wheels - RGB Control - Master:
