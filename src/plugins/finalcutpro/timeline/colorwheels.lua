@@ -919,6 +919,18 @@ function plugin.init(deps)
         :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
+    -- Color Wheel - Mix Reset:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("colorWheelMixReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            if not colorWheels:isShowing() then colorWheels:show() end
+            colorWheels:mix(1)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("reset"))
+
+    --------------------------------------------------------------------------------
     -- Color Wheel - Hue:
     --------------------------------------------------------------------------------
     local colorWheelHueValue = 0
