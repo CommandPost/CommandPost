@@ -2,40 +2,26 @@
 ---
 --- CommandPost's Internationalisation & Localisation Manger.
 
-local require   = require
+local require       = require
 
-local log       = require "hs.logger".new "i18n"
+local log           = require "hs.logger".new "i18n"
 
-local fs        = require "hs.fs"
-local host      = require "hs.host"
-local json      = require "hs.json"
+local fs            = require "hs.fs"
+local host          = require "hs.host"
+local json          = require "hs.json"
 
-local config    = require "cp.config"
-local tools     = require "cp.tools"
+local config        = require "cp.config"
+local tools         = require "cp.tools"
 
-local i18n      = require "i18n"
+local i18n          = require "i18n"
 
-local locale    = host.locale
-local read      = json.read
-local dir       = fs.dir
+local dir           = fs.dir
+local locale        = host.locale
+local mergeTable    = tools.mergeTable
+local read          = json.read
+local split         = tools.split
 
 local mod = {}
-
--- getLanguageCode(t) -> string
--- Function
--- Gets the language code from a table
---
--- Parameters:
---  * The table containing the language data
---
--- Returns:
---  * A string with the language code
-local function getLanguageCode(t)
-    -- TODO: There has to be a smarter way to do this?
-    for id, _ in pairs(t) do -- luacheck: ignore
-        return id
-    end
-end
 
 --- cp.18n.init() -> none
 --- Function
@@ -72,18 +58,21 @@ function mod.init()
                 local path = languagePath .. "/" .. file
                 local data = read(path)
                 if data then
+                    local fileSplit = split(file, "_")
+                    local fileLanguage = fileSplit[1]
+                    local languageCode = fileSplit[2]:sub(1, -6)
+
                     --------------------------------------------------------------------------------
                     -- Only load English and the active language:
                     --------------------------------------------------------------------------------
-                    if (data["en"] or data[userLocale]) then
-                        allLanguages = tools.mergeTable(allLanguages, data)
+                    if languageCode == "en" or languageCode == userLocale then
+                        --log.df("Loading: %s - %s", fileLanguage, languageCode)
+                        allLanguages = mergeTable(allLanguages, {[languageCode] = data})
                     end
 
                     --------------------------------------------------------------------------------
                     -- Add language to the table of installed languages:
                     --------------------------------------------------------------------------------
-                    local fileLanguage = file:sub(1, -6)
-                    local languageCode = getLanguageCode(data)
                     table.insert(cpi18n.installedLanguages, { id = languageCode, language = fileLanguage })
                 end
             end
