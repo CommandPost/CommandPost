@@ -289,8 +289,11 @@ end
 --- Returns:
 ---  * None
 function PopUpButton:loadLayout(layout)
-    if layout then
-        self.UI:setAttributeValue("AXValue", layout.value)
+    if layout and layout.value then
+        local ui = self:UI()
+        if ui then
+            ui:setAttributeValue("AXValue", layout.value)
+        end
     end
 end
 
