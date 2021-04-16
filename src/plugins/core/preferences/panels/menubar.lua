@@ -50,8 +50,8 @@ mod.menubarLabel = config.prop("menubar.label", "CP")
 
 local iconPath = config.basePath .. "/plugins/core/menu/manager/icons/"
 local defaultIcon = {
-    id = "icon4",
-    encoded = imageFromPath(iconPath .. "icon4.png"):encodeAsURLString(),
+    id = "icon1",
+    encoded = imageFromPath(iconPath .. "icon1.png"):encodeAsURLString(),
 }
 
 --- plugins.core.preferences.panels.menubar.menubarLabel <cp.prop: table>
