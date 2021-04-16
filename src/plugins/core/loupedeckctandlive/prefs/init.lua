@@ -20,6 +20,7 @@ local styledtext                = require "hs.styledtext"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
+local cpDialog                  = require "cp.dialog"
 local html                      = require "cp.web.html"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
@@ -28,6 +29,7 @@ local tools                     = require "cp.tools"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local delayed                   = timer.delayed
+local displayChooseFromList     = cpDialog.displayChooseFromList
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
@@ -1490,7 +1492,37 @@ function mod.mt:panelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
 
-            if app == "Add Application" then
+            --------------------------------------------------------------------------------
+            -- Delete Application:
+            --------------------------------------------------------------------------------
+            if app == "Delete Application" then
+                local items = self.items()
+                local apps = {}
+                local bundleIDs = {}
+                for theBundleID, v in pairs(items) do
+                    if v.displayName then
+                        table.insert(apps, v.displayName)
+                        bundleIDs[v.displayName] = theBundleID
+                    end
+                end
+
+                local result = displayChooseFromList(i18n("pleaseSelectAnApplicationToDelete"), apps)
+                if result then
+                    for _, appName in pairs(result) do
+                        local whichBundleID = bundleIDs[appName]
+                        items[whichBundleID] = nil
+                    end
+                    self.items(items)
+                end
+
+                --------------------------------------------------------------------------------
+                -- Update the UI:
+                --------------------------------------------------------------------------------
+                mod._manager.refresh()
+            --------------------------------------------------------------------------------
+            -- Add Application:
+            --------------------------------------------------------------------------------
+            elseif app == "Add Application" then
                 injectScript([[
                     changeValueByID('application', ']] .. self.lastApplication() .. [[');
                 ]])
@@ -1522,8 +1554,9 @@ function mod.mt:panelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Prevent duplicates:
                         --------------------------------------------------------------------------------
-                        for i, _ in pairs(items) do
-                            if i == bundleID or tableContains(apps, bundleID) then
+                        for i, v in pairs(items) do
+                            if (i == bundleID and v.displayName) or tableContains(apps, bundleID) then
+                                webviewAlert(mod._manager.getWebview(), function() end, i18n("duplicateApplication"), i18n("duplicateApplicationDescription"), i18n("ok"))
                                 return
                             end
                         end
