@@ -228,7 +228,6 @@ local function tangentPanelCallback(id, params)
                     local info = path and infoForBundlePath(path)
                     local applicationName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
                     local bundleExecutable = info and info.CFBundleExecutable
-                    local bundleID = info and info.CFBundleIdentifier
                     if applicationName and bundleExecutable then
                         local applicationNames = mod._tangentManager.applicationNames()
                         if not tableContains(applicationNames, applicationName) then
