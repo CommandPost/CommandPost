@@ -24,11 +24,13 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
+local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local mergeTable                = tools.mergeTable
 local spairs                    = tools.spairs
+local split                     = tools.split
 local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
 
@@ -249,66 +251,73 @@ local function loupedeckPanelCallback(id, params)
             -- Setup Activators:
             --------------------------------------------------------------------------------
             local activatorID = params["application"]
-            if not mod.activator or mod.activator and not mod.activator[activatorID] then
+
+            if not mod.activator then
                 mod.activator = {}
+            end
+
+            if not mod.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Action Activator:
+                --------------------------------------------------------------------------------
                 local handlerIds = mod._actionmanager.handlerIds()
 
                 --------------------------------------------------------------------------------
-                -- Get list of registered and custom apps:
+                -- Determine if there's a legacy group ID and display name:
                 --------------------------------------------------------------------------------
-                local apps = {}
-                local legacyGroupIDs = {}
+                local displayName
+                local legacyGroupID
                 local registeredApps = mod._appmanager.getApplications()
                 for bundleID, v in pairs(registeredApps) do
-                    if v.displayName then
-                        apps[bundleID] = v.displayName
-                    end
-                    legacyGroupIDs[bundleID] = v.legacyGroupID or bundleID
-                end
-                local items = mod.items()
-                for bundleID, v in pairs(items) do
-                    if v.displayName then
-                        apps[bundleID] = v.displayName
+                    if activatorID == bundleID or activatorID == v.legacyGroupID then
+                        legacyGroupID = v.legacyGroupID or bundleID
+                        displayName = v.displayName
+                        break
                     end
                 end
 
                 --------------------------------------------------------------------------------
-                -- Add allowance for "All Applications":
+                -- Create new Activator:
                 --------------------------------------------------------------------------------
-                apps["All Applications"] = "All Applications"
+                mod.activator[activatorID] = mod._actionmanager.getActivator("loupedeckPlusPreferences_" .. activatorID)
 
-                for groupID,_ in pairs(apps) do
-                    --------------------------------------------------------------------------------
-                    -- Create new Activator:
-                    --------------------------------------------------------------------------------
-                    local appActivator = mod._actionmanager.getActivator("loupedeckPlusPreferences" .. groupID)
-                    mod.activator[groupID] = appActivator
-
-                    --------------------------------------------------------------------------------
-                    -- Restrict Allowed Handlers for Activator to current group (and global):
-                    --------------------------------------------------------------------------------
-                    local allowedHandlers = {}
-                    for _,v in pairs(handlerIds) do
-                        local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == legacyGroupIDs[groupID] or handlerTable[1] == "global" then
-                            --------------------------------------------------------------------------------
-                            -- Don't include "widgets" (that are used for the Touch Bar):
-                            --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" and v ~= "global_menuactions" then
-                                table.insert(allowedHandlers, v)
-                            end
-                        end
+                --------------------------------------------------------------------------------
+                -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
+                --------------------------------------------------------------------------------
+                local allowedHandlers = {}
+                for _,v in pairs(handlerIds) do
+                    local handlerTable = split(v, "_")
+                    local partB = handlerTable[2]
+                    if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
+                        table.insert(allowedHandlers, v)
                     end
-                    local unpack = table.unpack
-                    appActivator:allowHandlers(unpack(allowedHandlers))
+                end
+                local unpack = table.unpack
+                mod.activator[activatorID]:allowHandlers(unpack(allowedHandlers))
 
-                    --------------------------------------------------------------------------------
-                    -- Gather Toolbar Icons for Search Console:
-                    --------------------------------------------------------------------------------
-                    local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
-                    local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID) or {}
-                    local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-                    appActivator:toolbarIcons(searchConsoleToolbar)
+                --------------------------------------------------------------------------------
+                -- Gather Toolbar Icons for Search Console:
+                --------------------------------------------------------------------------------
+                local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+                local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(activatorID) or {}
+                local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+                mod.activator[activatorID]:toolbarIcons(searchConsoleToolbar)
+
+                --------------------------------------------------------------------------------
+                -- Only enable handlers for the current app:
+                --------------------------------------------------------------------------------
+                local enabledHandlerID = legacyGroupID or activatorID
+                if enabledHandlerID and enabledHandlerID == "All Applications" then
+                    enabledHandlerID = "global"
+                end
+                mod.activator[activatorID]:enableHandlers(enabledHandlerID)
+
+                --------------------------------------------------------------------------------
+                -- Add a specific toolbar icon for the current application:
+                --------------------------------------------------------------------------------
+                if enabledHandlerID and enabledHandlerID ~= "global" then
+                    local icon = imageFromAppBundle(activatorID)
+                    mod.activator[activatorID]:setBundleID(enabledHandlerID, icon, displayName)
                 end
             end
 

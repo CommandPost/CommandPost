@@ -102,6 +102,33 @@ function activator:initialize(id, manager)
     self._manager = manager
     self._chooser = nil
     self._prefix = PACKAGE .. id .. "."
+    self._bundleID = nil
+    self._bundleIDIcon = nil
+end
+
+--- plugins.core.action.activator:setBundleID(bundleID, icon, displayName) -> self
+--- Method
+--- Sets a bundle ID to use for filtering purposes.
+---
+--- Parameters:
+---  * bundleID - An application bundle ID as string.
+---  * icon - An application icon as an `hs.image` object.
+---  * displayName - The application display name as a string.
+---
+--- Returns:
+---  * Self
+function activator:setBundleID(bundleID, icon, displayName)
+    self._bundleID = bundleID
+    self._bundleIDIcon = icon
+    self._bundleIDDisplayName = displayName
+
+    --------------------------------------------------------------------------------
+    -- We need to reset the chooser, so that the toolbar get re-created,
+    -- next time it's called:
+    --------------------------------------------------------------------------------
+    self._chooser = nil
+
+    return self
 end
 
 --- plugins.core.action.activator.searchSubText <cp.prop: boolean>
@@ -823,17 +850,17 @@ function activator:activeChoices()
             --------------------------------------------------------------------------------
             -- Check if we are filtering by query:
             --------------------------------------------------------------------------------
+            local choiceText = choice.text
+            local choiceTextLower = choiceText:lower()
+
+            --------------------------------------------------------------------------------
+            -- Don't show deprecated actions in the Search Console:
+            --------------------------------------------------------------------------------
+            if choiceText:sub(1, 11) == "Deprecated:" then
+                return false
+            end
+
             if queryLen > 0 then
-                --------------------------------------------------------------------------------
-                -- Don't show deprecated actions in the Search Console:
-                --------------------------------------------------------------------------------
-                local choiceText = choice.text
-                local choiceTextLower = choiceText:lower()
-
-                if choiceText:sub(1, 11) == "Deprecated:" then
-                    return false
-                end
-
                 local exactMatch = choice.text:lower():find(query, 1, true)
 
                 local textMatch = true
@@ -966,27 +993,67 @@ end)
 --- Returns:
 ---  * None
 function activator:updateSelectedToolbarIcon()
-    local allHandlersActive = true
     local toolbarIcons = self._toolbarIcons
     local t = self._toolbar
     if t and toolbarIcons then
-        for id,_ in pairs(toolbarIcons) do
-            local soloed = true
+        --------------------------------------------------------------------------------
+        -- Determine if "Show All For App" should be selected:
+        --------------------------------------------------------------------------------
+        local showAllForAppActive = true
+        local bundleID = self._bundleID
+        if bundleID then
             for i,_ in pairs(self:allowedHandlers()) do
+                -- i = global_applications
+                local isMatch = i:sub(1, bundleID:len()) == bundleID
                 if self:isDisabledHandler(i) then
-                    allHandlersActive = false
-                end
-                if i ~= id and not self:isDisabledHandler(i) then
-                    soloed = false
-                    break
+                    -- Handler is disabled:
+                    if isMatch then
+                        showAllForAppActive = false
+                        break
+                    end
+                else
+                    -- Handler is enabled:
+                    if not isMatch then
+                        showAllForAppActive = false
+                        break
+                    end
                 end
             end
-            if soloed and not self:isDisabledHandler(id) then
-                t:selectedItem(id)
-                return
+        else
+            showAllForAppActive = false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Determine if "Show All" should be selected:
+        --------------------------------------------------------------------------------
+        local allHandlersActive = true
+        if showAllForAppActive then
+            allHandlersActive = false
+        else
+            for id,_ in pairs(toolbarIcons) do
+                local soloed = true
+                for i,_ in pairs(self:allowedHandlers()) do
+                    if self:isDisabledHandler(i) then
+                        allHandlersActive = false
+                    end
+                    if i ~= id and not self:isDisabledHandler(i) then
+                        soloed = false
+                        break
+                    end
+                end
+                if soloed and not self:isDisabledHandler(id) then
+                    t:selectedItem(id)
+                    return
+                end
             end
         end
-        if allHandlersActive then
+
+        --------------------------------------------------------------------------------
+        -- Select the correct toolbar icon, or deselect all:
+        --------------------------------------------------------------------------------
+        if showAllForAppActive then
+            t:selectedItem("showAllForApp")
+        elseif allHandlersActive then
             t:selectedItem("showAll")
         else
             t:selectedItem(nil)
@@ -1028,13 +1095,32 @@ function activator:chooser()
             :sizeMode("small")
 
         --------------------------------------------------------------------------------
+        -- Add "Show All" button for specific bundle ID:
+        --------------------------------------------------------------------------------
+        if self._bundleID then
+            local icon = self._bundleIDIcon or imageFromPath(config.basePath .. "/plugins/core/console/images/showApp.png")
+            local label = self._bundleIDDisplayName or i18n("showAll")
+            t:addItems({
+                id = "showAllForApp",
+                label = label,
+                priority = 1,
+                image = icon,
+                selectable = true,
+                fn = function()
+                    local bundleID = self._bundleID
+                    self:enableHandlers(bundleID)
+                end,
+            })
+        end
+
+        --------------------------------------------------------------------------------
         -- Add "Show All" button:
         --------------------------------------------------------------------------------
         t:addItems({
             id = "showAll",
             label = i18n("showAll"),
-            priority = 1,
-            image = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/showAll.png"),
+            priority = 2,
+            image = imageFromPath(config.basePath .. "/plugins/core/console/images/showAll.png"),
             selectable = true,
             fn = function()
                 self:enableAllHandlers()
@@ -1052,7 +1138,7 @@ function activator:chooser()
                     label = i18n(id .. "_action"),
                     tooltip = i18n(id .. "_action"),
                     image = imageFromPath(item.path),
-                    priority = item.priority + 1,
+                    priority = item.priority + 2,
                     selectable = true,
                     fn = function()
                         local soloed = true
@@ -1088,6 +1174,9 @@ function activator:chooser()
         local updateConsole = function(id)
             if id == "showAll" then
                 self:enableAllHandlers()
+            elseif id == "showAllForApp" then
+                local bundleID = self._bundleID
+                self:enableHandlers(bundleID)
             else
                 local soloed = true
                 for i,_ in pairs(self:allowedHandlers()) do

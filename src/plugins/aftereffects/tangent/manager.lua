@@ -24,7 +24,7 @@ function plugin.init(deps)
     local pluginPath = config.basePath .. "/plugins/aftereffects/tangent/defaultmap"
     local userPath = systemPath .. "/" .. manager.USER_CONTROL_MAPS_FOLDER
 
-    local connection = manager.newConnection("After Effects", systemPath, userPath, "After Effects", pluginPath, false)
+    local connection = manager.newConnection("After Effects", systemPath, userPath, "After Effects", pluginPath, false, nil, nil, "aftereffects")
 
     connection:addMode(0x00010001, i18n("default"))
 
