@@ -177,7 +177,7 @@ function plugin.init(deps)
     local pluginPath = config.basePath .. "/plugins/finalcutpro/tangent/defaultmap"
     local userPath = systemPath .. "/" .. manager.USER_CONTROL_MAPS_FOLDER
 
-    local connection = manager.newConnection("Final Cut Pro", systemPath, userPath, "Final Cut Pro", pluginPath, false, setupFn, transportFn)
+    local connection = manager.newConnection("Final Cut Pro", systemPath, userPath, "Final Cut Pro", pluginPath, false, setupFn, transportFn, "fcpx")
 
     --------------------------------------------------------------------------------
     -- Add Default Mode:

@@ -22,9 +22,12 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local displayChooseFromList     = cpDialog.displayChooseFromList
 local doAfter                   = timer.doAfter
 local escapeTilda               = tools.escapeTilda
+local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
+local mergeTable                = tools.mergeTable
 local spairs                    = tools.spairs
+local split                     = tools.split
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local webviewAlert              = dialog.webviewAlert
@@ -251,17 +254,94 @@ local function tangentPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
+            local appParameter = params["application"]
+
+            --------------------------------------------------------------------------------
+            -- Convert the display name to the legacy group ID or use the bundle ID:
+            --------------------------------------------------------------------------------
+            local applicationNameToGroupID = mod._tangentManager.applicationNameToGroupID
+            local activatorID = applicationNameToGroupID[appParameter] or appParameter
+
             if not mod.activator then
+                mod.activator = {}
+            end
+
+            if not mod.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Action Activator:
+                --------------------------------------------------------------------------------
+                local handlerIds = mod._actionManager.handlerIds()
+
+                --------------------------------------------------------------------------------
+                -- Determine if there's a legacy group ID and display name:
+                --------------------------------------------------------------------------------
+                local displayName
+                local legacyGroupID
+                local thebundleID
+                local registeredApps = mod._appmanager.getApplications()
+                for bundleID, v in pairs(registeredApps) do
+                    if activatorID == bundleID or activatorID == v.legacyGroupID then
+                        legacyGroupID = v.legacyGroupID or bundleID
+                        displayName = v.displayName
+                        thebundleID = bundleID
+                        break
+                    end
+                end
+
                 --------------------------------------------------------------------------------
                 -- Create new Activator:
                 --------------------------------------------------------------------------------
-                mod.activator = mod._actionManager.getActivator("tangentPreferences")
+                mod.activator[activatorID] = mod._actionManager.getActivator("tangentPreferences" .. activatorID)
+
+                --------------------------------------------------------------------------------
+                -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
+                --------------------------------------------------------------------------------
+                local allowedHandlers = {}
+                for _,v in pairs(handlerIds) do
+                    local handlerTable = split(v, "_")
+                    local partB = handlerTable[2]
+                    if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
+                        table.insert(allowedHandlers, v)
+                    end
+                end
+                local unpack = table.unpack
+                mod.activator[activatorID]:allowHandlers(unpack(allowedHandlers))
+
+                --------------------------------------------------------------------------------
+                -- Gather Toolbar Icons for Search Console:
+                --------------------------------------------------------------------------------
+                local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+                local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(activatorID) or {}
+                local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+                mod.activator[activatorID]:toolbarIcons(searchConsoleToolbar)
+
+                --------------------------------------------------------------------------------
+                -- Only customise known applications:
+                --------------------------------------------------------------------------------
+                if thebundleID then
+                    --------------------------------------------------------------------------------
+                    -- Only enable handlers for the current app:
+                    --------------------------------------------------------------------------------
+                    local enabledHandlerID = legacyGroupID or activatorID
+                    if enabledHandlerID and enabledHandlerID == "All Applications" then
+                        enabledHandlerID = "global"
+                    end
+                    mod.activator[activatorID]:enableHandlers(enabledHandlerID)
+
+                    --------------------------------------------------------------------------------
+                    -- Add a specific toolbar icon for the current application:
+                    --------------------------------------------------------------------------------
+                    if enabledHandlerID and enabledHandlerID ~= "global" then
+                        local icon = imageFromAppBundle(thebundleID)
+                        mod.activator[activatorID]:setBundleID(enabledHandlerID, icon, displayName)
+                    end
+                end
             end
 
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            mod.activator:onActivate(function(handler, action, text)
+            mod.activator[activatorID]:onActivate(function(handler, action, text)
                     --------------------------------------------------------------------------------
                     -- Process Stylised Text:
                     --------------------------------------------------------------------------------
@@ -296,15 +376,9 @@ local function tangentPanelCallback(id, params)
                 end)
 
             --------------------------------------------------------------------------------
-            -- Setup Search Console Icons:
-            --------------------------------------------------------------------------------
-            local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
-            mod.activator:toolbarIcons(defaultSearchConsoleToolbar)
-
-            --------------------------------------------------------------------------------
             -- Show Activator:
             --------------------------------------------------------------------------------
-            mod.activator:show()
+            mod.activator[activatorID]:show()
         elseif params["type"] == "clearAction" then
             local buttonID = params.buttonID
             local lastApplication = mod.lastApplication()

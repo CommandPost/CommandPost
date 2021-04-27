@@ -1314,12 +1314,17 @@ function mod.mt:panelCallback(id, params)
                 local handlerIds = mod._actionmanager.handlerIds()
 
                 --------------------------------------------------------------------------------
-                -- Get list of legacy group IDs:
+                -- Determine if there's a legacy group ID and display name:
                 --------------------------------------------------------------------------------
-                local legacyGroupIDs = {}
+                local displayName
+                local legacyGroupID
                 local registeredApps = mod._appmanager.getApplications()
                 for bundleID, v in pairs(registeredApps) do
-                    legacyGroupIDs[bundleID] = v.legacyGroupID or bundleID
+                    if activatorID == bundleID or activatorID == v.legacyGroupID then
+                        legacyGroupID = v.legacyGroupID or bundleID
+                        displayName = v.displayName
+                        break
+                    end
                 end
 
                 --------------------------------------------------------------------------------
@@ -1352,11 +1357,19 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Only enable handlers for the current app:
                 --------------------------------------------------------------------------------
-                local enabledHandlerID = legacyGroupIDs[activatorID] or activatorID
+                local enabledHandlerID = legacyGroupID or activatorID
                 if enabledHandlerID and enabledHandlerID == "All Applications" then
                     enabledHandlerID = "global"
                 end
                 self.activator[activatorID]:enableHandlers(enabledHandlerID)
+
+                --------------------------------------------------------------------------------
+                -- Add a specific toolbar icon for the current application:
+                --------------------------------------------------------------------------------
+                if enabledHandlerID and enabledHandlerID ~= "global" then
+                    local icon = imageFromAppBundle(activatorID)
+                    self.activator[activatorID]:setBundleID(enabledHandlerID, icon, displayName)
+                end
             end
 
             --------------------------------------------------------------------------------
@@ -1375,11 +1388,6 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Update the preferences file:
                 --------------------------------------------------------------------------------
-                local app = params["application"]
-                local bank = params["bank"]
-                local controlType = params["controlType"]
-                local bid = params["id"]
-
                 local result = {
                     ["actionTitle"] = actionTitle,
                     ["handlerID"] = handlerID,

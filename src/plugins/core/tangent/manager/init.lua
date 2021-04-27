@@ -68,6 +68,11 @@ mod.customApplications = config.prop("tangent.customApplications", {})
 --- A table containing all the Tangent connections.
 mod.connections = {}
 
+--- plugins.core.tangent.manager.applicationNameToGroupID -> table
+--- Variable
+--- A table to translate an Application Name to a Group ID for the Search Console
+mod.applicationNameToGroupID = {}
+
 --- plugins.core.tangent.manager.tangentHubInstalled <cp.prop: boolean>
 --- Variable
 --- Is Tangent Hub Installed?
@@ -131,13 +136,17 @@ end)
 ---  * addDefaultModes - A boolean which indicates whether or not CommandPost should add any default modes.
 ---  * setupFn - Setup function.
 ---  * transportFn - Transport function.
+---  * groupID - The group ID used by the Search Console.
 ---
 --- Returns:
 ---  * The connection object
-function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn)
+function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, groupID)
     if not mod.connections[applicationName] then
         local c = connection:new(applicationName .. mod.APPLICATION_NAME_SUFFIX, applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, mod)
         mod.connections[applicationName] = c
+
+        mod.applicationNameToGroupID[applicationName] = groupID
+
         return c
     else
         log.ef("A Tangent connection with the name '%s' is already registered.", applicationName)
