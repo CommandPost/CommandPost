@@ -100,6 +100,15 @@ local function colorToColorWellValue(value)
         if value and value.hue then
             value = asRGB(value)
         end
+
+        -- Make sure the `value` table is a valid `hs.drawing.color` object.
+        -- This is necessary, if passing in an empty table, when doing a
+        -- reset for example.
+        if not value.red then value.red = 0 end
+        if not value.green then value.green = 0 end
+        if not value.blue then value.blue = 0 end
+        if not value.alpha then value.alpha = 1 end
+
         return string.format("rgb %g %g %g %g", value.red, value.green, value.blue, value.alpha)
     end
     return ""
