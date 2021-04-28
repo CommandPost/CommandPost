@@ -370,10 +370,7 @@ function plugin.init(deps)
         If(function() return tintChange ~= 0 end)
         :Then(cw:doShow())
         :Then(function()
-            local currentValue = cw:show():tint()
-            if currentValue then
-                cw:tint(currentValue+tintChange)
-            end
+            cw:show().tintSlider:shiftValue(tintChange)
             tintChange = 0
             manager.controls:findByID(wheelsBaseID+0x0102):update() -- Force the Tangent display to update.
             return true
