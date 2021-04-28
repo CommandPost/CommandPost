@@ -484,7 +484,7 @@ end
 function Contents:monitorVideoInAngle(angleNumber)
     local buttons = self:angleButtonsUI(angleNumber)
     if buttons and buttons[1] then
-        buttons[1]:doPress()
+        buttons[1]:performAction("AXPress")
     end
 end
 
@@ -492,7 +492,7 @@ end
 function Contents:toggleAudioInAngle(angleNumber)
     local buttons = self:angleButtonsUI(angleNumber)
     if buttons and buttons[2] then
-        buttons[2]:doPress()
+        buttons[2]:performAction("AXPress")
     end
 end
 
