@@ -1492,7 +1492,7 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisButton and thisButton.vibratePress and thisButton.vibratePress == "1" then
+            if thisButton and thisButton.vibratePress and thisButton.vibratePress ~= "" then
                 self.device:vibrate(tonumber(thisButton.vibratePress))
             end
 
@@ -1520,7 +1520,7 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisKnob and thisKnob.vibratePress and thisKnob.vibratePress == "1" then
+            if thisKnob and thisKnob.vibratePress and thisKnob.vibratePress ~= "" then
                 self.device:vibrate(tonumber(thisKnob.vibratePress))
             end
 
@@ -1540,7 +1540,7 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisButton and thisButton.vibrateRelease and thisButton.vibrateRelease == "1" then
+            if thisButton and thisButton.vibrateRelease and thisButton.vibrateRelease ~= "" then
                 self.device:vibrate(tonumber(thisButton.vibrateRelease))
             end
 
@@ -1569,7 +1569,7 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisKnob and thisKnob.vibrateRelease and thisKnob.vibrateRelease == "1" then
+            if thisKnob and thisKnob.vibrateRelease and thisKnob.vibrateRelease ~= "" then
                 self.device:vibrate(tonumber(thisKnob.vibrateRelease))
             end
 
@@ -1588,10 +1588,10 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if data.direction == "left" and thisKnob and thisKnob.vibrateLeft and thisKnob.vibrateLeft == "1" then
+            if data.direction == "left" and thisKnob and thisKnob.vibrateLeft and thisKnob.vibrateLeft ~= "" then
                 self.device:vibrate(tonumber(thisKnob.vibrateLeft))
             end
-            if data.direction == "right" and thisKnob and thisKnob.vibrateRight and thisKnob.vibrateRight == "1" then
+            if data.direction == "right" and thisKnob and thisKnob.vibrateRight and thisKnob.vibrateRight ~= "" then
                 self.device:vibrate(tonumber(thisKnob.vibrateRight))
             end
 
@@ -1610,10 +1610,10 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft and thisJogWheel.vibrateLeft == "1" then
+            if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft and thisJogWheel.vibrateLeft ~= "" then
                 self.device:vibrate(tonumber(thisJogWheel.vibrateLeft))
             end
-            if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight and thisJogWheel.vibrateRight == "1" then
+            if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight and thisJogWheel.vibrateRight ~= "" then
                 self.device:vibrate(tonumber(thisJogWheel.vibrateRight))
             end
 
@@ -1632,7 +1632,7 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisTouchButton and thisTouchButton.vibratePress and thisTouchButton.vibratePress == "1" then
+            if thisTouchButton and thisTouchButton.vibratePress and thisTouchButton.vibratePress ~= "" then
                 self.device:vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
@@ -1769,7 +1769,7 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisTouchButton and thisTouchButton.vibrateRelease and thisTouchButton.vibrateRelease == "1" then
+            if thisTouchButton and thisTouchButton.vibrateRelease and thisTouchButton.vibrateRelease ~= "" then
                 self.device:vibrate(tonumber(thisTouchButton.vibrateRelease))
             end
 
