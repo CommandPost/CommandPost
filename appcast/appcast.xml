@@ -218,11 +218,11 @@
 				<li>Fixed a bug that would cause an error if you tried to Restore a Browser Layout that wasn&#39;t previously saved. Thanks for reporting Gábor Kertai!</li></ul>
 			]]>
 			</description>
-			<pubDate>Thu, 29 Apr 2021 00:11:28 +1000</pubDate>
+			<pubDate>Thu, 29 Apr 2021 01:50:31 +1000</pubDate>
 			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.2/CommandPost_1.2.2.dmg"
-				sparkle:version="6780"
+				sparkle:version="6882"
                 sparkle:shortVersionString="1.2.2"
-				sparkle:dsaSignature="MCwCFFCAy0uDuEYBO0DH0aJjeN/Mg+qjAhRZ9d/duxX5WqRLnTPWym0kYa334A=="
+				sparkle:dsaSignature="MC4CFQD4ySw/c6x1VHrrvvYcPpQAXEhFZAIVAIiSmHpFtnv34al/Rgxl6xFGBy0Q"
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
