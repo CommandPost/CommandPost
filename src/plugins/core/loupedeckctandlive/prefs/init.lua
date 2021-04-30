@@ -128,7 +128,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1110
+        o.height            = 1120
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -139,11 +139,16 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1110
+        o.height            = 1120
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
     end
+
+    --- plugins.core.loupedeckctandlive.prefs.lastDevice <cp.prop: string>
+    --- Field
+    --- The last selected device as a string.
+    o.lastDevice = config.prop(o.id .. ".preferences.lastDevice", "1")
 
     --- plugins.core.loupedeckctandlive.prefs.lastIconPath <cp.prop: string>
     --- Field
@@ -221,9 +226,9 @@ function mod.new(deviceType)
     o.getScreenSizeFromControlType        = o.device.getScreenSizeFromControlType
 
     --------------------------------------------------------------------------------
-    -- Watch for Loupedeck CT connections and disconnects:
+    -- Watch for Loupedeck CT Unit 1 connections and disconnects:
     --------------------------------------------------------------------------------
-    o.device.connected:watch(function(connected)
+    o.device.connected[1]:watch(function(connected)
         if o.loadSettingsFromDevice() and not connected then
             mod._manager.injectScript([[
                 if (document.getElementById("yesLoupedeck")) {
@@ -326,7 +331,7 @@ function mod.new(deviceType)
                                 if result == "OK" then
                                     o.loadSettingsFromDevice(params.checked)
                                     mod._manager.refresh()
-                                    o.device:refresh()
+                                    o.device:refresh(tonumber(o.lastDevice()))
                                 else
                                     manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
                                 end
@@ -334,7 +339,7 @@ function mod.new(deviceType)
                         else
                             o.loadSettingsFromDevice(params.checked)
                             mod._manager.refresh()
-                            o.device:refresh()
+                            o.device:refresh(tonumber(o.lastDevice()))
                         end
                     end,
                 }
@@ -405,7 +410,7 @@ function mod.new(deviceType)
                                     if o.device.refreshTimer then
                                         o.device.refreshTimer:stop()
                                         o.device.refreshTimer = nil
-                                        o.device:refresh()
+                                        o.device:refresh(tonumber(o.lastDevice()))
                                     end
                                 end,
             }
@@ -559,9 +564,12 @@ function mod.mt:generateContent()
 
     local userApps = {}
     local items = self.items()
-    for bundleID, v in pairs(items) do
-        if v.displayName then
-            userApps[bundleID] = v.displayName
+
+    for _, device in pairs(items) do
+        for bundleID, v in pairs(device) do
+            if v.displayName then
+                userApps[bundleID] = v.displayName
+            end
         end
     end
 
@@ -589,6 +597,8 @@ function mod.mt:generateContent()
         vibrationIndex              = loupedeck.vibrationIndex,
         wheelSensitivityIndex       = loupedeck.wheelSensitivityIndex,
 
+        numberOfUnits               = mod._deviceManager.NUMBER_OF_DEVICES,
+
         id                          = self.id,
     }
     return self:renderPanel(context)
@@ -610,17 +620,19 @@ end
 ---  * None
 function mod.mt:setItem(app, bank, controlType, id, valueA, valueB)
     local items = self.items()
+    local lastDevice = self.lastDevice()
 
-    if type(items[app]) ~= "table" then items[app] = {} end
-    if type(items[app][bank]) ~= "table" then items[app][bank] = {} end
-    if type(items[app][bank][controlType]) ~= "table" then items[app][bank][controlType] = {} end
-    if type(items[app][bank][controlType][id]) ~= "table" then items[app][bank][controlType][id] = {} end
+    if type(items[lastDevice]) ~= "table" then items[lastDevice] = {} end
+    if type(items[lastDevice][app]) ~= "table" then items[lastDevice][app] = {} end
+    if type(items[lastDevice][app][bank]) ~= "table" then items[lastDevice][app][bank] = {} end
+    if type(items[lastDevice][app][bank][controlType]) ~= "table" then items[lastDevice][app][bank][controlType] = {} end
+    if type(items[lastDevice][app][bank][controlType][id]) ~= "table" then items[lastDevice][app][bank][controlType][id] = {} end
 
     if type(valueB) ~= "nil" then
-        if not items[app][bank][controlType][id][valueA] then items[app][bank][controlType][id][valueA] = {} end
-        items[app][bank][controlType][id][valueA] = valueB
+        if not items[lastDevice][app][bank][controlType][id][valueA] then items[lastDevice][app][bank][controlType][id][valueA] = {} end
+        items[lastDevice][app][bank][controlType][id][valueA] = valueB
     else
-        items[app][bank][controlType][id] = valueA
+        items[lastDevice][app][bank][controlType][id] = valueA
     end
 
     self.items(items)
@@ -718,7 +730,10 @@ function mod.mt:generateKnobImages(app, bank, bid)
     local knobTwoImage
     local knobThreeImage
 
-    local currentApp = items[app]
+    local lastDevice = self.lastDevice()
+
+    local currentDevice = items[lastDevice]
+    local currentApp = currentDevice and currentDevice[app]
     local currentBank = currentApp and currentApp[bank]
     local currentKnob = currentBank and currentBank.knob
 
@@ -839,7 +854,11 @@ function mod.mt:updateUI(params)
 
     local items = self.items()
 
-    local selectedApp = items[app]
+    local lastDevice = self.lastDevice()
+
+    local currentDevice = items[lastDevice]
+
+    local selectedApp = currentDevice and currentDevice[app]
 
     local ignoreValue = (selectedApp and selectedApp.ignore) or false
     local selectedBank = selectedApp and selectedApp[bank]
@@ -1081,10 +1100,10 @@ function mod.mt:updateUI(params)
     end
 
     --------------------------------------------------------------------------------
-    -- Update UI on whether connected or not:
+    -- Update UI on whether Unit 1 is connected or not:
     --------------------------------------------------------------------------------
     local loadSettingsFromDevice = self.device.loadSettingsFromDevice()
-    local connected = self.device.connected()
+    local connected = self.device.connected[1]()
     local connectedScript = [[
         document.getElementById("yesLoupedeck").style.display = "block";
         document.getElementById("noLoupedeck").style.display = "none";
@@ -1100,6 +1119,7 @@ function mod.mt:updateUI(params)
     -- Inject Script:
     --------------------------------------------------------------------------------
     injectScript([[
+        changeValueByID('unit', `]] .. escapeTilda(lastDevice) .. [[`);
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
         changeValueByID('release_action', `]] .. escapeTilda(releaseValue) .. [[`);
@@ -1203,7 +1223,11 @@ function mod.mt:buildIconFromLabel(params)
     local bid = params["id"]
 
     local items = self.items()
-    local selectedApp = items[app]
+
+    local lastDevice = self.lastDevice()
+    local currentDevice = items[lastDevice]
+
+    local selectedApp = currentDevice[app]
 
     local selectedBank = selectedApp and selectedApp[bank]
     local selectedControlType = selectedBank and selectedBank[controlType]
@@ -1257,6 +1281,20 @@ end
 local function changeControl(controlType, id)
     local injectScript = mod._manager.injectScript
     injectScript("changeControl('', '', '" .. controlType .. "', '" .. id .. "');")
+end
+
+--- plugins.core.loupedeckctandlive.prefs:refreshDevice() -> none
+--- Method
+--- Refreshes the currently selected Loupedeck Device.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.mt:refreshDevice()
+    local lastDevice = self.lastDevice()
+    self.device:refresh(tonumber(lastDevice))
 end
 
 --- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
@@ -1401,7 +1439,8 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 if buttonType == "pressAction" then
                     local items = self.items()
-                    local iconLabel = items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid]["iconLabel"]
+                    local lastDevice = self.lastDevice()
+                    local iconLabel = items and items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] and items[lastDevice][app][bank][controlType][bid]["iconLabel"]
                     if (iconLabel and iconLabel == "") or not iconLabel then
                         --------------------------------------------------------------------------------
                         -- Automatically add an icon label based on the action title:
@@ -1456,14 +1495,15 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                self.device:refresh()
+                self:refreshDevice()
             end)
 
             --------------------------------------------------------------------------------
             -- Set the Query String to the currently selected action:
             --------------------------------------------------------------------------------
             local items = self.items()
-            local currentAction = items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid][buttonType]
+            local lastDevice = self.lastDevice()
+            local currentAction = items and items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] and items[lastDevice][app][bank][controlType][bid][buttonType]
             local currentActionTitle = currentAction and currentAction.actionTitle
             if currentActionTitle and currentActionTitle ~= "" then
                 self.activator[activatorID]:lastQueryValue(currentActionTitle)
@@ -1496,6 +1536,17 @@ function mod.mt:panelCallback(id, params)
             -- Update the UI:
             --------------------------------------------------------------------------------
             self:updateUI(params)
+        elseif callbackType == "updateUnit" then
+            --------------------------------------------------------------------------------
+            -- Update the unit:
+            --------------------------------------------------------------------------------
+            local unit = params["unit"]
+            self.lastDevice(unit)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            self:updateUI()
         elseif callbackType == "updateApplicationAndBank" then
             local app = params["application"]
             local bank = params["bank"]
@@ -1507,10 +1558,13 @@ function mod.mt:panelCallback(id, params)
                 local items = self.items()
                 local apps = {}
                 local bundleIDs = {}
-                for theBundleID, v in pairs(items) do
-                    if v.displayName then
-                        table.insert(apps, v.displayName)
-                        bundleIDs[v.displayName] = theBundleID
+
+                for _, device in pairs(items) do
+                    for theBundleID, v in pairs(device) do
+                        if v.displayName then
+                            table.insert(apps, v.displayName)
+                            bundleIDs[v.displayName] = theBundleID
+                        end
                     end
                 end
 
@@ -1518,7 +1572,9 @@ function mod.mt:panelCallback(id, params)
                 if result then
                     for _, appName in pairs(result) do
                         local whichBundleID = bundleIDs[appName]
-                        items[whichBundleID] = nil
+                        for i=1, mod._deviceManager.NUMBER_OF_DEVICES do
+                            items[tostring(i)][whichBundleID] = nil
+                        end
                     end
                     self.items(items)
                 end
@@ -1553,9 +1609,11 @@ function mod.mt:panelCallback(id, params)
                                 apps[theBundleID] = v.displayName
                             end
                         end
-                        for theBundleID, v in pairs(items) do
-                            if v.displayName then
-                                apps[theBundleID] = v.displayName
+                        for _, device in pairs(items) do
+                            for theBundleID, v in pairs(device) do
+                                if v.displayName then
+                                    apps[theBundleID] = v.displayName
+                                end
                             end
                         end
 
@@ -1568,8 +1626,13 @@ function mod.mt:panelCallback(id, params)
                                 return
                             end
                         end
+                        local lastDevice = self.lastDevice()
 
-                        items[bundleID] = {
+                        if not items[lastDevice] then
+                            items[lastDevice] = {}
+                        end
+
+                        items[lastDevice][bundleID] = {
                             ["displayName"] = displayName,
                         }
                         self.items(items)
@@ -1612,7 +1675,8 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                self.device:refresh()
+                local lastDevice = self.lastDevice()
+                self:refreshDevice()
             end
         elseif callbackType == "updateUI" then
             self:updateUI(params)
@@ -1631,7 +1695,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "updateBankLabel" then
             --------------------------------------------------------------------------------
             -- Update Bank Label:
@@ -1640,10 +1704,12 @@ function mod.mt:panelCallback(id, params)
             local bank = params["bank"]
 
             local items = self.items()
+            local lastDevice = self.lastDevice()
 
-            if not items[app] then items[app] = {} end
-            if not items[app][bank] then items[app][bank] = {} end
-            items[app][bank]["bankLabel"] = params["bankLabel"]
+            if not items[lastDevice] then items[lastDevice] = {} end
+            if not items[lastDevice][app] then items[lastDevice][app] = {} end
+            if not items[lastDevice][app][bank] then items[lastDevice][app][bank] = {} end
+            items[lastDevice][app][bank]["bankLabel"] = params["bankLabel"]
 
             self.items(items)
         elseif callbackType == "updateVibratePress" then
@@ -1705,7 +1771,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Drop Zone Clicked:
@@ -1766,7 +1832,7 @@ function mod.mt:panelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Refresh the hardware:
                         --------------------------------------------------------------------------------
-                        self.device:refresh()
+                        self:refreshDevice()
                     else
                         failed = true
                     end
@@ -1812,7 +1878,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "updateButtonIcon" then
             --------------------------------------------------------------------------------
             -- Update Button Icon After A Drag & Drop:
@@ -1837,7 +1903,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "updateSideScreenIcon" then
             --------------------------------------------------------------------------------
             -- Update Side Screen Icons after a Drag & Drop:
@@ -1868,7 +1934,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "updateWheelIcon" then
             --------------------------------------------------------------------------------
             -- Update Wheel Icon via Drag & Drop:
@@ -1893,7 +1959,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "updateKnobIcon" then
             --------------------------------------------------------------------------------
             -- Update Knob Icon After A Drag & Drop:
@@ -1923,7 +1989,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "iconHistory" then
 
             local controlType = params["controlType"]
@@ -1960,7 +2026,7 @@ function mod.mt:panelCallback(id, params)
                                 --------------------------------------------------------------------------------
                                 -- Refresh the hardware:
                                 --------------------------------------------------------------------------------
-                                self.device:refresh()
+                                self:refreshDevice()
                             end,
                         })
                 end
@@ -2004,7 +2070,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "updateIconLabel" then
             --------------------------------------------------------------------------------
             -- Delay screen and UI updates to avoid lag when the user's typing:
@@ -2042,7 +2108,10 @@ function mod.mt:panelCallback(id, params)
                 -- Change the control and update the UI:
                 --------------------------------------------------------------------------------
                 local items = self.items()
-                local currentApp = items[app]
+                local lastDevice = self.lastDevice()
+
+                local currentDevice = items[lastDevice]
+                local currentApp = currentDevice and currentDevice[app]
                 local currentBank = currentApp and currentApp[bank]
                 local currentControlType = currentBank and currentBank[controlType]
                 local currentID = currentControlType and currentControlType[bid]
@@ -2085,7 +2154,7 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                self.device:refresh()
+                self:refreshDevice()
             end
 
             if not self.iconLabelDelayed then
@@ -2125,7 +2194,7 @@ function mod.mt:panelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Refresh the hardware:
                         --------------------------------------------------------------------------------
-                        self.device:refresh()
+                        self:refreshDevice()
                     end
                 end
             end
@@ -2164,6 +2233,7 @@ function mod.mt:panelCallback(id, params)
 
             local exportSettings = function(what)
                 local items = self.items()
+                local lastDevice = self.lastDevice()
                 local data = {}
 
                 local filename = ""
@@ -2171,13 +2241,18 @@ function mod.mt:panelCallback(id, params)
                 if what == "Everything" then
                     data = copy(items)
                     filename = "Everything"
+                elseif what == "Unit" then
+                    data[lastDevice] = copy(items[lastDevice])
+                    filename = "Unit " .. lastDevice
                 elseif what == "Application" then
-                    data[app] = copy(items[app])
-                    filename = app
+                    data[lastDevice] = {}
+                    data[lastDevice][app] = copy(items[lastDevice][app])
+                    filename = "Unit " .. lastDevice .. " - " .. app
                 elseif what == "Bank" then
-                    data[app] = {}
-                    data[app][bank] = copy(items[app][bank])
-                    filename = "Bank " .. bank
+                    data[lastDevice] = {}
+                    data[lastDevice][app] = {}
+                    data[lastDevice][app][bank] = copy(items[lastDevice][app][bank])
+                    filename = "Unit " .. lastDevice .. " - " .. app .. " - Bank " .. bank
                 end
 
                 local lastExportPath = self.lastExportPath()
@@ -2211,6 +2286,11 @@ function mod.mt:panelCallback(id, params)
             })
 
             table.insert(menu, {
+                title = i18n("unit"),
+                fn = function() exportSettings("Unit") end,
+            })
+
+            table.insert(menu, {
                 title = i18n("currentApplication"),
                 fn = function() exportSettings("Application") end,
             })
@@ -2228,13 +2308,14 @@ function mod.mt:panelCallback(id, params)
             -- Copy Control to All Banks:
             --------------------------------------------------------------------------------
             local items = self.items()
+            local lastDevice = self.lastDevice()
 
             local app = params["application"]
             local bank = params["bank"]
             local controlType = params["controlType"]
             local bid = params["id"]
 
-            local data = items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid]
+            local data = items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid]
 
             local suffix = ""
             if bank:sub(-7) == "_LeftFn" then
@@ -2247,23 +2328,23 @@ function mod.mt:panelCallback(id, params)
                 for b=1, mod.numberOfBanks do
                     b = tostring(b) .. suffix
 
-                    if not items[app] then items[app] = {} end
-                    if not items[app][b] then items[app][b] = {} end
-                    if not items[app][b][controlType] then items[app][b][controlType] = {} end
-                    if not items[app][b][controlType][bid] then items[app][b][controlType][bid] = {} end
+                    if not items[lastDevice][app] then items[lastDevice][app] = {} end
+                    if not items[lastDevice][app][b] then items[lastDevice][app][b] = {} end
+                    if not items[lastDevice][app][b][controlType] then items[lastDevice][app][b][controlType] = {} end
+                    if not items[lastDevice][app][b][controlType][bid] then items[lastDevice][app][b][controlType][bid] = {} end
                     if type(data) == "table" then
                         for i, v in pairs(data) do
-                            items[app][b][controlType][bid][i] = v
+                            items[lastDevice][app][b][controlType][bid][i] = v
                         end
                     end
 
                     --------------------------------------------------------------------------------
                     -- Generate an Encoded Icon Label if needed:
                     --------------------------------------------------------------------------------
-                    local value = items[app][b][controlType][bid].iconLabel
+                    local value = items[lastDevice][app][b][controlType][bid].iconLabel
                     if value then
                         local encodedImg = self:buildIconFromLabel(params)
-                        items[app][b][controlType][bid].encodedIconLabel = encodedImg
+                        items[lastDevice][app][b][controlType][bid].encodedIconLabel = encodedImg
                     end
                 end
             end
@@ -2288,9 +2369,10 @@ function mod.mt:panelCallback(id, params)
             local bid = params["id"]
 
             local items = self.items()
+            local lastDevice = self.lastDevice()
 
-            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
-                items[app][bank][controlType][bid] = nil
+            if items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] then
+                items[lastDevice][app][bank][controlType][bid] = nil
             end
 
             self.items(items)
@@ -2300,7 +2382,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             self:updateUI(params)
 
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "resetEverything" then
             --------------------------------------------------------------------------------
             -- Reset Everything:
@@ -2309,7 +2391,7 @@ function mod.mt:panelCallback(id, params)
                 if result == i18n("yes") then
                     self.device:reset()
                     mod._manager.refresh()
-                    self.device:refresh()
+                    self:refreshDevice()
                 end
             end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetApplication" then
@@ -2319,10 +2401,16 @@ function mod.mt:panelCallback(id, params)
             webviewAlert(mod._manager.getWebview(), function(result)
                 if result == i18n("yes") then
                     local items = self.items()
+                    local lastDevice = self.lastDevice()
                     local app = self.lastApplication()
 
                     local defaultLayout = self.device.defaultLayout
-                    items[app] = defaultLayout and defaultLayout[app] or {}
+
+                    if not items[lastDevice] then
+                        items[lastDevice] = {}
+                    end
+
+                    items[lastDevice][app] = defaultLayout and defaultLayout[lastDevice][app] or {}
 
                     self.items(items)
                     mod._manager.refresh()
@@ -2330,7 +2418,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware:
                     --------------------------------------------------------------------------------
-                    self.device:refresh()
+                    self:refreshDevice()
                 end
             end, i18n("loupedeckCTResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetBank" then
@@ -2340,13 +2428,14 @@ function mod.mt:panelCallback(id, params)
             webviewAlert(mod._manager.getWebview(), function(result)
                 if result == i18n("yes") then
                     local items = self.items()
+                    local lastDevice = self.lastDevice()
                     local app = self.lastApplication()
                     local bank = self.lastBank()
 
                     local defaultLayout = self.device.defaultLayout
 
-                    if items[app] and items[app][bank] then
-                        items[app][bank] = defaultLayout and defaultLayout[app] and defaultLayout[app][bank] or {}
+                    if items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] then
+                        items[lastDevice][app][bank] = defaultLayout and defaultLayout[lastDevice][app] and defaultLayout[lastDevice][app][bank] or {}
                     end
                     self.items(items)
                     mod._manager.refresh()
@@ -2354,20 +2443,63 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware:
                     --------------------------------------------------------------------------------
-                    self.device:refresh()
+                    self:refreshDevice()
                 end
             end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+        elseif callbackType == "copyUnit" then
+
+            --------------------------------------------------------------------------------
+            -- Copy Unit:
+            --------------------------------------------------------------------------------
+            local numberOfUnits = mod._deviceManager.NUMBER_OF_DEVICES
+
+            local copyToUnit = function(destinationUnit)
+                local items = self.items()
+                local lastDevice = self.lastDevice()
+                local data = items[lastDevice]
+                if data then
+                    items[destinationUnit] = fnutils.copy(data)
+                    self.items(items)
+                end
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = string.upper(i18n("copyUnitTo")) .. ":",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for i=1, numberOfUnits do
+                table.insert(menu, {
+                    title = tostring(i),
+                    fn = function() copyToUnit(tostring(i)) end
+                })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyApplication" then
             --------------------------------------------------------------------------------
             -- Copy Application:
             --------------------------------------------------------------------------------
             local copyApplication = function(destinationApp)
                 local items = self.items()
+                local lastDevice = self.lastDevice()
                 local app = self.lastApplication()
 
-                local data = items[app]
+                local data = items[lastDevice] and items[lastDevice][app]
                 if data then
-                    items[destinationApp] = fnutils.copy(data)
+                    if not items[lastDevice] then
+                        items[lastDevice] = {}
+                    end
+                    items[lastDevice][destinationApp] = fnutils.copy(data)
                     self.items(items)
                 end
             end
@@ -2382,9 +2514,11 @@ function mod.mt:panelCallback(id, params)
 
             local userApps = {}
             local items = self.items()
-            for bundleID, v in pairs(items) do
-                if v.displayName then
-                    userApps[bundleID] = v.displayName
+            for _, device in pairs(items) do
+                for bundleID, v in pairs(device) do
+                    if v.displayName then
+                        userApps[bundleID] = v.displayName
+                    end
                 end
             end
 
@@ -2427,16 +2561,24 @@ function mod.mt:panelCallback(id, params)
             local ignore = params["ignore"]
 
             local items = self.items()
+            local lastDevice = self.lastDevice()
 
-            if not items[app] then items[app] = {} end
-            items[app]["ignore"] = ignore
+            if not items[lastDevice] then
+                items[lastDevice] = {}
+            end
+
+            if not items[lastDevice][app] then
+                items[lastDevice][app] = {}
+            end
+
+            items[lastDevice][app]["ignore"] = ignore
 
             self.items(items)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
 
         elseif callbackType == "changeRepeatPressActionUntilReleased" then
             local app = params["application"]
@@ -2454,12 +2596,14 @@ function mod.mt:panelCallback(id, params)
 
             local copyToBank = function(destinationBank)
                 local items = self.items()
+                local lastDevice = self.lastDevice()
+
                 local app = self.lastApplication()
                 local bank = self.lastBank()
 
-                local data = items[app] and items[app][bank]
+                local data = items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank]
                 if data then
-                    items[app][destinationBank] = fnutils.copy(data)
+                    items[lastDevice][app][destinationBank] = fnutils.copy(data)
                     self.items(items)
                 end
             end
@@ -2557,20 +2701,22 @@ function mod.mt:panelCallback(id, params)
             -- Swap controls:
             --------------------------------------------------------------------------------
             local items = self.items()
+            local lastDevice = self.lastDevice()
 
-            if not items[app] then items[app] = {} end
-            if not items[app][bank] then items[app][bank] = {} end
-            if not items[app][bank][sourceControlType] then items[app][bank][sourceControlType] = {} end
-            if not items[app][bank][sourceControlType][sourceID] then items[app][bank][sourceControlType][sourceID] = {} end
+            if not items[lastDevice] then items[lastDevice] = {} end
+            if not items[lastDevice][app] then items[lastDevice][app] = {} end
+            if not items[lastDevice][app][bank] then items[lastDevice][app][bank] = {} end
+            if not items[lastDevice][app][bank][sourceControlType] then items[lastDevice][app][bank][sourceControlType] = {} end
+            if not items[lastDevice][app][bank][sourceControlType][sourceID] then items[lastDevice][app][bank][sourceControlType][sourceID] = {} end
 
-            if not items[app][bank][destinationControlType] then items[app][bank][destinationControlType] = {} end
-            if not items[app][bank][destinationControlType][destinationID] then items[app][bank][destinationControlType][destinationID] = {} end
+            if not items[lastDevice][app][bank][destinationControlType] then items[lastDevice][app][bank][destinationControlType] = {} end
+            if not items[lastDevice][app][bank][destinationControlType][destinationID] then items[lastDevice][app][bank][destinationControlType][destinationID] = {} end
 
-            local a = copy(items[app][bank][destinationControlType][destinationID])
-            local b = copy(items[app][bank][sourceControlType][sourceID])
+            local a = copy(items[lastDevice][app][bank][destinationControlType][destinationID])
+            local b = copy(items[lastDevice][app][bank][sourceControlType][sourceID])
 
-            items[app][bank][sourceControlType][sourceID] = a
-            items[app][bank][destinationControlType][destinationID] = b
+            items[lastDevice][app][bank][sourceControlType][sourceID] = a
+            items[lastDevice][app][bank][destinationControlType][destinationID] = b
 
             self.items(items)
 
@@ -2594,7 +2740,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "showContextMenu" then
             --------------------------------------------------------------------------------
             -- Show Context Menu:
@@ -2605,6 +2751,8 @@ function mod.mt:panelCallback(id, params)
             local bid = params["id"]
 
             local items = self.items()
+            local lastDevice = self.lastDevice()
+
             local pasteboard = self.pasteboard()
 
             local pasteboardContents = pasteboard[controlType]
@@ -2617,8 +2765,8 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Copy:
                     --------------------------------------------------------------------------------
-                    if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
-                        pasteboard[controlType] = copy(items[app][bank][controlType][bid])
+                    if items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] then
+                        pasteboard[controlType] = copy(items[lastDevice][app][bank][controlType][bid])
                         self.pasteboard(pasteboard)
                     end
                 end
@@ -2631,11 +2779,11 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Paste:
                     --------------------------------------------------------------------------------
-                    if not items[app] then items[app] = {} end
-                    if not items[app][bank] then items[app][bank] = {} end
-                    if not items[app][bank][controlType] then items[app][bank][controlType] = {} end
+                    if not items[lastDevice][app] then items[lastDevice][app] = {} end
+                    if not items[lastDevice][app][bank] then items[lastDevice][app][bank] = {} end
+                    if not items[lastDevice][app][bank][controlType] then items[lastDevice][app][bank][controlType] = {} end
 
-                    items[app][bank][controlType][bid] = copy(pasteboardContents)
+                    items[lastDevice][app][bank][controlType][bid] = copy(pasteboardContents)
 
                     self.items(items)
 
@@ -2644,7 +2792,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware:
                     --------------------------------------------------------------------------------
-                    self.device:refresh()
+                    self:refreshDevice()
                 end
             })
 
@@ -2677,9 +2825,10 @@ function mod.mt:panelCallback(id, params)
             local actionType = params["actionType"]
 
             local items = self.items()
+            local lastDevice = self.lastDevice()
 
-            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
-                local snippetAction = items[app][bank][controlType][bid][actionType]
+            if items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] then
+                local snippetAction = items[lastDevice][app][bank][controlType][bid][actionType]
                 local snippetID = snippetAction and snippetAction.action and snippetAction.action.id
                 if snippetID then
                     local snippets = copy(mod._scriptingPreferences.snippets())
@@ -2766,7 +2915,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         elseif callbackType == "selectFont" then
             --------------------------------------------------------------------------------
             -- Select a font:
@@ -2809,7 +2958,7 @@ function mod.mt:panelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Refresh the hardware:
                         --------------------------------------------------------------------------------
-                        self.device:refresh()
+                        self:refreshDevice()
                     end
                 end
 
@@ -2873,7 +3022,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            self.device:refresh()
+            self:refreshDevice()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

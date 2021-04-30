@@ -294,43 +294,6 @@ local function tableContains(table, element)
     return false
 end
 
---- hs.loupedeck:findIPAddress() -> string | nil
---- Method
---- Searches for a valid IP address for the Loupedeck
----
---- Parameters:
----  * None
----
---- Returns:
----  * An IP address as a string, or `nil` if no device can be detected.
-function mod.mt:findIPAddress()
-    --------------------------------------------------------------------------------
-    -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
-    --       the network interface name changed from "LOUPEDECK device" to
-    --       "Loupedeck CT". Below is a workaround to support both interface names.
-    --------------------------------------------------------------------------------
-    local interfaceNames
-    local deviceType = self.deviceType
-    if deviceType == mod.deviceTypes.CT then
-        interfaceNames = {"LOUPEDECK device", "Loupedeck CT"}
-    elseif deviceType == mod.deviceTypes.LIVE then
-        interfaceNames = {"Loupedeck Live"}
-    end
-
-    local interfaces = network.interfaces()
-    local interfaceID
-    for _, v in pairs(interfaces) do
-        if tableContains(interfaceNames, network.interfaceName(v)) then
-            interfaceID = v
-            break
-        end
-    end
-    local details = interfaceID and network.interfaceDetails(interfaceID)
-    local ip = details and details["IPv4"] and details["IPv4"]["Addresses"] and details["IPv4"]["Addresses"][1]
-    local lastDot = ip and findLast(ip, "%.")
-    return ip and lastDot and string.sub(ip, 1, lastDot) .. "1"
-end
-
 --- hs.loupedeck:initaliseDevice() -> None
 --- Method
 --- Starts the background loop, performs self-test and resets screens and buttons.
@@ -397,7 +360,7 @@ function mod.mt:triggerCallback(data)
     -- Trigger the callback:
     --------------------------------------------------------------------------------
     if self._callback then
-        local success, result = xpcall(function() self._callback(data) end, debug.traceback)
+        local success, result = xpcall(function() self._callback(data, self.deviceNumber) end, debug.traceback)
         if not success then
             log.ef("Error in Loupedeck Callback: %s", result)
         end
@@ -1738,12 +1701,12 @@ function mod.mt:updateWatcher(enabled)
             self._usbWatcher = usb.watcher.new(function(data)
                 if data.productName == self.deviceType then
                     if data.eventType == "added" then
-                        --log.df("Loupedeck device connected.")
+                        log.df("Loupedeck device connected.")
                         doAfter(4, function()
                             self:connect()
                         end)
-                    --elseif data.eventType == "removed" then
-                        --log.df("Loupedeck device disconnected.")
+                    elseif data.eventType == "removed" then
+                        log.df("Loupedeck device disconnected.")
                     end
                 end
             end):start()
@@ -1779,7 +1742,8 @@ function mod.mt:connect()
     --------------------------------------------------------------------------------
     -- Find the Loupedeck Device:
     --------------------------------------------------------------------------------
-    local ip = self:findIPAddress()
+    local ips = mod.findIPAddresses(self.deviceType)
+    local ip = ips and ips[self.deviceNumber]
     if not ip then
         if self.retry then
             doAfter(2, function()
@@ -1793,7 +1757,7 @@ function mod.mt:connect()
     -- Attempt to connect:
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
-    --log.df("Connecting to Loupedeck: %s", url)
+    log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
     self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
 end
 
@@ -1830,14 +1794,58 @@ end
 --- Notes:
 ---  * The deviceType should be either `hs.loupedeck.deviceTypes.LIVE`
 ---    or `hs.loupedeck.deviceTypes.CT`.
-function mod.new(retry, deviceType)
+function mod.new(retry, deviceType, deviceNumber)
     local o = {
         retry               = retry,
         deviceType          = deviceType,
         callbackRegister    = {},
+        deviceNumber        = deviceNumber,
     }
     setmetatable(o, mod.mt)
     return o
+end
+
+--- hs.loupedeck:findIPAddress() -> string | nil
+--- Method
+--- Searches for a valid IP address for the Loupedeck
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An IP address as a string, or `nil` if no device can be detected.
+function mod.findIPAddresses(deviceType)
+    --------------------------------------------------------------------------------
+    -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
+    --       the network interface name changed from "LOUPEDECK device" to
+    --       "Loupedeck CT". Below is a workaround to support both interface names.
+    --------------------------------------------------------------------------------
+    local interfaceNames
+    if deviceType == mod.deviceTypes.CT then
+        interfaceNames = {"LOUPEDECK device", "Loupedeck CT"}
+    elseif deviceType == mod.deviceTypes.LIVE then
+        interfaceNames = {"Loupedeck Live"}
+    end
+
+    local results = {}
+
+    local interfaces = network.interfaces()
+    local interfaceID
+    for _, interfaceID in pairs(interfaces) do
+        if tableContains(interfaceNames, network.interfaceName(interfaceID)) then
+            local details = interfaceID and network.interfaceDetails(interfaceID)
+            local ip = details and details["IPv4"] and details["IPv4"]["Addresses"] and details["IPv4"]["Addresses"][1]
+            local lastDot = ip and findLast(ip, "%.")
+            local deviceIP = ip and lastDot and string.sub(ip, 1, lastDot) .. "1"
+            if deviceIP then
+                table.insert(results, deviceIP)
+            end
+        end
+    end
+
+    table.sort(results)
+
+    return results
 end
 
 return mod
