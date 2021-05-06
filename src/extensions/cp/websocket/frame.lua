@@ -131,15 +131,14 @@ function mod.readFrame(data, extensionLen)
     -- read the MASK
     frame.mask = isSet(bytes.read(data, nextIndex, uint8), MASK)
     -- read the full payload length, taking into account extended bytes.
-    frame.payloadLen = bytes.read(data, nextIndex, payloadLen)
-    nextIndex = nextIndex + 1
+    frame.payloadLen, nextIndex = payloadLen(data, nextIndex)
 
     if frame.mask then
         frame.maskingKey = bytes.read(data, nextIndex, uint32be)
         nextIndex = nextIndex + 4
     end
 
-    local payloadData = string:sub(data, nextIndex)
+    local payloadData = data:sub(nextIndex)
 
     if frame.mask then
         payloadData = maskData(payloadData, frame.maskingKey)
