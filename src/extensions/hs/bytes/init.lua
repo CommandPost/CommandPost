@@ -55,6 +55,7 @@
 
 --local log           = require "hs.logger".new("bytes")
 
+local insert        = table.insert
 local concat        = table.concat
 local char          = string.char
 local byte          = string.byte
@@ -862,7 +863,7 @@ end
 ---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
 ---  * if the `value` `number` is larger than can fit in a unsigned 32-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
-function bytes.int32le(value, index)
+function bytes.uint32le(value, index)
     return doInt(value, index, 32, false, readInt32le, writeInt32le)
 end
 
@@ -1033,7 +1034,7 @@ function bytes.hexToInt8(str, index, errorLevel)
    return (bytes.hexToInt4(str, index, errorLevel) << 4) + bytes.hexToInt4(str, index+1, errorLevel), index+2
 end
 
---- hexToBytes(str[, spacer]) -> string
+--- hs.bytes.hexToBytes(str[, spacer]) -> string
 --- Function
 --- Converts a hex string representation to hex data.
 ---
@@ -1046,13 +1047,14 @@ end
 function bytes.hexToBytes(str, spacer)
     local spacerByte = (spacer or ' '):byte(1)
     local out = {}
-    local j = 1
+    local i = 1
     local b
-    for i=1,#str,2 do
-        if str:byte(i) ~= spacerByte then
-            b = bytes.hexToInt8(str, i, 2)
-            out[j] = string.char(b)
-            j = j+1
+    while i < #str do
+        if str:byte(i) == spacerByte then
+            i = i + 1
+        else
+            b, i = bytes.hexToInt8(str, i, 2)
+            insert(out, string.char(b))
         end
     end
     return concat(out)
