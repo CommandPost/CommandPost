@@ -113,8 +113,8 @@ function mod.readFrame(data, extensionLen)
     local frame = {}
 
     -- read the FIN/RSV/OPCODE byte
-    local finOp, nextIndex = bytes.read(data, uint8)
-    log.df("readFrame: nextIndex %s", nextIndex)
+    local finOp = bytes.read(data, uint8)
+    local nextIndex = 2
 
     frame.fin = isSet(finOp, FIN)
     frame.rsv1 = isSet(finOp, RSV1)
@@ -131,21 +131,23 @@ function mod.readFrame(data, extensionLen)
     -- read the MASK
     frame.mask = isSet(bytes.read(data, nextIndex, uint8), MASK)
     -- read the full payload length, taking into account extended bytes.
-    frame.payloadLen, nextIndex = bytes.read(data, nextIndex, payloadLen)
+    frame.payloadLen = bytes.read(data, nextIndex, payloadLen)
+    nextIndex = nextIndex + 1
 
     if frame.mask then
-        frame.maskingKey, nextIndex = bytes.read(data, nextIndex, uint32be)
+        frame.maskingKey = bytes.read(data, nextIndex, uint32be)
+        nextIndex = nextIndex + 4
     end
 
-    local payloadData = bytes:substr(nextIndex)
+    local payloadData = string:sub(data, nextIndex)
 
     if frame.mask then
         payloadData = maskData(payloadData, frame.maskingKey)
     end
 
     if extensionLen ~= nil then
-        frame.extensionData = payloadData:substr(0, extensionLen)
-        payloadData = payloadData:substr(extensionLen)
+        frame.extensionData = payloadData:sub(1, extensionLen)
+        payloadData = payloadData:sub(extensionLen)
     end
 
     frame.applicationData = payloadData
