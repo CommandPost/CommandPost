@@ -8,7 +8,6 @@
 
 local bytes             = require "hs.bytes"
 
-local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
 local exactly           = bytes.exactly
 local uint16be          = bytes.uint16be
@@ -94,19 +93,17 @@ local function maskData(data, maskingKey)
     return string.char(table.unpack(unmasked))
 end
 
--- generateMaskingKey(mask) -> number | nil
+-- generateMaskingKey() -> number
 -- Function
 -- Generates a new 32-bit key.
 --
 -- Parameters:
---  * mask - If `true`, the masking key is generated, otherwise `nil` is returned
+--  * None
 --
 -- Returns:
 --  * The new masking key, or `nil`.
-local function generateMaskingKey(mask)
-    if mask then
-        return math.random(0, MAX_16BIT)
-    end
+local function generateMaskingKey()
+    return math.random(0x0, 0xFFFF)
 end
 
 --- cp.websocket.frame.fromBytes(data, index[, extensionLen]) -> frame, number | nil
@@ -144,15 +141,16 @@ function mod.fromBytes(data, index, extensionLen)
     -- read the full payload length, taking into account extended bytes.
     frame.payloadLen, nextIndex = readPayloadLen(data, nextIndex)
 
+    local maskingKey
     if frame.mask then
-        frame.maskingKey = bytes.read(data, nextIndex, uint32be)
+        maskingKey = bytes.read(data, nextIndex, uint32be)
         nextIndex = nextIndex + 4
     end
 
     local payloadData = bytes.read(data, exactly(frame.payloadLen))
 
-    if frame.mask then
-        payloadData = maskData(payloadData, frame.maskingKey)
+    if maskingKey then
+        payloadData = maskData(payloadData, maskingKey)
     end
 
     if extensionLen ~= nil then
@@ -187,8 +185,6 @@ end
 --- Returns:
 ---  * The new `frame` instance.
 function mod.new(final, opcode, mask, applicationData)
-    local maskingKey = generateMaskingKey(mask)
-
     local o = {
         final = final == true,
         rsv1 = false,
@@ -196,9 +192,8 @@ function mod.new(final, opcode, mask, applicationData)
         rsv3 = false,
         opcode = opcode,
         mask = mask,
-        maskingKey = maskingKey,
         payloadLen = applicationData:len(),
-        applicationData = mask == true and maskData(applicationData, maskingKey) or applicationData,
+        applicationData = applicationData,
     }
 
     setmetatable(o, mod.mt)
@@ -216,14 +211,11 @@ end
 --- Returns:
 ---  * The `hs.bytes` containing the full payload data.
 function mod.mt:payloadData()
-    local data = bytes()
-
     if self.extensionData then
-        data:write(self.extensionData)
+        return bytes(self.extensionData, self.applicationData):bytes()
     end
-    data:write(self.applicationData)
 
-    return data()
+    return self.applicationData
 end
 
 local function maskedPayloadLen(mask, payloadLen)
@@ -251,8 +243,10 @@ function mod.mt:toBytes()
         data:write(uint8(maskedPayloadLen(self.mask, PAYLOAD_16BIT)), uint16be(payloadLen))
     end
 
-    if self.maskingKey then
-        data:write(uint32be(self.maskingKey))
+    if self.mask then
+        local maskingKey = generateMaskingKey()
+        data:write(uint32be(maskingKey))
+        payloadData = maskData(payloadData, maskingKey)
     end
 
     data:write(payloadData)
