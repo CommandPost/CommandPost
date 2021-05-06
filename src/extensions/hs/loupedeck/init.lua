@@ -253,9 +253,13 @@ end
 function mod.mt:send(message)
     if self.isSerial then
         if self:connected() then
+            --------------------------------------------------------------------------------
+            -- TODO: This needs to be wrapped in a websocket frame:
+            --------------------------------------------------------------------------------
+            --log.df("Sending via serial to Loupedeck: %s", hexDump(data))
+            --log.df("Sending via serial to Loupedeck: %s", data)
+
             local data = type(message) == "table" and concat(message) or tostring(message)
-            --log.df("Sending: %s", hexDump(data))
-            log.df("sending serial: %s", data)
             self.serialConnection:sendData(data)
         else
             log.df("self.serialConnection: %s", self.serialConnection)
@@ -264,7 +268,8 @@ function mod.mt:send(message)
     else
         if self:connected() then
             local data = type(message) == "table" and concat(message) or tostring(message)
-            --log.df("Sending: %s", hexDump(data))
+
+            log.df("Sending via websocket to Loupedeck: %s", hexDump(data))
             self.websocket:send(data)
             return true
         end
@@ -1808,11 +1813,39 @@ function mod.mt:connect()
                     obj:sendData(dataToSend)
                     return
                 elseif event == "received" then
-                    if hexadecimalString == "821c1c7300576562536f6300000000000000000000000000000000000000" then
+                    if hexadecimalString == "821c1c7300576562536f6333303133303230343130373030303235423030" then
                         log.df("Serial Websocket Connection Established!")
 
                         -- Attempt to initialise device:
                         --self:initaliseDevice()
+
+                        --------------------------------------------------------------------------------
+                        -- Change some button colours:
+                        --------------------------------------------------------------------------------
+                        log.df("Updating LED icons:")
+                        obj:sendData(hexToBytes("829300000000130E01BA72042D33BB2979929DB456DB2DD36F"))
+                        obj:sendData(hexToBytes("829300000000131C022C48A20F28BDB7173D02D2DA201B1296"))
+                        obj:sendData(hexToBytes("828300000000030703"))
+                        obj:sendData(hexToBytes("828300000000030D04"))
+                        obj:sendData(hexToBytes("828300000000030405"))
+                        obj:sendData(hexToBytes("828300000000030306"))
+                        obj:sendData(hexToBytes("828400000000041A0700"))
+                        obj:sendData(hexToBytes("828400000000041A0801"))
+                        obj:sendData(hexToBytes("828400000000041A0902"))
+                        obj:sendData(hexToBytes("828400000000041A0A03"))
+                        obj:sendData(hexToBytes("828400000000041E0B00"))
+                        obj:sendData(hexToBytes("828400000000041A0C00"))
+                        obj:sendData(hexToBytes("828400000000041A0D00"))
+                        obj:sendData(hexToBytes("828400000000041A0E00"))
+                        obj:sendData(hexToBytes("828300000000031F0F"))
+                        obj:sendData(hexToBytes("828300000000032610"))
+                        obj:sendData(hexToBytes("82840000000004091100"))
+                        obj:sendData(hexToBytes("82840000000004091206"))
+                        obj:sendData(hexToBytes("82D300000000530213071E4D1908002800090000000A0000000B1E00500C1E00500D1E00500E1E00500F002800101E005011202420122024201300000014052929151E0050161E005017052929181E0050191E00501A1E0050"))
+
+                        return
+                    elseif hexadecimalString == "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a" then
+                        log.df("Websocket connection over serial successfully upgraded!")
                         return
                     end
                 end
