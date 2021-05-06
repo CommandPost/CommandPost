@@ -12,6 +12,7 @@ local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
 local inspect           = require "hs.inspect"
 local network           = require "hs.network"
+local serial            = require "hs.serial"
 local timer             = require "hs.timer"
 local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
@@ -233,7 +234,11 @@ end
 --- Returns:
 ---  * `true` if connected otherwise `false`
 function mod.mt:connected()
-    return self.websocket and self.websocket:status() == "open"
+    if self.isSerial then
+        return self.serialConnection and self.serialConnection:isOpen()
+    else
+        return self.websocket and self.websocket:status() == "open"
+    end
 end
 
 --- hs.loupedeck:send() -> boolean
@@ -246,11 +251,23 @@ end
 --- Returns:
 ---  * `true` if sent.
 function mod.mt:send(message)
-    if self:connected() then
-        local data = type(message) == "table" and concat(message) or tostring(message)
-        --log.df("Sending: %s", hexDump(data))
-        self.websocket:send(data)
-        return true
+    if self.isSerial then
+        if self:connected() then
+            local data = type(message) == "table" and concat(message) or tostring(message)
+            --log.df("Sending: %s", hexDump(data))
+            log.df("sending serial: %s", data)
+            self.serialConnection:sendData(data)
+        else
+            log.df("self.serialConnection: %s", self.serialConnection)
+            log.df("serial not connected - failed to send message: %s", self.serialConnection and self.serialConnection:isOpen())
+        end
+    else
+        if self:connected() then
+            local data = type(message) == "table" and concat(message) or tostring(message)
+            --log.df("Sending: %s", hexDump(data))
+            self.websocket:send(data)
+            return true
+        end
     end
     return false
 end
@@ -1740,11 +1757,11 @@ function mod.mt:connect()
     self:updateWatcher(self.retry)
 
     --------------------------------------------------------------------------------
-    -- Find the Loupedeck Device:
+    -- Find the Loupedeck Devices:
     --------------------------------------------------------------------------------
-    local ips = mod.findIPAddresses(self.deviceType)
-    local ip = ips and ips[self.deviceNumber]
-    if not ip then
+    local devices = mod.findDevices(self.deviceType)
+    local device = devices and devices[self.deviceNumber]
+    if not device then
         if self.retry then
             doAfter(2, function()
                 self:connect()
@@ -1753,12 +1770,67 @@ function mod.mt:connect()
         return
     end
 
-    --------------------------------------------------------------------------------
-    -- Attempt to connect:
-    --------------------------------------------------------------------------------
-    local url = "ws://" .. ip .. ":80/"
-    log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
-    self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
+    if device:find("%.") then
+        --------------------------------------------------------------------------------
+        -- Attempt to connect via websockets:
+        --------------------------------------------------------------------------------
+        self.isSerial = false
+        local url = "ws://" .. device .. ":80/"
+        log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
+        self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
+    else
+        --------------------------------------------------------------------------------
+        -- Attempt to connect via serial:
+        --
+        -- 9600, no parity, 8 bits, 2 stop bits.
+        --------------------------------------------------------------------------------
+        self.isSerial = true
+        local serialConnection = serial.newFromName(device)
+        if serialConnection then
+            log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
+            serialConnection:baudRate(9600)
+            serialConnection:dataBits(8)
+            serialConnection:stopBits(2)
+            serialConnection:callback(function(obj, event, message, hexadecimalString)
+                if event == "opened" then
+                    --------------------------------------------------------------------------------
+                    -- Request websocket connection, by sending this:
+                    --------------------------------------------------------------------------------
+                    --
+                    -- GET /index.html HTTP/1.1
+                    -- Connection: Upgrade
+                    -- Upgrade: websocket
+                    -- Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+                    --
+                    --------------------------------------------------------------------------------
+                    print("Opened serial connection, so attemping to connect via websockets by sending GET command...")
+                    local dataToSend = hexToBytes("474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a")
+                    obj:sendData(dataToSend)
+                    return
+                elseif event == "received" then
+                    if hexadecimalString == "821c1c7300576562536f6300000000000000000000000000000000000000" then
+                        log.df("Serial Websocket Connection Established!")
+
+                        -- Attempt to initialise device:
+                        --self:initaliseDevice()
+                        return
+                    end
+                end
+                --------------------------------------------------------------------------------
+                -- Debugging:
+                --------------------------------------------------------------------------------
+                log.df("--------------------------------------------------------------------------------")
+                log.df("SERIAL MESSAGE FROM LOUPEDECK:")
+                log.df("")
+                log.df("event: %s", event)
+                log.df("message: %s", message)
+                log.df("hexadecimalString: %s", hexadecimalString)
+                log.df("--------------------------------------------------------------------------------")
+            end)
+            serialConnection:open()
+            self.serialConnection = serialConnection
+        end
+    end
 end
 
 --- hs.loupedeck:disconnect() -> none
@@ -1814,7 +1886,7 @@ end
 ---
 --- Returns:
 ---  * An IP address as a string, or `nil` if no device can be detected.
-function mod.findIPAddresses(deviceType)
+function mod.findDevices(deviceType)
     --------------------------------------------------------------------------------
     -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
     --       the network interface name changed from "LOUPEDECK device" to
@@ -1829,6 +1901,9 @@ function mod.findIPAddresses(deviceType)
 
     local results = {}
 
+    --------------------------------------------------------------------------------
+    -- Find websockets:
+    --------------------------------------------------------------------------------
     local interfaces = network.interfaces()
     local interfaceID
     for _, interfaceID in pairs(interfaces) do
@@ -1840,6 +1915,16 @@ function mod.findIPAddresses(deviceType)
             if deviceIP then
                 table.insert(results, deviceIP)
             end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Find serial ports:
+    --------------------------------------------------------------------------------
+    local availablePortNames = serial.availablePortNames()
+    for _, portName in pairs(availablePortNames) do
+        if portName:sub(1, 8) == "usbmodem" then
+            table.insert(results, portName)
         end
     end
 
