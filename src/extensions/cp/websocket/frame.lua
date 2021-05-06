@@ -13,6 +13,7 @@ local hexToBytes        = bytes.hexToBytes
 local int16be           = bytes.int16be
 local int8              = bytes.int8
 local remainder         = bytes.remainder
+local exactly           = bytes.exactly
 local uint16be          = bytes.uint16be
 local uint16le          = bytes.uint16le
 local uint24be          = bytes.uint24be
@@ -20,7 +21,8 @@ local uint32be          = bytes.uint32be
 local uint64be          = bytes.unit64be
 local uint8             = bytes.uint8
 
-local stringbyte = string.byte
+local stringbyte        = string.byte
+local format            = string.format
 
 local mod = {}
 
@@ -94,27 +96,24 @@ local function maskData(data, maskingKey)
     return string.char(table.unpack(unmasked))
 end
 
---- cp.websocket.frame.readFrame(data[, extensionLen]) -> frame | nil
+--- cp.websocket.frame.readFrame(data, index[, extensionLen]) -> frame, number | nil
 --- Function
 ---
 --- Reads a Websocket Frame from the provided `string` of binary data.
 ---
 --- Parameters:
 ---  * data - The `string` of bytes to read from.
+---  * index - The 1-based index `number` to start reading from.
 ---  * extensionLen - An optional number indicating the number of expected extension bytes.
 ---
 --- Returns:
----  * The `string` of binary payload data, or `nil` if the data was invalid.
-function mod.readFrame(data, extensionLen)
-    if data:len() < 2 then
-        return nil
-    end
-
+---  * The `frame` of binary payload data plus the next index `number` to read from the `data` `string`, or `nil` if the data was invalid.
+function mod.readFrame(data, index, extensionLen)
     local frame = {}
 
     -- read the FIN/RSV/OPCODE byte
-    local finOp = bytes.read(data, uint8)
-    local nextIndex = 2
+    local finOp = bytes.read(data, index, uint8)
+    local nextIndex = index + 1
 
     frame.fin = isSet(finOp, FIN)
     frame.rsv1 = isSet(finOp, RSV1)
@@ -123,7 +122,7 @@ function mod.readFrame(data, extensionLen)
 
     -- Reserved bits only allowed if extensions have been negotiated on the handshake.
     if extensionLen == nil and (frame.rsv1 or frame.rsv2 or frame.rsv3) then
-        return nil
+        error(format("unexpected reserved flags: rsv1: %s; rsv2: %s; rsv3: %s", frame.rsv1, frame.rsv2, frame.rsv3))
     end
 
     frame.opcode = finOp & OPCODE
@@ -138,7 +137,7 @@ function mod.readFrame(data, extensionLen)
         nextIndex = nextIndex + 4
     end
 
-    local payloadData = data:sub(nextIndex)
+    local payloadData = bytes.read(data, exactly(frame.payloadLen))
 
     if frame.mask then
         payloadData = maskData(payloadData, frame.maskingKey)
@@ -151,7 +150,7 @@ function mod.readFrame(data, extensionLen)
 
     frame.applicationData = payloadData
 
-    return frame
+    return frame, nextIndex + frame.payloadLen
 end
 
 return mod
