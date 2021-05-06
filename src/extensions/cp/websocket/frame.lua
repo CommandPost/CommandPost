@@ -4,21 +4,16 @@
 ---
 --- Reads and writes data to and from websocket frame wire protocol data.
 
-local log               = require "hs.logger" .new "wsframe"
+-- local log               = require "hs.logger" .new "wsframe"
 
 local bytes             = require "hs.bytes"
 
 local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
-local int16be           = bytes.int16be
-local int8              = bytes.int8
-local remainder         = bytes.remainder
 local exactly           = bytes.exactly
 local uint16be          = bytes.uint16be
-local uint16le          = bytes.uint16le
-local uint24be          = bytes.uint24be
 local uint32be          = bytes.uint32be
-local uint64be          = bytes.unit64be
+local uint64be          = bytes.uint64be
 local uint8             = bytes.uint8
 
 local stringbyte        = string.byte
@@ -42,7 +37,6 @@ local PAYLOAD_64BIT     = 127
 
 local MAX_7BIT          = 125
 local MAX_16BIT         = 0xF
-local MAX_64BIT         = 0xFFFF
 
 local function isSet(byte, mask)
     return (byte & mask) == mask
@@ -177,7 +171,7 @@ end
 -- Function
 -- Convenience function for converting "XX XX" strings to a binary string, then parsing it into a frame.
 function mod.fromHex(value, spacer)
-    return mod.fromBytes(bytes.hexToBytes(value, spacer), 1)
+    return mod.fromBytes(hexToBytes(value, spacer), 1)
 end
 
 --- cp.websocket.frame.new(opcode, mask, applicationData) -> cp.websocket.frame
