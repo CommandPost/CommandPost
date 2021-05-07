@@ -4,7 +4,7 @@
 ---
 --- Reads and writes data to and from websocket frame wire protocol data.
 
--- local log               = require "hs.logger" .new "wsframe"
+local log               = require "hs.logger" .new "wsframe"
 
 local bytes             = require "hs.bytes"
 
@@ -165,9 +165,16 @@ function mod.fromBytes(data, index, extensionLen)
     return frame, nextIndex + frame.payloadLen
 end
 
--- fromHex(value) -> frame
--- Function
--- Convenience function for converting "XX XX" strings to a binary string, then parsing it into a frame.
+--- cp.websocket.frame.fromHex(value, spacer) -> frame, number | nil
+--- Function
+--- Convenience function for converting "XX XX" strings to a binary string, then parsing it into a frame.
+---
+--- Parameters:
+---  * value - The hex value as a string
+---  * spacer - The spacer used, for example " " (a space)
+---
+--- Returns:
+---  * The `frame` of binary payload data plus the next index `number` to read from the `data` `string`, or `nil` if the data was invalid.
 function mod.fromHex(value, spacer)
     return mod.fromBytes(hexToBytes(value, spacer), 1)
 end
@@ -219,7 +226,7 @@ function mod.mt:payloadData()
 end
 
 local function maskedPayloadLen(mask, payloadLen)
-    return payloadLen & (mask and MASK or 0)
+    return payloadLen + (mask and MASK or 0)
 end
 
 --- cp.websocket.frame:toBytes() -> string
@@ -232,8 +239,10 @@ end
 --- Returns:
 --- The byte `string` containing the frame in binary format.
 function mod.mt:toBytes()
-    local finalOp = self.final and FIN or 0 & self.rsv1 and RSV1 or 0 & self.rsv2 and RSV2 or 0 & self.rsv3 and RSV3 or 0
-    local data = bytes():write(uint8(finalOp), uint8(self.opcode))
+    local finalOp = self.final and FIN or 0 + self.rsv1 and RSV1 or 0 + self.rsv2 and RSV2 or 0 + self.rsv3 and RSV3 or 0
+    finalOp = finalOp + self.opcode
+
+    local data = bytes():write(uint8(finalOp))
 
     local payloadData = self:payloadData()
     local payloadLen = payloadData:len()
@@ -241,6 +250,8 @@ function mod.mt:toBytes()
         data:write(uint8(maskedPayloadLen(self.mask, PAYLOAD_64BIT)), uint64be(payloadLen))
     elseif payloadLen > MAX_7BIT then
         data:write(uint8(maskedPayloadLen(self.mask, PAYLOAD_16BIT)), uint16be(payloadLen))
+    else
+        data:write(uint8(maskedPayloadLen(self.mask, payloadLen)))
     end
 
     if self.mask then
