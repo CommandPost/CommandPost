@@ -89,7 +89,7 @@ end
 --  * maskingKey - The table of 4 1-byte keys.
 local function maskData(data, maskingKey)
     local unmasked = {stringbyte(data, 1, #data)}
-    local key = {maskingKey >> 24 & 0x7, maskingKey >> 16 & 0x7, maskingKey >> 8 & 0x7, maskingKey & 0x7}
+    local key = {maskingKey >> 24 & 0xFF, maskingKey >> 16 & 0xFF, maskingKey >> 8 & 0xFF, maskingKey & 0xFF}
 
     for i = 1, #unmasked do
         unmasked[i] = unmasked[i] ~ key[((i-1) % 4) + 1]

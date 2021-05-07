@@ -74,7 +74,10 @@ return describe "cp.websocket.frame" {
     end)
     :where {
         { "data", "key", "result" },
+        { "48656c6c6f", 0x37fa213d, "7f9f4d5158" }, -- "Hello"
         { "07020215", 0x01010101, "06030314" },
+        { "9bce62d5", 0x12345678, "89fa34ad" },
+        { "9bce62d5 21ed7dc6", 0x12345678, "89fa34ad 33d92bbe" },
         { "9bce62d5 21ed7dc6 675e2082 4af61729", 0x12345678, "89fa34ad 33d92bbe 756a76fa 58c24151" },
     }
 }
