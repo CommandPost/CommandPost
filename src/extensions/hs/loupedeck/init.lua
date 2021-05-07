@@ -1864,6 +1864,18 @@ function mod.mt:connect()
                 local f = fromBytes(message, 1)
                 local applicationData = f.applicationData
                 if applicationData then
+                    log.df("--------------------------------------------------------------------------------")
+                    log.df("RECIEVED WEBSOCKET MESSAGE FROM SERIAL:")
+                    log.df("")
+                    log.df("hs.serial event: %s", event)
+                    log.df("")
+                    log.df("hs.serial message: %s", message)
+                    log.df("hs.serial message hex dump: %s", hexadecimalString)
+                    log.df("")
+                    log.df("hs.serial message converted to websocket frame using fromBytes: %s", inspect(f))
+                    log.df("")
+                    log.df("applicationData hex dump: %s", hexDump(applicationData))
+                    log.df("--------------------------------------------------------------------------------")
                     self:websocketCallback(event, applicationData)
                 else
                     log.df("--------------------------------------------------------------------------------")

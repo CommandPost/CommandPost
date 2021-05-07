@@ -40,7 +40,7 @@ local PAYLOAD_16BIT     = 126
 local PAYLOAD_64BIT     = 127
 
 local MAX_7BIT          = 125
-local MAX_16BIT         = 0xF
+local MAX_16BIT         = 0xFFFF
 
 local function isSet(byte, mask)
     return (byte & mask) == mask
@@ -143,6 +143,7 @@ function mod.fromBytes(data, index, extensionLen)
 
     -- read the MASK
     frame.mask = isSet(bytes.read(data, nextIndex, uint8), MASK)
+
     -- read the full payload length, taking into account extended bytes.
     frame.payloadLen, nextIndex = readPayloadLen(data, nextIndex)
 
@@ -152,7 +153,10 @@ function mod.fromBytes(data, index, extensionLen)
         nextIndex = nextIndex + 4
     end
 
-    local payloadData = bytes.read(data, exactly(frame.payloadLen))
+    -- For debugging:
+    frame.indexWhenDataStarted = nextIndex
+
+    local payloadData = bytes.read(data, nextIndex, exactly(frame.payloadLen))
 
     if maskingKey then
         payloadData = maskData(payloadData, maskingKey)
