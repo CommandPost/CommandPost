@@ -259,32 +259,18 @@ function mod.mt:send(message)
     if self.isSerial then
         if self:connected() then
             local data = type(message) == "table" and concat(message) or tostring(message)
-
-            --log.df("Sending via serial to Loupedeck: %s", hexDump(data))
-            --log.df("Sending via serial to Loupedeck: %s", data)
-
             local f = frame.new(true, frame.opcode.binary, true, data)
             local d = f:toBytes()
-
             if d then
-                --log.df("Sending via serial to Loupedeck (Original): %s", hexDump(data))
-                --log.df("Sending via serial to Loupedeck (Within Frame): %s", hexDump(d))
-                --log.df("--------")
-
                 self.serialConnection:sendData(d)
+                return true
             else
-                log.ef("Failed to generate websocket frame")
+                log.ef("Failed to generate websocket frame for serial connection.")
             end
-
-        else
-            log.df("self.serialConnection: %s", self.serialConnection)
-            log.df("serial not connected - failed to send message: %s", self.serialConnection and self.serialConnection:isOpen())
         end
     else
         if self:connected() then
             local data = type(message) == "table" and concat(message) or tostring(message)
-
-            log.df("Sending via websocket to Loupedeck: %s", hexDump(data))
             self.websocket:send(data)
             return true
         end
@@ -341,8 +327,6 @@ end
 --- Returns:
 ---  * None
 function mod.mt:initaliseDevice()
-    log.df("Initalising Loupedeck Device...")
-
     -- This must be executed before writing to the main Touch Screen:
     self:resetDevice()
 
@@ -361,8 +345,6 @@ function mod.mt:initaliseDevice()
     if self.deviceType == mod.deviceTypes.CT then
         self:updateScreenColor(mod.screens.wheel, b)
     end
-
-    log.df("Initilisation complete!")
 end
 
 --- hs.loupedeck:callback([callbackFn]) -> boolean
@@ -1809,8 +1791,15 @@ function mod.mt:connect()
         -- 9600, no parity, 8 bits, 2 stop bits.
         --------------------------------------------------------------------------------
         self.isSerial = true
+
+        self._buffer = nil
+        self._hexadecimalStringBuffer = nil
+
         local serialConnection = serial.newFromName(device)
         if serialConnection then
+
+            self._serialOpenMessageRecieved = false
+
             log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
             serialConnection:baudRate(9600)
             serialConnection:dataBits(8)
@@ -1850,17 +1839,12 @@ function mod.mt:connect()
                     -- Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
                     --
                     --------------------------------------------------------------------------------
-                    log.df("Opened serial connection, so attemping to connect via websockets by sending GET command...")
                     local dataToSend = hexToBytes("474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a")
                     obj:sendData(dataToSend)
+                    self._serialOpenMessageRecieved = true
                     return
                 elseif event == "received" then
-                    if hexadecimalString:sub(1, 22) == "821c1c7300576562536f63" then
-                        --------------------------------------------------------------------------------
-                        -- The websocket is now connected!
-                        --------------------------------------------------------------------------------
-                        log.df("Serial Websocket Connection Established!")
-
+                    if not self._serialOpenMessageRecieved or hexadecimalString:sub(1, 22) == "821c1c7300576562536f63" then
                         --------------------------------------------------------------------------------
                         -- Attempt to initialise device:
                         --------------------------------------------------------------------------------
@@ -1872,6 +1856,7 @@ function mod.mt:connect()
                         self:triggerCallback {
                             action = "websocket_open",
                         }
+                        self._serialOpenMessageRecieved = true
 
                         return
                     elseif hexadecimalString == "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a" then
@@ -1886,19 +1871,13 @@ function mod.mt:connect()
                         -- Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
                         --
                         --------------------------------------------------------------------------------
-                        log.df("Websocket connection over serial successfully upgraded!")
                         return
                     end
                 end
 
                 local f
 
-                if self._buffer then
-                    --[[
-                    log.df("--------------------------------------------------------------------------------")
-                    log.df("Using data from buffer...")
-                    log.df("--------------------------------------------------------------------------------")
-                    --]]
+                if self._buffer and message then
                     message = self._buffer .. message
                     hexadecimalString = self._hexadecimalStringBuffer .. hexadecimalString
                     self._buffer = nil
@@ -1910,16 +1889,6 @@ function mod.mt:connect()
                 end)
 
                 if not ran then
-                    --[[
-                    log.df("--------------------------------------------------------------------------------")
-                    log.ef("Failed to execute fromBytes: %s", err)
-                    log.df("")
-                    log.df("event: %s", event)
-                    log.df("hexadecimal string: %s", hexadecimalString)
-                    log.df("--------------------------------------------------------------------------------")
-                    --]]
-                    --log.df("Incomplete message, so saving to buffer...")
-
                     self._buffer = message
                     self._hexadecimalStringBuffer = hexadecimalString
                     return
@@ -1927,28 +1896,6 @@ function mod.mt:connect()
 
                 local applicationData = f and f.applicationData
                 if applicationData then
-
-                    --[[
-                    log.df("--------------------------------------------------------------------------------")
-                    log.df("Successfully Recieved Websocket Message From Serial:")
-                    log.df("")
-                    log.df("event: %s", event)
-                    log.df("hexadecimal string: %s", hexadecimalString)
-                    log.df("--------------------------------------------------------------------------------")
-                    --]]
-
-                    --[[
-                    log.df("")
-                    log.df("hs.serial event: %s", event)
-                    log.df("")
-                    log.df("hs.serial message: %s", message)
-                    log.df("hs.serial message hex dump: %s", hexadecimalString)
-                    log.df("")
-                    log.df("hs.serial message converted to websocket frame using fromBytes: %s", inspect(f))
-                    log.df("")
-                    log.df("applicationData hex dump: %s", hexDump(applicationData))
-                    log.df("--------------------------------------------------------------------------------")
-                    --]]
                     self:websocketCallback(event, applicationData)
                 else
                     log.df("--------------------------------------------------------------------------------")
@@ -1960,6 +1907,7 @@ function mod.mt:connect()
                 end
             end)
             serialConnection:open()
+
             self.serialConnection = serialConnection
         end
     end
@@ -1984,10 +1932,11 @@ function mod.mt:disconnect()
         --------------------------------------------------------------------------------
         -- Disconnect from the websocket connection (over serial):
         --------------------------------------------------------------------------------
-        log.df("Disconnecting from the websocket over serial...")
+        --[[
         local f = frame.new(true, frame.opcode.close, true, "")
         local d = f:toBytes()
-        self:send(d)
+        self.serialConnection:sendData(d)
+        --]]
 
         --------------------------------------------------------------------------------
         -- Disconnect from the serial connection:
