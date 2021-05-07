@@ -1881,16 +1881,16 @@ function mod.mt:callback(data, deviceNumber)
                     --------------------------------------------------------------------------------
                     -- SLIDE UP/DOWN:
                     --------------------------------------------------------------------------------
-                    if self.cacheLeftScreenYAxis ~= nil then
+                    if self.cacheLeftScreenYAxis[deviceNumber] ~= nil then
                         -- already dragging. Which way?
-                        local yDiff = data.y - self.cacheLeftScreenYAxis
+                        local yDiff = data.y - self.cacheLeftScreenYAxis[deviceNumber]
                         if yDiff < 0-dragMinimumDiff then
                             self:executeAction(thisSideScreen.upAction, deviceNumber)
                         elseif yDiff > 0+dragMinimumDiff then
                             self:executeAction(thisSideScreen.downAction, deviceNumber)
                         end
                     end
-                    self.cacheLeftScreenYAxis = data.y
+                    self.cacheLeftScreenYAxis[deviceNumber] = data.y
 
                     --------------------------------------------------------------------------------
                     -- DOUBLE TAP:
@@ -1927,16 +1927,16 @@ function mod.mt:callback(data, deviceNumber)
                 --------------------------------------------------------------------------------
                 local thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
                 if thisSideScreen then
-                    if self.cacheRightScreenYAxis ~= nil then
+                    if self.cacheRightScreenYAxis[deviceNumber] ~= nil then
                         -- already dragging. Which way?
-                        local yDiff = data.y - self.cacheRightScreenYAxis
+                        local yDiff = data.y - self.cacheRightScreenYAxis[deviceNumber]
                         if yDiff < 0-dragMinimumDiff then
                             self:executeAction(thisSideScreen.upAction, deviceNumber)
                         elseif yDiff > 0+dragMinimumDiff then
                             self:executeAction(thisSideScreen.downAction, deviceNumber)
                         end
                     end
-                    self.cacheRightScreenYAxis = data.y
+                    self.cacheRightScreenYAxis[deviceNumber] = data.y
 
                     --------------------------------------------------------------------------------
                     -- DOUBLE TAP:
