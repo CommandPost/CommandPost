@@ -108,7 +108,10 @@ end
 -- Returns:
 --  * The new masking key, or `nil`.
 function mod.generateMaskingKey()
-    return math.random(0xFFFFFF, 0xFFFFFFFF)
+    -- An actual mask generator:
+    -- return math.random(0xFFFFFF, 0xFFFFFFFF)
+    -- Sends data unmodified:
+    return 0
 end
 
 --- cp.websocket.frame.fromBytes(data, index[, extensionLen]) -> frame, number | nil
