@@ -7,7 +7,9 @@
 local log               = require "hs.logger" .new "wsframe"
 
 local bytes             = require "hs.bytes"
+local utf8              = require "hs.utf8"
 
+local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
 local exactly           = bytes.exactly
 local uint16be          = bytes.uint16be
@@ -15,8 +17,11 @@ local uint32be          = bytes.uint32be
 local uint64be          = bytes.uint64be
 local uint8             = bytes.uint8
 
+local hexDump           = utf8.hexDump
+
 local stringbyte        = string.byte
 local format            = string.format
+local insert            = table.insert
 
 local mod = {}
 
@@ -87,7 +92,7 @@ local function maskData(data, maskingKey)
     local key = {maskingKey >> 24 & 0x7, maskingKey >> 16 & 0x7, maskingKey >> 8 & 0x7, maskingKey & 0x7}
 
     for i = 1, #unmasked do
-        unmasked[i] = unmasked[i] ~ key[i % 4 + 1]
+        unmasked[i] = unmasked[i] ~ key[((i-1) % 4) + 1]
     end
 
     return string.char(table.unpack(unmasked))
@@ -102,7 +107,7 @@ end
 --
 -- Returns:
 --  * The new masking key, or `nil`.
-local function generateMaskingKey()
+function mod.generateMaskingKey()
     return math.random(0x0, 0xFFFF)
 end
 
@@ -255,7 +260,7 @@ function mod.mt:toBytes()
     end
 
     if self.mask then
-        local maskingKey = generateMaskingKey()
+        local maskingKey = mod.generateMaskingKey()
         data:write(uint32be(maskingKey))
         payloadData = maskData(payloadData, maskingKey)
     end
@@ -263,6 +268,45 @@ function mod.mt:toBytes()
     data:write(payloadData)
 
     return data:bytes()
+end
+
+function mod.mt:__tostring()
+    local result = {}
+    insert(result, "frame: ")
+
+    if self.final then
+        insert(result, "FIN ")
+    end
+
+    if self.opcode == mod.opcode.binary then
+        insert(result, "BINARY")
+    elseif self.opcode == mod.opcode.close then
+        insert(result, "CLOSE")
+    elseif self.opcode == mod.opcode.continuation then
+        insert(result, "CONTINUATION")
+    elseif self.opcode == mod.opcode.text then
+        insert(result, "TEXT")
+    elseif self.opcode == mod.opcode.ping then
+        insert(result, "PING")
+    elseif self.opcode == mod.opcode.pong then
+        insert(result, "PONG")
+    else
+        insert(result, "UNKNOWN")
+    end
+
+    insert(result, " ")
+
+    if self.mask then
+        insert(result, "MASK ")
+    end
+
+    local payloadData = self:payloadData()
+
+    insert(result, "PAYLOAD LEN: " .. tostring(#payloadData) .. "\n")
+
+    insert(result, hexDump(payloadData))
+
+    return table.concat(result)
 end
 
 return mod
