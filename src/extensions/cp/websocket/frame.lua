@@ -4,12 +4,11 @@
 ---
 --- Reads and writes data to and from websocket frame wire protocol data.
 
-local log               = require "hs.logger" .new "wsframe"
+-- local log               = require "hs.logger" .new "wsframe"
 
 local bytes             = require "hs.bytes"
 local utf8              = require "hs.utf8"
 
-local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
 local exactly           = bytes.exactly
 local uint16be          = bytes.uint16be
