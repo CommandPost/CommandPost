@@ -431,107 +431,13 @@ local function _processMenuItems(items, path)
     end
 end
 
--- plugins.core.monogram.manager._buildMenuItems() -> none
--- Function
--- A private function which outputs the menu items code into the Debug Console.
--- This should only really ever be used by CommandPost Developers.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-function mod._buildMenuItems()
-    menuItems = {}
-
-    local items = fcp:application():getMenuItems()
-
-    for _, v in pairs(items) do
-        local title = v.AXTitle
-        local children = v.AXChildren
-        if children then
-            _processMenuItems(children[1], {v.AXTitle})
-        end
+function mod._registerActions(manager)
+    if mod._registerActionsRun then
+        return
     end
+    mod._registerActionsRun = true
 
-    local codeForCommandPost = ""
-    local xmlForInputs = ""
-
-    for _, v in pairs(menuItems) do
-
-        local group = table.concat(v.path, ".")
-        local commandName = v.title
-        local id = table.concat(v.path, "|||") .. "|||" .. commandName
-        local info = table.concat(v.path, " > ") .. " > " .. commandName
-
-        codeForCommandPost = codeForCommandPost .. [[registerAction("Menu Items.]] .. group .. [[.]] .. commandName .. [[", makeMenuItemHandler(function() return "]] .. id .. [[" end))]] .. "\n"
-        xmlForInputs = xmlForInputs .. [[
-            {
-                "name": "Menu Items.]] .. group .. [[.]] .. commandName .. [[",
-                "info": "Triggers the Final Cut Pro Menu Item: ]] .. info .. [["
-            },
-        ]]
-    end
-
-    log.df("codeForCommandPost:\n%s", codeForCommandPost)
-    log.df("xmlForInputs:\n%s", xmlForInputs)
-end
-
-local plugin = {
-    id          = "finalcutpro.monogram",
-    group       = "finalcutpro",
-    required    = true,
-    dependencies    = {
-        ["core.monogram.manager"] = "manager",
-    }
-}
-
-function plugin.init(deps)
-    --------------------------------------------------------------------------------
-    -- Connect to Monogram Manager:
-    --------------------------------------------------------------------------------
-    local manager = deps.manager
     local registerAction = manager.registerAction
-    local registerPlugin = manager.registerPlugin
-
-    --------------------------------------------------------------------------------
-    -- Register the plugin:
-    --------------------------------------------------------------------------------
-    local basePath = config.basePath
-    local sourcePath = basePath .. "/plugins/core/monogram/plugins/"
-    registerPlugin("Final Cut Pro via CP", sourcePath)
-
-    --------------------------------------------------------------------------------
-    -- Setup Automatic Profile Switching Ability:
-    --------------------------------------------------------------------------------
-    local checkForLayoutChanges = deferred.new(0.1):action(function()
-        if fcp.inspector.color.colorWheels:isShowing() then
-            manager.changeContext("Color Wheels")
-        elseif fcp.inspector.color.colorBoard:isShowing() then
-            manager.changeContext("Color Board")
-        elseif fcp.inspector.video:isShowing() then
-            manager.changeContext("Video Inspector")
-        elseif fcp.inspector.info:isShowing() then
-            manager.changeContext("Info Inspector")
-        end
-    end)
-    mod.notifier = notifier.new(fcp:bundleID(), function() return fcp.app:UI() end)
-    mod.notifier:watchFor({"AXUIElementDestroyed"}, function() checkForLayoutChanges() end)
-    manager.automaticProfileSwitching:watch(function(enabled)
-        if enabled and manager.enabled() then
-            mod.notifier:start()
-        else
-            mod.notifier:stop()
-        end
-    end)
-    manager.automaticProfileSwitching:update()
-    manager.enabled:watch(function(enabled)
-        if enabled and manager.automaticProfileSwitching() then
-            mod.notifier:start()
-        else
-            mod.notifier:stop()
-        end
-    end)
 
     --------------------------------------------------------------------------------
     -- Jog:
@@ -1658,6 +1564,113 @@ function plugin.init(deps)
     registerAction("Command Set Shortcuts.Editing.Lift from Storyline", makeShortcutHandler(function() return "LiftFromSpine" end))
     registerAction("Command Set Shortcuts.General.Send IMF Package to Compressor", makeShortcutHandler(function() return "SendIMFPackageToCompressor" end))
     registerAction("Command Set Shortcuts.Effects.Add Color Wheels Effect", makeShortcutHandler(function() return "AddColorWheelsEffect" end))
+
+end
+
+-- plugins.core.monogram.manager._buildMenuItems() -> none
+-- Function
+-- A private function which outputs the menu items code into the Debug Console.
+-- This should only really ever be used by CommandPost Developers.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._buildMenuItems()
+    menuItems = {}
+
+    local items = fcp:application():getMenuItems()
+
+    for _, v in pairs(items) do
+        local title = v.AXTitle
+        local children = v.AXChildren
+        if children then
+            _processMenuItems(children[1], {title})
+        end
+    end
+
+    local codeForCommandPost = ""
+    local xmlForInputs = ""
+
+    for _, v in pairs(menuItems) do
+
+        local group = table.concat(v.path, ".")
+        local commandName = v.title
+        local id = table.concat(v.path, "|||") .. "|||" .. commandName
+        local info = table.concat(v.path, " > ") .. " > " .. commandName
+
+        codeForCommandPost = codeForCommandPost .. [[registerAction("Menu Items.]] .. group .. [[.]] .. commandName .. [[", makeMenuItemHandler(function() return "]] .. id .. [[" end))]] .. "\n"
+        xmlForInputs = xmlForInputs .. [[
+            {
+                "name": "Menu Items.]] .. group .. [[.]] .. commandName .. [[",
+                "info": "Triggers the Final Cut Pro Menu Item: ]] .. info .. [["
+            },
+        ]]
+    end
+
+    log.df("codeForCommandPost:\n%s", codeForCommandPost)
+    log.df("xmlForInputs:\n%s", xmlForInputs)
+end
+
+local plugin = {
+    id          = "finalcutpro.monogram",
+    group       = "finalcutpro",
+    required    = true,
+    dependencies    = {
+        ["core.monogram.manager"] = "manager",
+    }
+}
+
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Connect to Monogram Manager:
+    --------------------------------------------------------------------------------
+    local manager = deps.manager
+    local registerPlugin = manager.registerPlugin
+
+    --------------------------------------------------------------------------------
+    -- Register the plugin:
+    --------------------------------------------------------------------------------
+    local basePath = config.basePath
+    local sourcePath = basePath .. "/plugins/core/monogram/plugins/"
+    registerPlugin("Final Cut Pro via CP", sourcePath)
+
+    --------------------------------------------------------------------------------
+    -- Setup Automatic Profile Switching Ability:
+    --------------------------------------------------------------------------------
+    local checkForLayoutChanges = deferred.new(0.1):action(function()
+        if fcp.inspector.color.colorWheels:isShowing() then
+            manager.changeContext("Color Wheels")
+        elseif fcp.inspector.color.colorBoard:isShowing() then
+            manager.changeContext("Color Board")
+        elseif fcp.inspector.video:isShowing() then
+            manager.changeContext("Video Inspector")
+        elseif fcp.inspector.info:isShowing() then
+            manager.changeContext("Info Inspector")
+        end
+    end)
+    mod.notifier = notifier.new(fcp:bundleID(), function() return fcp.app:UI() end)
+    mod.notifier:watchFor({"AXUIElementDestroyed"}, function() checkForLayoutChanges() end)
+    manager.automaticProfileSwitching:watch(function(enabled)
+        if enabled and manager.enabled() then
+            mod.notifier:start()
+        else
+            mod.notifier:stop()
+        end
+    end)
+    manager.automaticProfileSwitching:update()
+    manager.enabled:watch(function(enabled)
+        if enabled then
+            mod._registerActions(manager)
+        end
+
+        if enabled and manager.automaticProfileSwitching() then
+            mod.notifier:start()
+        else
+            mod.notifier:stop()
+        end
+    end)
 
     return mod
 end
