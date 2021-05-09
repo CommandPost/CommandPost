@@ -12,7 +12,6 @@ local buffer            = require "cp.websocket.buffer"
 local result            = require "cp.result"
 
 local hexToBytes        = bytes.hexToBytes
-local exactly           = bytes.exactly
 local uint16be          = bytes.uint16be
 local uint32be          = bytes.uint32be
 local uint64be          = bytes.uint64be
@@ -21,7 +20,6 @@ local uint8             = bytes.uint8
 local hexDump           = utf8.hexDump
 
 local stringbyte        = string.byte
-local format            = string.format
 local insert            = table.insert
 
 local mod = {}
@@ -58,30 +56,6 @@ mod.opcode = {
     -- 0xB-F reserved for control frames
 }
 
-
--- readPayloadLen(data, index) -> number, number
--- Function
--- A `bytes` reader function that reads from the data `string`, starting at `index`,
--- returning the total payload length and the next byte `index` to read.
---
--- Parameters:
---  * data  - The `string` of bits to read.
---  * index - The index to read from (typically `1`) for this field.
-local function readPayloadLen(data, index)
-    local payloadLength = bytes.read(data, index, uint8) & PAYLOAD_LEN
-    local nextByte = index + 1
-
-    if payloadLength == PAYLOAD_16BIT then
-        payloadLength = bytes.read(data, nextByte, uint16be)
-        nextByte = nextByte + 2
-    elseif payloadLength == PAYLOAD_64BIT then
-        payloadLength = bytes.read(data, nextByte, uint64be)
-        nextByte = nextByte + 8
-    end
-
-    return payloadLength, nextByte
-end
-
 -- maskData(data, maskingKey) -> string
 -- Function
 -- Masks (and unmasks) the provided data using the provided 4-byte `table`.
@@ -114,68 +88,6 @@ function mod.generateMaskingKey()
     -- return math.random(0xFFFFFF, 0xFFFFFFFF)
     -- Sends data unmodified:
     return 0
-end
-
--- TODO: Delete fromBytes once we are using fromBuffer everywhere.
-
---- cp.websocket.frame.fromBytes(data, index) -> frame, number
---- Function
---- Reads a Websocket Frame from the provided `string` of binary data.
----
---- Parameters:
----  * data - The `string` of bytes to read from.
----  * index - The 1-based index `number` to start reading from.
----
---- Returns:
----  * The `frame` of binary payload data plus the next index `number` to read from the `data` `string`.
----
---- Notes:
----  * Throws an error if any of the bytes are invalid.
-function mod.fromBytes(data, index)
-    local frame = {}
-
-    -- read the FIN/RSV/OPCODE byte
-    local finalOp = bytes.read(data, index, uint8)
-    local nextIndex = index + 1
-
-    frame.final = isSet(finalOp, FIN)
-    frame.rsv1 = isSet(finalOp, RSV1)
-    frame.rsv2 = isSet(finalOp, RSV2)
-    frame.rsv3 = isSet(finalOp, RSV3)
-
-    -- Reserved bits only allowed if extensions have been negotiated on the handshake.
-    if frame.rsv1 or frame.rsv2 or frame.rsv3 then
-        error(format("unexpected reserved flags: rsv1: %s; rsv2: %s; rsv3: %s", frame.rsv1, frame.rsv2, frame.rsv3))
-    end
-
-    frame.opcode = finalOp & OPCODE
-
-    -- read the MASK
-    frame.mask = isSet(bytes.read(data, nextIndex, uint8), MASK)
-
-    -- read the full payload length, taking into account extended bytes.
-    frame.payloadLen, nextIndex = readPayloadLen(data, nextIndex)
-
-    local maskingKey
-    if frame.mask then
-        maskingKey = bytes.read(data, nextIndex, uint32be)
-        nextIndex = nextIndex + 4
-    end
-
-    -- For debugging:
-    frame.indexWhenDataStarted = nextIndex
-
-    local payloadData = bytes.read(data, nextIndex, exactly(frame.payloadLen))
-
-    if maskingKey then
-        payloadData = maskData(payloadData, maskingKey)
-    end
-
-    frame.payloadData = payloadData
-
-    setmetatable(frame, mod.mt)
-
-    return frame, nextIndex + frame.payloadLen
 end
 
 local function toBuffer(data, cloned)
@@ -417,8 +329,11 @@ function mod.mt:isControlFrame()
     return self.opcode & 0x8 ~= 0
 end
 
+-- maskedPayloadLen(mask, payloadLen) -> number
+-- Private Function
+-- Combines the `mask` and 7-bit `payloadLen` value into a single number.
 local function maskedPayloadLen(mask, payloadLen)
-    return (mask and MASK or 0) | payloadLen
+    return (mask and MASK or 0) | (payloadLen | PAYLOAD_LEN)
 end
 
 --- cp.websocket.frame:toBytes() -> string
@@ -458,40 +373,40 @@ function mod.mt:toBytes()
 end
 
 function mod.mt:__tostring()
-    local result = {}
-    insert(result, "frame: ")
+    local out = {}
+    insert(out, "frame: ")
 
     if self.final then
-        insert(result, "FIN ")
+        insert(out, "FIN ")
     end
 
     if self.opcode == mod.opcode.binary then
-        insert(result, "BINARY")
+        insert(out, "BINARY")
     elseif self.opcode == mod.opcode.close then
-        insert(result, "CLOSE")
+        insert(out, "CLOSE")
     elseif self.opcode == mod.opcode.continuation then
-        insert(result, "CONTINUATION")
+        insert(out, "CONTINUATION")
     elseif self.opcode == mod.opcode.text then
-        insert(result, "TEXT")
+        insert(out, "TEXT")
     elseif self.opcode == mod.opcode.ping then
-        insert(result, "PING")
+        insert(out, "PING")
     elseif self.opcode == mod.opcode.pong then
-        insert(result, "PONG")
+        insert(out, "PONG")
     else
-        insert(result, "UNKNOWN")
+        insert(out, "UNKNOWN")
     end
 
-    insert(result, " ")
+    insert(out, " ")
 
     if self.mask then
-        insert(result, "MASK ")
+        insert(out, "MASK ")
     end
 
     local payloadData = self:payloadData()
 
-    insert(result, "PAYLOAD LEN: " .. tostring(#payloadData) .. "\n")
+    insert(out, "PAYLOAD LEN: " .. tostring(#payloadData) .. "\n")
 
-    insert(result, hexDump(payloadData))
+    insert(out, hexDump(payloadData))
 
     return table.concat(result)
 end
