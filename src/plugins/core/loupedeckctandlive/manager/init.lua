@@ -122,6 +122,7 @@ end
 function mod.new(deviceType)
 
     local o = {}
+    setmetatable(o, mod.mt)
 
     --- plugins.core.loupedeckctandlive.manager.getScreenSizeFromControlType() -> number, number
     --- Function
@@ -797,8 +798,6 @@ function mod.new(deviceType)
     -- Connect to the Loupedeck:
     --------------------------------------------------------------------------------
     o.enabled:update()
-
-    setmetatable(o, mod.mt)
     return o
 end
 
