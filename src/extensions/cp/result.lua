@@ -74,6 +74,44 @@ function mod.failure(message, ...)
     return setmetatable({failure = true, message = message}, mod.mt)
 end
 
+--- cp.result.from(value, err) -> result
+--- Constructor
+--- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua.
+--- If the `err` value is not `nil`, it will result in a `failure`, otherwise the `value` is passed to a `success`.
+---
+--- Parameters:
+---  * value - The value if successful.
+---  * err - The error message if there was a failure.
+---
+--- Returns:
+---  * A `result.success` or `result.failure`.
+function mod.from(value, err)
+    if err then
+        return mod.failure(err)
+    else
+        return mod.success(value)
+    end
+end
+
+--- cp.result.notNil(value, err) -> result
+--- Constructor
+--- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua.
+--- If the `value` is `nil` it will result in a `failure` with the optional `err` message, otherwise the `value` is passed to a `success`.
+---
+--- Parameters:
+---  * value - The value if successful.
+---  * err - The error message if there was a failure.
+---
+--- Returns:
+---  * A `result.success` or `result.failure`.
+function mod.notNil(value, err)
+    if value == nil then
+        return mod.failure(err)
+    else
+        return mod.success(value)
+    end
+end
+
 --- cp.result:get() -> anything
 --- Method
 --- Gets the successful value, or throws an `error` with the provided `message`.
