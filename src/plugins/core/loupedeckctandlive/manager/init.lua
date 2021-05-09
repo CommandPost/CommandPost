@@ -948,6 +948,11 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
         return
     end
 
+    if not self.items then
+        log.ef("no items found during refresh")
+        return
+    end
+
     local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -1578,12 +1583,23 @@ end
 --- Returns:
 ---  * None
 function mod.mt:callback(data, deviceNumber)
+    log.df("--------------------------------------------------------------------------------")
+    log.df("deviceNumber: %s", deviceNumber)
+    log.df("data: %s", hs.inspect(data))
+    log.df("--------------------------------------------------------------------------------")
+
     local device = self.devices and self.devices[deviceNumber]
 
     --------------------------------------------------------------------------------
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
-    if data.action == "websocket_opened" then
+    if data.action == "websocket_opening" then
+        log.df("Loupedeck websocket opening for %s (Unit %s)...", self.configFolder, deviceNumber)
+        return
+    elseif data.action == "websocket_closing" then
+        log.df("Loupedeck websocket closing for %s (Unit %s)...", self.configFolder, deviceNumber)
+        return
+    elseif data.action == "websocket_opened" then
         self.connected[deviceNumber](true)
         self:clearCache(deviceNumber)
         self:refresh(deviceNumber)

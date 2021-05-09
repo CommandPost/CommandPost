@@ -219,6 +219,7 @@ end
 ---   Invalid Character sequence).
 function mod.mt:send(message, isData)
     if self:isOpen() then
+        if type(isData) == "nil" then isData = true end
         self._connection:send(message, isData)
     end
 

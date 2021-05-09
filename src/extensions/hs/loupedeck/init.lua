@@ -1790,6 +1790,7 @@ function mod.mt:connect()
         --
         -- 9600, no parity, 8 bits, 2 stop bits.
         --------------------------------------------------------------------------------
+        log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
         self.websocket = wsserial.new(device, 9600, 8, 2, self:createWebsocketCallback())
     end
 

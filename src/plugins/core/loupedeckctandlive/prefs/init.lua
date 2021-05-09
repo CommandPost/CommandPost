@@ -1437,7 +1437,7 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- If it's a press action, and no icon label already exists:
                 --------------------------------------------------------------------------------
-                if buttonType == "pressAction" then
+                if buttonType == "pressAction" and controlType == "touchButton" then
                     local items = self.items()
                     local lastDevice = self.lastDevice()
                     local iconLabel = items and items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] and items[lastDevice][app][bank][controlType][bid]["iconLabel"]

@@ -97,11 +97,13 @@ local WS_HANDSHAKE_RESPONSE =
 -- The serial port message handlers
 mod._handler = {
     opened = function(self, _)
+        log.df("Serial connection opened, sending handshake...")
         self._status = status.opening
         self:send(WS_HANDSHAKE_REQUEST, false)
     end,
 
     closed = function(self, _)
+        log.df("Serial connection closed")
         self._status = status.closed
         self._connection = nil
         self:_report(event.closed)
@@ -111,8 +113,10 @@ mod._handler = {
         self:close()
     end,
 
-    message = function(self, message)
+    received = function(self, message)
+        log.df("Serial connection message: %s", message)
         if self._status == status.opening and message == WS_HANDSHAKE_RESPONSE then
+            log.df("Serial connection handshake received!")
             self:_update(status.open, event.opened)
         elseif self._status == status.open then
             -- frames come in chunks, so buffer them together and check the whole buffer for actual frames.
@@ -157,6 +161,7 @@ end
 --- Returns:
 ---  * The `cp.websocket.status` after attempting to open.
 function mod.mt:open()
+    log.df("Opening serial connection...")
     self:_update(status.opening, event.opening)
 
     local connection = serial.newFromName(self._deviceName)
@@ -167,11 +172,26 @@ function mod.mt:open()
         :callback(self:_createSerialCallback())
 
         self._connection = connection:open()
-        if ~self._connection then
+        if not self._connection then
             -- TODO: Check if these are necessary. It's possible that hs.serial is already sending events for these.
+            log.ef("Unable to open serial connection")
             self:_report(event.error, "Unable to open serial connection.")
             self:_update(status.closed, event.closed)
         end
+
+        if self._connection:isOpen() then
+            log.df("Serial connection is open!")
+
+
+            self._status = status.opening
+
+            log.df("Sending handshake request")
+            --self:send(WS_HANDSHAKE_REQUEST, false)
+
+            local handShakeRequest = bytes.hexToBytes("474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a")
+            self._connection:sendData(handShakeRequest)
+        end
+
     end
     return self._status
 end
@@ -194,6 +214,13 @@ end
 -- Creates a callback function for the internal `hs.serial` connection.
 function mod.mt:_createSerialCallback()
     return function(_, callbackType, message, hexadecimalString)
+
+        log.df("--------")
+        log.df("callbackType: %s", callbackType)
+        log.df("message: %s", message)
+        log.df("hexadecimalString: %s", hexadecimalString)
+        log.df("--------")
+
         local handler = mod._handler[callbackType]
         if handler then
             handler(self, message, hexadecimalString)
