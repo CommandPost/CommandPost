@@ -1781,7 +1781,6 @@ function mod.mt:connect()
         --------------------------------------------------------------------------------
         -- Attempt to connect via websockets:
         --------------------------------------------------------------------------------
-        self.isSerial = false
         local url = "ws://" .. device .. ":80/"
         log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
         self.websocket = wshttp.new(url, self:createWebsocketCallback())
@@ -1791,10 +1790,10 @@ function mod.mt:connect()
         --
         -- 9600, no parity, 8 bits, 2 stop bits.
         --------------------------------------------------------------------------------
-        self.isSerial = true
-
         self.websocket = wsserial.new(device, 9600, 8, 2, self:createWebsocketCallback())
     end
+
+    self.websocket:open()
 end
 
 --- hs.loupedeck:disconnect() -> none
