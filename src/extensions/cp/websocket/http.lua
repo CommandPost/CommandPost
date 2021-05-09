@@ -80,7 +80,7 @@ mod._handler = {
 
     received = function(self, message)
         if self._status == status.open then
-            self._report(event.message, message)
+            self:_report(event.message, message)
         else
             mod._handler.fail(self, message)
         end
