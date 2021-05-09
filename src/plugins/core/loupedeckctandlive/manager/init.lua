@@ -1584,7 +1584,7 @@ function mod.mt:callback(data, deviceNumber)
     --------------------------------------------------------------------------------
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
-    if data.action == "websocket_open" then
+    if data.action == "websocket_opened" then
         self.connected[deviceNumber](true)
         self:clearCache(deviceNumber)
         self:refresh(deviceNumber)
@@ -1603,7 +1603,7 @@ function mod.mt:callback(data, deviceNumber)
         self.connected[deviceNumber](false)
         self:clearCache(deviceNumber)
         return
-    elseif data.action == "websocket_fail"  then
+    elseif data.action == "websocket_error"  then
         --------------------------------------------------------------------------------
         -- If the websocket fails, then trash all the caches:
         --------------------------------------------------------------------------------

@@ -16,12 +16,9 @@ local serial            = require "hs.serial"
 local timer             = require "hs.timer"
 local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
-local websocket         = require "hs.websocket"
 
-local frame             = require "cp.websocket.frame"
-
-local fromBytes         = frame.fromBytes
-local fromHex           = frame.fromHex
+local wshttp            = require "cp.websocket.http"
+local wsserial          = require "cp.websocket.serial"
 
 local concat            = table.concat
 local doAfter           = timer.doAfter
@@ -239,11 +236,7 @@ end
 --- Returns:
 ---  * `true` if connected otherwise `false`
 function mod.mt:connected()
-    if self.isSerial then
-        return self.serialConnection and self.serialConnection:isOpen()
-    else
-        return self.websocket and self.websocket:status() == "open"
-    end
+    return self.websocket and self.websocket:isOpen()
 end
 
 --- hs.loupedeck:send() -> boolean
@@ -256,26 +249,25 @@ end
 --- Returns:
 ---  * `true` if sent.
 function mod.mt:send(message)
-    if self.isSerial then
-        if self:connected() then
-            local data = type(message) == "table" and concat(message) or tostring(message)
-            local f = frame.new(true, frame.opcode.binary, true, data)
-            local d = f:toBytes()
-            if d then
-                self.serialConnection:sendData(d)
-                return true
-            else
-                log.ef("Failed to generate websocket frame for serial connection.")
-            end
-        end
-    else
-        if self:connected() then
-            local data = type(message) == "table" and concat(message) or tostring(message)
-            self.websocket:send(data)
-            return true
-        end
+    if self:connected() then
+        local data = type(message) == "table" and concat(message) or tostring(message)
+        self.websocket:send(data)
+        return true
     end
     return false
+end
+
+-- hs.loupedeck:sendBytes(...) -> boolean
+-- Method
+-- Sends a series of `string`, `hs.bytes`, or `hs.bytes` functions to the websocket if connected.
+--
+-- Parameter:
+--  * ... - The list of `string`, `hs.bytes` or `hs.bytes` functions to send.
+--
+-- Returns:
+--  * `true` if sent.
+function mod.mt:sendBytes(...)
+    return self:send(bytes(...):bytes())
 end
 
 --- hs.loupedeck:sendCommand(commandID[, callbackFn[, ...]]) -> boolean
@@ -285,14 +277,12 @@ end
 --- Parameters:
 ---  * commandID  - An 16-bit integer with the command ID.
 ---  * callbackFn - A `function` that will be called with the `data` from the response. (optional)
----  * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
+---  * ...        - a variable number of byte string values, which will be concatenated together with the command and callback ID when being sent.
 ---
 --- Returns:
 ---  * `true` if sent.
 function mod.mt:sendCommand(commandID, callbackFn, ...)
-    return self:send(
-        bytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...):bytes()
-    )
+    return self:sendBytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...)
 end
 
 -- tableContains(table, element) -> boolean
@@ -395,12 +385,30 @@ end
 -- A table containing functions triggered by websocket events.
 local events = {
     --------------------------------------------------------------------------------
+    -- WEBSOCKET OPENING:
+    --------------------------------------------------------------------------------
+    opening = function(obj)
+        obj:triggerCallback {
+            action = "websocket_opening",
+        }
+    end,
+
+    --------------------------------------------------------------------------------
     -- WEBSOCKET OPENED:
     --------------------------------------------------------------------------------
-    open = function(obj)
+    opened = function(obj)
         obj:initaliseDevice()
         obj:triggerCallback {
-            action = "websocket_open",
+            action = "websocket_opened",
+        }
+    end,
+
+    --------------------------------------------------------------------------------
+    -- WEBSOCKET CLOSING:
+    --------------------------------------------------------------------------------
+    closing = function(obj)
+        obj:triggerCallback {
+            action = "websocket_closing",
         }
     end,
 
@@ -416,26 +424,17 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET FAILED:
     --------------------------------------------------------------------------------
-    fail = function(obj, message)
+    error = function(obj, message)
         obj:triggerCallback({
-            action = "websocket_fail",
+            action = "websocket_error",
             error = message,
         })
     end,
 
     --------------------------------------------------------------------------------
-    -- WEBSOCKET RECEIVED PONG:
-    --------------------------------------------------------------------------------
-    pong = function(obj)
-        obj:triggerCallback {
-            action = "websocket_pong",
-        }
-    end,
-
-    --------------------------------------------------------------------------------
     -- WEBSOCKET RECEIVED MESSAGE:
     --------------------------------------------------------------------------------
-    received = function(obj, message)
+    message = function(obj, message)
         -- read the command ID, callback ID and the remainder of the message...
         local id, callbackID, data = bytes.read(message,
             uint16be, uint8, remainder
@@ -782,12 +781,14 @@ mod.responseHandler = {
 ---
 --- Returns:
 ---  * None
-function mod.mt:websocketCallback(event, message)
-    local handler = events[event]
-    if handler then
-        handler(self, message)
-    else
-        log.wf("Unexpected websocket event '%s':\n%s", event, hexDump(message))
+function mod.mt:createWebsocketCallback()
+    return function(event, message)
+        local handler = events[event]
+        if handler then
+            handler(self, message)
+        else
+            log.wf("Unexpected websocket event '%s':\n%s", event, hexDump(message))
+        end
     end
 end
 
@@ -1783,7 +1784,7 @@ function mod.mt:connect()
         self.isSerial = false
         local url = "ws://" .. device .. ":80/"
         log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
-        self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
+        self.websocket = wshttp.new(url, self:createWebsocketCallback())
     else
         --------------------------------------------------------------------------------
         -- Attempt to connect via serial:
@@ -1792,124 +1793,7 @@ function mod.mt:connect()
         --------------------------------------------------------------------------------
         self.isSerial = true
 
-        self._buffer = nil
-        self._hexadecimalStringBuffer = nil
-
-        local serialConnection = serial.newFromName(device)
-        if serialConnection then
-
-            self._serialOpenMessageRecieved = false
-
-            log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
-            serialConnection:baudRate(9600)
-            serialConnection:dataBits(8)
-            serialConnection:stopBits(2)
-            serialConnection:callback(function(obj, event, message, hexadecimalString)
-                --------------------------------------------------------------------------------
-                -- Translate hs.serial events to match hs.websocket events naming:
-                --
-                -- WEBSOCKET EVENTS:
-                --  * open - The websocket connection has been opened
-                --  * closed - The websocket connection has been closed
-                --  * fail - The websocket connection has failed
-                --  * received - The websocket has received a message
-                --  * pong - A pong request has been received
-                --
-                -- SERIAL EVENTS:
-                --   * opened
-                --   * closed
-                --   * received
-                --   * removed
-                --   * error
-                --------------------------------------------------------------------------------
-                if event == "opened" then event = "open" end
-                if event == "error" then event = "fail" end
-
-                --------------------------------------------------------------------------------
-                -- Handle the websocket handshake:
-                --------------------------------------------------------------------------------
-                if event == "open" then
-                    --------------------------------------------------------------------------------
-                    -- Request websocket connection, by sending this:
-                    --------------------------------------------------------------------------------
-                    --
-                    -- GET /index.html HTTP/1.1
-                    -- Connection: Upgrade
-                    -- Upgrade: websocket
-                    -- Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
-                    --
-                    --------------------------------------------------------------------------------
-                    local dataToSend = hexToBytes("474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a")
-                    obj:sendData(dataToSend)
-                    self._serialOpenMessageRecieved = true
-                    return
-                elseif event == "received" then
-                    if not self._serialOpenMessageRecieved or hexadecimalString:sub(1, 22) == "821c1c7300576562536f63" then
-                        --------------------------------------------------------------------------------
-                        -- Attempt to initialise device:
-                        --------------------------------------------------------------------------------
-                        self:initaliseDevice()
-
-                        --------------------------------------------------------------------------------
-                        -- Trigger the websocket open callback:
-                        --------------------------------------------------------------------------------
-                        self:triggerCallback {
-                            action = "websocket_open",
-                        }
-                        self._serialOpenMessageRecieved = true
-
-                        return
-                    elseif hexadecimalString == "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a" then
-                        --------------------------------------------------------------------------------
-                        -- If this message is recieved back, then the websocket connection is
-                        -- successfully established!
-                        --------------------------------------------------------------------------------
-                        --
-                        -- HTTP/1.1 101 Switching Protocols
-                        -- Upgrade: websocket
-                        -- Connection: Upgrade
-                        -- Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
-                        --
-                        --------------------------------------------------------------------------------
-                        return
-                    end
-                end
-
-                local f
-
-                if self._buffer and message then
-                    message = self._buffer .. message
-                    hexadecimalString = self._hexadecimalStringBuffer .. hexadecimalString
-                    self._buffer = nil
-                    self._hexadecimalStringBuffer = nil
-                end
-
-                local ran, err = pcall(function()
-                    f = fromBytes(message, 1)
-                end)
-
-                if not ran then
-                    self._buffer = message
-                    self._hexadecimalStringBuffer = hexadecimalString
-                    return
-                end
-
-                local applicationData = f and f.applicationData
-                if applicationData then
-                    self:websocketCallback(event, applicationData)
-                else
-                    log.df("--------------------------------------------------------------------------------")
-                    log.df("Failed To Decode Websocket Frame From Serial:")
-                    log.df("")
-                    log.df("event: %s", event)
-                    log.df("hexadecimal string: %s", hexadecimalString)
-                    log.df("--------------------------------------------------------------------------------")
-                end
-            end)
-            serialConnection:open()
-
-            self.serialConnection = serialConnection
-        end
+        self.websocket = wsserial.new(device, 9600, 8, 2, self:createWebsocketCallback())
     end
 end
 
@@ -2005,7 +1889,6 @@ function mod.findDevices(deviceType)
     -- Find websockets:
     --------------------------------------------------------------------------------
     local interfaces = network.interfaces()
-    local interfaceID
     for _, interfaceID in pairs(interfaces) do
         if tableContains(interfaceNames, network.interfaceName(interfaceID)) then
             local details = interfaceID and network.interfaceDetails(interfaceID)

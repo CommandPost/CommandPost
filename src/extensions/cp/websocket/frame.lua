@@ -8,6 +8,8 @@
 
 local bytes             = require "hs.bytes"
 local utf8              = require "hs.utf8"
+local buffer            = require "cp.websocket.buffer"
+local result            = require "cp.result"
 
 local hexToBytes        = bytes.hexToBytes
 local exactly           = bytes.exactly
@@ -55,6 +57,7 @@ mod.opcode = {
     pong            = 0xA,
     -- 0xB-F reserved for control frames
 }
+
 
 -- readPayloadLen(data, index) -> number, number
 -- Function
@@ -113,18 +116,22 @@ function mod.generateMaskingKey()
     return 0
 end
 
---- cp.websocket.frame.fromBytes(data, index[, extensionLen]) -> frame, number | nil
+-- TODO: Delete fromBytes once we are using fromBuffer everywhere.
+
+--- cp.websocket.frame.fromBytes(data, index) -> frame, number
 --- Function
 --- Reads a Websocket Frame from the provided `string` of binary data.
 ---
 --- Parameters:
 ---  * data - The `string` of bytes to read from.
 ---  * index - The 1-based index `number` to start reading from.
----  * extensionLen - An optional number indicating the number of expected extension bytes.
 ---
 --- Returns:
----  * The `frame` of binary payload data plus the next index `number` to read from the `data` `string`, or `nil` if the data was invalid.
-function mod.fromBytes(data, index, extensionLen)
+---  * The `frame` of binary payload data plus the next index `number` to read from the `data` `string`.
+---
+--- Notes:
+---  * Throws an error if any of the bytes are invalid.
+function mod.fromBytes(data, index)
     local frame = {}
 
     -- read the FIN/RSV/OPCODE byte
@@ -137,7 +144,7 @@ function mod.fromBytes(data, index, extensionLen)
     frame.rsv3 = isSet(finalOp, RSV3)
 
     -- Reserved bits only allowed if extensions have been negotiated on the handshake.
-    if extensionLen == nil and (frame.rsv1 or frame.rsv2 or frame.rsv3) then
+    if frame.rsv1 or frame.rsv2 or frame.rsv3 then
         error(format("unexpected reserved flags: rsv1: %s; rsv2: %s; rsv3: %s", frame.rsv1, frame.rsv2, frame.rsv3))
     end
 
@@ -164,16 +171,181 @@ function mod.fromBytes(data, index, extensionLen)
         payloadData = maskData(payloadData, maskingKey)
     end
 
-    if extensionLen ~= nil then
-        frame.extensionData = payloadData:sub(1, extensionLen)
-        payloadData = payloadData:sub(extensionLen)
-    end
-
-    frame.applicationData = payloadData
+    frame.payloadData = payloadData
 
     setmetatable(frame, mod.mt)
 
     return frame, nextIndex + frame.payloadLen
+end
+
+local function toBuffer(data, cloned)
+    local buff
+    if buffer.is(data) then
+        buff = data
+    elseif type(data) == "string" then
+        buff = buffer.new(data)
+    else
+        return nil
+    end
+
+    if cloned then
+        buff = buff:clone()
+    end
+    return buff
+end
+
+-- readFrameHeader(buff) -> result<{frame:frame, bytes:number}>
+-- Private Function
+-- Attempts to read the payload length and masking key from the buffer and add them to the provided `frame`.
+--
+-- Parameters:
+--  * buff - the `buffer` to read, which will be modified.
+--
+-- Returns:
+--  * If `successful`, a `result` containing the updated `frame` and the total `bytes` read to retrieve them.
+--  * Otherwise a `failure` with the `error` message if there was a problem while reading.
+local function readFrameHeader(buff)
+    local frame = setmetatable({}, mod.mt)
+
+    -- read the FIN/RSV/OPCODE/MASK/PAYLOAD LEN bytes
+    local header = buff:pop(2)
+    if not header then
+        return result.failure("expected the FIN | RSV1/2/3 byte and MASK | PAYLOAD LEN byte")
+    end
+
+    local finalOp, maskPayloadByte = bytes.read(header, uint8, uint8)
+
+    frame.final = isSet(finalOp, FIN)
+    frame.rsv1 = isSet(finalOp, RSV1)
+    frame.rsv2 = isSet(finalOp, RSV2)
+    frame.rsv3 = isSet(finalOp, RSV3)
+
+    frame.opcode = finalOp & OPCODE
+
+    -- is there a mask?
+    frame.mask = maskPayloadByte & MASK == MASK
+
+    -- how big is the payload?
+    local payloadLen = maskPayloadByte & PAYLOAD_LEN
+
+    local extendedLen, uint = 0, nil
+
+    if payloadLen == PAYLOAD_64BIT then
+        extendedLen = 8
+        uint = uint64be
+    elseif payloadLen == PAYLOAD_16BIT then
+        extendedLen = 2
+        uint = uint16be
+    end
+
+    if extendedLen > 0 then
+        local extendedBytes = buff:pop(extendedLen)
+        if not extendedBytes then
+            return result.failure("expected %d bytes for the EXTENDED PAYLOAD LEN", extendedLen)
+        end
+        payloadLen = bytes.read(extendedBytes, uint)
+    end
+
+    frame.payloadLen = payloadLen
+
+    return result.success {frame = frame, bytes = 2 + extendedLen}
+end
+
+--- cp.websocket.frame.bytesRequired(data) -> number | nil
+--- Function
+--- Checks bytes in the data `string` or `buffer`. If it contains a valid frame header (everything up to but not including the masking key/payload)
+--- it will return the total required bytes for a valid frame, otherwise it will return `nil`.
+---
+--- Parameters:
+---  * data: the `string` or `buffer` to check.
+---
+--- Returns:
+---  * The `number` of bytes required based on the frame header, or `nil` if not enough information is available.
+---
+--- Notes:
+---  * The `data` will be unmodified after returning from this function.
+function mod.bytesRequired(data)
+    data = toBuffer(data, true)
+    if not data then
+       return nil
+    end
+
+    local outcome = readFrameHeader(data)
+    if outcome.failure then
+        return nil
+    end
+    local frame = outcome.value.frame
+    return outcome.value.bytes + (frame.mask and 4 or 0) + frame.payloadLen
+end
+
+--- cp.websocket.frame.isValid(data) -> number
+--- Function
+--- Checks bytes in the data `string` or `buffer` contains a valid `frame`.
+---
+--- Parameters:
+---  * data: the `string` or `buffer` to check.
+---
+--- Returns:
+---  * `true` if the data contains both a valid frame header and sufficient bytes for the whole frame.
+function mod.isValid(data)
+    data = toBuffer(data)
+    if not data then
+        return false
+    end
+
+    local requiredLen = mod.bytesRequired(data)
+    if not requiredLen then
+        return false
+    end
+
+    return requiredLen ~= nil and data:len() >= requiredLen
+end
+
+--- cp.websocket.frame.fromBuffer(data) -> result<{frame:frame, bytes:number}>
+--- Function
+--- Reads a Websocket Frame from the provided `string` or `cp.websocket.buffer` of binary data.
+---
+--- Parameters:
+---  * data - The `string` or `cp.websocket.buffer` of bytes to read from. It will not be modified.
+---
+--- Returns:
+---  * The a `cp.result` with either `success` and the `frame` of binary payload data plus the number of `bytes` read from the `data`,
+---   or `failure` with a `message` if there was an error.
+function mod.fromBuffer(data)
+    data = toBuffer(data, true)
+    if not data then
+       return result.failure("expected a `string` or `buffer`")
+    end
+
+    local outcome = readFrameHeader(data)
+    if outcome.failure then
+        return outcome
+    end
+
+    local frame = outcome.value.frame
+
+    local maskingKey
+    if frame.mask then
+        local maskingKeyBytes = data:pop(4)
+        if not maskingKeyBytes then
+            return result.failure("expected %d bytes for the MASKING KEY", 4)
+        end
+        maskingKey = bytes.read(maskingKeyBytes, uint32be)
+    end
+
+    local payloadData = data:pop(frame.payloadLen)
+    if not payloadData then
+        return result.failure("expected %d bytes of payload data", frame.payloadLen)
+    end
+
+    -- handle the MASK
+    if maskingKey then
+        payloadData = maskData(payloadData, maskingKey)
+    end
+
+    frame.payloadData = payloadData
+
+    return result.success {frame = frame, bytes = outcome.bytes + (frame.mask and 4 or 0) + frame.payloadLen }
 end
 
 --- cp.websocket.frame.fromHex(value, spacer) -> frame, number | nil
@@ -187,10 +359,10 @@ end
 --- Returns:
 ---  * The `frame` of binary payload data plus the next index `number` to read from the `data` `string`, or `nil` if the data was invalid.
 function mod.fromHex(value, spacer)
-    return mod.fromBytes(hexToBytes(value, spacer), 1)
+    return mod.fromBuffer(hexToBytes(value, spacer))
 end
 
---- cp.websocket.frame.new(opcode, mask, applicationData) -> cp.websocket.frame
+--- cp.websocket.frame.new(opcode, mask, payloadData) -> cp.websocket.frame
 --- Constructor
 --- Creates a new `frame` instance.
 ---
@@ -198,11 +370,11 @@ end
 ---  * final - If `true`, this is the final frame for a block of data. May be the first frame.
 ---  * opcode - The `cp.websocket.frame.opcode` for the frame.
 ---  * mask - If `true`, the data will be masked. Mandatory for client-originating frames.
----  * applicationData - The `string` of application data to send.
+---  * payloadData - The `string` of application data to send.
 ---
 --- Returns:
 ---  * The new `frame` instance.
-function mod.new(final, opcode, mask, applicationData)
+function mod.new(final, opcode, mask, payloadData)
     local o = {
         final = final == true,
         rsv1 = false,
@@ -210,8 +382,8 @@ function mod.new(final, opcode, mask, applicationData)
         rsv3 = false,
         opcode = opcode,
         mask = mask,
-        payloadLen = applicationData:len(),
-        applicationData = applicationData,
+        payloadLen = payloadData:len(),
+        payloadData = payloadData,
     }
 
     setmetatable(o, mod.mt)
@@ -219,25 +391,34 @@ function mod.new(final, opcode, mask, applicationData)
     return o
 end
 
---- cp.websocket.frame:payloadData() -> hs.bytes
+--- cp.websocket.frame:isNonControlFrame() -> boolean
 --- Method
---- Returns the payload data (extension data + application data) as an `hs.bytes` instance.
+--- Checks if the frame has a non-control frame opcode.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The `hs.bytes` containing the full payload data.
-function mod.mt:payloadData()
-    if self.extensionData then
-        return bytes(self.extensionData, self.applicationData):bytes()
-    end
+---  * `true` if this is a non-control frame.
+function mod.mt:isNonControlFrame()
+    return self.opcode & 0x8 == 0
+end
 
-    return self.applicationData
+--- cp.websocket.frame:isControlFrame() -> boolean
+--- Method
+--- Checks if the frame has a control frame opcode.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if this is a control frame.
+function mod.mt:isControlFrame()
+    return self.opcode & 0x8 ~= 0
 end
 
 local function maskedPayloadLen(mask, payloadLen)
-    return payloadLen + (mask and MASK or 0)
+    return (mask and MASK or 0) | payloadLen
 end
 
 --- cp.websocket.frame:toBytes() -> string

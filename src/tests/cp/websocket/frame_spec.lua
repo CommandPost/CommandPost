@@ -21,7 +21,7 @@ return describe "cp.websocket.frame" {
         expect(value.rsv3):is(false)
         expect(value.opcode):is(frame.opcode.binary)
         expect(value.mask):is(false)
-        expect(value.applicationData):is("test")
+        expect(value.payloadData):is("test")
 
         local data = value:toBytes()
 
@@ -39,7 +39,7 @@ return describe "cp.websocket.frame" {
         expect(value.rsv3):is(false)
         expect(value.opcode):is(frame.opcode.binary)
         expect(value.mask):is(true)
-        expect(value.applicationData):is(hexToBytes("07 02 02 15"))
+        expect(value.payloadData):is(hexToBytes("07 02 02 15"))
 
         local generator = frame.generateMaskingKey
         frame.generateMaskingKey = function()
