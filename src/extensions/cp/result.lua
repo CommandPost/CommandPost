@@ -24,6 +24,14 @@
 --- end
 --- local value = outcome.value
 --- ```
+---
+--- Of course, simply checking the result and throwing an `error` is a common case, so you can achieve the same result like so:
+---
+--- ```lua
+--- local value = clamped(-1, 0, 100):get()
+--- ```
+---
+--- If you want to perform other tasks, check for `.failure` or `.success` and perform the appropriate response.
 
 local format = string.format
 
@@ -66,16 +74,16 @@ function mod.failure(message, ...)
     return setmetatable({failure = true, message = message}, mod.mt)
 end
 
---- cp.result:check() -> anything
+--- cp.result:get() -> anything
 --- Method
---- Checks if this result was a `failure`, and if so throws an `error` with the provided `message`. Otherwise, it returns the `success` `value`.
+--- Gets the successful value, or throws an `error` with the provided `message`.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `value` if it was a `success`, otherwise throws an `error`.
-function mod.mt:check()
+function mod.mt:get()
     if self.failure then
         error(self.message, 2)
     else
