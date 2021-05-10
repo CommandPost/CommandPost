@@ -172,6 +172,7 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
             local result = mod.write(fullFilePath, value)
             if not result then
                 local errorMessage = string.format("Failed to save JSON file: %s", fullFilePath)
+                log.df("value:\n%s", value)
                 if type(errorCallbackFn) == "function" then
                     errorCallbackFn(errorMessage)
                 else

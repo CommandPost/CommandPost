@@ -352,6 +352,11 @@ function mod.new(deviceType)
         o.tookFingerOffRightScreen[deviceNumber]        = false
         o.tookFingerOffWheelScreen[deviceNumber]        = false
 
+        o.cacheWheelYAxis[deviceNumber]                 = 0
+        o.cacheWheelXAxis[deviceNumber]                 = 0
+        o.cacheLeftScreenYAxis[deviceNumber]            = 0
+        o.cacheRightScreenYAxis[deviceNumber]           = 0
+
         o.connected[deviceNumber]                       = prop.FALSE()
 
         o.cachedBundleID[deviceNumber]                  = ""
@@ -1543,11 +1548,11 @@ function mod.mt:clearCache(deviceNumber)
         end
     end
 
-    self.cacheWheelYAxis[deviceNumber] = {}
-    self.cacheWheelXAxis[deviceNumber] = {}
+    self.cacheWheelYAxis[deviceNumber] = 0
+    self.cacheWheelXAxis[deviceNumber] = 0
 
-    self.cacheRightScreenYAxis[deviceNumber] = {}
-    self.cacheLeftScreenYAxis[deviceNumber] = {}
+    self.cacheRightScreenYAxis[deviceNumber] = 0
+    self.cacheLeftScreenYAxis[deviceNumber] = 0
 
     self.leftFnPressed[deviceNumber] = false
     self.rightFnPressed[deviceNumber] = false
