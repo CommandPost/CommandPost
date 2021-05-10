@@ -1675,7 +1675,6 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                local lastDevice = self.lastDevice()
                 self:refreshDevice()
             end
         elseif callbackType == "updateUI" then
