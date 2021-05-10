@@ -33,7 +33,8 @@
 ---
 --- If you want to perform other tasks, check for `.failure` or `.success` and perform the appropriate response.
 
-local format = string.format
+local inspect       = require "hs.inspect"
+local format        = string.format
 
 local mod = {}
 mod.mt = {}
@@ -131,10 +132,32 @@ end
 
 function mod.mt:__tostring()
     if self.success then
-        local valueStr = self.value == nil and "nil" or tostring(self.value)
-        return "success: " .. valueStr
+        local value = self.value
+        local valueType = type(value)
+        if value == nil then
+            value = "nil"
+        elseif valueType == "table" or valueType=="userdata" then
+            if value.__tostring then
+                value = tostring(value)
+            else
+                value = inspect(value)
+            end
+        else
+            value = tostring(value)
+        end
+        return format("success: %s", value)
     else
-        return self.message == nil and "error" or "error: " .. self.message
+        return self.message == nil and "error" or format("error: %s", inspect(self.message))
+    end
+end
+
+function mod.mt.__eq(a,b)
+    if a.success then
+        return b.success and a.value == b.value
+    elseif a.failure then
+        return b.failure and a.message == b.message
+    else
+        return false
     end
 end
 

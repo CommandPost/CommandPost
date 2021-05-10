@@ -28,6 +28,8 @@ local require           = require
 
 local bytes             = require "hs.bytes"
 
+local hexToBytes        = bytes.hexToBytes
+
 local mod = {}
 
 mod.mt = {}
@@ -83,6 +85,26 @@ function mod.new(...)
     o:push(...)
 
     return o
+end
+
+-- buffer.fromHex(hexString[, spacer]) -> cp.websocket.buffer
+-- Constructor
+-- Creates a buffer from the bytes represented by the provided hex string.
+--
+-- Parameters:
+--  * hexString - The string of hex characters to convert.
+--  * spacer - The character to ignore as a spacer. Defaults to space (" ").
+--
+-- Returns:
+--  * The new `buffer`.
+--
+-- Notes:
+--  * Examples:
+--   * `buffer.fromHex("ABCDE")`
+--   * `buffer.fromHex("12-34-56", "-")`
+function mod.fromHex(hexString, spacer)
+    local hexBytes = hexToBytes(hexString, spacer)
+    return mod.new(hexBytes)
 end
 
 -- buffer.clone(otherBuffer) -> buffer
@@ -241,6 +263,47 @@ function mod.mt:push(...)
 
     self._last = last
     return self
+end
+
+-- buffer:drop(len) -> boolean
+-- Method
+-- Drops the specified `len` of bytes from the start of the buffer.
+--
+-- Parameters:
+--  * len - The number of bytes to read.
+--
+-- Returns:
+--  * `true` if successful, or `false` if there are not enough bytes available for the requested `len`.
+--
+-- Notes:
+--  * Equivalent to, but more efficient than `pop` if you don't need the bytes being dropped.
+function mod.mt:drop(len)
+    local first, last, index = self:_indexes()
+    if first == last then
+        return false
+    elseif len > self:len() then
+        return false
+    end
+
+    local current = first
+    while current ~= last and len > 0 do
+        local chunk = self[current]
+        local available = #chunk - index + 1
+        if available <= len then
+            self[current] = nil
+            self._first = nextChunk(current)
+            self._index = 1
+            len = len-available
+        else
+            local j = index+len
+            self._index = j
+            len = 0
+        end
+        index = 1
+        current = nextChunk(current)
+    end
+
+    return true
 end
 
 return mod

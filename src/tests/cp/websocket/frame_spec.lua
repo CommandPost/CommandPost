@@ -3,6 +3,8 @@ local spec              = require "cp.spec"
 local expect            = require "cp.spec.expect"
 local describe, it      = spec.describe, spec.it
 
+local buffer            = require "cp.websocket.buffer"
+
 local frame             = require "cp.websocket.frame"
 local bytes             = require "hs.bytes"
 
@@ -79,5 +81,37 @@ return describe "cp.websocket.frame" {
         { "9bce62d5", 0x12345678, "89fa34ad" },
         { "9bce62d5 21ed7dc6", 0x12345678, "89fa34ad 33d92bbe" },
         { "9bce62d5 21ed7dc6 675e2082 4af61729", 0x12345678, "89fa34ad 33d92bbe 756a76fa 58c24151" },
-    }
+    },
+
+    it "reads an unmasked text message"
+    :doing(function()
+        local buff = buffer.fromHex("81 05 48 65 6c 6c 6f") -- "Hello"
+        local value = frame.fromBuffer(buff).value.frame
+
+        expect(value.final):is(true)
+        expect(value.rsv1):is(false)
+        expect(value.rsv3):is(false)
+        expect(value.rsv3):is(false)
+        expect(value.opcode):is(frame.opcode.text)
+        expect(value.mask):is(false)
+        expect(value.payloadData):is("Hello")
+
+        expect(buff:len()):is(0)
+    end),
+
+    it "reads a masked text message"
+    :doing(function()
+        local buff = buffer.fromHex("81 85 37 fa 21 3d 7f 9f 4d 51 58") -- "Hello"
+        local value = frame.fromBuffer(buff).value.frame
+
+        expect(value.final):is(true)
+        expect(value.rsv1):is(false)
+        expect(value.rsv3):is(false)
+        expect(value.rsv3):is(false)
+        expect(value.opcode):is(frame.opcode.text)
+        expect(value.mask):is(true)
+        expect(value.payloadData):is("Hello")
+
+        expect(buff:len()):is(0)
+    end),
 }

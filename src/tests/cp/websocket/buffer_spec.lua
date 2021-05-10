@@ -36,7 +36,7 @@ return describe "cp.websocket.buffer" {
         expect(value:len()):is(0)
     end),
 
-    it("cycles to the beginning when running out of indexes")
+    it "cycles to the beginning when running out of indexes"
     :doing(function()
         local maxChunks = buffer.maxChunks
         buffer.maxChunks = 5
@@ -59,5 +59,18 @@ return describe "cp.websocket.buffer" {
         expect(value:push("G"):len()):is(5)
 
         buffer.maxChunks = maxChunks
+    end),
+
+    it "drops bytes"
+    :doing(function()
+        local value = buffer.new("Hello", " ", "world!")
+
+        expect(value:len()):is(12)
+        expect(value:drop(3)):is(true)
+        expect(value:peek(9)):is("lo world!")
+        expect(value:drop(8)):is(true)
+        expect(value:peek(1)):is("!")
+        expect(value:drop(2)):is(false)
+        expect(value:peek(1)):is("!")
     end),
 }

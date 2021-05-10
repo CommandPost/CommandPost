@@ -213,18 +213,33 @@ function mod.isValid(data)
     return requiredLen ~= nil and data:len() >= requiredLen
 end
 
---- cp.websocket.frame.fromBuffer(data) -> result<{frame:frame, bytes:number}>
+function mod.fromBytes(data)
+    return mod.fromBuffer(buffer(data))
+end
+
+--- cp.websocket.frame.fromBuffer(buff) -> result<{frame:frame, bytes:number}>
 --- Function
---- Reads a Websocket Frame from the provided `string` or `cp.websocket.buffer` of binary data.
+--- Reads a Websocket Frame from the provided `cp.websocket.buffer` of binary data.
 ---
 --- Parameters:
----  * data - The `string` or `cp.websocket.buffer` of bytes to read from. It will not be modified.
+---  * buff - The `cp.websocket.buffer` of bytes to read from.
 ---
 --- Returns:
 ---  * The a `cp.result` with either `success` and the `frame` of binary payload data plus the number of `bytes` read from the `data`,
 ---   or `failure` with a `message` if there was an error.
-function mod.fromBuffer(data)
-    data = toBuffer(data, true)
+---
+--- Notes:
+---  * If a `success`, the `value` will be a table containing the following:
+---   * `frame` - The `cp.websocket.frame` value
+---   * `bytes` - The `number` of bytes which were read from the `buffer`.
+--- * If a `success`, the passed-in `buffer` will have had the bytes required for the `frame` removed.
+--- * If a `failure`, the passed-in `buffer` will not be modified.
+function mod.fromBuffer(buff)
+    if not buffer.is(buff) then
+        return result.failure("expected a `cp.websocket.buffer`: %s", type(buff))
+    end
+    -- clone it so we can manipulate without modifying the original
+    local data = buff:clone()
     if not data then
        return result.failure("expected a `string` or `buffer`")
     end
@@ -258,7 +273,11 @@ function mod.fromBuffer(data)
 
     frame.payloadData = payloadData
 
-    return result.success {frame = frame, bytes = headerBytes + (frame.mask and 4 or 0) + frame.payloadLen }
+    local consumedBytes = headerBytes + (frame.mask and 4 or 0) + frame.payloadLen
+    -- made it to the end, so pop from the original
+    buff:pop(consumedBytes)
+
+    return result.success {frame = frame, bytes = consumedBytes }
 end
 
 --- cp.websocket.frame.fromHex(value, spacer) -> frame, number | nil
@@ -334,7 +353,7 @@ end
 -- Private Function
 -- Combines the `mask` and 7-bit `payloadLen` value into a single number.
 local function maskedPayloadLen(mask, payloadLen)
-    return (mask and MASK or 0) | (payloadLen | PAYLOAD_LEN)
+    return (mask and MASK or 0) + (payloadLen & PAYLOAD_LEN)
 end
 
 --- cp.websocket.frame:toBytes() -> string
@@ -409,7 +428,7 @@ function mod.mt:__tostring()
 
     insert(out, hexDump(payloadData))
 
-    return table.concat(result)
+    return table.concat(out)
 end
 
 return mod
