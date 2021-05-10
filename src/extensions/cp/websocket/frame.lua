@@ -235,6 +235,7 @@ function mod.fromBuffer(data)
     end
 
     local frame = outcome.value.frame
+    local headerBytes = outcome.value.bytes
 
     local maskingKey
     if frame.mask then
@@ -257,7 +258,7 @@ function mod.fromBuffer(data)
 
     frame.payloadData = payloadData
 
-    return result.success {frame = frame, bytes = outcome.bytes + (frame.mask and 4 or 0) + frame.payloadLen }
+    return result.success {frame = frame, bytes = headerBytes + (frame.mask and 4 or 0) + frame.payloadLen }
 end
 
 --- cp.websocket.frame.fromHex(value, spacer) -> frame, number | nil
