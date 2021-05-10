@@ -94,7 +94,7 @@ function mod.from(value, err)
     end
 end
 
---- cp.result.notNil(value, err) -> result
+--- cp.result.valueErr(value, err) -> result
 --- Constructor
 --- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua.
 --- If the `value` is `nil` it will result in a `failure` with the optional `err` message, otherwise the `value` is passed to a `success`.
@@ -105,11 +105,30 @@ end
 ---
 --- Returns:
 ---  * A `result.success` or `result.failure`.
-function mod.notNil(value, err)
+function mod.valueErr(value, err)
     if value == nil then
         return mod.failure(err)
     else
         return mod.success(value)
+    end
+end
+
+--- cp.result.okValue(ok, value) -> result
+--- Constructor
+--- Provides a simple wrapper for the common `ok, value|err` pattern of function error handling in Lua.
+--- If `ok` is true, `value` is the successful result, otherwise `value` is the error message.
+---
+--- Parameters:
+---  * ok - if `true`, the operation was successful.
+---  * value - `ok` is true, the successful value, otherwise the error message.
+---
+--- Returns:
+---  * A `result.success` or `result.failure`.
+function mod.okValue(ok, value)
+    if ok then
+        return mod.success(value)
+    else
+        return mod.failure(value)
     end
 end
 
