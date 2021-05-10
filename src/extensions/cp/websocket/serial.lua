@@ -328,10 +328,6 @@ function mod.mt:_bufferMessage(message)
         end
 
         local frm = outcome.value.frame
-        if not buff:pop(outcome.value.bytes) then
-            log.ef("expected to be able to remove %d bytes from the serial buffer", outcome.value.bytes)
-            return
-        end
 
         if frm:isControlFrame() then
             if frm.opcode == frame.opcode.close then

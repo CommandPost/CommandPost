@@ -86,7 +86,13 @@ return describe "cp.websocket.frame" {
     it "reads an unmasked text message"
     :doing(function()
         local buff = buffer.fromHex("81 05 48 65 6c 6c 6f") -- "Hello"
-        local value = frame.fromBuffer(buff).value.frame
+
+        expect(buff:len()):is(7)
+
+        local outcome = frame.fromBuffer(buff)
+        expect(outcome.value.bytes):is(7)
+
+        local value = outcome.value.frame
 
         expect(value.final):is(true)
         expect(value.rsv1):is(false)
@@ -102,7 +108,13 @@ return describe "cp.websocket.frame" {
     it "reads a masked text message"
     :doing(function()
         local buff = buffer.fromHex("81 85 37 fa 21 3d 7f 9f 4d 51 58") -- "Hello"
-        local value = frame.fromBuffer(buff).value.frame
+
+        expect(buff:len()):is(11)
+
+        local outcome = frame.fromBuffer(buff)
+        expect(outcome.value.bytes):is(11)
+
+        local value = outcome.value.frame
 
         expect(value.final):is(true)
         expect(value.rsv1):is(false)
@@ -113,5 +125,47 @@ return describe "cp.websocket.frame" {
         expect(value.payloadData):is("Hello")
 
         expect(buff:len()):is(0)
+    end),
+
+    it "doesn't read an incomplete frame"
+    :doing(function()
+        local buff = buffer.fromHex("81 05 48 65 6c 6c") -- "Hell"
+        local outcome = frame.fromBuffer(buff)
+
+        expect(outcome.failure):is(true)
+    end),
+
+    it "doesn't consume unused bytes"
+    :doing(function()
+        local buff = buffer.fromHex("81 05 48 65 6c 6c 6f FF") -- "Hello" + 0xFF
+        local outcome = frame.fromBuffer(buff)
+
+        expect(outcome.success):is(true)
+
+        expect(outcome.value.bytes):is(7)
+        expect(outcome.value.frame.payloadData):is("Hello")
+        expect(buff:len()):is(1)
+    end),
+
+    it "reads a string of bytes"
+    :doing(function()
+        local data = hexToBytes("81 05 48 65 6c 6c 6f FF") -- "Hello" + 0xFF
+
+        expect(data:len()):is(8)
+
+        local outcome = frame.fromBytes(data)
+        expect(outcome.value.bytes):is(7)
+
+        local value = outcome.value.frame
+
+        expect(value.final):is(true)
+        expect(value.rsv1):is(false)
+        expect(value.rsv3):is(false)
+        expect(value.rsv3):is(false)
+        expect(value.opcode):is(frame.opcode.text)
+        expect(value.mask):is(false)
+        expect(value.payloadData):is("Hello")
+
+        expect(data:len()):is(8)
     end),
 }

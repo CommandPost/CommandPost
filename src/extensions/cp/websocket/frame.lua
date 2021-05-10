@@ -213,8 +213,23 @@ function mod.isValid(data)
     return requiredLen ~= nil and data:len() >= requiredLen
 end
 
+--- cp.websocket.frame.fromBytes(buff) -> result<{frame:frame, bytes:number}>
+--- Function
+--- Reads a Websocket Frame from the provided `cp.websocket.buffer` of binary data.
+---
+--- Parameters:
+---  * buff - The `cp.websocket.buffer` of bytes to read from.
+---
+--- Returns:
+---  * The a `cp.result` with either `success` and the `frame` of binary payload data plus the number of `bytes` read from the `data`,
+---   or `failure` with a `message` if there was an error.
+---
+--- Notes:
+---  * If a `success`, the `value` will be a table containing the following:
+---   * `frame` - The `cp.websocket.frame` value
+---   * `bytes` - The `number` of bytes which were read from the `buffer`.
 function mod.fromBytes(data)
-    return mod.fromBuffer(buffer(data))
+    return mod.fromBuffer(buffer.new(data))
 end
 
 --- cp.websocket.frame.fromBuffer(buff) -> result<{frame:frame, bytes:number}>
@@ -275,7 +290,7 @@ function mod.fromBuffer(buff)
 
     local consumedBytes = headerBytes + (frame.mask and 4 or 0) + frame.payloadLen
     -- made it to the end, so pop from the original
-    buff:pop(consumedBytes)
+    buff:drop(consumedBytes)
 
     return result.success {frame = frame, bytes = consumedBytes }
 end
