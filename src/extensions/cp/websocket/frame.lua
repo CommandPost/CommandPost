@@ -351,7 +351,7 @@ function mod.mt:toBytes()
 
     local data = bytes():write(uint8(finalOp))
 
-    local payloadData = self:payloadData()
+    local payloadData = self.payloadData
     local payloadLen = payloadData:len()
     if payloadLen > MAX_16BIT then
         data:write(uint8(maskedPayloadLen(self.mask, PAYLOAD_64BIT)), uint64be(payloadLen))
@@ -402,7 +402,7 @@ function mod.mt:__tostring()
         insert(out, "MASK ")
     end
 
-    local payloadData = self:payloadData()
+    local payloadData = self.payloadData
 
     insert(out, "PAYLOAD LEN: " .. tostring(#payloadData) .. "\n")
 

@@ -1583,10 +1583,12 @@ end
 --- Returns:
 ---  * None
 function mod.mt:callback(data, deviceNumber)
+    --[[
     log.df("--------------------------------------------------------------------------------")
     log.df("deviceNumber: %s", deviceNumber)
     log.df("data: %s", hs.inspect(data))
     log.df("--------------------------------------------------------------------------------")
+    --]]
 
     local device = self.devices and self.devices[deviceNumber]
 

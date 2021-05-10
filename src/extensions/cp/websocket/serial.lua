@@ -94,6 +94,7 @@ local WS_HANDSHAKE_RESPONSE =
     "Connection: Upgrade\n" ..
     "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
 
+
 -- The serial port message handlers
 mod._handler = {
     opened = function(self, _)
@@ -113,11 +114,14 @@ mod._handler = {
         self:close()
     end,
 
-    received = function(self, message)
+    received = function(self, message, hexadecimalString)
         log.df("Serial connection message: %s", message)
-        if self._status == status.opening and message == WS_HANDSHAKE_RESPONSE then
+        if self._status == status.opening and hexadecimalString == "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a" then
             log.df("Serial connection handshake received!")
             self:_update(status.open, event.opened)
+        elseif hexadecimalString == "821c1c7300576562536f6300000000000000000000000000000000000000" then
+            log.df("Websocket connection over serial complete!")
+            return
         elseif self._status == status.open then
             -- frames come in chunks, so buffer them together and check the whole buffer for actual frames.
             self:_bufferMessage(message)
@@ -214,12 +218,15 @@ end
 -- Creates a callback function for the internal `hs.serial` connection.
 function mod.mt:_createSerialCallback()
     return function(_, callbackType, message, hexadecimalString)
+        -- callbackType - A string containing "opened", "closed", "received", "removed" or "error".
 
+        --[[
         log.df("--------")
         log.df("callbackType: %s", callbackType)
         log.df("message: %s", message)
         log.df("hexadecimalString: %s", hexadecimalString)
         log.df("--------")
+        --]]
 
         local handler = mod._handler[callbackType]
         if handler then
@@ -294,11 +301,11 @@ end
 ---   Invalid Character sequence).
 function mod.mt:send(message, isData)
     if self:isOpen() then
-        local opcode = mod.opcode.binary
+        local opcode = frame.opcode.binary
         -- fix UTF-8 if sending as `text`
         if isData == false then
             message = utf8.fixUTF8(message)
-            opcode = mod.opcode.text
+            opcode = frame.opcode.text
         end
 
         local value = frame.new(true, opcode, true, message)
