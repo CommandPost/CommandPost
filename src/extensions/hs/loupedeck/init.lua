@@ -17,6 +17,7 @@ local timer             = require "hs.timer"
 local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
 
+local just              = require "cp.just"
 local wshttp            = require "cp.websocket.http"
 local wsserial          = require "cp.websocket.serial"
 
@@ -397,6 +398,7 @@ local events = {
     -- WEBSOCKET OPENED:
     --------------------------------------------------------------------------------
     opened = function(obj)
+        --log.df("Initalising device...")
         obj:initaliseDevice()
         obj:triggerCallback {
             action = "websocket_opened",
@@ -513,6 +515,8 @@ mod.ignoreResponses = {
     [0x1c73] = true, -- This is triggered when the Loupedeck Live first connects
     [0x1573] = true, -- This is triggered when the Loupedeck Live first connects
     [0x1f73] = true, -- This is triggered when the Loupedeck Live first connects
+
+    [0x0410] = true, -- Not sure... seems to happen during restarts.
 }
 
 -- convertWheelXandYtoButtonID(x, y) -> number
@@ -1807,33 +1811,34 @@ end
 --- Returns:
 ---  * None
 function mod.mt:disconnect()
+    --------------------------------------------------------------------------------
+    -- Black out screens and LEDs:
+    --------------------------------------------------------------------------------
+    local black = "#000000"
+    for _, screen in pairs(mod.screens) do
+        self:updateScreenColor(screen, {hex=black})
+    end
+    for i=7, 26 do
+        self:buttonColor(i, {hex=black})
+    end
+
+    --------------------------------------------------------------------------------
+    -- Add a slight delay so that the websocket message has time to send:
+    --------------------------------------------------------------------------------
+    just.wait(0.01)
+
+    --------------------------------------------------------------------------------
+    -- Close the connection:
+    --------------------------------------------------------------------------------
     if self.websocket then
         self.websocket:close()
         self.websocket = nil
-    end
-
-    if self.serialConnection then
-        --------------------------------------------------------------------------------
-        -- Disconnect from the websocket connection (over serial):
-        --------------------------------------------------------------------------------
-        --[[
-        local f = frame.new(true, frame.opcode.close, true, "")
-        local d = f:toBytes()
-        self.serialConnection:sendData(d)
-        --]]
-
-        --------------------------------------------------------------------------------
-        -- Disconnect from the serial connection:
-        --------------------------------------------------------------------------------
-        self.serialConnection:close()
-        self.serialConnection = nil
     end
 
     --------------------------------------------------------------------------------
     -- Destroy any watchers:
     --------------------------------------------------------------------------------
     self:updateWatcher()
-
 end
 
 --- hs.loupedeck.new() -> Loupedeck

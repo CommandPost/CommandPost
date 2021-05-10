@@ -551,13 +551,7 @@ function mod.new(deviceType)
         if o.enabled() then
             local devices = o.getDevices()
             for _, device in pairs(devices) do
-                for _, screen in pairs(loupedeck.screens) do
-                    device:updateScreenColor(screen, {hex="#"..defaultColor})
-                end
-                for i=7, 26 do
-                    device:buttonColor(i, {hex="#" .. defaultColor})
-                end
-                just.wait(0.01) -- Slight delay so the websocket message has time to send.
+                device:disconnect()
             end
         end
     end)

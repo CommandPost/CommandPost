@@ -309,7 +309,7 @@ function mod.fromHex(value, spacer)
     return mod.fromBuffer(hexToBytes(value, spacer))
 end
 
---- cp.websocket.frame.new(opcode, mask, payloadData) -> cp.websocket.frame
+--- cp.websocket.frame.new(final, opcode, mask, payloadData) -> cp.websocket.frame
 --- Constructor
 --- Creates a new `frame` instance.
 ---
@@ -381,7 +381,7 @@ end
 --- Returns:
 --- The byte `string` containing the frame in binary format.
 function mod.mt:toBytes()
-    local finalOp = self.final and FIN or 0 + self.rsv1 and RSV1 or 0 + self.rsv2 and RSV2 or 0 + self.rsv3 and RSV3 or 0
+    local finalOp = (self.final and FIN or 0) + (self.rsv1 and RSV1 or 0) + (self.rsv2 and RSV2 or 0) + (self.rsv3 and RSV3 or 0)
     finalOp = finalOp + self.opcode
 
     local data = bytes():write(uint8(finalOp))

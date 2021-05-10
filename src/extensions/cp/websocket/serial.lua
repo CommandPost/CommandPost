@@ -31,6 +31,10 @@ local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
 
+-- TODO: This is hard-coded for the response from a Loupedeck device. Make more general!
+local WS_HANDSHAKE_REQUEST = "474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a"
+local WS_HANDSHAKE_RESPONSE = "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a"
+
 --- cp.websocket.serial.new(deviceName, baudRate, dataBits, stopBits, callback) -> object
 --- Function
 --- Creates a new websocket connection via a serial connection.
@@ -52,18 +56,17 @@ mod.mt.__index = mod.mt
 function mod.new(deviceName, baudRate, dataBits, stopBits, callback)
     local o = {
         -- configuration
-        _deviceName = deviceName,
-        _baudRate = baudRate,
-        _dataBits = dataBits,
-        _stopBits = stopBits,
-        _callback = callback,
+        _deviceName                 = deviceName,
+        _baudRate                   = baudRate,
+        _dataBits                   = dataBits,
+        _stopBits                   = stopBits,
+        _callback                   = callback,
 
         -- internal
-        _status = status.closed,
-        _serialBuffer = buffer.new(),
-        _messageBytes = bytes.new(),
+        _status                     = status.closed,
+        _serialBuffer               = buffer.new(),
+        _messageBytes               = bytes.new(),
     }
-
     setmetatable(o, mod.mt)
     return o
 end
@@ -81,50 +84,37 @@ function mod.mt:status()
     return self._status
 end
 
-local WS_HANDSHAKE_REQUEST =
-    "GET /index.html HTTP/1.1\n" ..
-    "Connection: Upgrade\n" ..
-    "Upgrade: websocket\n" ..
-    "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ=="
-
--- TODO: This is hard-coded for the response from a Loupedeck device. Make more general!
-local WS_HANDSHAKE_RESPONSE =
-    "HTTP/1.1 101 Switching Protocols\n" ..
-    "Upgrade: websocket\n" ..
-    "Connection: Upgrade\n" ..
-    "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
-
-
 -- The serial port message handlers
 mod._handler = {
     opened = function(self, _)
-        log.df("Serial connection opened, sending handshake...")
+        --log.df("Serial connection opened, sending handshake request.")
         self._status = status.opening
-        self:send(WS_HANDSHAKE_REQUEST, false)
+        local handShakeRequest = bytes.hexToBytes(WS_HANDSHAKE_REQUEST)
+        self._connection:sendData(handShakeRequest)
     end,
 
     closed = function(self, _)
-        log.df("Serial connection closed")
+        --log.df("Serial connection closed.")
         self._status = status.closed
         self._connection = nil
         self:_report(event.closed)
     end,
 
     removed = function(self, _)
+        --log.df("Serial device removed.")
         self:close()
     end,
 
     received = function(self, message, hexadecimalString)
-        log.df("Serial connection message: %s", message)
-        if self._status == status.opening and hexadecimalString == "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a" then
-            log.df("Serial connection handshake received!")
+        if self._status == status.opening and hexadecimalString == WS_HANDSHAKE_RESPONSE then
+            --log.df("Serial connection handshake received!")
             self:_update(status.open, event.opened)
-        elseif hexadecimalString == "821c1c7300576562536f6300000000000000000000000000000000000000" then
-            log.df("Websocket connection over serial complete!")
-            return
         elseif self._status == status.open then
             -- frames come in chunks, so buffer them together and check the whole buffer for actual frames.
             self:_bufferMessage(message)
+        elseif self._status == status.opening then
+            -- Ignore any random messages whilst still opening...
+            return
         else
             mod._handler.error(self, message)
         end
@@ -165,37 +155,29 @@ end
 --- Returns:
 ---  * The `cp.websocket.status` after attempting to open.
 function mod.mt:open()
-    log.df("Opening serial connection...")
+    --log.df("Opening serial connection...")
     self:_update(status.opening, event.opening)
 
     local connection = serial.newFromName(self._deviceName)
     if connection then
-        connection:baudRate(self._baudRate)
-        :dataBits(self._dataBits)
-        :stopBits(self._stopBits)
-        :callback(self:_createSerialCallback())
+        connection
+            :baudRate(self._baudRate)
+            :dataBits(self._dataBits)
+            :stopBits(self._stopBits)
+            :callback(self:_createSerialCallback())
 
         self._connection = connection:open()
+
         if not self._connection then
             -- TODO: Check if these are necessary. It's possible that hs.serial is already sending events for these.
-            log.ef("Unable to open serial connection")
+            log.ef("Unable to open serial connection.")
             self:_report(event.error, "Unable to open serial connection.")
             self:_update(status.closed, event.closed)
         end
 
-        if self._connection:isOpen() then
-            log.df("Serial connection is open!")
-
-
-            self._status = status.opening
-
-            log.df("Sending handshake request")
-            --self:send(WS_HANDSHAKE_REQUEST, false)
-
-            local handShakeRequest = bytes.hexToBytes("474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a")
-            self._connection:sendData(handShakeRequest)
-        end
-
+        --if self._connection:isOpen() then
+            --log.df("Loupedeck serial connection is open...")
+        --end
     end
     return self._status
 end
@@ -218,16 +200,6 @@ end
 -- Creates a callback function for the internal `hs.serial` connection.
 function mod.mt:_createSerialCallback()
     return function(_, callbackType, message, hexadecimalString)
-        -- callbackType - A string containing "opened", "closed", "received", "removed" or "error".
-
-        --[[
-        log.df("--------")
-        log.df("callbackType: %s", callbackType)
-        log.df("message: %s", message)
-        log.df("hexadecimalString: %s", hexadecimalString)
-        log.df("--------")
-        --]]
-
         local handler = mod._handler[callbackType]
         if handler then
             handler(self, message, hexadecimalString)
@@ -248,7 +220,11 @@ end
 -- Returns:
 --  * Nothing
 function mod.mt:_report(eventType, message)
-    self._callback(eventType, message)
+    if self._callback then
+        self._callback(eventType, message)
+    else
+        log.ef("No callback supplied - this shouldn't happen.")
+    end
 end
 
 --- cp.websocket.serial:close() -> object
@@ -328,7 +304,6 @@ function mod.mt:_bufferMessage(message)
         end
 
         local frm = outcome.value.frame
-
         if frm:isControlFrame() then
             if frm.opcode == frame.opcode.close then
                 local payloadData = frm.payloadData
@@ -337,10 +312,13 @@ function mod.mt:_bufferMessage(message)
                     statusCode, errMessage = bytes.read(payloadData, uint16be, remainder)
                 end
                 log.ef("error from server: %x00 %s", statusCode, errMessage)
-                self._report(event.closing)
+
+                self:_report(event.closing)
                 frm.mask = true
+
                 -- send it straight back, masked
                 self._connection:sendData(frm:toBytes())
+
                 -- TODO: Do we need to report(event.closed) also?
             elseif frm.opcode == frame.opcode.ping then
                 local pong = frame.new(true, frame.opcode.pong, true, frm.payloadData)
@@ -348,13 +326,13 @@ function mod.mt:_bufferMessage(message)
             end
         else
             local msgBytes = self._messageBytes
-            local payloadData = frame.payloadData
+            local payloadData = frm.payloadData
             if frm.opcode == frame.opcode.text then
                 payloadData = utf8.fixUTF8(payloadData)
             end
             msgBytes:write(payloadData)
 
-            if frame.final then
+            if frm.final then
                 local messageData = msgBytes:bytes()
                 self._messageBytes = bytes.new()
                 self:_report(event.message, messageData)
