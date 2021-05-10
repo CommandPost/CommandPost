@@ -129,4 +129,13 @@ function mod.mt:get()
     end
 end
 
+function mod.mt:__tostring()
+    if self.success then
+        local valueStr = self.value == nil and "nil" or tostring(self.value)
+        return "success: " .. valueStr
+    else
+        return self.message == nil and "error" or "error: " .. self.message
+    end
+end
+
 return mod
