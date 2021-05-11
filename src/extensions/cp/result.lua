@@ -97,7 +97,7 @@ end
 --- cp.result.valueErr(value, err) -> result
 --- Constructor
 --- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua.
---- If the `value` is `nil` it will result in a `failure` with the optional `err` message, otherwise the `value` is passed to a `success`.
+--- If the `err` is not `nil` it will result in a `failure` with the message, otherwise the `value` is passed to a `success`.
 ---
 --- Parameters:
 ---  * value - The value if successful.
@@ -106,7 +106,7 @@ end
 --- Returns:
 ---  * A `result.success` or `result.failure`.
 function mod.valueErr(value, err)
-    if value == nil then
+    if err ~= nil then
         return mod.failure(err)
     else
         return mod.success(value)
@@ -149,6 +149,7 @@ function mod.mt:get()
     end
 end
 
+-- converts the result to a human-readable string.
 function mod.mt:__tostring()
     if self.success then
         local value = self.value
@@ -170,6 +171,7 @@ function mod.mt:__tostring()
     end
 end
 
+-- compares two result values.
 function mod.mt.__eq(a,b)
     if a.success then
         return b.success and a.value == b.value
