@@ -1,4 +1,4 @@
---- === cp.websocket.buffer ===
+--- === cp.buffer ===
 ---
 --- Internal byte buffer type. Allows additional chunks of bytes
 --- to be concatonated relatively inexpensively, as well as `peek` and `pop` operations
@@ -45,7 +45,7 @@ local function nextChunk(current)
     return current < mod.maxChunks and current+1 or 0
 end
 
---- cp.websocket.buffer.is(value) -> boolean
+--- cp.buffer.is(value) -> boolean
 --- Function
 --- Checks if the `value` is an instance of a `buffer`.
 ---
@@ -62,7 +62,7 @@ function mod.is(value)
     return false
 end
 
---- cp.websocket.buffer.new(...) -> buffer
+--- cp.buffer.new(...) -> buffer
 --- Constructor
 --- Creates a new byte string buffer containing the provided `string` chunks.
 ---
@@ -87,7 +87,7 @@ function mod.new(...)
     return o
 end
 
---- cp.websocket.buffer.fromHex(hexString[, spacer]) -> cp.websocket.buffer
+--- cp.buffer.fromHex(hexString[, spacer]) -> cp.buffer
 --- Constructor
 --- Creates a buffer from the bytes represented by the provided hex string.
 ---
@@ -107,7 +107,7 @@ function mod.fromHex(hexString, spacer)
     return mod.new(hexBytes)
 end
 
---- cp.websocket.buffer.clone(otherBuffer) -> buffer
+--- cp.buffer.clone(otherBuffer) -> buffer
 --- Constructor
 --- Creates a copy of the provided buffer. It shares data with the original, but can be modified
 --- via `pop`/`push`, etc without affecting the original.
@@ -132,7 +132,7 @@ function mod.mt:_indexes()
     return self._first, self._last, self._index
 end
 
---- cp.websocket.buffer:len() -> number
+--- cp.buffer:len() -> number
 --- Method
 --- Returns the total number of bytes in the buffer.
 ---
@@ -159,7 +159,7 @@ function mod.mt:len()
     return len
 end
 
--- cp.websocket.buffer:_read(len, remove) -> string | nil
+-- cp.buffer:_read(len, remove) -> string | nil
 -- Method
 -- Reads the specified number of bytes, optionally removing them as it does so.
 --
@@ -212,7 +212,7 @@ function mod.mt:_read(len, remove)
     return value:bytes()
 end
 
---- cp.websocket.buffer:peek(len) -> string | nil
+--- cp.buffer:peek(len) -> string | nil
 --- Method
 --- Reads the specified `len` of bytes from the start of the buffer without removing them.
 ---
@@ -225,7 +225,7 @@ function mod.mt:peek(len)
     return self:_read(len, false)
 end
 
---- cp.websocket.buffer:pop(len) -> string | nil
+--- cp.buffer:pop(len) -> string | nil
 --- Method
 --- Reads the specified `len` of bytes from the start of the buffer, removing them.
 ---
@@ -238,7 +238,7 @@ function mod.mt:pop(len)
     return self:_read(len, true)
 end
 
---- cp.websocket.buffer:push(...) -> buffer
+--- cp.buffer:push(...) -> buffer
 --- Method
 --- Pushes the provided `string`s onto the end of the buffer.
 ---
@@ -249,7 +249,7 @@ end
 ---  * The same `buffer` instance.
 ---
 --- Notes:
----  * Throws an error if more than `cp.websocket.buffer.maxChunks` are currently in the buffer when a new value is pushed.
+---  * Throws an error if more than `cp.buffer.maxChunks` are currently in the buffer when a new value is pushed.
 function mod.mt:push(...)
     local last = self._last
 
@@ -265,7 +265,7 @@ function mod.mt:push(...)
     return self
 end
 
---- cp.websocket.buffer:drop(len) -> boolean
+--- cp.buffer:drop(len) -> boolean
 --- Method
 --- Drops the specified `len` of bytes from the start of the buffer.
 ---

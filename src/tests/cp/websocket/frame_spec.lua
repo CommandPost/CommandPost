@@ -3,7 +3,7 @@ local spec              = require "cp.spec"
 local expect            = require "cp.spec.expect"
 local describe, it      = spec.describe, spec.it
 
-local buffer            = require "cp.websocket.buffer"
+local buffer            = require "cp.buffer"
 
 local frame             = require "cp.websocket.frame"
 local bytes             = require "hs.bytes"

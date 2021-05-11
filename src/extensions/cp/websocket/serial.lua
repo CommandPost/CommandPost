@@ -16,7 +16,7 @@ local inspect           = require "hs.inspect"
 
 local tools             = require "cp.tools"
 local result            = require "cp.result"
-local buffer            = require "cp.websocket.buffer"
+local buffer            = require "cp.buffer"
 local frame             = require "cp.websocket.frame"
 local status            = require "cp.websocket.status"
 local event             = require "cp.websocket.event"

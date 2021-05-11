@@ -8,7 +8,7 @@
 
 local bytes             = require "hs.bytes"
 local utf8              = require "hs.utf8"
-local buffer            = require "cp.websocket.buffer"
+local buffer            = require "cp.buffer"
 local result            = require "cp.result"
 
 local hexToBytes        = bytes.hexToBytes
@@ -215,10 +215,10 @@ end
 
 --- cp.websocket.frame.fromBytes(buff) -> result<{frame:frame, bytes:number}>
 --- Function
---- Reads a Websocket Frame from the provided `cp.websocket.buffer` of binary data.
+--- Reads a Websocket Frame from the provided `cp.buffer` of binary data.
 ---
 --- Parameters:
----  * buff - The `cp.websocket.buffer` of bytes to read from.
+---  * buff - The `cp.buffer` of bytes to read from.
 ---
 --- Returns:
 ---  * The a `cp.result` with either `success` and the `frame` of binary payload data plus the number of `bytes` read from the `data`,
@@ -234,10 +234,10 @@ end
 
 --- cp.websocket.frame.fromBuffer(buff) -> result<{frame:frame, bytes:number}>
 --- Function
---- Reads a Websocket Frame from the provided `cp.websocket.buffer` of binary data.
+--- Reads a Websocket Frame from the provided `cp.buffer` of binary data.
 ---
 --- Parameters:
----  * buff - The `cp.websocket.buffer` of bytes to read from.
+---  * buff - The `cp.buffer` of bytes to read from.
 ---
 --- Returns:
 ---  * The a `cp.result` with either `success` and the `frame` of binary payload data plus the number of `bytes` read from the `data`,
@@ -251,7 +251,7 @@ end
 --- * If a `failure`, the passed-in `buffer` will not be modified.
 function mod.fromBuffer(buff)
     if not buffer.is(buff) then
-        return result.failure("expected a `cp.websocket.buffer`: %s", type(buff))
+        return result.failure("expected a `cp.buffer`: %s", type(buff))
     end
     -- clone it so we can manipulate without modifying the original
     local data = buff:clone()

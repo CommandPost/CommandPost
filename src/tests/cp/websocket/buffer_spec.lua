@@ -2,11 +2,11 @@ local spec              = require "cp.spec"
 local expect            = require "cp.spec.expect"
 local describe, it      = spec.describe, spec.it
 
-local buffer            = require "cp.websocket.buffer"
+local buffer            = require "cp.buffer"
 
 -- local log               = require "hs.logger" .new "ws_buff_spec"
 
-return describe "cp.websocket.buffer" {
+return describe "cp.buffer" {
     it "creates an empty buffer"
     :doing(function()
         local value = buffer.new()
