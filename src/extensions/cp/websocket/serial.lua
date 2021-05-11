@@ -30,6 +30,7 @@ local utf8              = require "hs.utf8"
 local hexDump           = utf8.hexDump
 local uint16be          = bytes.uint16be
 local remainder         = bytes.remainder
+local hexToBytes        = bytes.hexToBytes
 
 local mod = {}
 
@@ -43,7 +44,7 @@ local HTTP_HEADER_LINE = "([^:]+):([^\r\n]*)"
 
 local SEC_WEBSOCKET_KEY = base64.encode("CommandPostLDKey")
 local WEBSOCKET_MAGIC_KEY = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-local SEC_WEBSOCKET_ACCEPT = hash.SHA1(SEC_WEBSOCKET_KEY .. WEBSOCKET_MAGIC_KEY)
+mod.SEC_WEBSOCKET_ACCEPT = hexToBytes(hash.SHA1(SEC_WEBSOCKET_KEY .. WEBSOCKET_MAGIC_KEY))
 
 -- matchesSecWsKey(response) -> boolean
 -- Function
@@ -61,8 +62,8 @@ local function matchesSecWsKey(response)
 
     local acceptKey = response.headers["Sec-WebSocket-Accept"]
     local acceptHash = base64.decode(acceptKey)
-    if acceptHash ~= SEC_WEBSOCKET_ACCEPT then
-        return result.failure("Unexpected 'Sec-WebSocket-Accept' hash: %d", acceptHash)
+    if acceptHash ~= mod.SEC_WEBSOCKET_ACCEPT then
+        return result.failure("Unexpected 'Sec-WebSocket-Accept' hash: %s", hexDump(acceptHash))
     end
     return result.success()
 end
