@@ -14,11 +14,16 @@ local require           = require
 local log               = require "hs.logger" .new "ws_serial"
 local inspect           = require "hs.inspect"
 
+local tools             = require "cp.tools"
+local result            = require "cp.result"
 local buffer            = require "cp.websocket.buffer"
 local frame             = require "cp.websocket.frame"
 local status            = require "cp.websocket.status"
 local event             = require "cp.websocket.event"
+
+local base64            = require "hs.base64"
 local bytes             = require "hs.bytes"
+local hash              = require "hs.hash"
 local serial            = require "hs.serial"
 local utf8              = require "hs.utf8"
 
@@ -31,22 +36,143 @@ local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
 
--- TODO: This is hard-coded for the response from a Loupedeck device. Make more general!
--- local WS_HANDSHAKE_REQUEST = "474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a"
-local WS_HANDSHAKE_REQUEST =
-"GET /index.html HTTP/1.1\r\n"..
-"Connection: Upgrade\r\n"..
-"Upgrade: websocket\r\n"..
-"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"..
-"\r\n"
+local CRLF = "\r\n"
+local HTTP_STATUS_LINE = "HTTP/1%.1 (%d+) ([^\r\n]*)"
+local HTTP_HEADER_LINE = "([^:]+):([^\r\n]*)"
 
--- local WS_HANDSHAKE_RESPONSE = "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a"
-local WS_HANDSHAKE_RESPONSE =
-"HTTP/1.1 101 Switching Protocols\r\n"..
-"Upgrade: websocket\r\n"..
-"Connection: Upgrade\r\n"..
-"Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"..
-"\r\n"
+
+local SEC_WEBSOCKET_KEY = base64.encode("CommandPostLDKey")
+local WEBSOCKET_MAGIC_KEY = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+local SEC_WEBSOCKET_ACCEPT = hash.SHA1(SEC_WEBSOCKET_KEY .. WEBSOCKET_MAGIC_KEY)
+
+-- matchesSecWsKey(response) -> boolean
+-- Function
+-- Checks if the provided HTTP Response `table` matches expectations for a WebSocket upgrade request.
+local function matchesSecWsKey(response)
+    if response.statusCode ~= 101 then
+        return result.failure("Unexpected status code: %s", inspect(response.statusCode))
+    end
+    if response.headers["Connection"] ~= "Upgrade" then
+        return result.failure("Unexpected 'Connection' header: %s", inspect(response.headers["Connection"]))
+    end
+    if response.headers["Upgrade"] ~= "websocket" then
+        return result.failure("Unexpected 'Upgrade' header: %s", inspect(response.headers["Upgrade"]))
+    end
+
+    local acceptKey = response.headers["Sec-WebSocket-Accept"]
+    local acceptHash = base64.decode(acceptKey)
+    if acceptHash ~= SEC_WEBSOCKET_ACCEPT then
+        return result.failure("Unexpected 'Sec-WebSocket-Accept' hash: %d", acceptHash)
+    end
+    return result.success()
+end
+
+-- _createHTTPRequest(type, path[, headers[, body]]) -> strings
+-- Function
+-- Creates a correctly-formatted HTTP Request based on the (assumedly correct) parameters.
+-- Does not check that provided parameters are legal.
+--
+-- Parameters:
+--  * type - The type of request (eg. "GET", "POST", etc.)
+--  * path - The path to request (eg. "/index.html")
+--  * headers - A `table` of headers (see below). May be `nil` if no headers are provided.
+--  * body - A `string` containing the body of the request. May be `nil`.
+--
+-- Returns:
+--  * A `string` which can be sent to a server as the request content.
+--
+-- Notes:
+--  * The `headers` is a `table` where the key/value pairs will be output verbatim. For example:
+--   * `{["Foo"] = "bar"}` becomes `"Foo: bar\r\n"`
+function mod._createHTTPRequest(type, path, headers, body)
+    local out = bytes()
+
+    out:write(type, " ", path, " HTTP/1.1", CRLF)
+
+    if headers then
+        for key,value in pairs(headers) do
+            out:write(key, ": ", value, CRLF)
+        end
+    end
+
+    out:write("\r\n")
+    if body then
+        out:write(body)
+    end
+
+    return out:bytes()
+end
+
+local function findEOL(data, init)
+    return data:find(CRLF, init, true)
+end
+
+-- _parseHTTPResponse(data) -> result<{statusCode,reason,headers,body?}>
+-- Function
+-- Attempts to parse a `string` of data as an HTTP Response block.
+--
+-- Parameters:
+--  * data - The `string` of data.
+--
+-- Returns:
+--  * A `cp.response`. If successful, the `value` will be a `table`, as described below.
+--
+-- Notes:
+--  * The returned `table` will have the following properties:
+--   * statusCode - a `number` for the code (e.g. `200`, `404`)
+--   * reason - The text reason for the response status.
+--   * headers - A `table` of header key/value pairs.
+--   * body - The bytes from the response body as a `string`, or `nil` if none was provided.
+function mod._parseHTTPResponse(data)
+    local index = 1
+    local eol = findEOL(data, index)
+    if not eol then
+        return result.failure("No CRLF values found.")
+    end
+
+    local statusCode, reason = data:match(HTTP_STATUS_LINE, index)
+    if not statusCode or not reason then
+        return result.failure("Invalid HTTP Status-Line: \"%s\"", data:sub(index, eol))
+    end
+
+    local headers = {}
+    index = eol+2
+    eol = findEOL(data, index)
+    while eol ~= nil and index ~= eol do
+        local fieldName, fieldValue = data:match(HTTP_HEADER_LINE, index)
+        if not fieldName or not fieldValue then
+            return result.failure("Invalid HTTP Header: \"%s\"", data:sub(index, eol))
+        end
+        fieldValue = tools.trim(fieldValue)
+        headers[fieldName] = fieldValue
+        index = eol+2
+        eol = findEOL(data, index)
+    end
+
+    if not eol then
+        return result.failure("HTTP Response must have a blank line after the header.")
+    end
+
+    -- parse the body, if present
+    local body
+    index = eol+2
+    if index <= #data then
+        body = data:sub(index)
+    end
+
+    return result.success {
+        statusCode = tonumber(statusCode),
+        reason = reason,
+        headers = headers,
+        body = body,
+    }
+end
+
+local WS_HANDSHAKE_REQUEST = mod._createHTTPRequest("GET", "/index.html", {
+    ["Connection"] = "Upgrade",
+    ["Upgrade"] = "websocket",
+    ["Sec-WebSocket-Key"] = SEC_WEBSOCKET_KEY,
+})
 
 --- cp.websocket.serial.new(deviceName, baudRate, dataBits, stopBits, callback) -> object
 --- Function
@@ -118,16 +244,26 @@ mod._handler = {
         self:close()
     end,
 
-    received = function(self, message, hexadecimalString)
-        if self._status == status.opening and hexadecimalString == WS_HANDSHAKE_RESPONSE then
-            --log.df("Serial connection handshake received!")
-            self:_update(status.open, event.opened)
+    received = function(self, message)
+        if self._status == status.opening then
+            local out = mod._parseHTTPResponse(message)
+            if out.failure then
+                log.df("HTTP Response Parse Failure: %s", out.message)
+                return
+            end
+            local response = out.value
+            if response then
+                local keyCheck = matchesSecWsKey(response)
+                if keyCheck.success then
+                    --log.df("Serial connection handshake received!")
+                    self:_update(status.open, event.opened)
+                else
+                    keyCheck:log("Loupedeck WebSocket Upgrade Response")
+                end
+            end
         elseif self._status == status.open then
             -- frames come in chunks, so buffer them together and check the whole buffer for actual frames.
             self:_bufferMessage(message)
-        elseif self._status == status.opening then
-            -- Ignore any random messages whilst still opening...
-            return
         else
             mod._handler.error(self, message)
         end
