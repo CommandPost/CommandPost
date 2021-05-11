@@ -32,7 +32,6 @@ mod.mt = {}
 mod.mt.__index = mod.mt
 
 -- TODO: This is hard-coded for the response from a Loupedeck device. Make more general!
--- local WS_HANDSHAKE_REQUEST = "474554202f696e6465782e68746d6c20485454502f312e310d0a436f6e6e656374696f6e3a20557067726164650d0a557067726164653a20776562736f636b65740d0a5365632d576562536f636b65742d4b65793a206447686c49484e68625842735a5342756232356a5a513d3d0d0a0d0a"
 local WS_HANDSHAKE_REQUEST =
 "GET /index.html HTTP/1.1\r\n"..
 "Connection: Upgrade\r\n"..
@@ -40,7 +39,6 @@ local WS_HANDSHAKE_REQUEST =
 "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"..
 "\r\n"
 
--- local WS_HANDSHAKE_RESPONSE = "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a557067726164653a20776562736f636b65740d0a436f6e6e656374696f6e3a20557067726164650d0a5365632d576562536f636b65742d4163636570743a20733370504c4d426954786151396b59477a7a685a52624b2b784f6f3d0d0a0d0a"
 local WS_HANDSHAKE_RESPONSE =
 "HTTP/1.1 101 Switching Protocols\r\n"..
 "Upgrade: websocket\r\n"..
@@ -102,8 +100,7 @@ mod._handler = {
     opened = function(self, _)
         --log.df("Serial connection opened, sending handshake request.")
         self._status = status.opening
-        local handShakeRequest = bytes.hexToBytes(WS_HANDSHAKE_REQUEST)
-        self._connection:sendData(handShakeRequest)
+        self._connection:sendData(WS_HANDSHAKE_REQUEST)
     end,
 
     closed = function(self, _)
@@ -119,7 +116,7 @@ mod._handler = {
     end,
 
     received = function(self, message, hexadecimalString)
-        if self._status == status.opening and hexadecimalString == WS_HANDSHAKE_RESPONSE then
+        if self._status == status.opening and message == WS_HANDSHAKE_RESPONSE then
             --log.df("Serial connection handshake received!")
             self:_update(status.open, event.opened)
         elseif self._status == status.open then
