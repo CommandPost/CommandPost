@@ -115,7 +115,7 @@ mod._handler = {
         self:close()
     end,
 
-    received = function(self, message, hexadecimalString)
+    received = function(self, message)
         if self._status == status.opening and message == WS_HANDSHAKE_RESPONSE then
             --log.df("Serial connection handshake received!")
             self:_update(status.open, event.opened)
