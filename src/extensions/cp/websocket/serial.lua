@@ -228,8 +228,7 @@ mod._handler = {
     opened = function(self, _)
         --log.df("Serial connection opened, sending handshake request.")
         self._status = status.opening
-        local handShakeRequest = bytes.hexToBytes(WS_HANDSHAKE_REQUEST)
-        self._connection:sendData(handShakeRequest)
+        self._connection:sendData(WS_HANDSHAKE_REQUEST)
     end,
 
     closed = function(self, _)
