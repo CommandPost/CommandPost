@@ -1,24 +1,24 @@
--- === cp.websocket.buffer ===
---
--- Internal byte buffer type. Allows additional chunks of bytes
--- to be concatonated relatively inexpensively, as well as `peek` and `pop` operations
--- to preview/read in chunks of bytes.
---
---  For example:
---
--- ```lua
--- local buff = buffer.new()
--- buff:push("Hello")
--- buff:len()       -- 5
--- buff:peek(2)     -- "He"
--- buff:peek(7)     -- nil
--- buff:write(" world!")
--- buff:len()       -- 12
--- buff:peek(7)     -- "Hello w"
--- buff:pop(3)      -- "Hel"
--- buff:len()       -- 9
--- buff:bytes()     -- "lo world!"
--- ```
+--- === cp.websocket.buffer ===
+---
+--- Internal byte buffer type. Allows additional chunks of bytes
+--- to be concatonated relatively inexpensively, as well as `peek` and `pop` operations
+--- to preview/read in chunks of bytes.
+---
+---  For example:
+---
+--- ```lua
+--- local buff = buffer.new()
+--- buff:push("Hello")
+--- buff:len()       -- 5
+--- buff:peek(2)     -- "He"
+--- buff:peek(7)     -- nil
+--- buff:write(" world!")
+--- buff:len()       -- 12
+--- buff:peek(7)     -- "Hello w"
+--- buff:pop(3)      -- "Hel"
+--- buff:len()       -- 9
+--- buff:bytes()     -- "lo world!"
+--- ```
 
 local require           = require
 
@@ -45,7 +45,7 @@ local function nextChunk(current)
     return current < mod.maxChunks and current+1 or 0
 end
 
---- buffer.is(value) -> boolean
+--- cp.websocket.buffer.is(value) -> boolean
 --- Function
 --- Checks if the `value` is an instance of a `buffer`.
 ---
@@ -62,15 +62,15 @@ function mod.is(value)
     return false
 end
 
--- buffer.new(...) -> buffer
--- Constructor
--- Creates a new byte string buffer containing the provided `string` chunks.
---
--- Parameters:
---  * ... - The new `string` chunks to add to the end of the buffer.
---
--- Returns:
---  * The new `buffer`.
+--- cp.websocket.buffer.new(...) -> buffer
+--- Constructor
+--- Creates a new byte string buffer containing the provided `string` chunks.
+---
+--- Parameters:
+---  * ... - The new `string` chunks to add to the end of the buffer.
+---
+--- Returns:
+---  * The new `buffer`.
 function mod.new(...)
     local o = {
         -- the 1-based index of the first chunk
@@ -87,36 +87,36 @@ function mod.new(...)
     return o
 end
 
--- buffer.fromHex(hexString[, spacer]) -> cp.websocket.buffer
--- Constructor
--- Creates a buffer from the bytes represented by the provided hex string.
---
--- Parameters:
---  * hexString - The string of hex characters to convert.
---  * spacer - The character to ignore as a spacer. Defaults to space (" ").
---
--- Returns:
---  * The new `buffer`.
---
--- Notes:
---  * Examples:
---   * `buffer.fromHex("ABCDE")`
---   * `buffer.fromHex("12-34-56", "-")`
+--- cp.websocket.buffer.fromHex(hexString[, spacer]) -> cp.websocket.buffer
+--- Constructor
+--- Creates a buffer from the bytes represented by the provided hex string.
+---
+--- Parameters:
+---  * hexString - The string of hex characters to convert.
+---  * spacer - The character to ignore as a spacer. Defaults to space (" ").
+---
+--- Returns:
+---  * The new `buffer`.
+---
+--- Notes:
+---  * Examples:
+---   * `buffer.fromHex("ABCDE")`
+---   * `buffer.fromHex("12-34-56", "-")`
 function mod.fromHex(hexString, spacer)
     local hexBytes = hexToBytes(hexString, spacer)
     return mod.new(hexBytes)
 end
 
--- buffer.clone(otherBuffer) -> buffer
--- Constructor
--- Creates a copy of the provided buffer. It shares data with the original, but can be modified
--- via `pop`/`push`, etc without affecting the original.
---
--- Parameters:
---  * otherBuffer - The `buffer` to clone.
---
--- Returns:
---  * the clone of the original `buffer`.
+--- cp.websocket.buffer.clone(otherBuffer) -> buffer
+--- Constructor
+--- Creates a copy of the provided buffer. It shares data with the original, but can be modified
+--- via `pop`/`push`, etc without affecting the original.
+---
+--- Parameters:
+---  * otherBuffer - The `buffer` to clone.
+---
+--- Returns:
+---  * the clone of the original `buffer`.
 function mod.clone(otherBuffer)
     local o = {}
     for key,value in pairs(otherBuffer) do
@@ -132,15 +132,15 @@ function mod.mt:_indexes()
     return self._first, self._last, self._index
 end
 
--- buffer:len() -> number
--- Method
--- Returns the total number of bytes in the buffer.
---
--- Parameters:
---  * None
---
--- Returns:
---  * The number of bytes in the buffer.
+--- cp.websocket.buffer:len() -> number
+--- Method
+--- Returns the total number of bytes in the buffer.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The number of bytes in the buffer.
 function mod.mt:len()
     local first, last, index = self:_indexes()
     if first == last then
@@ -159,8 +159,8 @@ function mod.mt:len()
     return len
 end
 
--- buffer:_read(len, remove) -> string | nil
--- Private Method
+-- cp.websocket.buffer:_read(len, remove) -> string | nil
+-- Method
 -- Reads the specified number of bytes, optionally removing them as it does so.
 --
 -- Parameters:
@@ -212,44 +212,44 @@ function mod.mt:_read(len, remove)
     return value:bytes()
 end
 
--- buffer:peek(len) -> string | nil
--- Method
--- Reads the specified `len` of bytes from the start of the buffer without removing them.
---
--- Parameters:
---  * len - The number of bytes to read.
---
--- Returns:
---  * The `string` of bytes or `nil` if there are not enough bytes available for the requested `len`.
+--- cp.websocket.buffer:peek(len) -> string | nil
+--- Method
+--- Reads the specified `len` of bytes from the start of the buffer without removing them.
+---
+--- Parameters:
+---  * len - The number of bytes to read.
+---
+--- Returns:
+---  * The `string` of bytes or `nil` if there are not enough bytes available for the requested `len`.
 function mod.mt:peek(len)
     return self:_read(len, false)
 end
 
--- buffer:pop(len) -> string | nil
--- Method
--- Reads the specified `len` of bytes from the start of the buffer, removing them.
---
--- Parameters:
---  * len - The number of bytes to read.
---
--- Returns:
---  * The `string` of bytes or `nil` if there are not enough bytes available for the requested `len`.
+--- cp.websocket.buffer:pop(len) -> string | nil
+--- Method
+--- Reads the specified `len` of bytes from the start of the buffer, removing them.
+---
+--- Parameters:
+---  * len - The number of bytes to read.
+---
+--- Returns:
+---  * The `string` of bytes or `nil` if there are not enough bytes available for the requested `len`.
 function mod.mt:pop(len)
     return self:_read(len, true)
 end
 
--- buffer:push(...) -> buffer
--- Method
--- Pushes the provided `string`s onto the end of the buffer.
---
--- Parameters:
---  * ... - The new `string` chunks to add to the end of the buffer.
---
--- Returns:
---  * The same `buffer` instance.
---
--- Notes:
---  * Throws an error if more than `cp.websocket.buffer.maxChunks` are currently in the buffer when a new value is pushed.
+--- cp.websocket.buffer:push(...) -> buffer
+--- Method
+--- Pushes the provided `string`s onto the end of the buffer.
+---
+--- Parameters:
+---  * ... - The new `string` chunks to add to the end of the buffer.
+---
+--- Returns:
+---  * The same `buffer` instance.
+---
+--- Notes:
+---  * Throws an error if more than `cp.websocket.buffer.maxChunks` are currently in the buffer when a new value is pushed.
 function mod.mt:push(...)
     local last = self._last
 
@@ -265,18 +265,18 @@ function mod.mt:push(...)
     return self
 end
 
--- buffer:drop(len) -> boolean
--- Method
--- Drops the specified `len` of bytes from the start of the buffer.
---
--- Parameters:
---  * len - The number of bytes to read.
---
--- Returns:
---  * `true` if successful, or `false` if there are not enough bytes available for the requested `len`.
---
--- Notes:
---  * Equivalent to, but more efficient than `pop` if you don't need the bytes being dropped.
+--- cp.websocket.buffer:drop(len) -> boolean
+--- Method
+--- Drops the specified `len` of bytes from the start of the buffer.
+---
+--- Parameters:
+---  * len - The number of bytes to read.
+---
+--- Returns:
+---  * `true` if successful, or `false` if there are not enough bytes available for the requested `len`.
+---
+--- Notes:
+---  * Equivalent to, but more efficient than `pop` if you don't need the bytes being dropped.
 function mod.mt:drop(len)
     local first, last, index = self:_indexes()
     if first == last then

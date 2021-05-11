@@ -61,6 +61,12 @@ end
 --- cp.result.success(value) -> result
 --- Constructor
 --- Creates a new `success` result, with the specified `value`.
+---
+--- Parameters:
+---  * value - The specified value
+---
+--- Returns:
+---  * A new result
 function mod.success(value)
     return setmetatable({success = true, value = value}, mod.mt)
 end
@@ -68,6 +74,12 @@ end
 --- cp.result.failure(message) -> result
 --- Constructor
 --- Creates a new `failure` result, with the specified error `message`.
+---
+--- Parameters:
+---  * message - Error message
+---
+--- Returns:
+---  * A new result
 function mod.failure(message, ...)
     if message and select("#", ...) > 0 then
         message = format(message, ...)
