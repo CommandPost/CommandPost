@@ -33,6 +33,7 @@
 ---
 --- If you want to perform other tasks, check for `.failure` or `.success` and perform the appropriate response.
 
+local log           = require "hs.logger" .new "result"
 local inspect       = require "hs.inspect"
 local format        = string.format
 
@@ -149,25 +150,49 @@ function mod.mt:get()
     end
 end
 
+local function _tostring(value)
+    local valueType = type(value)
+    if value == nil then
+        value = "nil"
+    elseif valueType == "table" or valueType=="userdata" then
+        if value.__tostring then
+            value = tostring(value)
+        else
+            value = inspect(value)
+        end
+    else
+        value = tostring(value)
+    end
+    return value
+end
+
+--- cp.result:log([context]) -> cp.result
+--- Method
+--- Logs the result to either the default channel (if `success`) or error channel (if `failure`),
+--- with the `context` string (if provided).
+---
+--- Parameters:
+---  * context - A `string` that provides context for the logged value.
+---
+--- Returns:
+---  * The same `cp.result` instance.
+function mod.mt:log(context)
+    local detail = context..":" or ""
+    if self.success then
+        detail = detail .. _tostring(self.value)
+        log.f("SUCCESS: %s", detail)
+    else
+        log.ef("FAILURE: %s", _tostring(self.message))
+    end
+    return self
+end
+
 -- converts the result to a human-readable string.
 function mod.mt:__tostring()
     if self.success then
-        local value = self.value
-        local valueType = type(value)
-        if value == nil then
-            value = "nil"
-        elseif valueType == "table" or valueType=="userdata" then
-            if value.__tostring then
-                value = tostring(value)
-            else
-                value = inspect(value)
-            end
-        else
-            value = tostring(value)
-        end
-        return format("success: %s", value)
+        return format("success: %s", _tostring(self.value))
     else
-        return self.message == nil and "error" or format("error: %s", inspect(self.message))
+        return self.message == nil and "error" or format("error: %s", _tostring(self.message))
     end
 end
 
