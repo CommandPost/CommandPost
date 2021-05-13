@@ -38,6 +38,11 @@ local uint24be          = bytes.uint24be
 local uint32be          = bytes.uint32be
 local uint8             = bytes.uint8
 
+-- LOUPEDECK_VENDOR_ID -> number
+-- Constant
+-- Loupedeck's USB Vendor ID
+local LOUPEDECK_VENDOR_ID = 11970
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
@@ -1907,11 +1912,13 @@ function mod.findDevices(deviceType)
     end
 
     --------------------------------------------------------------------------------
-    -- Find serial ports:
+    -- Find serial ports filtering by Vendor ID:
     --------------------------------------------------------------------------------
+    local availablePortDetails = serial.availablePortDetails()
     local availablePortNames = serial.availablePortNames()
     for _, portName in pairs(availablePortNames) do
-        if portName:sub(1, 8) == "usbmodem" then
+        local portDetails = availablePortDetails[portName]
+        if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
             table.insert(results, portName)
         end
     end
