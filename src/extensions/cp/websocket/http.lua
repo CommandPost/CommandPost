@@ -74,8 +74,11 @@ mod._handler = {
     end,
 
     fail = function(self, message)
-        log.wf("Unexpected message when status is '%s':\n%s", inspect(self._status), hexDump(message))
-        self:_report(event.error, message)
+        -- Let's just ignore any errors when closing.
+        if self._status ~= "closing" and self._status ~= "closed" then
+            log.wf("Unexpected message when status is '%s':\n%s", inspect(self._status), message and hexDump(message))
+            self:_report(event.error, message)
+        end
     end,
 
     received = function(self, message)

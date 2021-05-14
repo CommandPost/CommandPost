@@ -248,7 +248,7 @@ mod._handler = {
         if self._status == status.opening then
             local out = mod._parseHTTPResponse(message)
             if out.failure then
-                log.df("HTTP Response Parse Failure: %s", out.message)
+                --log.df("HTTP Response Parse Failure: %s", out.message)
                 return
             end
             local response = out.value
@@ -270,8 +270,11 @@ mod._handler = {
     end,
 
     error = function(self, message)
-        log.wf("Unexpected message when status is '%s':\n%s", inspect(self._status), hexDump(message))
-        self:_report(event.error, message)
+        -- Let's just ignore any errors when closing.
+        if self._status ~= "closing" and self._status ~= "closed" then
+            log.wf("Unexpected message when status is '%s':\n%s", inspect(self._status), hexDump(message))
+            self:_report(event.error, message)
+        end
     end,
 }
 

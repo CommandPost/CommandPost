@@ -19,6 +19,7 @@ local loupedeck                 = require "hs.loupedeck"
 local plist                     = require "hs.plist"
 local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
+local usb                       = require "hs.usb"
 
 local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
@@ -44,6 +45,7 @@ local isImage                   = tools.isImage
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
+local tableCount                = tools.tableCount
 
 local mod = {}
 mod.mt = {}
@@ -52,7 +54,7 @@ mod.mt.__index = mod.mt
 --- plugins.core.loupedeckctandlive.manager.NUMBER_OF_DEVICES -> number
 --- Constant
 --- The number of devices of the same type supported.
-mod.NUMBER_OF_DEVICES = 4
+mod.NUMBER_OF_DEVICES = 10
 
 -- LD_BUNDLE_ID -> string
 -- Constant
@@ -136,6 +138,11 @@ function mod.new(deviceType)
     ---  * height as a number
     o.getScreenSizeFromControlType = getScreenSizeFromControlType
 
+    --- plugins.core.loupedeckctandlive.manager.deviceCount -> number
+    --- Variable
+    --- How many devices are connected?
+    o.deviceCount = 0
+
     --- plugins.core.loupedeckctandlive.manager.getDevices() -> table
     --- Function
     --- Gets a table of Loupedeck devices.
@@ -146,33 +153,91 @@ function mod.new(deviceType)
     --- Returns:
     ---  * A table of cached or a new hs.loupedeck objects.
     o.getDevices = function()
+        return o.devices or {}
+    end
 
-        if not o.devices then
-            o.devices = {}
-        end
+    --- plugins.core.loupedeckctandlive.manager.setupDevicesCount -> number
+    --- Variable
+    --- A counter for how many times the `setupDevices` function has run.
+    o.setupDevicesCount = 0
 
-        for i=1, mod.NUMBER_OF_DEVICES do
-            if deviceType == loupedeck.deviceTypes.CT then
-                if not o.devices[i] then
-                    o.devices[i] = loupedeck.new(true, loupedeck.deviceTypes.CT, i)
+    --- plugins.core.loupedeckctandlive.manager.setupDevices() -> none
+    --- Function
+    --- Sets up connected Loupedeck devices.
+    ---
+    --- Parameters:
+    ---  * None
+    ---
+    --- Returns:
+    ---  * None
+    o.setupDevices = function()
+        --log.df("Setting up Loupedeck Devices...")
 
-                    o.devices[i]:callback(function(...)
-                        o:callback(...)
-                    end)
-                end
-            elseif deviceType == loupedeck.deviceTypes.LIVE then
-                if not o.devices[i] then
-                    o.devices[i] = loupedeck.new(true, loupedeck.deviceTypes.LIVE, i)
+        local devices = loupedeck.findDevices(deviceType)
+        local currentDeviceCount = tableCount(devices)
 
-                    o.devices[i]:callback(function(...)
-                        o:callback(...)
-                    end)
-                end
+        --log.df("Current Device Count: %s", currentDeviceCount)
+        --log.df("Past Device Count: %s", o.deviceCount)
+
+        if currentDeviceCount ~= o.deviceCount and currentDeviceCount > 0 then
+            --------------------------------------------------------------------------------
+            -- Destroy any devices:
+            --------------------------------------------------------------------------------
+            --log.df("Destorying any existing devices...")
+            local devices = o.getDevices()
+            for _, device in pairs(devices) do
+                device:disconnect()
+                device = nil
+            end
+
+            if not o.devices then
+                o.devices = {}
+            end
+
+            --------------------------------------------------------------------------------
+            -- Create new devices:
+            --------------------------------------------------------------------------------
+            for i=1, currentDeviceCount do
+                --log.df("Creating a new " .. deviceType)
+                o.devices[i] = loupedeck.new(deviceType, i)
+                o.devices[i]:callback(function(...)
+                    o:callback(...)
+                end)
+                o.devices[i]:connect()
+            end
+
+            --------------------------------------------------------------------------------
+            -- Update the device count:
+            --------------------------------------------------------------------------------
+            o.deviceCount = currentDeviceCount
+
+            o.setupDevicesCount = 0
+        else
+            if o.setupDevicesCount == 10 then
+                o.setupDevicesCount = 0
+            else
+                doAfter(1, function()
+                    o.setupDevicesCount = o.setupDevicesCount + 1
+                    o.setupDevices()
+                end)
             end
         end
-
-        return o.devices
     end
+
+    --- plugins.core.loupedeckctandlive.manager.usbWatcher -> hs.usb.watcher
+    --- Variable
+    --- USB device watcher.
+    o.usbWatcher = usb.watcher.new(function(data)
+        if data.productName == deviceType then
+            if data.eventType == "added" then
+                --log.df(deviceType .. " connected.")
+                o.setupDevices()
+            elseif data.eventType == "removed" then
+                --log.df(deviceType .. " removed from system.")
+                o.setupDevices()
+            end
+        end
+    end)
 
     if deviceType == loupedeck.deviceTypes.CT then
         --------------------------------------------------------------------------------
@@ -441,11 +506,9 @@ function mod.new(deviceType)
             o.appWatcher:start()
             o.driveWatcher:start()
             o.sleepWatcher:start()
+            o.usbWatcher:start()
 
-            local devices = o.getDevices()
-            for _, device in pairs(devices) do
-                device:connect()
-            end
+            o.setupDevices()
         else
             --------------------------------------------------------------------------------
             -- Stop all watchers:
@@ -453,7 +516,11 @@ function mod.new(deviceType)
             o.appWatcher:stop()
             o.driveWatcher:stop()
             o.sleepWatcher:stop()
+            o.usbWatcher:stop()
 
+            --------------------------------------------------------------------------------
+            -- Destroy the refresh timers:
+            --------------------------------------------------------------------------------
             if o.refreshTimer then
                 for _, v in pairs(o.refreshTimer) do
                     v:stop()
@@ -461,38 +528,21 @@ function mod.new(deviceType)
                 end
             end
 
+            --------------------------------------------------------------------------------
+            -- Destroy any devices:
+            --------------------------------------------------------------------------------
             local devices = o.getDevices()
             for _, device in pairs(devices) do
-                --------------------------------------------------------------------------------
-                -- Make everything black:
-                --------------------------------------------------------------------------------
-                for _, screen in pairs(loupedeck.screens) do
-                    device:updateScreenColor(screen, {hex="#"..defaultColor})
-                end
-                for i=7, 26 do
-                    device:buttonColor(i, {hex="#" .. defaultColor})
-                end
-
-                --------------------------------------------------------------------------------
-                -- After a slight delay so the websocket message has time to send...
-                --------------------------------------------------------------------------------
-                doAfter(0.01, function()
-                    --------------------------------------------------------------------------------
-                    -- Disconnect from the Loupedeck:
-                    --------------------------------------------------------------------------------
-                    device:disconnect()
-
-                    --------------------------------------------------------------------------------
-                    -- Destroy the device:
-                    --------------------------------------------------------------------------------
-                    device = nil
-                end)
+                device:disconnect()
+                device = nil
             end
 
             --------------------------------------------------------------------------------
             -- Destroy the devices table:
             --------------------------------------------------------------------------------
             o.devices = nil
+
+            o.deviceCount = 0
         end
     end)
 
@@ -1595,10 +1645,10 @@ function mod.mt:callback(data, deviceNumber)
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
     if data.action == "websocket_opening" then
-        log.df("Loupedeck websocket opening for %s (Unit %s)...", self.configFolder, deviceNumber)
+        --log.df("Loupedeck websocket opening for %s (Unit %s)...", self.configFolder, deviceNumber)
         return
     elseif data.action == "websocket_closing" then
-        log.df("Loupedeck websocket closing for %s (Unit %s)...", self.configFolder, deviceNumber)
+        --log.df("Loupedeck websocket closing for %s (Unit %s)...", self.configFolder, deviceNumber)
         return
     elseif data.action == "websocket_opened" then
         self.connected[deviceNumber](true)
@@ -1983,8 +2033,8 @@ function mod.mt:callback(data, deviceNumber)
             --------------------------------------------------------------------------------
             -- SCREEN RELEASED:
             --------------------------------------------------------------------------------
-            self.cacheLeftScreenYAxis = nil
-            self.cacheRightScreenYAxis = nil
+            self.cacheLeftScreenYAxis[deviceNumber] = nil
+            self.cacheRightScreenYAxis[deviceNumber] = nil
             self.tookFingerOffLeftScreen = true
             self.tookFingerOffRightScreen = true
 

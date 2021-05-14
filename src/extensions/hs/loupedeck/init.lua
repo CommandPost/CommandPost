@@ -14,7 +14,6 @@ local inspect           = require "hs.inspect"
 local network           = require "hs.network"
 local serial            = require "hs.serial"
 local timer             = require "hs.timer"
-local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
 
 local just              = require "cp.just"
@@ -1719,46 +1718,12 @@ function mod.mt:vibrate(vibrationIndex, callbackFn)
     )
 end
 
---- hs.loupedeck:updateWatcher(enabled) -> none
---- Method
---- Updates the USB device watcher.
----
---- Parameters:
----  * enabled - A boolean which turns the watcher on or off.
----
---- Returns:
----  * None
-function mod.mt:updateWatcher(enabled)
-    if enabled then
-        if not self._usbWatcher then
-            self._usbWatcher = usb.watcher.new(function(data)
-                if data.productName == self.deviceType then
-                    if data.eventType == "added" then
-                        log.df("Loupedeck device connected.")
-                        doAfter(4, function()
-                            self:connect()
-                        end)
-                    elseif data.eventType == "removed" then
-                        log.df("Loupedeck device disconnected.")
-                    end
-                end
-            end):start()
-        end
-    else
-        if self._usbWatcher then
-            self._usbWatcher:stop()
-            self._usbWatcher = nil
-        end
-    end
-end
-
---- hs.loupedeck:connect(retry, deviceType) -> boolean, errorMessage
+--- hs.loupedeck:connect() -> none
 --- Method
 --- Connects to a Loupedeck.
 ---
 --- Parameters:
----  * retry - `true` if you want to keep trying to connect, otherwise `false`
----  * deviceType - The device type (for example `hs.loupedeck.deviceTypes.LIVE`)
+---  * None
 ---
 --- Returns:
 ---  * None
@@ -1768,21 +1733,12 @@ end
 ---    if the device cannot be connected to.
 function mod.mt:connect()
     --------------------------------------------------------------------------------
-    -- Setup retry watchers:
-    --------------------------------------------------------------------------------
-    self:updateWatcher(self.retry)
-
-    --------------------------------------------------------------------------------
     -- Find the Loupedeck Devices:
     --------------------------------------------------------------------------------
     local devices = mod.findDevices(self.deviceType)
     local device = devices and devices[self.deviceNumber]
+
     if not device then
-        if self.retry then
-            doAfter(2, function()
-                self:connect()
-            end)
-        end
         return
     end
 
@@ -1791,7 +1747,7 @@ function mod.mt:connect()
         -- Attempt to connect via websockets:
         --------------------------------------------------------------------------------
         local url = "ws://" .. device .. ":80/"
-        log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
+        --log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
         self.websocket = wshttp.new(url, self:createWebsocketCallback())
     else
         --------------------------------------------------------------------------------
@@ -1799,7 +1755,7 @@ function mod.mt:connect()
         --
         -- 9600, no parity, 8 bits, 2 stop bits.
         --------------------------------------------------------------------------------
-        log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
+        --log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
         self.websocket = wsserial.new(device, 9600, 8, 2, self:createWebsocketCallback())
     end
 
@@ -1839,11 +1795,6 @@ function mod.mt:disconnect()
         self.websocket:close()
         self.websocket = nil
     end
-
-    --------------------------------------------------------------------------------
-    -- Destroy any watchers:
-    --------------------------------------------------------------------------------
-    self:updateWatcher()
 end
 
 --- hs.loupedeck.new() -> Loupedeck
@@ -1851,8 +1802,8 @@ end
 --- Creates a new Loupedeck object.
 ---
 --- Parameters:
----  * retry - `true` if you want to keep trying to connect, otherwise `false`
 ---  * deviceType - The device type defined in `hs.loupedeck.deviceTypes`
+---  * deviceNumber - The number of the device you want to access
 ---
 --- Returns:
 ---  * None
@@ -1860,9 +1811,8 @@ end
 --- Notes:
 ---  * The deviceType should be either `hs.loupedeck.deviceTypes.LIVE`
 ---    or `hs.loupedeck.deviceTypes.CT`.
-function mod.new(retry, deviceType, deviceNumber)
+function mod.new(deviceType, deviceNumber)
     local o = {
-        retry               = retry,
         deviceType          = deviceType,
         callbackRegister    = {},
         deviceNumber        = deviceNumber,
@@ -1871,12 +1821,12 @@ function mod.new(retry, deviceType, deviceNumber)
     return o
 end
 
---- hs.loupedeck:findIPAddress() -> string | nil
+--- hs.loupedeck.findDevices(deviceType) -> string | nil
 --- Method
 --- Searches for a valid IP address for the Loupedeck
 ---
 --- Parameters:
----  * None
+---  * deviceType - The device type defined in `hs.loupedeck.deviceTypes`
 ---
 --- Returns:
 ---  * An IP address as a string, or `nil` if no device can be detected.
