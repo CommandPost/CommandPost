@@ -42,6 +42,16 @@ local uint8             = bytes.uint8
 -- Loupedeck's USB Vendor ID
 local LOUPEDECK_VENDOR_ID = 11970
 
+-- LOUPEDECK_CT_ID -> number
+-- Constant
+-- Loupedeck CT USB Product ID
+local LOUPEDECK_CT_ID = 3
+
+-- LOUPEDECK_LIVE_ID -> number
+-- Constant
+-- Loupedeck LIVE USB Product ID
+local LOUPEDECK_LIVE_ID = 4
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
@@ -521,6 +531,18 @@ mod.ignoreResponses = {
     [0x1f73] = true, -- This is triggered when the Loupedeck Live first connects
 
     [0x0410] = true, -- Not sure... seems to happen during restarts.
+
+    -- These trigger when you start a Loupedeck Live with Serial Firmware,
+    -- and I have no idea why:
+    [0x1273] = true,
+    [0x2573] = true,
+    [0x1773] = true,
+    [0x1873] = true,
+    [0x3773] = true,
+    [0x0573] = true,
+
+    [0x1d73] = true,
+    [0x3073] = true,
 }
 
 -- convertWheelXandYtoButtonID(x, y) -> number
@@ -1869,7 +1891,9 @@ function mod.findDevices(deviceType)
     for _, portName in pairs(availablePortNames) do
         local portDetails = availablePortDetails[portName]
         if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
-            table.insert(results, portName)
+            if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID) or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID) then
+                table.insert(results, portName)
+            end
         end
     end
 

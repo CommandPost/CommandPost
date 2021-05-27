@@ -171,7 +171,7 @@ function mod.new(deviceType)
     --- Returns:
     ---  * None
     o.setupDevices = function()
-        --log.df("Setting up Loupedeck Devices...")
+        --log.df("Setting up " .. deviceType .. " Devices...")
 
         local devices = loupedeck.findDevices(deviceType)
         local currentDeviceCount = tableCount(devices)
@@ -198,7 +198,7 @@ function mod.new(deviceType)
             -- Create new devices:
             --------------------------------------------------------------------------------
             for i=1, currentDeviceCount do
-                --log.df("Creating a new " .. deviceType)
+                --log.df("Creating a new " .. deviceType .. " (" .. i .. ")")
                 o.devices[i] = loupedeck.new(deviceType, i)
                 o.devices[i]:callback(function(...)
                     o:callback(...)
@@ -425,6 +425,8 @@ function mod.new(deviceType)
         o.connected[deviceNumber]                       = prop.FALSE()
 
         o.cachedBundleID[deviceNumber]                  = ""
+
+        o.repeatTimers[deviceNumber]                    = {}
     end
 
     -- defaultLayoutPath -> string
@@ -993,12 +995,12 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
     end
 
     if not device then
-        log.ef("There is no Loupedeck device for unit '%s', which is causing screen refresh to fail.", deviceNumber)
+        --log.ef("There is no Loupedeck device for unit '%s', which is causing screen refresh to fail.", deviceNumber)
         return
     end
 
     if not self.items then
-        log.ef("no items found during refresh")
+        log.ef("The Loupedeck control surfaces layout preferences could not be loaded. This shouldn't be possible.")
         return
     end
 
