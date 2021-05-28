@@ -1,4 +1,4 @@
--- test cases for `cp.is`
+-- test cases for `cp.app`
 local spec              = require "cp.spec"
 local expect            = require "cp.spec.expect"
 local describe, it      = spec.describe, spec.it
@@ -80,6 +80,6 @@ return describe "cp.app" {
     it "path"
     :doing(function()
         local preview = app.forBundleID("com.apple.Preview")
-        expect(preview:path()):is("/Applications/Preview.app")
+        expect(preview:path()):is("/System/Applications/Preview.app")
     end)
 }

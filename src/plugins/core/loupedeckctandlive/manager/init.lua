@@ -12,12 +12,14 @@ local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
 local canvas                    = require "hs.canvas"
 local eventtap                  = require "hs.eventtap"
+local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local loupedeck                 = require "hs.loupedeck"
 local plist                     = require "hs.plist"
 local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
+local usb                       = require "hs.usb"
 
 local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
@@ -43,10 +45,16 @@ local isImage                   = tools.isImage
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
+local tableCount                = tools.tableCount
 
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
+
+--- plugins.core.loupedeckctandlive.manager.NUMBER_OF_DEVICES -> number
+--- Constant
+--- The number of devices of the same type supported.
+mod.NUMBER_OF_DEVICES = 10
 
 -- LD_BUNDLE_ID -> string
 -- Constant
@@ -67,11 +75,6 @@ local doubleTapTimeout = 0.2
 -- Variable
 -- Drag minimum difference.
 local dragMinimumDiff = 3
-
--- cachedBundleID -> string
--- Variable
--- The last bundle ID processed.
-local cachedBundleID = ""
 
 -- wheelDoubleTapXTolerance -> number
 -- Variable
@@ -121,6 +124,7 @@ end
 function mod.new(deviceType)
 
     local o = {}
+    setmetatable(o, mod.mt)
 
     --- plugins.core.loupedeckctandlive.manager.getScreenSizeFromControlType() -> number, number
     --- Function
@@ -134,30 +138,106 @@ function mod.new(deviceType)
     ---  * height as a number
     o.getScreenSizeFromControlType = getScreenSizeFromControlType
 
-    --- plugins.core.loupedeckctandlive.manager.getDevice() -> hs.loupedeck
+    --- plugins.core.loupedeckctandlive.manager.deviceCount -> number
+    --- Variable
+    --- How many devices are connected?
+    o.deviceCount = 0
+
+    --- plugins.core.loupedeckctandlive.manager.getDevices() -> table
     --- Function
-    --- Gets the Loupedeck device.
+    --- Gets a table of Loupedeck devices.
     ---
     --- Parameters:
     ---  * None
     ---
     --- Returns:
-    ---  * A cached or a new hs.loupedeck object.
-    o.getDevice = function()
-        if not o.device then
-            if deviceType == loupedeck.deviceTypes.CT then
-                o.device = loupedeck.new(true, loupedeck.deviceTypes.CT)
-            elseif deviceType == loupedeck.deviceTypes.LIVE then
-                o.device = loupedeck.new(true, loupedeck.deviceTypes.LIVE)
+    ---  * A table of cached or a new hs.loupedeck objects.
+    o.getDevices = function()
+        return o.devices or {}
+    end
+
+    --- plugins.core.loupedeckctandlive.manager.setupDevicesCount -> number
+    --- Variable
+    --- A counter for how many times the `setupDevices` function has run.
+    o.setupDevicesCount = 0
+
+    --- plugins.core.loupedeckctandlive.manager.setupDevices() -> none
+    --- Function
+    --- Sets up connected Loupedeck devices.
+    ---
+    --- Parameters:
+    ---  * None
+    ---
+    --- Returns:
+    ---  * None
+    o.setupDevices = function()
+        --log.df("Setting up " .. deviceType .. " Devices...")
+
+        local devices = loupedeck.findDevices(deviceType)
+        local currentDeviceCount = tableCount(devices)
+
+        --log.df("Current Device Count: %s", currentDeviceCount)
+        --log.df("Past Device Count: %s", o.deviceCount)
+
+        if currentDeviceCount ~= o.deviceCount and currentDeviceCount > 0 then
+            --------------------------------------------------------------------------------
+            -- Destroy any devices:
+            --------------------------------------------------------------------------------
+            --log.df("Destorying any existing devices...")
+            local devices = o.getDevices()
+            for _, device in pairs(devices) do
+                device:disconnect()
+                device = nil
             end
 
-            -- Setup the callback:
-            o.device:callback(function(...)
-                o:callback(...)
-            end)
+            if not o.devices then
+                o.devices = {}
+            end
+
+            --------------------------------------------------------------------------------
+            -- Create new devices:
+            --------------------------------------------------------------------------------
+            for i=1, currentDeviceCount do
+                --log.df("Creating a new " .. deviceType .. " (" .. i .. ")")
+                o.devices[i] = loupedeck.new(deviceType, i)
+                o.devices[i]:callback(function(...)
+                    o:callback(...)
+                end)
+                o.devices[i]:connect()
+            end
+
+            --------------------------------------------------------------------------------
+            -- Update the device count:
+            --------------------------------------------------------------------------------
+            o.deviceCount = currentDeviceCount
+
+            o.setupDevicesCount = 0
+        else
+            if o.setupDevicesCount == 10 then
+                o.setupDevicesCount = 0
+            else
+                doAfter(1, function()
+                    o.setupDevicesCount = o.setupDevicesCount + 1
+                    o.setupDevices()
+                end)
+            end
         end
-        return o.device
     end
+
+    --- plugins.core.loupedeckctandlive.manager.usbWatcher -> hs.usb.watcher
+    --- Variable
+    --- USB device watcher.
+    o.usbWatcher = usb.watcher.new(function(data)
+        if data.productName == deviceType then
+            if data.eventType == "added" then
+                --log.df(deviceType .. " connected.")
+                o.setupDevices()
+            elseif data.eventType == "removed" then
+                --log.df(deviceType .. " removed from system.")
+                o.setupDevices()
+            end
+        end
+    end)
 
     if deviceType == loupedeck.deviceTypes.CT then
         --------------------------------------------------------------------------------
@@ -186,7 +266,7 @@ function mod.new(deviceType)
     --- plugins.core.loupedeckctandlive.manager.defaultFilename -> string
     --- Field
     --- Default filename
-    o.defaultFilename = "Default" .. o.fileExtension
+    o.defaultFilename = "Multiple Units" .. o.fileExtension
 
     --- plugins.core.loupedeckctandlive.manager.repeatTimers -> table
     --- Variable
@@ -201,17 +281,17 @@ function mod.new(deviceType)
     --- plugins.core.loupedeckctandlive.manager.hasLoaded -> boolean
     --- Variable
     --- Has the Loupedeck loaded?
-    o.hasLoaded = false
+    o.hasLoaded = {}
 
     --- plugins.core.loupedeckctandlive.manager.leftFnPressed -> boolean
     --- Variable
     --- Is the left Function button pressed?
-    o.leftFnPressed = false
+    o.leftFnPressed = {}
 
     --- plugins.core.loupedeckctandlive.manager.rightFnPressed -> boolean
     --- Variable
     --- Is the right Function button pressed?
-    o.rightFnPressed = false
+    o.rightFnPressed = {}
 
     --- plugins.core.loupedeckctandlive.manager.cachedLEDButtonValues -> table
     --- Variable
@@ -228,85 +308,126 @@ function mod.new(deviceType)
     --- Table of cached Knob values.
     o.cachedKnobValues = {}
 
-    --- plugins.core.loupedeckctandlive.manager.cachedWheelScreen -> string
+    --- plugins.core.loupedeckctandlive.manager.cachedWheelScreen -> table
     --- Variable
-    --- The last wheel screen data sent.
-    o.cachedWheelScreen = ""
+    --- The last wheel screen data sent per device.
+    o.cachedWheelScreen = {}
 
-    --- plugins.core.loupedeckctandlive.manager.cachedLeftSideScreen -> string
+    --- plugins.core.loupedeckctandlive.manager.cachedLeftSideScreen -> table
+    --- Variable
+    --- The last screen data sent per device.
+    o.cachedLeftSideScreen = {}
+
+    --- plugins.core.loupedeckctandlive.manager.cachedRightSideScreen -> table
     --- Variable
     --- The last screen data sent.
-    o.cachedLeftSideScreen = ""
-
-    --- plugins.core.loupedeckctandlive.manager.cachedRightSideScreen -> string
-    --- Variable
-    --- The last screen data sent.
-    o.cachedRightSideScreen = ""
+    o.cachedRightSideScreen = {}
 
     --- plugins.core.loupedeckctandlive.manager.cacheWheelYAxis -> number
     --- Variable
     --- Wheel Y Axis Cache
-    o.cacheWheelYAxis = nil
+    o.cacheWheelYAxis = {}
 
     --- plugins.core.loupedeckctandlive.manager.cacheWheelXAxis -> number
     --- Variable
     --- Wheel X Axis Cache
-    o.cacheWheelXAxis = nil
+    o.cacheWheelXAxis = {}
 
     --- plugins.core.loupedeckctandlive.manager.cacheLeftScreenYAxis -> number
     --- Variable
     --- Right Screen Y Axis Cache
-    o.cacheLeftScreenYAxis = nil
+    o.cacheLeftScreenYAxis = {}
 
     --- plugins.core.loupedeckctandlive.manager.cacheRightScreenYAxis -> number
     --- Variable
     --- Right Screen Y Axis Cache
-    o.cacheRightScreenYAxis = nil
+    o.cacheRightScreenYAxis = {}
 
     --- plugins.core.loupedeckctandlive.manager.wheelScreenDoubleTapTriggered -> boolean
     --- Variable
     --- Has the wheel screen been tapped once?
-    o.wheelScreenDoubleTapTriggered = false
+    o.wheelScreenDoubleTapTriggered = {}
 
     --- plugins.core.loupedeckctandlive.manager.leftScreenDoubleTapTriggered -> boolean
     --- Variable
     --- Has the wheel screen been tapped once?
-    o.leftScreenDoubleTapTriggered = false
+    o.leftScreenDoubleTapTriggered = {}
 
     --- plugins.core.loupedeckctandlive.manager.rightScreenDoubleTapTriggered -> boolean
     --- Variable
     --- Has the wheel screen been tapped once?
-    o.rightScreenDoubleTapTriggered = false
+    o.rightScreenDoubleTapTriggered = {}
 
     --- plugins.core.loupedeckctandlive.manager.tookFingerOffLeftScreen -> boolean
     --- Variable
     --- Took Finger Off Left Screen?
-    o.tookFingerOffLeftScreen = false
+    o.tookFingerOffLeftScreen = {}
 
     --- plugins.core.loupedeckctandlive.manager.tookFingerOffRightScreen -> boolean
     --- Variable
     --- Took Finger Off Right Screen?
-    o.tookFingerOffRightScreen = false
+    o.tookFingerOffRightScreen = {}
 
     --- plugins.core.loupedeckctandlive.manager.tookFingerOffWheelScreen -> boolean
     --- Variable
     --- Took Finger Off Wheel Screen?
-    o.tookFingerOffWheelScreen = false
+    o.tookFingerOffWheelScreen = {}
 
     --- plugins.core.loupedeckctandlive.manager.lastWheelDoubleTapX -> number
     --- Variable
     --- Last Wheel Double Tap X Position
-    o.lastWheelDoubleTapX = nil
+    o.lastWheelDoubleTapX = {}
 
     --- plugins.core.loupedeckctandlive.manager.lastWheelDoubleTapY -> number
     --- Variable
     --- Last Wheel Double Tap Y Position
-    o.lastWheelDoubleTapY = nil
+    o.lastWheelDoubleTapY = {}
 
-    --- plugins.core.loupedeckctandlive.manager.connected <cp.prop: boolean>
-    --- Field
+    --- plugins.core.loupedeckctandlive.manager.connected -> table
+    --- Variable
     --- Is the Loupedeck connected?
-    o.connected = prop.FALSE()
+    o.connected = {}
+
+    --- plugins.core.loupedeckctandlive.manager.refreshTimer -> table
+    --- Variable
+    --- Refresh Timers
+    o.refreshTimer = {}
+
+    --- plugins.core.loupedeckctandlive.manager.cachedBundleID -> table
+    --- Variable
+    --- Cached Bundle IDs
+    o.cachedBundleID = {}
+
+    --- plugins.core.loupedeckctandlive.manager.activeBanks <cp.prop: table>
+    --- Field
+    --- Table of active banks for each application.
+    o.activeBanks = config.prop(o.id .. ".activeBanks", {})
+
+    --------------------------------------------------------------------------------
+    -- Setup the defaults for each device:
+    --------------------------------------------------------------------------------
+    for deviceNumber=1, mod.NUMBER_OF_DEVICES do
+        o.hasLoaded[deviceNumber]                       = false
+        o.leftFnPressed[deviceNumber]                   = false
+        o.rightFnPressed[deviceNumber]                  = false
+        o.wheelScreenDoubleTapTriggered[deviceNumber]   = false
+        o.leftScreenDoubleTapTriggered[deviceNumber]    = false
+        o.rightScreenDoubleTapTriggered[deviceNumber]   = false
+        o.tookFingerOffLeftScreen[deviceNumber]         = false
+        o.tookFingerOffRightScreen[deviceNumber]        = false
+        o.tookFingerOffWheelScreen[deviceNumber]        = false
+
+        o.cacheWheelYAxis[deviceNumber]                 = 0
+        o.cacheWheelXAxis[deviceNumber]                 = 0
+        o.cacheLeftScreenYAxis[deviceNumber]            = 0
+        o.cacheRightScreenYAxis[deviceNumber]           = 0
+
+        o.connected[deviceNumber]                       = prop.FALSE()
+
+        o.cachedBundleID[deviceNumber]                  = ""
+
+        o.repeatTimers[deviceNumber]                    = {}
+    end
 
     -- defaultLayoutPath -> string
     -- Variable
@@ -329,8 +450,11 @@ function mod.new(deviceType)
     --- Field
     --- Enable or disable the Loupedeck Flash Drive.
     o.enableFlashDrive = config.prop(o.id .. ".enableFlashDrive", false):watch(function(enabled)
-        local device = o.getDevice()
-        device:updateFlashDrive(enabled)
+        local devices = o.getDevices()
+        for _, device in pairs(devices) do
+            device:updateFlashDrive(enabled)
+        end
+
         if not enabled then
             local path = o:getFlashDrivePath()
             if path then
@@ -349,11 +473,6 @@ function mod.new(deviceType)
     --- Screens Backlight Level
     o.screensBacklightLevel = config.prop(o.id .. ".screensBacklightLevel", "9")
 
-    --- plugins.core.loupedeckctandlive.manager.activeBanks <cp.prop: table>
-    --- Field
-    --- Table of active banks for each application.
-    o.activeBanks = config.prop(o.id .. ".activeBanks", {})
-
     --- plugins.core.loupedeckctandlive.manager.loadSettingsFromDevice <cp.prop: boolean>
     --- Field
     --- Load settings from device.
@@ -369,7 +488,12 @@ function mod.new(deviceType)
     --- plugins.core.loupedeckctandlive.manager.automaticallySwitchApplications <cp.prop: boolean>
     --- Field
     --- Enable or disable the automatic switching of applications.
-    o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function() o:refresh() end)
+    o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function()
+        local devices = o.getDevices()
+        for deviceNumber, _ in pairs(devices) do
+            o:refresh(deviceNumber)
+        end
+    end)
 
     --- plugins.core.loupedeckctandlive.prefs.snippetsRefreshFrequency <cp.prop: string>
     --- Field
@@ -384,9 +508,9 @@ function mod.new(deviceType)
             o.appWatcher:start()
             o.driveWatcher:start()
             o.sleepWatcher:start()
+            o.usbWatcher:start()
 
-            local device = o.getDevice()
-            device:connect()
+            o.setupDevices()
         else
             --------------------------------------------------------------------------------
             -- Stop all watchers:
@@ -394,38 +518,33 @@ function mod.new(deviceType)
             o.appWatcher:stop()
             o.driveWatcher:stop()
             o.sleepWatcher:stop()
+            o.usbWatcher:stop()
 
+            --------------------------------------------------------------------------------
+            -- Destroy the refresh timers:
+            --------------------------------------------------------------------------------
             if o.refreshTimer then
-                o.refreshTimer:stop()
-                o.refreshTimer = nil
+                for _, v in pairs(o.refreshTimer) do
+                    v:stop()
+                    v = nil
+                end
             end
 
-            if o.device then
-                --------------------------------------------------------------------------------
-                -- Make everything black:
-                --------------------------------------------------------------------------------
-                for _, screen in pairs(loupedeck.screens) do
-                    o.device:updateScreenColor(screen, {hex="#"..defaultColor})
-                end
-                for i=7, 26 do
-                    o.device:buttonColor(i, {hex="#" .. defaultColor})
-                end
-
-                --------------------------------------------------------------------------------
-                -- After a slight delay so the websocket message has time to send...
-                --------------------------------------------------------------------------------
-                doAfter(0.01, function()
-                    --------------------------------------------------------------------------------
-                    -- Disconnect from the Loupedeck:
-                    --------------------------------------------------------------------------------
-                    o.device:disconnect()
-
-                    --------------------------------------------------------------------------------
-                    -- Destroy the device:
-                    --------------------------------------------------------------------------------
-                    o.device = nil
-                end)
+            --------------------------------------------------------------------------------
+            -- Destroy any devices:
+            --------------------------------------------------------------------------------
+            local devices = o.getDevices()
+            for _, device in pairs(devices) do
+                device:disconnect()
+                device = nil
             end
+
+            --------------------------------------------------------------------------------
+            -- Destroy the devices table:
+            --------------------------------------------------------------------------------
+            o.devices = nil
+
+            o.deviceCount = 0
         end
     end)
 
@@ -434,32 +553,38 @@ function mod.new(deviceType)
     --------------------------------------------------------------------------------
     o.sleepWatcher = sleepWatcher.new(function(eventType)
         if eventType == sleepWatcher.systemDidWake then
-            if o.enabled() and o.device then
-                o.device:disconnect()
-                o.device:connect()
+            if o.enabled() then
+                local devices = o.getDevices()
+                for _, device in pairs(devices) do
+                    device:disconnect()
+                    device:connect()
+                end
             end
         end
         if eventType == sleepWatcher.systemWillSleep then
-            if o.enabled() and o.device then
-                --------------------------------------------------------------------------------
-                -- Make everything black:
-                --------------------------------------------------------------------------------
-                for _, screen in pairs(loupedeck.screens) do
-                    o.device:updateScreenColor(screen, {hex="#"..defaultColor})
-                end
-                for i=7, 26 do
-                    o.device:buttonColor(i, {hex="#" .. defaultColor})
-                end
+            if o.enabled() then
+                local devices = o.getDevices()
+                for _, device in pairs(devices) do
+                    --------------------------------------------------------------------------------
+                    -- Make everything black:
+                    --------------------------------------------------------------------------------
+                    for _, screen in pairs(loupedeck.screens) do
+                        device:updateScreenColor(screen, {hex="#"..defaultColor})
+                    end
+                    for i=7, 26 do
+                        device:buttonColor(i, {hex="#" .. defaultColor})
+                    end
 
-                --------------------------------------------------------------------------------
-                -- After a slight delay so the websocket message has time to send...
-                --------------------------------------------------------------------------------
-                doAfter(0.01, function()
                     --------------------------------------------------------------------------------
-                    -- Disconnect from the Loupedeck:
+                    -- After a slight delay so the websocket message has time to send...
                     --------------------------------------------------------------------------------
-                    o.device:disconnect()
-                end)
+                    doAfter(0.01, function()
+                        --------------------------------------------------------------------------------
+                        -- Disconnect from the Loupedeck:
+                        --------------------------------------------------------------------------------
+                        device:disconnect()
+                    end)
+                end
             end
         end
     end)
@@ -468,8 +593,11 @@ function mod.new(deviceType)
     -- Setup watch to refresh the Loupedeck when apps change focus:
     --------------------------------------------------------------------------------
     o.appWatcher = appWatcher.new(function(_, event)
-        if o.hasLoaded and event == appWatcher.activated then
-            o:refresh(true)
+        local devices = o.getDevices()
+        for deviceNumber, device in pairs(devices) do
+            if o.hasLoaded[deviceNumber] and event == appWatcher.activated then
+                o:refresh(deviceNumber, true)
+            end
         end
     end)
 
@@ -478,14 +606,10 @@ function mod.new(deviceType)
     --------------------------------------------------------------------------------
     config.shutdownCallback:new(o.configFolder, function()
         if o.enabled() then
-            local device = o.getDevice()
-            for _, screen in pairs(loupedeck.screens) do
-                device:updateScreenColor(screen, {hex="#"..defaultColor})
+            local devices = o.getDevices()
+            for _, device in pairs(devices) do
+                device:disconnect()
             end
-            for i=7, 26 do
-                device:buttonColor(i, {hex="#" .. defaultColor})
-            end
-            just.wait(0.01) -- Slight delay so the websocket message has time to send.
         end
     end)
 
@@ -544,25 +668,40 @@ function mod.new(deviceType)
     local numberOfBanks = mod.csman.NUMBER_OF_BANKS
     actionmanager.addHandler("global_" .. o.id .. "_banks")
         :onChoices(function(choices)
-            for i=1, numberOfBanks do
-                choices:add(o.configFolder .. " " .. i18n("bank") .. " " .. tostring(i))
+
+            for currentDevice=1, mod.NUMBER_OF_DEVICES do
+                local deviceNumber = tostring(currentDevice)
+                local deviceID = "  - Unit " .. tostring(deviceNumber)
+
+                for i=1, numberOfBanks do
+                    choices:add(o.configFolder .. " " .. i18n("bank") .. " " .. tostring(i) .. deviceID)
+                        :subText(i18n(o.i18nID .. "BankDescription"))
+                        :params({
+                            id = i,
+                            deviceNumber = tostring(deviceNumber)
+                        })
+                        :id(i)
+                        :image(icon)
+                end
+
+                choices:add(i18n("next") .. " " .. o.configFolder .. " " .. i18n("bank") .. deviceID)
                     :subText(i18n(o.i18nID .. "BankDescription"))
-                    :params({ id = i })
-                    :id(i)
+                    :params({
+                        id = "next",
+                        deviceNumber = tostring(deviceNumber)
+                    })
+                    :id("next")
+                    :image(icon)
+
+                choices:add(i18n("previous") .. " " .. o.configFolder .. " " .. i18n("bank") .. deviceID)
+                    :subText(i18n(o.i18nID .. "BankDescription"))
+                    :params({
+                        id = "previous",
+                        deviceNumber = tostring(deviceNumber)
+                    })
+                    :id("previous")
                     :image(icon)
             end
-
-            choices:add(i18n("next") .. " " .. o.configFolder .. " " .. i18n("bank"))
-                :subText(i18n(o.i18nID .. "BankDescription"))
-                :params({ id = "next" })
-                :id("next")
-                :image(icon)
-
-            choices:add(i18n("previous") .. " " .. o.configFolder .. " " .. i18n("bank"))
-                :subText(i18n(o.i18nID .. "BankDescription"))
-                :params({ id = "previous" })
-                :id("previous")
-                :image(icon)
 
             return choices
         end)
@@ -572,19 +711,24 @@ function mod.new(deviceType)
                 local frontmostApplication = application.frontmostApplication()
                 local bundleID = frontmostApplication:bundleID()
 
+                local deviceNumber = (result.deviceNumber and tostring(result.deviceNumber)) or "1" -- Default to 1 for legacy reasons.
                 local items = o.items()
+
+                if not items[deviceNumber] then
+                    items[deviceNumber] = {}
+                end
 
                 --------------------------------------------------------------------------------
                 -- Revert to "All Applications" if no settings for frontmost app exist:
                 --------------------------------------------------------------------------------
-                if not items[bundleID] then
+                if not items[deviceNumber][bundleID] then
                     bundleID = "All Applications"
                 end
 
                 --------------------------------------------------------------------------------
                 -- Ignore if ignored:
                 --------------------------------------------------------------------------------
-                if items[bundleID].ignore and items[bundleID].ignore == true then
+                if items[deviceNumber][bundleID].ignore and items[deviceNumber][bundleID].ignore == true then
                     bundleID = "All Applications"
                 end
 
@@ -596,34 +740,39 @@ function mod.new(deviceType)
                 end
 
                 local activeBanks = o.activeBanks()
-                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+                if not activeBanks[deviceNumber] then
+                    activeBanks[deviceNumber] = {}
+                end
+
+                local currentBank = (activeBanks[deviceNumber] and activeBanks[deviceNumber][bundleID] and tonumber(activeBanks[deviceNumber][bundleID])) or 1
 
                 if type(result.id) == "number" then
-                    activeBanks[bundleID] = tostring(result.id)
+                    activeBanks[deviceNumber][bundleID] = tostring(result.id)
                 else
                     if result.id == "next" then
                         if currentBank == numberOfBanks then
-                            activeBanks[bundleID] = "1"
+                            activeBanks[deviceNumber][bundleID] = "1"
                         else
-                            activeBanks[bundleID] = tostring(currentBank + 1)
+                            activeBanks[deviceNumber][bundleID] = tostring(currentBank + 1)
                         end
                     elseif result.id == "previous" then
                         if currentBank == 1 then
-                            activeBanks[bundleID] = tostring(numberOfBanks)
+                            activeBanks[deviceNumber][bundleID] = tostring(numberOfBanks)
                         else
-                            activeBanks[bundleID] = tostring(currentBank - 1)
+                            activeBanks[deviceNumber][bundleID] = tostring(currentBank - 1)
                         end
                     end
                 end
 
-                local newBank = activeBanks[bundleID]
+                local newBank = activeBanks[deviceNumber][bundleID]
 
                 o.activeBanks(activeBanks)
 
-                o:refresh()
+                local refreshID = tonumber(deviceNumber)
+                o:refresh(refreshID)
 
                 items = o.items() -- Reload items
-                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                local label = items[deviceNumber] and items[deviceNumber][bundleID] and items[deviceNumber][bundleID][newBank] and items[deviceNumber][bundleID][newBank]["bankLabel"] or newBank
                 displayNotification(i18n(o.i18nID) .. " " .. i18n("bank") .. ": " .. label)
             end
         end)
@@ -643,10 +792,13 @@ function mod.new(deviceType)
 
             -- Add User Added Applications from Loupedeck Preferences:
             local items = o.items()
-            for bundleID, v in pairs(items) do
-                if not applications[bundleID] and v.displayName then
-                    applications[bundleID] = {}
-                    applications[bundleID].displayName = v.displayName
+
+            for _, device in pairs(items) do
+                for bundleID, v in pairs(items) do
+                    if not applications[bundleID] and v.displayName then
+                        applications[bundleID] = {}
+                        applications[bundleID].displayName = v.displayName
+                    end
                 end
             end
 
@@ -674,7 +826,15 @@ function mod.new(deviceType)
         :onExecute(function(action)
             local bundleID = action.bundleID
             o.lastBundleID(bundleID)
-            o:refresh()
+
+            local deviceNumber = action.deviceNumber
+
+            --------------------------------------------------------------------------------
+            -- Refresh all devices:
+            --------------------------------------------------------------------------------
+            for deviceNumber=1, mod.NUMBER_OF_DEVICES do
+                o:refresh(deviceNumber)
+            end
 
             if action.launch then
                 launchOrFocusByBundleID(bundleID)
@@ -689,8 +849,6 @@ function mod.new(deviceType)
     -- Connect to the Loupedeck:
     --------------------------------------------------------------------------------
     o.enabled:update()
-
-    setmetatable(o, mod.mt)
     return o
 end
 
@@ -727,10 +885,28 @@ function mod.mt:refreshItems()
     local flashDrivePath = self:getFlashDrivePath()
     if self.loadSettingsFromDevice() and flashDrivePath then
         --------------------------------------------------------------------------------
-        -- If settings don't already exist on Loupedeck, copy them from Mac:
+        -- Define Paths:
         --------------------------------------------------------------------------------
         local macPreferencesPath = config.userConfigRootPath .. "/" .. self.configFolder .. "/" .. self.defaultFilename
         local flashDrivePreferencesPath = flashDrivePath .. "/CommandPost/" .. self.defaultFilename
+        local legacyFlashDrivePreferencesPath = flashDrivePath .. "/CommandPost/Default" .. self.fileExtension
+
+        --------------------------------------------------------------------------------
+        -- If legacy preferences exists, but new ones don't:
+        --------------------------------------------------------------------------------
+        if not doesFileExist(flashDrivePreferencesPath) and doesFileExist(legacyFlashDrivePreferencesPath) then
+            local legacyPreferences = json.read(legacyFlashDrivePreferencesPath)
+            if legacyPreferences then
+                local newData = {}
+                newData["1"] = fnutils.copy(legacyPreferences)
+                json.write(flashDrivePreferencesPath, newData)
+                log.df("Converted Loupedeck Preferences from single unit to multi-unit format on Flash Drive.")
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- If settings don't already exist on Loupedeck, copy them from Mac:
+        --------------------------------------------------------------------------------
         if not doesFileExist(flashDrivePreferencesPath) then
             if ensureDirectoryExists(flashDrivePath, "CommandPost") then
                 local existingSettings = json.read(macPreferencesPath) or self.defaultLayout
@@ -750,9 +926,37 @@ function mod.mt:refreshItems()
         end)
     else
         --------------------------------------------------------------------------------
+        -- Check if we need to migrate the layout:
+        --------------------------------------------------------------------------------
+        local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/" .. self.configFolder .. "/" .. self.defaultFilename)
+
+        --------------------------------------------------------------------------------
         -- Read preferences from Mac:
         --------------------------------------------------------------------------------
         self.items = json.prop(config.userConfigRootPath, self.configFolder, self.defaultFilename, self.defaultLayout)
+
+        --------------------------------------------------------------------------------
+        -- Migrate to new format:
+        --------------------------------------------------------------------------------
+        if not newLayoutExists then
+            local updatedPreferencesToV2 = config.prop(self.id  .. ".updatedPreferencesToV2", false)
+            local legacyPath = config.userConfigRootPath .. "/" .. self.configFolder .. "/Default" .. self.fileExtension
+            if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
+                local legacyPreferences = json.read(legacyPath)
+                if legacyPreferences then
+
+                    local newData = {}
+
+                    newData["1"] = fnutils.copy(legacyPreferences)
+
+                    updatedPreferencesToV2(true)
+
+                    self.items(newData)
+                    log.df("Converted Loupedeck Preferences from single unit to multi-unit format.")
+                end
+            end
+        end
+
     end
     return self
 end
@@ -770,18 +974,35 @@ function mod.mt:reset()
     self.items(self.defaultLayout)
 end
 
---- plugins.core.loupedeckctandlive.manager:refresh()
+--- plugins.core.loupedeckctandlive.manager:refresh(dueToAppChange, deviceNumber)
 --- Method
 --- Refreshes the Loupedeck screens and LED buttons.
 ---
 --- Parameters:
 ---  * dueToAppChange - A optional boolean to specify whether the refresh is due to
 ---                     an application focus change.
+---  * deviceNumber - The device number.
 ---
 --- Returns:
 ---  * None
-function mod.mt:refresh(dueToAppChange)
-    local device = self.getDevice()
+function mod.mt:refresh(deviceNumber, dueToAppChange)
+    local devices = self.getDevices()
+    local device = devices and devices[deviceNumber]
+
+    if type(deviceNumber) ~= "number" then
+        log.ef("The Loupedeck device number supplied to the refresh function is invalid: '%s' (%s)", deviceNumber, type(deviceNumber))
+        return
+    end
+
+    if not device then
+        --log.ef("There is no Loupedeck device for unit '%s', which is causing screen refresh to fail.", deviceNumber)
+        return
+    end
+
+    if not self.items then
+        log.ef("The Loupedeck control surfaces layout preferences could not be loaded. This shouldn't be possible.")
+        return
+    end
 
     local success
     local frontmostApplication = application.frontmostApplication()
@@ -793,22 +1014,677 @@ function mod.mt:refresh(dueToAppChange)
     -- If we're refreshing due to an change in application focus, make sure things
     -- have actually changed:
     --------------------------------------------------------------------------------
-    if dueToAppChange and bundleID == cachedBundleID then
-        cachedBundleID = bundleID
-        return
+    if dueToAppChange and bundleID == self.cachedBundleID[deviceNumber] then
+        --------------------------------------------------------------------------------
+        -- Update Cache, then move onto the next device...
+        --------------------------------------------------------------------------------
+        self.cachedBundleID[deviceNumber] = bundleID
     else
-        cachedBundleID = bundleID
-    end
+        --------------------------------------------------------------------------------
+        -- Update cache, then update current device:
+        --------------------------------------------------------------------------------
+        self.cachedBundleID[deviceNumber] = bundleID
 
+        --------------------------------------------------------------------------------
+        -- Stop any stray repeat timers:
+        --------------------------------------------------------------------------------
+        for _, v in pairs(self.repeatTimers) do
+            for _, vv in pairs(v) do
+                vv:stop()
+                vv = nil -- luacheck: ignore
+            end
+        end
+
+        local items = self.items()
+        items = items and items[tostring(deviceNumber)] or {}
+
+        --------------------------------------------------------------------------------
+        -- Revert to "All Applications" if no settings for frontmost app exist:
+        --------------------------------------------------------------------------------
+        if not items[bundleID] then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Ignore if ignored:
+        --------------------------------------------------------------------------------
+        if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- If not Automatically Switching Applications:
+        --------------------------------------------------------------------------------
+        if not self.automaticallySwitchApplications() then
+            bundleID = self.lastBundleID()
+        end
+
+        --------------------------------------------------------------------------------
+        -- Determine active bank, or default to Bank 1:
+        --------------------------------------------------------------------------------
+        local activeBanks = self.activeBanks()
+        local deviceNumberAsString = tostring(deviceNumber)
+        local bankID = (activeBanks[deviceNumberAsString] and activeBanks[deviceNumberAsString][bundleID] and tostring(activeBanks[deviceNumberAsString][bundleID])) or "1"
+
+        --------------------------------------------------------------------------------
+        -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
+        --------------------------------------------------------------------------------
+        if self.leftFnPressed[deviceNumber] then
+            bankID = bankID .. "_LeftFn"
+        elseif self.rightFnPressed[deviceNumber] then
+            bankID = bankID .. "_RightFn"
+        end
+
+        local item = items[bundleID]
+        local bank = item and item[bankID]
+
+        --log.df("Updating %s - Unit %s for %s - bank %s", self.configFolder, deviceNumber, bundleID, bankID)
+
+        --------------------------------------------------------------------------------
+        -- UPDATE WHEEL SENSITIVITY:
+        --------------------------------------------------------------------------------
+        local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
+        local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or loupedeck.defaultWheelSensitivityIndex
+        device:updateWheelSensitivity(wheelSensitivity)
+
+        --------------------------------------------------------------------------------
+        -- UPDATE LED BUTTON COLOURS:
+        --------------------------------------------------------------------------------
+        local ledButton = bank and bank.ledButton
+        for i=7, 26 do
+            local id = tostring(i)
+
+            --------------------------------------------------------------------------------
+            -- If there's a Snippet to assign the LED color, use that instead:
+            --------------------------------------------------------------------------------
+            local currentLEDButton = ledButton and ledButton[id]
+            local snippetAction = currentLEDButton and currentLEDButton.ledSnippetAction
+            local snippetResult
+            if snippetAction and snippetAction.action then
+                local code = snippetAction.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Use the latest Snippet from the Snippets Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippets = mod.scriptingPreferences.snippets()
+                    local savedSnippet = snippets[snippetAction.action.id]
+                    if savedSnippet and savedSnippet.code then
+                        code = savedSnippet.code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if type(successful) and isColor(result) then
+                        snippetResult = result
+                        containsIconSnippets = true
+                    end
+                end
+            end
+
+            local ledColor = snippetResult or (ledButton and ledButton[id] and ledButton[id].led) or defaultColor
+
+            if not self.cachedLEDButtonValues[deviceNumber] then
+                self.cachedLEDButtonValues[deviceNumber] = {}
+            end
+
+            if self.cachedLEDButtonValues[deviceNumber][id] ~= ledColor then
+                --------------------------------------------------------------------------------
+                -- Only update if the colour has changed to save bandwidth:
+                --------------------------------------------------------------------------------
+                if isColor(ledColor) then
+                    device:buttonColor(i, ledColor)
+                else
+                    device:buttonColor(i, {hex="#" .. ledColor})
+                end
+                self.cachedLEDButtonValues[deviceNumber][id] = ledColor
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- UPDATE TOUCH SCREEN BUTTON IMAGES:
+        --------------------------------------------------------------------------------
+        local touchButton = bank and bank.touchButton
+        for i=1, 12 do
+            local id = tostring(i)
+            success = false
+            local thisButton = touchButton and touchButton[id]
+            local encodedIcon = thisButton and thisButton.encodedIcon
+
+            --------------------------------------------------------------------------------
+            -- If there's no encodedIcon, then try encodedIconLabel:
+            --------------------------------------------------------------------------------
+            if not encodedIcon or (encodedIcon and encodedIcon == "") then
+                encodedIcon = thisButton and thisButton.encodedIconLabel
+            end
+
+            --------------------------------------------------------------------------------
+            -- If there's a Snippet to generate the icon, use that instead:
+            --------------------------------------------------------------------------------
+            local snippetAction = thisButton and thisButton.snippetAction
+            if snippetAction and snippetAction.action then
+                local code = snippetAction.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Use the latest Snippet from the Snippets Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippets = mod.scriptingPreferences.snippets()
+                    local savedSnippet = snippets[snippetAction.action.id]
+                    if savedSnippet and savedSnippet.code then
+                        code = savedSnippet.code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        local size = result:size()
+                        if size.w == 90 and size.h == 90 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 90x90 so proceed:
+                            --------------------------------------------------------------------------------
+                            encodedIcon = result:encodeAsURLString(true)
+                            containsIconSnippets = true
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 90x90 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
+
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
+
+                            --------------------------------------------------------------------------------
+                            -- Icon - Scaled as per preferences:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
+
+                            local fixedImage = v:imageFromCanvas()
+
+                            v:delete()
+                            v = nil -- luacheck: ignore
+
+                            encodedIcon = fixedImage:encodeAsURLString(true)
+                            containsIconSnippets = true
+                        end
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Only update if the screen has changed to save bandwidth:
+            --------------------------------------------------------------------------------
+            if not self.cachedTouchScreenButtonValues[deviceNumber] then
+                self.cachedTouchScreenButtonValues[deviceNumber] = {}
+            end
+
+            if encodedIcon and self.cachedTouchScreenButtonValues[deviceNumber][id] == encodedIcon then
+                success = true
+            elseif encodedIcon and self.cachedTouchScreenButtonValues[deviceNumber][id] ~= encodedIcon then
+                self.cachedTouchScreenButtonValues[deviceNumber][id] = encodedIcon
+                local decodedImage = imageFromURL(encodedIcon)
+                if decodedImage then
+                    device:updateScreenButtonImage(i, decodedImage)
+                    success = true
+                end
+            end
+
+            if not success and self.cachedTouchScreenButtonValues[deviceNumber][id] ~= defaultColor then
+                device:updateScreenButtonColor(i, {hex="#"..defaultColor})
+                self.cachedTouchScreenButtonValues[deviceNumber][id] = defaultColor
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- UPDATE WHEEL SCREEN:
+        --------------------------------------------------------------------------------
+        success = false
+        local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
+        local encodedIcon = thisWheel and thisWheel.encodedIcon
+
+        --------------------------------------------------------------------------------
+        -- If there's a Snippet to generate the icon, use that instead:
+        --------------------------------------------------------------------------------
+        local snippetAction = thisWheel and thisWheel.snippetAction
+        if snippetAction and snippetAction.action then
+            local code = snippetAction.action.code
+            if code then
+                --------------------------------------------------------------------------------
+                -- Use the latest Snippet from the Snippets Preferences if it exists:
+                --------------------------------------------------------------------------------
+                local snippets = mod.scriptingPreferences.snippets()
+                local savedSnippet = snippets[snippetAction.action.id]
+                if savedSnippet and savedSnippet.code then
+                    code = savedSnippet.code
+                end
+
+                local successful, result = pcall(load(code))
+                if successful and isImage(result) then
+                    local size = result:size()
+                    if size.w == 240 and size.h == 240 then
+                        --------------------------------------------------------------------------------
+                        -- The generated image is already 240x240 so proceed:
+                        --------------------------------------------------------------------------------
+                        encodedIcon = result:encodeAsURLString(true)
+                        containsIconSnippets = true
+                    else
+                        --------------------------------------------------------------------------------
+                        -- The generated image is not 240x240 so process:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
+
+                        --------------------------------------------------------------------------------
+                        -- Black Background:
+                        --------------------------------------------------------------------------------
+                        v[1] = {
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, hex = "#000000" },
+                            type = "rectangle",
+                        }
+
+                        --------------------------------------------------------------------------------
+                        -- Icon - scaled to fit:
+                        --------------------------------------------------------------------------------
+                        v[2] = {
+                          type="image",
+                          image = result,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
+
+                        local fixedImage = v:imageFromCanvas()
+
+                        v:delete()
+                        v = nil -- luacheck: ignore
+
+                        encodedIcon = fixedImage:encodeAsURLString(true)
+                        containsIconSnippets = true
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Only update if the screen has changed to save bandwidth:
+        --------------------------------------------------------------------------------
+        if not self.cachedWheelScreen[deviceNumber] then
+            self.cachedWheelScreen[deviceNumber] = {}
+        end
+        if encodedIcon and self.cachedWheelScreen[deviceNumber] == encodedIcon then
+            success = true
+        elseif encodedIcon and self.cachedWheelScreen[deviceNumber] ~= encodedIcon then
+            self.cachedWheelScreen[deviceNumber] = encodedIcon
+            local decodedImage = imageFromURL(encodedIcon)
+            if decodedImage then
+                device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
+                success = true
+            end
+        end
+        if not success and self.cachedWheelScreen[deviceNumber] ~= defaultColor then
+            device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
+            self.cachedWheelScreen[deviceNumber] = defaultColor
+        end
+
+        --------------------------------------------------------------------------------
+        -- UPDATE KNOB IMAGES:
+        --------------------------------------------------------------------------------
+        local knob = bank and bank.knob
+        local hasLeftKnob = false
+        local hasRightKnob = false
+        for i=1, 6 do
+            local id = tostring(i)
+            success = false
+            local thisKnob = knob and knob[id]
+            encodedIcon = thisKnob and thisKnob.encodedIcon
+
+            --------------------------------------------------------------------------------
+            -- If there's no encodedIcon, then try encodedIconLabel:
+            --------------------------------------------------------------------------------
+            if not encodedIcon or (encodedIcon and encodedIcon == "") then
+                encodedIcon = thisKnob and thisKnob.encodedIconLabel
+            end
+
+            --------------------------------------------------------------------------------
+            -- If there's a Snippet to generate the icon, use that instead:
+            --------------------------------------------------------------------------------
+            snippetAction = thisKnob and thisKnob.snippetAction
+            if snippetAction and snippetAction.action then
+                local code = snippetAction.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Use the latest Snippet from the Snippets Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippets = mod.scriptingPreferences.snippets()
+                    local savedSnippet = snippets[snippetAction.action.id]
+                    if savedSnippet and savedSnippet.code then
+                        code = savedSnippet.code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        local size = result:size()
+                        if size.w == 60 and size.h == 90 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 60x90 so proceed:
+                            --------------------------------------------------------------------------------
+                            encodedIcon = result:encodeAsURLString(true)
+                            containsIconSnippets = true
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 60x90 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
+
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
+
+                            --------------------------------------------------------------------------------
+                            -- Icon - Scaled as per preferences:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
+
+                            local fixedImage = v:imageFromCanvas()
+
+                            v:delete()
+                            v = nil -- luacheck: ignore
+
+                            encodedIcon = fixedImage:encodeAsURLString(true)
+                            containsIconSnippets = true
+                        end
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Only update if the screen has changed to save bandwidth:
+            --------------------------------------------------------------------------------
+            if not self.cachedKnobValues[deviceNumber] then
+                self.cachedKnobValues[deviceNumber] = {}
+            end
+
+            if encodedIcon and self.cachedKnobValues[deviceNumber][id] == encodedIcon then
+                success = true
+            elseif encodedIcon and self.cachedKnobValues[deviceNumber][id] ~= encodedIcon then
+                self.cachedKnobValues[deviceNumber][id] = encodedIcon
+                local decodedImage = imageFromURL(encodedIcon)
+                local size = decodedImage and decodedImage:size()
+                if size and (size.w ~= 60 or size.h ~= 90) then
+                    --------------------------------------------------------------------------------
+                    -- The Knob Icon isn't 60x90 pixels, so it must be a legacy icon that needs
+                    -- to be scaled:
+                    --------------------------------------------------------------------------------
+                    local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
+
+                    v[1] = {
+                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                        fillColor = { alpha = 1, hex = "#000000" },
+                        type = "rectangle",
+                    }
+
+                    v[1] = {
+                      type = "image",
+                      image = decodedImage:croppedCopy({ x = 15, y = 0, h = 90, w = 60 }),
+                      frame = { x = 0, y = 0, h = 90, w = 60 },
+                    }
+
+                    local fixedImage = v:imageFromCanvas()
+
+                    --------------------------------------------------------------------------------
+                    -- NOTE: We do this encode/decode dance because otherwise something
+                    --       screws up with the scale. Hopefully this will eventually be
+                    --       addressed with Hammerspoon Issue #2807.
+                    --------------------------------------------------------------------------------
+                    local encoded = fixedImage:encodeAsURLString(true)
+                    decodedImage = imageFromURL(encoded)
+
+                    v:delete()
+                    v = nil -- luacheck: ignore
+                end
+                if decodedImage then
+                    device:updateKnobImage(i, decodedImage)
+                    success = true
+                end
+            end
+            if not success and self.cachedKnobValues[deviceNumber][id] ~= defaultColor then
+                device:updateScreenKnobColor(i, {hex="#"..defaultColor})
+                self.cachedKnobValues[deviceNumber][id] = defaultColor
+            end
+            if success then
+                if i > 3 then
+                    hasRightKnob = true
+                else
+                    hasLeftKnob = true
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- If no individual knob icons, use the left/right screen icons instead:
+        --------------------------------------------------------------------------------
+        if not self.cachedLeftSideScreen[deviceNumber] then
+            self.cachedLeftSideScreen[deviceNumber] = {}
+        end
+        if not hasLeftKnob then
+            success = false
+            local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
+            encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+            if encodedIcon and self.cachedLeftSideScreen[deviceNumber] == encodedIcon then
+                success = true
+            elseif encodedIcon and self.cachedLeftSideScreen[deviceNumber] ~= encodedIcon then
+                self.cachedLeftSideScreen[deviceNumber] = encodedIcon
+                local decodedImage = imageFromURL(encodedIcon)
+                if decodedImage then
+                    device:updateScreenImage(loupedeck.screens.left, decodedImage)
+                    success = true
+                end
+            end
+            if not success and self.cachedLeftSideScreen[deviceNumber] ~= defaultColor then
+                device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
+                self.cachedLeftSideScreen[deviceNumber] = defaultColor
+            end
+        else
+            self.cachedLeftSideScreen[deviceNumber] = nil
+        end
+
+
+        if not self.cachedRightSideScreen[deviceNumber] then
+            self.cachedRightSideScreen[deviceNumber] = {}
+        end
+        if not hasRightKnob then
+            success = false
+            local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
+            encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+            if encodedIcon and self.cachedRightSideScreen[deviceNumber] == encodedIcon then
+                success = true
+            elseif encodedIcon and self.cachedRightSideScreen[deviceNumber] ~= encodedIcon then
+                self.cachedRightSideScreen[deviceNumber] = encodedIcon
+                local decodedImage = imageFromURL(encodedIcon)
+                if decodedImage then
+                    device:updateScreenImage(loupedeck.screens.right, decodedImage)
+                    success = true
+                end
+            end
+            if not success and self.cachedRightSideScreen[deviceNumber] ~= defaultColor then
+                device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
+                self.cachedRightSideScreen[deviceNumber] = defaultColor
+            end
+        else
+            self.cachedRightSideScreen[deviceNumber] = nil
+        end
+
+        --------------------------------------------------------------------------------
+        -- Enable or disable the refresh timer:
+        --------------------------------------------------------------------------------
+        if containsIconSnippets then
+            if not self.refreshTimer[deviceNumber] then
+                local snippetsRefreshFrequency = tonumber(self.snippetsRefreshFrequency())
+                self.refreshTimer[deviceNumber] = timer.new(snippetsRefreshFrequency, function()
+                    self:refresh(deviceNumber)
+                end)
+            end
+            self.refreshTimer[deviceNumber]:start()
+        else
+            if self.refreshTimer[deviceNumber] then
+                self.refreshTimer[deviceNumber]:stop()
+            end
+        end
+    end
+end
+
+--- plugins.core.loupedeckctandlive.manager:executeAction(thisAction) -> boolean
+--- Function
+--- Executes an action.
+---
+--- Parameters:
+---  * thisAction - The action to execute
+---  * deviceNumber - The device number
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
+function mod.mt:executeAction(thisAction, deviceNumber)
+    if not self._delayedTimer then
+        self._delayedTimer = delayed.new(0.1, function()
+            self:refresh(deviceNumber)
+        end)
+    end
+    if thisAction then
+        local handlerID = thisAction.handlerID
+        local action = thisAction.action
+        if handlerID and action then
+            local handler = mod.actionmanager.getHandler(handlerID)
+            if handler then
+                doAfter(0, function()
+                    action[deviceNumber] = deviceNumber
+                    handler:execute(action)
+                    self._delayedTimer:start()
+                end)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+--- plugins.core.loupedeckctandlive.manager:clearCache(deviceNumber) -> none
+--- Method
+--- Clears the cache.
+---
+--- Parameters:
+---  * deviceNumber - The device number.
+---
+--- Returns:
+---  * None
+function mod.mt:clearCache(deviceNumber)
     --------------------------------------------------------------------------------
     -- Stop any stray repeat timers:
     --------------------------------------------------------------------------------
     for _, v in pairs(self.repeatTimers) do
-        v:stop()
-        v = nil -- luacheck: ignore
+        for _, vv in pairs(v) do
+            v:stop()
+            v = nil -- luacheck: ignore
+        end
     end
 
+    self.cacheWheelYAxis[deviceNumber] = 0
+    self.cacheWheelXAxis[deviceNumber] = 0
+
+    self.cacheRightScreenYAxis[deviceNumber] = 0
+    self.cacheLeftScreenYAxis[deviceNumber] = 0
+
+    self.leftFnPressed[deviceNumber] = false
+    self.rightFnPressed[deviceNumber] = false
+
+    self.cachedLEDButtonValues[deviceNumber] = {}
+    self.cachedTouchScreenButtonValues[deviceNumber] = {}
+    self.cachedKnobValues[deviceNumber] = {}
+
+    self.cachedWheelScreen[deviceNumber] = {}
+    self.cachedLeftSideScreen[deviceNumber] = {}
+    self.cachedRightSideScreen[deviceNumber] = {}
+
+    self.lastWheelDoubleTapX[deviceNumber] = {}
+    self.lastWheelDoubleTapY[deviceNumber] = {}
+
+    self.hasLoaded[deviceNumber] = false
+end
+
+--- plugins.core.loupedeckctandlive.manager:callback(data) -> none
+--- Method
+--- The Loupedeck callback.
+---
+--- Parameters:
+---  * data - The callback data.
+---  * deviceNumber - The device number.
+---
+--- Returns:
+---  * None
+function mod.mt:callback(data, deviceNumber)
+    --[[
+    log.df("--------------------------------------------------------------------------------")
+    log.df("deviceNumber: %s", deviceNumber)
+    log.df("data: %s", hs.inspect(data))
+    log.df("--------------------------------------------------------------------------------")
+    --]]
+
+    local device = self.devices and self.devices[deviceNumber]
+
+    --------------------------------------------------------------------------------
+    -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
+    --------------------------------------------------------------------------------
+    if data.action == "websocket_opening" then
+        --log.df("Loupedeck websocket opening for %s (Unit %s)...", self.configFolder, deviceNumber)
+        return
+    elseif data.action == "websocket_closing" then
+        --log.df("Loupedeck websocket closing for %s (Unit %s)...", self.configFolder, deviceNumber)
+        return
+    elseif data.action == "websocket_opened" then
+        self.connected[deviceNumber](true)
+        self:clearCache(deviceNumber)
+        self:refresh(deviceNumber)
+        self.hasLoaded[deviceNumber] = true
+        self.enableFlashDrive:update()
+
+        if device then
+            device:updateBacklightLevel(tonumber(self.screensBacklightLevel()))
+        end
+
+        return
+    elseif data.action == "websocket_closed" then
+        --------------------------------------------------------------------------------
+        -- If the websocket disconnects, then trash all the caches:
+        --------------------------------------------------------------------------------
+        self.connected[deviceNumber](false)
+        self:clearCache(deviceNumber)
+        return
+    elseif data.action == "websocket_error"  then
+        --------------------------------------------------------------------------------
+        -- If the websocket fails, then trash all the caches:
+        --------------------------------------------------------------------------------
+        log.ef("The websocket connection for %s (Unit %s) failed.", self.configFolder, deviceNumber)
+        self.connected[deviceNumber](false)
+        self:clearCache(deviceNumber)
+        return
+    end
+
+    local bundleID = self.cachedBundleID[deviceNumber]
+
     local items = self.items()
+    items = items and items[tostring(deviceNumber)] or {}
 
     --------------------------------------------------------------------------------
     -- Revert to "All Applications" if no settings for frontmost app exist:
@@ -832,595 +1708,8 @@ function mod.mt:refresh(dueToAppChange)
     end
 
     local activeBanks = self.activeBanks()
-    local bankID = activeBanks[bundleID] or "1"
-
-    --------------------------------------------------------------------------------
-    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
-    --------------------------------------------------------------------------------
-    if self.leftFnPressed then
-        bankID = bankID .. "_LeftFn"
-    elseif self.rightFnPressed then
-        bankID = bankID .. "_RightFn"
-    end
-
-    local item = items[bundleID]
-    local bank = item and item[bankID]
-
-    --------------------------------------------------------------------------------
-    -- UPDATE WHEEL SENSITIVITY:
-    --------------------------------------------------------------------------------
-    local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
-    local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or loupedeck.defaultWheelSensitivityIndex
-    device:updateWheelSensitivity(wheelSensitivity)
-
-    --------------------------------------------------------------------------------
-    -- UPDATE LED BUTTON COLOURS:
-    --------------------------------------------------------------------------------
-    local ledButton = bank and bank.ledButton
-    for i=7, 26 do
-        local id = tostring(i)
-
-        --------------------------------------------------------------------------------
-        -- If there's a Snippet to assign the LED color, use that instead:
-        --------------------------------------------------------------------------------
-        local currentLEDButton = ledButton and ledButton[id]
-        local snippetAction = currentLEDButton and currentLEDButton.ledSnippetAction
-        local snippetResult
-        if snippetAction and snippetAction.action then
-            local code = snippetAction.action.code
-            if code then
-                --------------------------------------------------------------------------------
-                -- Use the latest Snippet from the Snippets Preferences if it exists:
-                --------------------------------------------------------------------------------
-                local snippets = mod.scriptingPreferences.snippets()
-                local savedSnippet = snippets[snippetAction.action.id]
-                if savedSnippet and savedSnippet.code then
-                    code = savedSnippet.code
-                end
-
-                local successful, result = pcall(load(code))
-                if type(successful) and isColor(result) then
-                    snippetResult = result
-                    containsIconSnippets = true
-                end
-            end
-        end
-
-        local ledColor = snippetResult or (ledButton and ledButton[id] and ledButton[id].led) or defaultColor
-
-        if self.cachedLEDButtonValues[id] ~= ledColor then
-            --------------------------------------------------------------------------------
-            -- Only update if the colour has changed to save bandwidth:
-            --------------------------------------------------------------------------------
-            if isColor(ledColor) then
-                device:buttonColor(i, ledColor)
-            else
-                device:buttonColor(i, {hex="#" .. ledColor})
-            end
-            self.cachedLEDButtonValues[id] = ledColor
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- UPDATE TOUCH SCREEN BUTTON IMAGES:
-    --------------------------------------------------------------------------------
-    local touchButton = bank and bank.touchButton
-    for i=1, 12 do
-        local id = tostring(i)
-        success = false
-        local thisButton = touchButton and touchButton[id]
-        local encodedIcon = thisButton and thisButton.encodedIcon
-
-        --------------------------------------------------------------------------------
-        -- If there's no encodedIcon, then try encodedIconLabel:
-        --------------------------------------------------------------------------------
-        if not encodedIcon or (encodedIcon and encodedIcon == "") then
-            encodedIcon = thisButton and thisButton.encodedIconLabel
-        end
-
-        --------------------------------------------------------------------------------
-        -- If there's a Snippet to generate the icon, use that instead:
-        --------------------------------------------------------------------------------
-        local snippetAction = thisButton and thisButton.snippetAction
-        if snippetAction and snippetAction.action then
-            local code = snippetAction.action.code
-            if code then
-                --------------------------------------------------------------------------------
-                -- Use the latest Snippet from the Snippets Preferences if it exists:
-                --------------------------------------------------------------------------------
-                local snippets = mod.scriptingPreferences.snippets()
-                local savedSnippet = snippets[snippetAction.action.id]
-                if savedSnippet and savedSnippet.code then
-                    code = savedSnippet.code
-                end
-
-                local successful, result = pcall(load(code))
-                if successful and isImage(result) then
-                    local size = result:size()
-                    if size.w == 90 and size.h == 90 then
-                        --------------------------------------------------------------------------------
-                        -- The generated image is already 90x90 so proceed:
-                        --------------------------------------------------------------------------------
-                        encodedIcon = result:encodeAsURLString(true)
-                        containsIconSnippets = true
-                    else
-                        --------------------------------------------------------------------------------
-                        -- The generated image is not 90x90 so process:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = 90, h = 90 }
-
-                        --------------------------------------------------------------------------------
-                        -- Black Background:
-                        --------------------------------------------------------------------------------
-                        v[1] = {
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, hex = "#000000" },
-                            type = "rectangle",
-                        }
-
-                        --------------------------------------------------------------------------------
-                        -- Icon - Scaled as per preferences:
-                        --------------------------------------------------------------------------------
-                        v[2] = {
-                          type="image",
-                          image = result,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                        }
-
-                        local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
-                        encodedIcon = fixedImage:encodeAsURLString(true)
-                        containsIconSnippets = true
-                    end
-                end
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Only update if the screen has changed to save bandwidth:
-        --------------------------------------------------------------------------------
-        if encodedIcon and self.cachedTouchScreenButtonValues[id] == encodedIcon then
-            success = true
-        elseif encodedIcon and self.cachedTouchScreenButtonValues[id] ~= encodedIcon then
-            self.cachedTouchScreenButtonValues[id] = encodedIcon
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                device:updateScreenButtonImage(i, decodedImage)
-                success = true
-            end
-        end
-
-        if not success and self.cachedTouchScreenButtonValues[id] ~= defaultColor then
-            device:updateScreenButtonColor(i, {hex="#"..defaultColor})
-            self.cachedTouchScreenButtonValues[id] = defaultColor
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- UPDATE WHEEL SCREEN:
-    --------------------------------------------------------------------------------
-    success = false
-    local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
-    local encodedIcon = thisWheel and thisWheel.encodedIcon
-
-    --------------------------------------------------------------------------------
-    -- If there's a Snippet to generate the icon, use that instead:
-    --------------------------------------------------------------------------------
-    local snippetAction = thisWheel and thisWheel.snippetAction
-    if snippetAction and snippetAction.action then
-        local code = snippetAction.action.code
-        if code then
-            --------------------------------------------------------------------------------
-            -- Use the latest Snippet from the Snippets Preferences if it exists:
-            --------------------------------------------------------------------------------
-            local snippets = mod.scriptingPreferences.snippets()
-            local savedSnippet = snippets[snippetAction.action.id]
-            if savedSnippet and savedSnippet.code then
-                code = savedSnippet.code
-            end
-
-            local successful, result = pcall(load(code))
-            if successful and isImage(result) then
-                local size = result:size()
-                if size.w == 240 and size.h == 240 then
-                    --------------------------------------------------------------------------------
-                    -- The generated image is already 240x240 so proceed:
-                    --------------------------------------------------------------------------------
-                    encodedIcon = result:encodeAsURLString(true)
-                    containsIconSnippets = true
-                else
-                    --------------------------------------------------------------------------------
-                    -- The generated image is not 240x240 so process:
-                    --------------------------------------------------------------------------------
-                    local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
-
-                    --------------------------------------------------------------------------------
-                    -- Black Background:
-                    --------------------------------------------------------------------------------
-                    v[1] = {
-                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                        fillColor = { alpha = 1, hex = "#000000" },
-                        type = "rectangle",
-                    }
-
-                    --------------------------------------------------------------------------------
-                    -- Icon - scaled to fit:
-                    --------------------------------------------------------------------------------
-                    v[2] = {
-                      type="image",
-                      image = result,
-                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                    }
-
-                    local fixedImage = v:imageFromCanvas()
-
-                    v:delete()
-                    v = nil -- luacheck: ignore
-
-                    encodedIcon = fixedImage:encodeAsURLString(true)
-                    containsIconSnippets = true
-                end
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Only update if the screen has changed to save bandwidth:
-    --------------------------------------------------------------------------------
-    if encodedIcon and self.cachedWheelScreen == encodedIcon then
-        success = true
-    elseif encodedIcon and self.cachedWheelScreen ~= encodedIcon then
-        self.cachedWheelScreen = encodedIcon
-        local decodedImage = imageFromURL(encodedIcon)
-        if decodedImage then
-            device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
-            success = true
-        end
-    end
-    if not success and self.cachedWheelScreen ~= defaultColor then
-        device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
-        self.cachedWheelScreen = defaultColor
-    end
-
-    --------------------------------------------------------------------------------
-    -- UPDATE KNOB IMAGES:
-    --------------------------------------------------------------------------------
-    local knob = bank and bank.knob
-    local hasLeftKnob = false
-    local hasRightKnob = false
-    for i=1, 6 do
-        local id = tostring(i)
-        success = false
-        local thisKnob = knob and knob[id]
-        encodedIcon = thisKnob and thisKnob.encodedIcon
-
-        --------------------------------------------------------------------------------
-        -- If there's no encodedIcon, then try encodedIconLabel:
-        --------------------------------------------------------------------------------
-        if not encodedIcon or (encodedIcon and encodedIcon == "") then
-            encodedIcon = thisKnob and thisKnob.encodedIconLabel
-        end
-
-        --------------------------------------------------------------------------------
-        -- If there's a Snippet to generate the icon, use that instead:
-        --------------------------------------------------------------------------------
-        snippetAction = thisKnob and thisKnob.snippetAction
-        if snippetAction and snippetAction.action then
-            local code = snippetAction.action.code
-            if code then
-                --------------------------------------------------------------------------------
-                -- Use the latest Snippet from the Snippets Preferences if it exists:
-                --------------------------------------------------------------------------------
-                local snippets = mod.scriptingPreferences.snippets()
-                local savedSnippet = snippets[snippetAction.action.id]
-                if savedSnippet and savedSnippet.code then
-                    code = savedSnippet.code
-                end
-
-                local successful, result = pcall(load(code))
-                if successful and isImage(result) then
-                    local size = result:size()
-                    if size.w == 60 and size.h == 90 then
-                        --------------------------------------------------------------------------------
-                        -- The generated image is already 60x90 so proceed:
-                        --------------------------------------------------------------------------------
-                        encodedIcon = result:encodeAsURLString(true)
-                        containsIconSnippets = true
-                    else
-                        --------------------------------------------------------------------------------
-                        -- The generated image is not 60x90 so process:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
-
-                        --------------------------------------------------------------------------------
-                        -- Black Background:
-                        --------------------------------------------------------------------------------
-                        v[1] = {
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, hex = "#000000" },
-                            type = "rectangle",
-                        }
-
-                        --------------------------------------------------------------------------------
-                        -- Icon - Scaled as per preferences:
-                        --------------------------------------------------------------------------------
-                        v[2] = {
-                          type="image",
-                          image = result,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                        }
-
-                        local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
-                        encodedIcon = fixedImage:encodeAsURLString(true)
-                        containsIconSnippets = true
-                    end
-                end
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Only update if the screen has changed to save bandwidth:
-        --------------------------------------------------------------------------------
-        if encodedIcon and self.cachedKnobValues[id] == encodedIcon then
-            success = true
-        elseif encodedIcon and self.cachedKnobValues[id] ~= encodedIcon then
-            self.cachedKnobValues[id] = encodedIcon
-            local decodedImage = imageFromURL(encodedIcon)
-            local size = decodedImage and decodedImage:size()
-            if size and (size.w ~= 60 or size.h ~= 90) then
-                --------------------------------------------------------------------------------
-                -- The Knob Icon isn't 60x90 pixels, so it must be a legacy icon that needs
-                -- to be scaled:
-                --------------------------------------------------------------------------------
-                local v = canvas.new{x = 0, y = 0, w = 60, h = 90 }
-
-                v[1] = {
-                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                    fillColor = { alpha = 1, hex = "#000000" },
-                    type = "rectangle",
-                }
-
-                v[1] = {
-                  type = "image",
-                  image = decodedImage:croppedCopy({ x = 15, y = 0, h = 90, w = 60 }),
-                  frame = { x = 0, y = 0, h = 90, w = 60 },
-                }
-
-                local fixedImage = v:imageFromCanvas()
-
-                --------------------------------------------------------------------------------
-                -- NOTE: We do this encode/decode dance because otherwise something
-                --       screws up with the scale. Hopefully this will eventually be
-                --       addressed with Hammerspoon Issue #2807.
-                --------------------------------------------------------------------------------
-                local encoded = fixedImage:encodeAsURLString(true)
-                decodedImage = imageFromURL(encoded)
-
-                v:delete()
-                v = nil -- luacheck: ignore
-            end
-            if decodedImage then
-                device:updateKnobImage(i, decodedImage)
-                success = true
-            end
-        end
-        if not success and self.cachedKnobValues[id] ~= defaultColor then
-            device:updateScreenKnobColor(i, {hex="#"..defaultColor})
-            self.cachedKnobValues[id] = defaultColor
-        end
-        if success then
-            if i > 3 then
-                hasRightKnob = true
-            else
-                hasLeftKnob = true
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- If no individual knob icons, use the left/right screen icons instead:
-    --------------------------------------------------------------------------------
-    if not hasLeftKnob then
-        success = false
-        local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
-        encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-        if encodedIcon and self.cachedLeftSideScreen == encodedIcon then
-            success = true
-        elseif encodedIcon and self.cachedLeftSideScreen ~= encodedIcon then
-            self.cachedLeftSideScreen = encodedIcon
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                device:updateScreenImage(loupedeck.screens.left, decodedImage)
-                success = true
-            end
-        end
-        if not success and self.cachedLeftSideScreen ~= defaultColor then
-            device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
-            self.cachedLeftSideScreen = defaultColor
-        end
-    else
-        self.cachedLeftSideScreen = nil
-    end
-    if not hasRightKnob then
-        success = false
-        local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
-        encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-        if encodedIcon and self.cachedRightSideScreen == encodedIcon then
-            success = true
-        elseif encodedIcon and self.cachedRightSideScreen ~= encodedIcon then
-            self.cachedRightSideScreen = encodedIcon
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                device:updateScreenImage(loupedeck.screens.right, decodedImage)
-                success = true
-            end
-        end
-        if not success and self.cachedRightSideScreen ~= defaultColor then
-            device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
-            self.cachedRightSideScreen = defaultColor
-        end
-    else
-        self.cachedRightSideScreen = nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Enable or disable the refresh timer:
-    --------------------------------------------------------------------------------
-    if containsIconSnippets then
-        if not self.refreshTimer then
-            local snippetsRefreshFrequency = tonumber(self.snippetsRefreshFrequency())
-            self.refreshTimer = timer.new(snippetsRefreshFrequency, function()
-                self:refresh()
-            end)
-        end
-        self.refreshTimer:start()
-    else
-        if self.refreshTimer then
-            self.refreshTimer:stop()
-        end
-    end
-end
-
---- plugins.core.loupedeckctandlive.manager:executeAction(thisAction) -> boolean
---- Function
---- Executes an action.
----
---- Parameters:
----  * thisAction - The action to execute
----
---- Returns:
----  * `true` if successful otherwise `false`
-function mod.mt:executeAction(thisAction)
-    if not self._delayedTimer then
-        self._delayedTimer = delayed.new(0.1, function()
-            self:refresh()
-        end)
-    end
-    if thisAction then
-        local handlerID = thisAction.handlerID
-        local action = thisAction.action
-        if handlerID and action then
-            local handler = mod.actionmanager.getHandler(handlerID)
-            if handler then
-                doAfter(0, function()
-                    handler:execute(action)
-                    self._delayedTimer:start()
-                end)
-                return true
-            end
-        end
-    end
-    return false
-end
-
---- plugins.core.loupedeckctandlive.manager:clearCache() -> none
---- Method
---- Clears the cache.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.mt:clearCache()
-    --------------------------------------------------------------------------------
-    -- Stop any stray repeat timers:
-    --------------------------------------------------------------------------------
-    for _, v in pairs(self.repeatTimers) do
-        v:stop()
-        v = nil -- luacheck: ignore
-    end
-
-    self.cacheWheelYAxis = nil
-    self.cacheWheelXAxis = nil
-
-    self.cacheRightScreenYAxis = nil
-    self.cacheLeftScreenYAxis = nil
-
-    self.leftFnPressed = false
-    self.rightFnPressed = false
-
-    self.cachedLEDButtonValues = {}
-    self.cachedTouchScreenButtonValues = {}
-    self.cachedKnobValues = {}
-
-    self.cachedWheelScreen = ""
-    self.cachedLeftSideScreen = ""
-    self.cachedRightSideScreen = ""
-
-    self.lastWheelDoubleTapX = nil
-    self.lastWheelDoubleTapY = nil
-
-    self.hasLoaded = false
-end
-
---- plugins.core.loupedeckctandlive.manager:callback(data) -> none
---- Method
---- The Loupedeck callback.
----
---- Parameters:
----  * data - The callback data.
----
---- Returns:
----  * None
-function mod.mt:callback(data)
-    --log.df("ct data: %s", hs.inspect(data))
-
-    --------------------------------------------------------------------------------
-    -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
-    --------------------------------------------------------------------------------
-    if data.action == "websocket_open" then
-        self.connected(true)
-        self:clearCache()
-        self:refresh()
-        self.hasLoaded = true
-        self.enableFlashDrive:update()
-
-        self.device:updateBacklightLevel(tonumber(self.screensBacklightLevel()))
-        return
-    elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
-        --------------------------------------------------------------------------------
-        -- If the websocket disconnects or fails, then trash all the caches:
-        --------------------------------------------------------------------------------
-        self.connected(false)
-        self:clearCache()
-        return
-    end
-
-    local bundleID = cachedBundleID
-
-    local items = self.items()
-
-    --------------------------------------------------------------------------------
-    -- Revert to "All Applications" if no settings for frontmost app exist:
-    --------------------------------------------------------------------------------
-    if not items[bundleID] then
-        bundleID = "All Applications"
-    end
-
-    --------------------------------------------------------------------------------
-    -- Ignore if ignored:
-    --------------------------------------------------------------------------------
-    if items[bundleID].ignore and items[bundleID].ignore == true then
-        bundleID = "All Applications"
-    end
-
-    --------------------------------------------------------------------------------
-    -- If not Automatically Switching Applications:
-    --------------------------------------------------------------------------------
-    if not self.automaticallySwitchApplications() then
-        bundleID = self.lastBundleID()
-    end
-
-    local activeBanks = self.activeBanks()
-    local bankID = activeBanks[bundleID] or "1"
+    local deviceNumberAsString = tostring(deviceNumber)
+    local bankID = (activeBanks[deviceNumberAsString] and activeBanks[deviceNumberAsString][bundleID] and tostring(activeBanks[deviceNumberAsString][bundleID])) or "1"
 
     local buttonID = tostring(data.buttonID)
 
@@ -1437,15 +1726,15 @@ function mod.mt:callback(data)
                 local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
-                    self.leftFnPressed = false
-                    self:refresh()
+                    self.leftFnPressed[deviceNumber] = false
+                    self:refresh(deviceNumber)
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
                 local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
-                    self.rightFnPressed = false
-                    self:refresh()
+                    self.rightFnPressed[deviceNumber] = false
+                    self:refresh(deviceNumber)
                 end
             end
         elseif data.direction == "down" then
@@ -1454,16 +1743,16 @@ function mod.mt:callback(data)
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
-                    self.leftFnPressed = true
-                    self:refresh()
+                    self.leftFnPressed[deviceNumber] = true
+                    self:refresh(deviceNumber)
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
                 local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
-                    self.rightFnPressed = true
-                    self:refresh()
+                    self.rightFnPressed[deviceNumber] = true
+                    self:refresh(deviceNumber)
                 end
             end
         end
@@ -1473,9 +1762,9 @@ function mod.mt:callback(data)
     -- HANDLE FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
     if not functionButtonPressed then
-        if self.leftFnPressed then
+        if self.leftFnPressed[deviceNumber] then
             bankID = bankID .. "_LeftFn"
-        elseif self.rightFnPressed then
+        elseif self.rightFnPressed[deviceNumber] then
             bankID = bankID .. "_RightFn"
         end
     end
@@ -1492,20 +1781,20 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisButton and thisButton.vibratePress and thisButton.vibratePress ~= "" then
-                self.device:vibrate(tonumber(thisButton.vibratePress))
+            if thisButton and thisButton.vibratePress and thisButton.vibratePress ~= "" and device then
+                device:vibrate(tonumber(thisButton.vibratePress))
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisButton and self:executeAction(thisButton.pressAction) then
+            if thisButton and self:executeAction(thisButton.pressAction, deviceNumber) then
                 --------------------------------------------------------------------------------
                 -- Repeat if necessary:
                 --------------------------------------------------------------------------------
                 if thisButton.repeatPressActionUntilReleased then
-                    self.repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
-                        self:executeAction(thisButton.pressAction)
+                    self.repeatTimers[deviceNumber][buttonID] = doEvery(keyRepeatInterval(), function()
+                        self:executeAction(thisButton.pressAction, deviceNumber)
                     end)
                 end
 
@@ -1520,14 +1809,14 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisKnob and thisKnob.vibratePress and thisKnob.vibratePress ~= "" then
-                self.device:vibrate(tonumber(thisKnob.vibratePress))
+            if thisKnob and thisKnob.vibratePress and thisKnob.vibratePress ~= "" and device then
+                device:vibrate(tonumber(thisKnob.vibratePress))
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisKnob and self:executeAction(thisKnob.pressAction) then
+            if thisKnob and self:executeAction(thisKnob.pressAction, deviceNumber) then
                 return
             end
 
@@ -1540,24 +1829,24 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisButton and thisButton.vibrateRelease and thisButton.vibrateRelease ~= "" then
-                self.device:vibrate(tonumber(thisButton.vibrateRelease))
+            if thisButton and thisButton.vibrateRelease and thisButton.vibrateRelease ~= "" and device then
+                device:vibrate(tonumber(thisButton.vibrateRelease))
             end
 
             --------------------------------------------------------------------------------
             -- Stop repeating:
             --------------------------------------------------------------------------------
             if thisButton and thisButton.repeatPressActionUntilReleased then
-                if self.repeatTimers[buttonID] then
-                    self.repeatTimers[buttonID]:stop()
-                    self.repeatTimers[buttonID] = nil
+                if self.repeatTimers[deviceNumber][buttonID] then
+                    self.repeatTimers[deviceNumber][buttonID]:stop()
+                    self.repeatTimers[deviceNumber][buttonID] = nil
                 end
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisButton and self:executeAction(thisButton.releaseAction) then
+            if thisButton and self:executeAction(thisButton.releaseAction, deviceNumber) then
                 return
             end
 
@@ -1569,14 +1858,14 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisKnob and thisKnob.vibrateRelease and thisKnob.vibrateRelease ~= "" then
-                self.device:vibrate(tonumber(thisKnob.vibrateRelease))
+            if thisKnob and thisKnob.vibrateRelease and thisKnob.vibrateRelease ~= "" and device then
+                device:vibrate(tonumber(thisKnob.vibrateRelease))
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisKnob and self:executeAction(thisKnob.releaseAction) then
+            if thisKnob and self:executeAction(thisKnob.releaseAction, deviceNumber) then
                 return
             end
         elseif data.id == loupedeck.event.ENCODER_MOVE then
@@ -1588,17 +1877,17 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if data.direction == "left" and thisKnob and thisKnob.vibrateLeft and thisKnob.vibrateLeft ~= "" then
-                self.device:vibrate(tonumber(thisKnob.vibrateLeft))
+            if data.direction == "left" and thisKnob and thisKnob.vibrateLeft and thisKnob.vibrateLeft ~= "" and device then
+                device:vibrate(tonumber(thisKnob.vibrateLeft))
             end
-            if data.direction == "right" and thisKnob and thisKnob.vibrateRight and thisKnob.vibrateRight ~= "" then
-                self.device:vibrate(tonumber(thisKnob.vibrateRight))
+            if data.direction == "right" and thisKnob and thisKnob.vibrateRight and thisKnob.vibrateRight ~= "" and device then
+                device:vibrate(tonumber(thisKnob.vibrateRight))
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisKnob and self:executeAction(thisKnob[data.direction.."Action"]) then
+            if thisKnob and self:executeAction(thisKnob[data.direction.."Action"], deviceNumber) then
                 return
             end
 
@@ -1610,17 +1899,17 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft and thisJogWheel.vibrateLeft ~= "" then
-                self.device:vibrate(tonumber(thisJogWheel.vibrateLeft))
+            if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft and thisJogWheel.vibrateLeft ~= "" and device then
+                device:vibrate(tonumber(thisJogWheel.vibrateLeft))
             end
-            if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight and thisJogWheel.vibrateRight ~= "" then
-                self.device:vibrate(tonumber(thisJogWheel.vibrateRight))
+            if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight and thisJogWheel.vibrateRight ~= "" and device then
+                device:vibrate(tonumber(thisJogWheel.vibrateRight))
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisJogWheel and self:executeAction(thisJogWheel[data.direction.."Action"]) then
+            if thisJogWheel and self:executeAction(thisJogWheel[data.direction.."Action"], deviceNumber) then
                 return
             end
         elseif data.id == loupedeck.event.SCREEN_PRESSED then
@@ -1632,20 +1921,20 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisTouchButton and thisTouchButton.vibratePress and thisTouchButton.vibratePress ~= "" then
-                self.device:vibrate(tonumber(thisTouchButton.vibratePress))
+            if thisTouchButton and thisTouchButton.vibratePress and thisTouchButton.vibratePress ~= "" and device then
+                device:vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
             --------------------------------------------------------------------------------
             -- Trigger Action:
             --------------------------------------------------------------------------------
-            if thisTouchButton and self:executeAction(thisTouchButton.pressAction) then
+            if thisTouchButton and self:executeAction(thisTouchButton.pressAction, deviceNumber) then
                 --------------------------------------------------------------------------------
                 -- Repeat if necessary:
                 --------------------------------------------------------------------------------
                 if thisTouchButton.repeatPressActionUntilReleased then
-                    self.repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
-                        self:executeAction(thisTouchButton.pressAction)
+                    self.repeatTimers[deviceNumber][buttonID] = doEvery(keyRepeatInterval(), function()
+                        self:executeAction(thisTouchButton.pressAction, deviceNumber)
                     end)
                 end
                 return
@@ -1660,16 +1949,16 @@ function mod.mt:callback(data)
                     --------------------------------------------------------------------------------
                     -- SLIDE UP/DOWN:
                     --------------------------------------------------------------------------------
-                    if self.cacheLeftScreenYAxis ~= nil then
+                    if self.cacheLeftScreenYAxis[deviceNumber] ~= nil then
                         -- already dragging. Which way?
-                        local yDiff = data.y - self.cacheLeftScreenYAxis
+                        local yDiff = data.y - self.cacheLeftScreenYAxis[deviceNumber]
                         if yDiff < 0-dragMinimumDiff then
-                            self:executeAction(thisSideScreen.upAction)
+                            self:executeAction(thisSideScreen.upAction, deviceNumber)
                         elseif yDiff > 0+dragMinimumDiff then
-                            self:executeAction(thisSideScreen.downAction)
+                            self:executeAction(thisSideScreen.downAction, deviceNumber)
                         end
                     end
-                    self.cacheLeftScreenYAxis = data.y
+                    self.cacheLeftScreenYAxis[deviceNumber] = data.y
 
                     --------------------------------------------------------------------------------
                     -- DOUBLE TAP:
@@ -1678,7 +1967,7 @@ function mod.mt:callback(data)
                         if self.leftScreenDoubleTapTriggered and self.tookFingerOffLeftScreen then
                             self.leftScreenDoubleTapTriggered = false
                             self.tookFingerOffLeftScreen = false
-                            self:executeAction(thisSideScreen.doubleTapAction)
+                            self:executeAction(thisSideScreen.doubleTapAction, deviceNumber)
                         else
                             self.leftScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
@@ -1692,7 +1981,7 @@ function mod.mt:callback(data)
                     -- TWO FINGER TAP:
                     --------------------------------------------------------------------------------
                     if data.multitouch == 1 then
-                        self:executeAction(thisSideScreen.twoFingerTapAction)
+                        self:executeAction(thisSideScreen.twoFingerTapAction, deviceNumber)
                     end
                 end
             end
@@ -1706,16 +1995,16 @@ function mod.mt:callback(data)
                 --------------------------------------------------------------------------------
                 local thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
                 if thisSideScreen then
-                    if self.cacheRightScreenYAxis ~= nil then
+                    if self.cacheRightScreenYAxis[deviceNumber] ~= nil then
                         -- already dragging. Which way?
-                        local yDiff = data.y - self.cacheRightScreenYAxis
+                        local yDiff = data.y - self.cacheRightScreenYAxis[deviceNumber]
                         if yDiff < 0-dragMinimumDiff then
-                            self:executeAction(thisSideScreen.upAction)
+                            self:executeAction(thisSideScreen.upAction, deviceNumber)
                         elseif yDiff > 0+dragMinimumDiff then
-                            self:executeAction(thisSideScreen.downAction)
+                            self:executeAction(thisSideScreen.downAction, deviceNumber)
                         end
                     end
-                    self.cacheRightScreenYAxis = data.y
+                    self.cacheRightScreenYAxis[deviceNumber] = data.y
 
                     --------------------------------------------------------------------------------
                     -- DOUBLE TAP:
@@ -1724,7 +2013,7 @@ function mod.mt:callback(data)
                         if self.rightScreenDoubleTapTriggered and self.tookFingerOffRightScreen then
                             self.rightScreenDoubleTapTriggered = false
                             self.tookFingerOffRightScreen = false
-                            self:executeAction(thisSideScreen.doubleTapAction)
+                            self:executeAction(thisSideScreen.doubleTapAction, deviceNumber)
                         else
                             self.rightScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
@@ -1738,7 +2027,7 @@ function mod.mt:callback(data)
                     -- TWO FINGER TAP:
                     --------------------------------------------------------------------------------
                     if data.multitouch == 1 then
-                        self:executeAction(thisSideScreen.twoFingerTapAction)
+                        self:executeAction(thisSideScreen.twoFingerTapAction, deviceNumber)
                     end
                 end
             end
@@ -1746,8 +2035,8 @@ function mod.mt:callback(data)
             --------------------------------------------------------------------------------
             -- SCREEN RELEASED:
             --------------------------------------------------------------------------------
-            self.cacheLeftScreenYAxis = nil
-            self.cacheRightScreenYAxis = nil
+            self.cacheLeftScreenYAxis[deviceNumber] = nil
+            self.cacheRightScreenYAxis[deviceNumber] = nil
             self.tookFingerOffLeftScreen = true
             self.tookFingerOffRightScreen = true
 
@@ -1760,20 +2049,20 @@ function mod.mt:callback(data)
             -- Stop repeating:
             --------------------------------------------------------------------------------
             if thisTouchButton and thisTouchButton.repeatPressActionUntilReleased then
-                if self.repeatTimers[buttonID] then
-                    self.repeatTimers[buttonID]:stop()
-                    self.repeatTimers[buttonID] = nil
+                if self.repeatTimers[deviceNumber][buttonID] then
+                    self.repeatTimers[deviceNumber][buttonID]:stop()
+                    self.repeatTimers[deviceNumber][buttonID] = nil
                 end
             end
 
             --------------------------------------------------------------------------------
             -- Vibrate if needed:
             --------------------------------------------------------------------------------
-            if thisTouchButton and thisTouchButton.vibrateRelease and thisTouchButton.vibrateRelease ~= "" then
-                self.device:vibrate(tonumber(thisTouchButton.vibrateRelease))
+            if thisTouchButton and thisTouchButton.vibrateRelease and thisTouchButton.vibrateRelease ~= "" and device then
+                device:vibrate(tonumber(thisTouchButton.vibrateRelease))
             end
 
-            if thisTouchButton and self:executeAction(thisTouchButton.releaseAction) then
+            if thisTouchButton and self:executeAction(thisTouchButton.releaseAction, deviceNumber) then
                 return
             end
         elseif data.id == loupedeck.event.WHEEL_PRESSED then
@@ -1783,74 +2072,76 @@ function mod.mt:callback(data)
                 -- BUTTON PRESS:
                 --------------------------------------------------------------------------------
                 if wheelScreen.topLeftAction and buttonID == "1" then
-                    self:executeAction(wheelScreen.topLeftAction)
+                    self:executeAction(wheelScreen.topLeftAction, deviceNumber)
                 end
                 if wheelScreen.topMiddleAction and buttonID == "2" then
-                    self:executeAction(wheelScreen.topMiddleAction)
+                    self:executeAction(wheelScreen.topMiddleAction, deviceNumber)
                 end
                 if wheelScreen.topRightAction and buttonID == "3" then
-                    self:executeAction(wheelScreen.topRightAction)
+                    self:executeAction(wheelScreen.topRightAction, deviceNumber)
                 end
                 if wheelScreen.bottomLeftAction and buttonID == "4" then
-                    self:executeAction(wheelScreen.bottomLeftAction)
+                    self:executeAction(wheelScreen.bottomLeftAction, deviceNumber)
                 end
                 if wheelScreen.bottomMiddleAction and buttonID == "5" then
-                    self:executeAction(wheelScreen.bottomMiddleAction)
+                    self:executeAction(wheelScreen.bottomMiddleAction, deviceNumber)
                 end
                 if wheelScreen.bottomRightAction and buttonID == "6" then
-                    self:executeAction(wheelScreen.bottomRightAction)
+                    self:executeAction(wheelScreen.bottomRightAction, deviceNumber)
                 end
 
                 --------------------------------------------------------------------------------
                 -- DRAG WHEEL:
                 --------------------------------------------------------------------------------
-                if self.cacheWheelXAxis ~= nil and self.cacheWheelYAxis ~= nil then
+                --if not self.cacheWheelXAxis[deviceNumber] then
+
+                if self.cacheWheelXAxis[deviceNumber] ~= nil and self.cacheWheelYAxis[deviceNumber] ~= nil then
                     -- we're already dragging. Which way?
-                    local xDiff, yDiff = data.x - self.cacheWheelXAxis, data.y - self.cacheWheelYAxis
+                    local xDiff, yDiff = data.x - self.cacheWheelXAxis[deviceNumber], data.y - self.cacheWheelYAxis[deviceNumber]
                     -- dragging horizontally
                     if xDiff < 0-dragMinimumDiff then
-                        self:executeAction(wheelScreen.leftAction)
+                        self:executeAction(wheelScreen.leftAction, deviceNumber)
                     elseif xDiff > 0+dragMinimumDiff then
-                        self:executeAction(wheelScreen.rightAction)
+                        self:executeAction(wheelScreen.rightAction, deviceNumber)
                     end
                     -- dragging vertically
                     if yDiff < 0-dragMinimumDiff then
-                        self:executeAction(wheelScreen.upAction)
+                        self:executeAction(wheelScreen.upAction, deviceNumber)
                     elseif yDiff > 0+dragMinimumDiff then
-                        self:executeAction(wheelScreen.downAction)
+                        self:executeAction(wheelScreen.downAction, deviceNumber)
                     end
                 end
 
                 --------------------------------------------------------------------------------
                 -- CACHE DATA:
                 --------------------------------------------------------------------------------
-                self.cacheWheelXAxis = data.x
-                self.cacheWheelYAxis = data.y
+                self.cacheWheelXAxis[deviceNumber] = data.x
+                self.cacheWheelYAxis[deviceNumber] = data.y
 
                 --------------------------------------------------------------------------------
                 -- DOUBLE TAP:
                 --------------------------------------------------------------------------------
                 if not data.multitouch and wheelScreen.doubleTapAction then
 
-                    local withinRange = self.lastWheelDoubleTapX and self.lastWheelDoubleTapY and
-                                        data.x >= (self.lastWheelDoubleTapX - wheelDoubleTapXTolerance) and data.x <= (self.lastWheelDoubleTapX + wheelDoubleTapXTolerance) and
-                                        data.y >= (self.lastWheelDoubleTapY - wheelDoubleTapYTolerance) and data.y <= (self.lastWheelDoubleTapY + wheelDoubleTapYTolerance)
+                    local withinRange = self.lastWheelDoubleTapX[deviceNumber] and self.lastWheelDoubleTapY[deviceNumber] and
+                                        data.x >= (self.lastWheelDoubleTapX[deviceNumber] - wheelDoubleTapXTolerance) and data.x <= (self.lastWheelDoubleTapX[deviceNumber] + wheelDoubleTapXTolerance) and
+                                        data.y >= (self.lastWheelDoubleTapY[deviceNumber] - wheelDoubleTapYTolerance) and data.y <= (self.lastWheelDoubleTapY[deviceNumber] + wheelDoubleTapYTolerance)
 
-                    if self.wheelScreenDoubleTapTriggered and self.tookFingerOffWheelScreen and withinRange then
-                        self.wheelScreenDoubleTapTriggered = false
-                        self.tookFingerOffWheelScreen = false
-                        self.lastWheelDoubleTapX = nil
-                        self.lastWheelDoubleTapY = nil
-                        self:executeAction(wheelScreen.doubleTapAction)
+                    if self.wheelScreenDoubleTapTriggered[deviceNumber] and self.tookFingerOffWheelScreen[deviceNumber] and withinRange then
+                        self.wheelScreenDoubleTapTriggered[deviceNumber] = false
+                        self.tookFingerOffWheelScreen[deviceNumber] = false
+                        self.lastWheelDoubleTapX[deviceNumber] = nil
+                        self.lastWheelDoubleTapY[deviceNumber] = nil
+                        self:executeAction(wheelScreen.doubleTapAction, deviceNumber)
                     else
-                        self.wheelScreenDoubleTapTriggered = true
-                        self.lastWheelDoubleTapX = nil
-                        self.lastWheelDoubleTapY = nil
+                        self.wheelScreenDoubleTapTriggered[deviceNumber] = true
+                        self.lastWheelDoubleTapX[deviceNumber] = nil
+                        self.lastWheelDoubleTapY[deviceNumber] = nil
                         doAfter(doubleTapTimeout, function()
-                            self.wheelScreenDoubleTapTriggered = false
-                            self.tookFingerOffWheelScreen = false
-                            self.lastWheelDoubleTapX = nil
-                            self.lastWheelDoubleTapY = nil
+                            self.wheelScreenDoubleTapTriggered[deviceNumber] = false
+                            self.tookFingerOffWheelScreen[deviceNumber] = false
+                            self.lastWheelDoubleTapX[deviceNumber] = nil
+                            self.lastWheelDoubleTapY[deviceNumber] = nil
                         end)
                     end
                 end
@@ -1859,19 +2150,18 @@ function mod.mt:callback(data)
                 -- TWO FINGER TAP:
                 --------------------------------------------------------------------------------
                 if data.multitouch then
-                    self:executeAction(wheelScreen.twoFingerTapAction)
+                    self:executeAction(wheelScreen.twoFingerTapAction, deviceNumber)
                 end
             end
         elseif data.id == loupedeck.event.WHEEL_RELEASED then
-            self.cacheWheelYAxis = nil
-            self.cacheWheelXAxis = nil
+            self.cacheWheelYAxis[deviceNumber] = nil
+            self.cacheWheelXAxis[deviceNumber] = nil
 
-            self.lastWheelDoubleTapX = data.x
-            self.lastWheelDoubleTapY = data.y
+            self.lastWheelDoubleTapX[deviceNumber] = data.x
+            self.lastWheelDoubleTapY[deviceNumber] = data.y
 
-            self.tookFingerOffWheelScreen = true
+            self.tookFingerOffWheelScreen[deviceNumber] = true
         end
-
     end
 end
 

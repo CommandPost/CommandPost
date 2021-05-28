@@ -42,6 +42,21 @@
 		}
 	}
 
+	function updateUnit() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateUnit",
+					unit: document.getElementById("unit").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function iconHistory() {
 		try {
 			var result = {
@@ -831,6 +846,20 @@
 		}
 	}
 
+	function copyUnit() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "copyUnit",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function copyApplication() {
 		try {
 			var result = {
@@ -1274,6 +1303,19 @@
 <table style="width: 1000px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px">
 	<tr>
 		<th style=text-align: left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("unit") }}: </span>
+				<select id="unit" style="width: 100px;" onchange="updateUnit()">
+					{%
+						for i=1, numberOfUnits do
+					%}
+					<option value="{{i}}">{{i}}</option>
+					{%
+						end
+					%}
+				</select>
+			</span>
+		</th>
+		<th style=text-align: left;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 				<select id="application" style="width: 250px;" onchange="updateApplicationAndBank()">
 					<option value="All Applications">{{ i18n("unlistedAndIgnoredApplications") }}</option>
@@ -1599,7 +1641,7 @@
 					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
 				</p>
 				<div id="loupedeckGroupControls" class="uiItem">
-					<table class="loupedeck" style="height: 526px;" id="noLoupedeck">
+					<table class="loupedeck" style="height: 545px;" id="noLoupedeck">
 						<tr>
 							<th>
 								<p style="font-size: 12px; font-weight: normal;">{* i18n("loupedeckCTStoreSettingsOnFlashDriveLineOne") *}</p>
@@ -2017,6 +2059,9 @@
 	</tr>
 	<tr>
 		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="copyUnit()">{{ i18n("copyUnit") }}</a>
+		</th>
 		<th>
 			<a href="#" class="bottomButton" onclick="copyApplication()">{{ i18n("copyApplication") }}</a>
 		</th>

@@ -7,6 +7,7 @@ local require                   = require
 local log                       = require "hs.logger".new "json"
 
 local fs                        = require "hs.fs"
+local inspect                   = require "hs.inspect"
 local json                      = require "hs.json"
 
 local prop                      = require "cp.prop"
@@ -172,6 +173,8 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
             local result = mod.write(fullFilePath, value)
             if not result then
                 local errorMessage = string.format("Failed to save JSON file: %s", fullFilePath)
+                log.df("value:\n%s", value and inspect(value))
+
                 if type(errorCallbackFn) == "function" then
                     errorCallbackFn(errorMessage)
                 else

@@ -12,10 +12,13 @@ local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
 local inspect           = require "hs.inspect"
 local network           = require "hs.network"
+local serial            = require "hs.serial"
 local timer             = require "hs.timer"
-local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
-local websocket         = require "hs.websocket"
+
+local just              = require "cp.just"
+local wshttp            = require "cp.websocket.http"
+local wsserial          = require "cp.websocket.serial"
 
 local concat            = table.concat
 local doAfter           = timer.doAfter
@@ -33,6 +36,21 @@ local uint16le          = bytes.uint16le
 local uint24be          = bytes.uint24be
 local uint32be          = bytes.uint32be
 local uint8             = bytes.uint8
+
+-- LOUPEDECK_VENDOR_ID -> number
+-- Constant
+-- Loupedeck's USB Vendor ID
+local LOUPEDECK_VENDOR_ID = 11970
+
+-- LOUPEDECK_CT_ID -> number
+-- Constant
+-- Loupedeck CT USB Product ID
+local LOUPEDECK_CT_ID = 3
+
+-- LOUPEDECK_LIVE_ID -> number
+-- Constant
+-- Loupedeck LIVE USB Product ID
+local LOUPEDECK_LIVE_ID = 4
 
 local mod = {}
 mod.mt = {}
@@ -233,7 +251,7 @@ end
 --- Returns:
 ---  * `true` if connected otherwise `false`
 function mod.mt:connected()
-    return self.websocket and self.websocket:status() == "open"
+    return self.websocket and self.websocket:isOpen()
 end
 
 --- hs.loupedeck:send() -> boolean
@@ -248,11 +266,23 @@ end
 function mod.mt:send(message)
     if self:connected() then
         local data = type(message) == "table" and concat(message) or tostring(message)
-        --log.df("Sending: %s", hexDump(data))
         self.websocket:send(data)
         return true
     end
     return false
+end
+
+-- hs.loupedeck:sendBytes(...) -> boolean
+-- Method
+-- Sends a series of `string`, `hs.bytes`, or `hs.bytes` functions to the websocket if connected.
+--
+-- Parameter:
+--  * ... - The list of `string`, `hs.bytes` or `hs.bytes` functions to send.
+--
+-- Returns:
+--  * `true` if sent.
+function mod.mt:sendBytes(...)
+    return self:send(bytes(...):bytes())
 end
 
 --- hs.loupedeck:sendCommand(commandID[, callbackFn[, ...]]) -> boolean
@@ -262,14 +292,12 @@ end
 --- Parameters:
 ---  * commandID  - An 16-bit integer with the command ID.
 ---  * callbackFn - A `function` that will be called with the `data` from the response. (optional)
----  * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
+---  * ...        - a variable number of byte string values, which will be concatenated together with the command and callback ID when being sent.
 ---
 --- Returns:
 ---  * `true` if sent.
 function mod.mt:sendCommand(commandID, callbackFn, ...)
-    return self:send(
-        bytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...):bytes()
-    )
+    return self:sendBytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...)
 end
 
 -- tableContains(table, element) -> boolean
@@ -292,43 +320,6 @@ local function tableContains(table, element)
         end
     end
     return false
-end
-
---- hs.loupedeck:findIPAddress() -> string | nil
---- Method
---- Searches for a valid IP address for the Loupedeck
----
---- Parameters:
----  * None
----
---- Returns:
----  * An IP address as a string, or `nil` if no device can be detected.
-function mod.mt:findIPAddress()
-    --------------------------------------------------------------------------------
-    -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
-    --       the network interface name changed from "LOUPEDECK device" to
-    --       "Loupedeck CT". Below is a workaround to support both interface names.
-    --------------------------------------------------------------------------------
-    local interfaceNames
-    local deviceType = self.deviceType
-    if deviceType == mod.deviceTypes.CT then
-        interfaceNames = {"LOUPEDECK device", "Loupedeck CT"}
-    elseif deviceType == mod.deviceTypes.LIVE then
-        interfaceNames = {"Loupedeck Live"}
-    end
-
-    local interfaces = network.interfaces()
-    local interfaceID
-    for _, v in pairs(interfaces) do
-        if tableContains(interfaceNames, network.interfaceName(v)) then
-            interfaceID = v
-            break
-        end
-    end
-    local details = interfaceID and network.interfaceDetails(interfaceID)
-    local ip = details and details["IPv4"] and details["IPv4"]["Addresses"] and details["IPv4"]["Addresses"][1]
-    local lastDot = ip and findLast(ip, "%.")
-    return ip and lastDot and string.sub(ip, 1, lastDot) .. "1"
 end
 
 --- hs.loupedeck:initaliseDevice() -> None
@@ -397,7 +388,7 @@ function mod.mt:triggerCallback(data)
     -- Trigger the callback:
     --------------------------------------------------------------------------------
     if self._callback then
-        local success, result = xpcall(function() self._callback(data) end, debug.traceback)
+        local success, result = xpcall(function() self._callback(data, self.deviceNumber) end, debug.traceback)
         if not success then
             log.ef("Error in Loupedeck Callback: %s", result)
         end
@@ -409,12 +400,31 @@ end
 -- A table containing functions triggered by websocket events.
 local events = {
     --------------------------------------------------------------------------------
+    -- WEBSOCKET OPENING:
+    --------------------------------------------------------------------------------
+    opening = function(obj)
+        obj:triggerCallback {
+            action = "websocket_opening",
+        }
+    end,
+
+    --------------------------------------------------------------------------------
     -- WEBSOCKET OPENED:
     --------------------------------------------------------------------------------
-    open = function(obj)
+    opened = function(obj)
+        --log.df("Initalising device...")
         obj:initaliseDevice()
         obj:triggerCallback {
-            action = "websocket_open",
+            action = "websocket_opened",
+        }
+    end,
+
+    --------------------------------------------------------------------------------
+    -- WEBSOCKET CLOSING:
+    --------------------------------------------------------------------------------
+    closing = function(obj)
+        obj:triggerCallback {
+            action = "websocket_closing",
         }
     end,
 
@@ -430,26 +440,17 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET FAILED:
     --------------------------------------------------------------------------------
-    fail = function(obj, message)
+    error = function(obj, message)
         obj:triggerCallback({
-            action = "websocket_fail",
+            action = "websocket_error",
             error = message,
         })
     end,
 
     --------------------------------------------------------------------------------
-    -- WEBSOCKET RECEIVED PONG:
-    --------------------------------------------------------------------------------
-    pong = function(obj)
-        obj:triggerCallback {
-            action = "websocket_pong",
-        }
-    end,
-
-    --------------------------------------------------------------------------------
     -- WEBSOCKET RECEIVED MESSAGE:
     --------------------------------------------------------------------------------
-    received = function(obj, message)
+    message = function(obj, message)
         -- read the command ID, callback ID and the remainder of the message...
         local id, callbackID, data = bytes.read(message,
             uint16be, uint8, remainder
@@ -528,6 +529,20 @@ mod.ignoreResponses = {
     [0x1c73] = true, -- This is triggered when the Loupedeck Live first connects
     [0x1573] = true, -- This is triggered when the Loupedeck Live first connects
     [0x1f73] = true, -- This is triggered when the Loupedeck Live first connects
+
+    [0x0410] = true, -- Not sure... seems to happen during restarts.
+
+    -- These trigger when you start a Loupedeck Live with Serial Firmware,
+    -- and I have no idea why:
+    [0x1273] = true,
+    [0x2573] = true,
+    [0x1773] = true,
+    [0x1873] = true,
+    [0x3773] = true,
+    [0x0573] = true,
+
+    [0x1d73] = true,
+    [0x3073] = true,
 }
 
 -- convertWheelXandYtoButtonID(x, y) -> number
@@ -796,12 +811,14 @@ mod.responseHandler = {
 ---
 --- Returns:
 ---  * None
-function mod.mt:websocketCallback(event, message)
-    local handler = events[event]
-    if handler then
-        handler(self, message)
-    else
-        log.wf("Unexpected websocket event '%s':\n%s", event, hexDump(message))
+function mod.mt:createWebsocketCallback()
+    return function(event, message)
+        local handler = events[event]
+        if handler then
+            handler(self, message)
+        else
+            log.wf("Unexpected websocket event '%s':\n%s", event, hexDump(message))
+        end
     end
 end
 
@@ -1723,46 +1740,12 @@ function mod.mt:vibrate(vibrationIndex, callbackFn)
     )
 end
 
---- hs.loupedeck:updateWatcher(enabled) -> none
---- Method
---- Updates the USB device watcher.
----
---- Parameters:
----  * enabled - A boolean which turns the watcher on or off.
----
---- Returns:
----  * None
-function mod.mt:updateWatcher(enabled)
-    if enabled then
-        if not self._usbWatcher then
-            self._usbWatcher = usb.watcher.new(function(data)
-                if data.productName == self.deviceType then
-                    if data.eventType == "added" then
-                        --log.df("Loupedeck device connected.")
-                        doAfter(4, function()
-                            self:connect()
-                        end)
-                    --elseif data.eventType == "removed" then
-                        --log.df("Loupedeck device disconnected.")
-                    end
-                end
-            end):start()
-        end
-    else
-        if self._usbWatcher then
-            self._usbWatcher:stop()
-            self._usbWatcher = nil
-        end
-    end
-end
-
---- hs.loupedeck:connect(retry, deviceType) -> boolean, errorMessage
+--- hs.loupedeck:connect() -> none
 --- Method
 --- Connects to a Loupedeck.
 ---
 --- Parameters:
----  * retry - `true` if you want to keep trying to connect, otherwise `false`
----  * deviceType - The device type (for example `hs.loupedeck.deviceTypes.LIVE`)
+---  * None
 ---
 --- Returns:
 ---  * None
@@ -1772,29 +1755,33 @@ end
 ---    if the device cannot be connected to.
 function mod.mt:connect()
     --------------------------------------------------------------------------------
-    -- Setup retry watchers:
+    -- Find the Loupedeck Devices:
     --------------------------------------------------------------------------------
-    self:updateWatcher(self.retry)
+    local devices = mod.findDevices(self.deviceType)
+    local device = devices and devices[self.deviceNumber]
 
-    --------------------------------------------------------------------------------
-    -- Find the Loupedeck Device:
-    --------------------------------------------------------------------------------
-    local ip = self:findIPAddress()
-    if not ip then
-        if self.retry then
-            doAfter(2, function()
-                self:connect()
-            end)
-        end
+    if not device then
         return
     end
 
-    --------------------------------------------------------------------------------
-    -- Attempt to connect:
-    --------------------------------------------------------------------------------
-    local url = "ws://" .. ip .. ":80/"
-    --log.df("Connecting to Loupedeck: %s", url)
-    self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
+    if device:find("%.") then
+        --------------------------------------------------------------------------------
+        -- Attempt to connect via websockets:
+        --------------------------------------------------------------------------------
+        local url = "ws://" .. device .. ":80/"
+        --log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, url)
+        self.websocket = wshttp.new(url, self:createWebsocketCallback())
+    else
+        --------------------------------------------------------------------------------
+        -- Attempt to connect via serial:
+        --
+        -- 9600, no parity, 8 bits, 2 stop bits.
+        --------------------------------------------------------------------------------
+        --log.df("Connecting to %s - Unit %s: %s", self.deviceType, self.deviceNumber, device)
+        self.websocket = wsserial.new(device, 9600, 8, 2, self:createWebsocketCallback())
+    end
+
+    self.websocket:open()
 end
 
 --- hs.loupedeck:disconnect() -> none
@@ -1807,12 +1794,28 @@ end
 --- Returns:
 ---  * None
 function mod.mt:disconnect()
+    --------------------------------------------------------------------------------
+    -- Black out screens and LEDs:
+    --------------------------------------------------------------------------------
+    local black = "#000000"
+    for _, screen in pairs(mod.screens) do
+        self:updateScreenColor(screen, {hex=black})
+    end
+    for i=7, 26 do
+        self:buttonColor(i, {hex=black})
+    end
+
+    --------------------------------------------------------------------------------
+    -- Add a slight delay so that the websocket message has time to send:
+    --------------------------------------------------------------------------------
+    just.wait(0.01)
+
+    --------------------------------------------------------------------------------
+    -- Close the connection:
+    --------------------------------------------------------------------------------
     if self.websocket then
         self.websocket:close()
         self.websocket = nil
-
-        -- Destroy any watchers:
-        self:updateWatcher()
     end
 end
 
@@ -1821,8 +1824,8 @@ end
 --- Creates a new Loupedeck object.
 ---
 --- Parameters:
----  * retry - `true` if you want to keep trying to connect, otherwise `false`
 ---  * deviceType - The device type defined in `hs.loupedeck.deviceTypes`
+---  * deviceNumber - The number of the device you want to access
 ---
 --- Returns:
 ---  * None
@@ -1830,14 +1833,73 @@ end
 --- Notes:
 ---  * The deviceType should be either `hs.loupedeck.deviceTypes.LIVE`
 ---    or `hs.loupedeck.deviceTypes.CT`.
-function mod.new(retry, deviceType)
+function mod.new(deviceType, deviceNumber)
     local o = {
-        retry               = retry,
         deviceType          = deviceType,
         callbackRegister    = {},
+        deviceNumber        = deviceNumber,
     }
     setmetatable(o, mod.mt)
     return o
+end
+
+--- hs.loupedeck.findDevices(deviceType) -> string | nil
+--- Method
+--- Searches for a valid IP address for the Loupedeck
+---
+--- Parameters:
+---  * deviceType - The device type defined in `hs.loupedeck.deviceTypes`
+---
+--- Returns:
+---  * An IP address as a string, or `nil` if no device can be detected.
+function mod.findDevices(deviceType)
+    --------------------------------------------------------------------------------
+    -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
+    --       the network interface name changed from "LOUPEDECK device" to
+    --       "Loupedeck CT". Below is a workaround to support both interface names.
+    --------------------------------------------------------------------------------
+    local interfaceNames
+    if deviceType == mod.deviceTypes.CT then
+        interfaceNames = {"LOUPEDECK device", "Loupedeck CT"}
+    elseif deviceType == mod.deviceTypes.LIVE then
+        interfaceNames = {"Loupedeck Live"}
+    end
+
+    local results = {}
+
+    --------------------------------------------------------------------------------
+    -- Find websockets:
+    --------------------------------------------------------------------------------
+    local interfaces = network.interfaces()
+    for _, interfaceID in pairs(interfaces) do
+        if tableContains(interfaceNames, network.interfaceName(interfaceID)) then
+            local details = interfaceID and network.interfaceDetails(interfaceID)
+            local ip = details and details["IPv4"] and details["IPv4"]["Addresses"] and details["IPv4"]["Addresses"][1]
+            local lastDot = ip and findLast(ip, "%.")
+            local deviceIP = ip and lastDot and string.sub(ip, 1, lastDot) .. "1"
+            if deviceIP then
+                table.insert(results, deviceIP)
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Find serial ports filtering by Vendor ID:
+    --------------------------------------------------------------------------------
+    local availablePortDetails = serial.availablePortDetails()
+    local availablePortNames = serial.availablePortNames()
+    for _, portName in pairs(availablePortNames) do
+        local portDetails = availablePortDetails[portName]
+        if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
+            if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID) or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID) then
+                table.insert(results, portName)
+            end
+        end
+    end
+
+    table.sort(results)
+
+    return results
 end
 
 return mod
