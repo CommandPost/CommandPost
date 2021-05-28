@@ -2221,6 +2221,17 @@ function mod.mt:panelCallback(id, params)
                 if path and path["1"] then
                     local data = json.read(path["1"])
                     if data then
+                        --------------------------------------------------------------------------------
+                        -- Allow for legacy files that don't contain a "unit":
+                        --------------------------------------------------------------------------------
+                        for i, _ in pairs(data) do
+                            if not tonumber(i) then
+                                local lastDevice = self.lastDevice()
+                                data = { [lastDevice] = copy(data) }
+                                break
+                            end
+                        end
+
                         if action == "replace" then
                             self.items(data)
                         elseif action == "merge" then
@@ -2238,6 +2249,12 @@ function mod.mt:panelCallback(id, params)
                         -- Refresh the hardware:
                         --------------------------------------------------------------------------------
                         self:refreshDevice()
+
+                        --------------------------------------------------------------------------------
+                        -- Save import path for next time:
+                        --------------------------------------------------------------------------------
+                        local folder = removeFilenameFromPath(path["1"])
+                        self.lastImportPath(folder)
                     end
                 end
             end
