@@ -627,48 +627,17 @@ function mod.mt:setItem(app, bank, controlType, id, valueA, valueB)
     local items = self.items()
     local lastDevice = self.lastDevice()
 
-    --------------------------------------------------------------------------------
-    -- NOTE: This shouldn't be needed, but every now and again we see some random
-    --       bug were 'items' becomes corrupt and not able to be converted
-    --       into JSON, which I'm ASSUMING is happening here.
-    --------------------------------------------------------------------------------
-    local problem = false
-    if type(valueB) == "table" then
-        for i, v in pairs(valueB) do
-            if type(i) == "number" then
-                problem = true
-                break
-            end
-        end
-    end
-
-    if problem
-    or type(app) ~= "string"
-    or type(bank) ~= "string"
-    or type(controlType) ~= "string"
-    or type(id) ~= "string"
-    or type(valueA) == "number"
-    or type(valueB) == "number" then
-        log.ef("Fatal error when trying to use 'setItem' to update the Loupedeck Preferences. Aborting." ..
-               " - lastDevice: %s (%s)\n" ..
-               " - app: %s (%s)\n" ..
-               " - bank: %s (%s)\n" ..
-               " - controlType: %s (%s)\n" ..
-               " - id: %s (%s)\n" ..
-               " - valueA: %s (%s)\n" ..
-               " - valueB: %s (%s)\n" ..
-               " - valueA (Inspected): %s\n" ..
-               " - valueB (Inspected): %s\n" ..
-               lastDevice, type(lastDevice), app, type(app), bank, type(bank), controlType, type(controlType), id, type(id), valueA, type(valueA), valueB, type(valueB), valueA and inspect(valueA), valueB and inspect(valueB)
-        )
-        return
-    end
-
     if type(items[lastDevice]) ~= "table" then items[lastDevice] = {} end
     if type(items[lastDevice][app]) ~= "table" then items[lastDevice][app] = {} end
     if type(items[lastDevice][app][bank]) ~= "table" then items[lastDevice][app][bank] = {} end
     if type(items[lastDevice][app][bank][controlType]) ~= "table" then items[lastDevice][app][bank][controlType] = {} end
     if type(items[lastDevice][app][bank][controlType][id]) ~= "table" then items[lastDevice][app][bank][controlType][id] = {} end
+
+    --------------------------------------------------------------------------------
+    -- Make copies of any tables for safety:
+    --------------------------------------------------------------------------------
+    if type(valueA) == "table" then valueA = copy(valueA) end
+    if type(valueB) == "table" then valueB = copy(valueB) end
 
     if type(valueB) ~= "nil" then
         if not items[lastDevice][app][bank][controlType][id][valueA] then items[lastDevice][app][bank][controlType][id][valueA] = {} end
@@ -1473,8 +1442,6 @@ function mod.mt:panelCallback(id, params)
                     ["handlerID"] = handlerID,
                     ["action"] = action,
                 }
-
-                --log.df("action: %s", hs.inspect(action))
 
                 self:setItem(app, bank, controlType, bid, buttonType, result)
 
