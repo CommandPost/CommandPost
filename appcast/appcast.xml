@@ -6,8 +6,20 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.2.2</title>
+			<title>Version 1.2.3</title>
 			<description><![CDATA[
+				<h1>CommandPost 1.2.3</h1>
+
+				<h2>New Features:</h2>
+				<ul><li>Added support for the Loupedeck CT and Loupedeck Live beta firmware, which changes the connection method from a virtual ethernet port to a virtual serial port.</li>
+				<li>Added support for multiple Loupedeck CT and multiple Loupedeck Live devices at the same time. Each device can now have its own unique layout.</li>
+				<li>Added actions for triggering virtual mouse clicks. Thanks for suggesting Chase Guidroz!</li></ul>
+
+				<h2>Changes:</h2>
+				<ul><li>The setup screen no longer refers to the "satellite icon". Thanks for reporting Shahin Shokoui!</li></ul>
+
+				<hr />
+
 				<h1>CommandPost 1.2.2</h1>
 
 				<h2>Improvements:</h2>
@@ -218,11 +230,11 @@
 				<li>Fixed a bug that would cause an error if you tried to Restore a Browser Layout that wasn&#39;t previously saved. Thanks for reporting Gábor Kertai!</li></ul>
 			]]>
 			</description>
-			<pubDate>Thu, 29 Apr 2021 01:50:31 +1000</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.2/CommandPost_1.2.2.dmg"
-				sparkle:version="6882"
-                sparkle:shortVersionString="1.2.2"
-				sparkle:dsaSignature="MC4CFQD4ySw/c6x1VHrrvvYcPpQAXEhFZAIVAIiSmHpFtnv34al/Rgxl6xFGBy0Q"
+			<pubDate>Mon, 31 May 2021 23:32:34 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.3/CommandPost_1.2.3.dmg"
+				sparkle:version="6922"
+                sparkle:shortVersionString="1.2.3"
+				sparkle:dsaSignature="MC0CFEN6PCA1VXlU7EL9CYeExUm+Fr+yAhUAgwP50qWQd8Bqo02xQSK/+9fwXCE="
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
