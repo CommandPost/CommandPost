@@ -131,6 +131,7 @@ end
 --- cp.ui.Element:doShow() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will ensure the Element is showing.
+--- By default, will ask the `parent` to show, if the `parent` is available.
 ---
 --- Parameters:
 ---  * None
@@ -153,7 +154,10 @@ end
 --- Returns:
 ---  * self
 function Element:show()
-    self:parent():show()
+    local parent = self:parent()
+    if parent then
+        parent:show()
+    end
     return self
 end
 
@@ -172,6 +176,25 @@ function Element:focus()
         ui:setAttributeValue("AXFocused", true)
     end
     return self
+end
+
+--- cp.ui.Element:doPerformAction() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will attempt to perform the action with the specified id (eg. "AXCancel")
+---
+--- Parameters:
+---  * id   - The `string` for the AX action to perform.
+---
+--- Returns:
+---  * The `Statement` which will perform the action.
+function Element:doPerformAction(id)
+    return If(self.UI)
+    :Then(function(ui)
+        ui:performAction(id)
+        return true
+    end)
+    :Otherwise(false)
+    :Label("doPerformAction('" .. id .. "')")
 end
 
 --- cp.ui.Element.role <cp.prop: string; read-only>

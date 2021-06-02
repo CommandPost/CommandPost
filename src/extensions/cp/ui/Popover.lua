@@ -2,10 +2,10 @@
 ---
 --- UI Group.
 
-local require = require
+local require           = require
 
-local Element = require("cp.ui.Element")
-
+local Element           = require "cp.ui.Element"
+local If                = require "cp.rx.go.If"
 
 local Popover = Element:subclass("cp.ui.Popover")
 
@@ -48,6 +48,22 @@ function Popover:hide()
         ui:performAction("AXCancel")
     end
     return self
+end
+
+--- cp.ui.Popover:doHide() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will hide the popover.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function Popover.lazy.method:doHide()
+    return If(self.isShowing)
+    :Then(self:doPerformAction("AXCancel"))
+    :Otherwise(false)
+    :Label("Popover:doHide")
 end
 
 return Popover
