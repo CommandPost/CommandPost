@@ -4,7 +4,7 @@
 ---
 --- Represents the Speed Popover.
 
---local log                 = require "hs.logger" .new "SpeedPopover"
+-- local log                   = require "hs.logger" .new "SpeedPopover"
 
 local go                    = require "cp.rx.go"
 
@@ -96,13 +96,12 @@ end
 ---
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
-function SpeedPopover:doShow()
+function SpeedPopover.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
         self:parent():app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"}):Debug()
     )
     :Then(WaitUntil(self.isShowing):TimeoutAfter(1000):Debug())
     :Otherwise(true)
-    :Label("SpeedPopover:doShow")
 end
 
 --- cp.apple.finalcutpro.timeline.SpeedPopover:direction <cp.ui.RadioGroup>

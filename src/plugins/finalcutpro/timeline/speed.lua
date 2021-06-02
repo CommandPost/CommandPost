@@ -12,7 +12,6 @@ local dialog                = require "cp.dialog"
 local displayErrorMessage   = dialog.displayErrorMessage
 
 local Do                    = go.Do
-local WaitUntil             = go.WaitUntil
 
 local plugin = {
     id = "finalcutpro.timeline.speed",
@@ -63,10 +62,6 @@ function plugin.init(deps)
         :whenActivated(
             Do(speedPopover:doShow():Debug())
             :Then(speedPopover.byDuration:doPress():Debug())
-            -- :Then(function()
-            --     speedPopover.byDuration:press()
-            --     return true
-            -- end)
             :Label("cmd:retimeToDuration")
             :Debug()
         )

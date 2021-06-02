@@ -194,7 +194,7 @@ function Element:doPerformAction(id)
         return true
     end)
     :Otherwise(false)
-    :Label("doPerformAction('" .. id .. "')")
+    :Label("cp.ui.Element:doPerformAction('" .. id .. "')")
 end
 
 --- cp.ui.Element.role <cp.prop: string; read-only>
