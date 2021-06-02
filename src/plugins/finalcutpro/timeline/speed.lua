@@ -60,10 +60,9 @@ function plugin.init(deps)
     fcpxCmds
         :add("retimeToDuration")
         :whenActivated(
-            Do(speedPopover:doShow():Debug())
-            :Then(speedPopover.byDuration:doPress():Debug())
+            Do(speedPopover:doShow())
+            :Then(speedPopover.byDuration:doPress())
             :Label("cmd:retimeToDuration")
-            :Debug()
         )
         :titled(i18n("retimeToDuration"))
 end

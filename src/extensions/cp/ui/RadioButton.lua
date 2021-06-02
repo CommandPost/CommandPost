@@ -169,7 +169,7 @@ end
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
 function RadioButton.lazy.method:doPress()
-    return Do(self:doPerformAction("AXPress"):Debug())
+    return Do(self:doPerformAction("AXPress"))
     :ThenYield()
     :Label("RadioButton:doPress")
 end

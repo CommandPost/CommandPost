@@ -467,7 +467,7 @@ end
 ---  * `true` if `a` is left of `b`.
 function axutils.compareLeftToRight(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return aFrame and bFrame and aFrame.x < bFrame.x or false
+    return (aFrame ~= nil and bFrame ~= nil and aFrame.x < bFrame.x) or false
 end
 
 --- cp.ui.axutils.compareRightToLeft(a, b) -> boolean
@@ -482,7 +482,7 @@ end
 ---  * `true` if `a` is right of `b`.
 function axutils.compareRightToLeft(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return aFrame and bFrame and aFrame.x + aFrame.w > bFrame.x + bFrame.w or false
+    return (aFrame ~= nil and bFrame ~= nil and aFrame.x + aFrame.w > bFrame.x + bFrame.w) or false
 end
 
 --- cp.ui.axutils.compareTopToBottom(a, b) -> boolean
@@ -497,7 +497,7 @@ end
 ---  * `true` if `a` is above `b`.
 function axutils.compareTopToBottom(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return aFrame and bFrame and aFrame.y < bFrame.y or false
+    return (aFrame ~= nil and bFrame ~= nil and aFrame.y < bFrame.y) or false
 end
 
 --- cp.ui.axutils.compareBottomToTop(a, b) -> boolean
@@ -512,7 +512,7 @@ end
 ---  * `true` if `a` is below `b`.
 function axutils.compareBottomToTop(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return aFrame and bFrame and aFrame.y + aFrame.h > bFrame.y + bFrame.h or false
+    return (aFrame ~= nil and bFrame ~= nil and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
 end
 
 --- cp.ui.axutils.childFromLeft(element, index[, matcherFn]) -> axuielement
