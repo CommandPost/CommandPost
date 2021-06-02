@@ -93,7 +93,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
                         theme = plugin.theme
                         subText = subText.." ("..plugin.theme..")"
                     end
-                    local name = plugin.name or "[" .. i18n("unknown") .. "]"
+                    local name = plugin.name or ("[" .. i18n("unknown") .. "]")
                     choices:add(name)
                         :subText(subText)
                         :params(plugin)

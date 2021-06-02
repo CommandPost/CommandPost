@@ -4,6 +4,8 @@
 
 local require       = require
 
+local hs            = _G.hs
+
 local dialog        = require "hs.dialog"
 
 local fcp           = require "cp.apple.finalcutpro"

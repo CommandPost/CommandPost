@@ -22,6 +22,7 @@ local module       = require(USERDATA_TAG..".internal")
 module.forcetouch  = require(USERDATA_TAG..".forcetouch")
 module.watcher     = require(USERDATA_TAG..".watcher")
 
+local hs           = _G.hs
 local objectMT     = hs.getObjectMetatable(USERDATA_TAG)
 
 local basePath = package.searchpath(USERDATA_TAG, package.path)

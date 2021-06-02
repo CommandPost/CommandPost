@@ -22,6 +22,8 @@ if basePath then
     end
 end
 
+local hs      = _G.hs
+
 local textMT  = hs.getObjectMetatable(USERDATA_TAG)
 local utf16MT = hs.getObjectMetatable(USERDATA_TAG..".utf16")
 local regexMT = hs.getObjectMetatable(USERDATA_TAG..".regex")

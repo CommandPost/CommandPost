@@ -6,7 +6,7 @@ local require           = require
 
 --local log               = require "hs.logger".new "snippets"
 
-local hs                = hs
+local hs                = _G.hs
 
 local dialog            = require "hs.dialog"
 local image             = require "hs.image"
@@ -332,7 +332,7 @@ function plugin.init(deps, env)
             --------------------------------------------------------------------------------
             -- Insert Action:
             --------------------------------------------------------------------------------
-            actionmanager.getActivator("snippetsAddAction"):onActivate(function(handler, action, text)
+            actionmanager.getActivator("snippetsAddAction"):onActivate(function(handler, action, _)
                 local result = [[local handler = cp.plugins("core.action.manager").getHandler("]] .. handler:id()  .. [[")]] .. "\n"
                 result = result .. "local action = " .. "\n"
                 result = result .. hs.inspect(action) .. "\n"

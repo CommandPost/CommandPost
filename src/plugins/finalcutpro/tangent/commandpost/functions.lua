@@ -4,6 +4,8 @@
 
 local require   = require
 
+local hs        = _G.hs
+
 local i18n      = require "cp.i18n"
 
 local fcp       = require "cp.apple.finalcutpro"
@@ -64,7 +66,7 @@ function plugin.init(deps)
     -- Open Debug Console:
     --------------------------------------------------------------------------------
      group:action(id, i18n("cpOpenDebugConsole_title"))
-        :onPress(function() hs.openConsole() end)
+        :onPress(hs.openConsole)
     id = id + 1
 
     --------------------------------------------------------------------------------

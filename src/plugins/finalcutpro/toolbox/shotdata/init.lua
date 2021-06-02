@@ -6,6 +6,8 @@ local require                   = require
 
 local log                       = require "hs.logger".new "shotdata"
 
+local hs                        = _G.hs
+
 local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"

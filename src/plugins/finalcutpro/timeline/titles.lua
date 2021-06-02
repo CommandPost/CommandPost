@@ -5,6 +5,7 @@
 local require   = require
 
 local log       = require "hs.logger".new "titles"
+local inspect   = require "hs.inspect"
 
 local base64    = require "hs.base64"
 local timer     = require "hs.timer"
@@ -226,14 +227,14 @@ function mod.apply(action)
     end
     if whichItem == nil then
         log.ef("Failed to get whichItem in plugins.finalcutpro.timeline.titles.apply.")
-        log.ef("action: %s", hs.inspect(action))
+        log.ef("action: %s", inspect(action))
         dialog.displayErrorMessage("Something went wrong when trying to select the requested Title.")
         return false
     end
     local grid = currentItemsUI[1]:attributeValue("AXParent")
     if not grid then
         log.ef("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
-        log.ef("action: %s", hs.inspect(action))
+        log.ef("action: %s", inspect(action))
         dialog.displayErrorMessage("Something went wrong when trying to select the requested Title.")
         return false
     end

@@ -4,7 +4,7 @@
 
 local require                   = require
 
-local hs                        = hs
+local hs                        = _G.hs
 
 local log                       = require "hs.logger".new "ldCT"
 
@@ -25,7 +25,6 @@ local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
-local just                      = require "cp.just"
 local prop                      = require "cp.prop"
 local tools                     = require "cp.tools"
 
@@ -184,10 +183,9 @@ function mod.new(deviceType)
             -- Destroy any devices:
             --------------------------------------------------------------------------------
             --log.df("Destorying any existing devices...")
-            local devices = o.getDevices()
-            for _, device in pairs(devices) do
+            local existingDevices = o.getDevices()
+            for _, device in pairs(existingDevices) do
                 device:disconnect()
-                device = nil
             end
 
             if not o.devices then
@@ -526,7 +524,6 @@ function mod.new(deviceType)
             if o.refreshTimer then
                 for _, v in pairs(o.refreshTimer) do
                     v:stop()
-                    v = nil
                 end
             end
 
@@ -536,7 +533,6 @@ function mod.new(deviceType)
             local devices = o.getDevices()
             for _, device in pairs(devices) do
                 device:disconnect()
-                device = nil
             end
 
             --------------------------------------------------------------------------------
@@ -594,7 +590,7 @@ function mod.new(deviceType)
     --------------------------------------------------------------------------------
     o.appWatcher = appWatcher.new(function(_, event)
         local devices = o.getDevices()
-        for deviceNumber, device in pairs(devices) do
+        for deviceNumber, _ in pairs(devices) do
             if o.hasLoaded[deviceNumber] and event == appWatcher.activated then
                 o:refresh(deviceNumber, true)
             end
@@ -793,12 +789,11 @@ function mod.new(deviceType)
             -- Add User Added Applications from Loupedeck Preferences:
             local items = o.items()
 
-            for _, device in pairs(items) do
-                for bundleID, v in pairs(items) do
-                    if not applications[bundleID] and v.displayName then
-                        applications[bundleID] = {}
-                        applications[bundleID].displayName = v.displayName
-                    end
+            for bundleID, v in pairs(items) do
+                if not applications[bundleID] and v.displayName then
+                    applications[bundleID] = {
+                        displayName = v.displayName
+                    }
                 end
             end
 
@@ -826,8 +821,6 @@ function mod.new(deviceType)
         :onExecute(function(action)
             local bundleID = action.bundleID
             o.lastBundleID(bundleID)
-
-            local deviceNumber = action.deviceNumber
 
             --------------------------------------------------------------------------------
             -- Refresh all devices:
@@ -1028,11 +1021,12 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
         --------------------------------------------------------------------------------
         -- Stop any stray repeat timers:
         --------------------------------------------------------------------------------
-        for _, v in pairs(self.repeatTimers) do
-            for _, vv in pairs(v) do
-                vv:stop()
-                vv = nil -- luacheck: ignore
+        for i, devTimers in ipairs(self.repeatTimers) do
+            for j, buttonTimer in ipairs(devTimers) do
+                buttonTimer:stop()
+                devTimers[j] = nil
             end
+            self.repeatTimers[i] = {}
         end
 
         local items = self.items()
@@ -1593,11 +1587,12 @@ function mod.mt:clearCache(deviceNumber)
     --------------------------------------------------------------------------------
     -- Stop any stray repeat timers:
     --------------------------------------------------------------------------------
-    for _, v in pairs(self.repeatTimers) do
-        for _, vv in pairs(v) do
-            v:stop()
-            v = nil -- luacheck: ignore
+    for i, devTimers in ipairs(self.repeatTimers) do
+        for j, buttonTimer in ipairs(devTimers) do
+            buttonTimer:stop()
+            devTimers[j] = nil
         end
+        self.repeatTimers[i] = {}
     end
 
     self.cacheWheelYAxis[deviceNumber] = 0

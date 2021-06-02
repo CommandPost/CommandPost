@@ -55,7 +55,7 @@ function mod.init()
 
     mod.menubar:setMenu(mod.generateMenuTable)
 
-    return manager
+    return mod
 end
 
 --- plugins.core.menu.manager.disable(priority) -> menubaritem

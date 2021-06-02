@@ -125,7 +125,7 @@ function mod.sendNotification(message, optionalTitle)
             return true
         else
             local xml = slaxdom:dom(tostring(httpBody))
-            local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or "  - " .. i18n("unknownError")
+            local errorMessage = xml['root']['el'][1]['kids'][1]['value'] or ("  - " .. i18n("unknownError"))
             return false, errorMessage
         end
     end

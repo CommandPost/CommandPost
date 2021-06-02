@@ -4,7 +4,7 @@
 
 local require       = require
 
-local hs            = hs
+local hs            = _G.hs
 
 local dialog        = require "hs.dialog"
 local host          = require "hs.host"

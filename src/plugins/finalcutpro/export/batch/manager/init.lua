@@ -6,6 +6,8 @@ local require       = require
 
 local log           = require "hs.logger".new "batchExportManager"
 
+local hs            = _G.hs
+
 local drawing       = require "hs.drawing"
 local fnutils       = require "hs.fnutils"
 local inspect       = require "hs.inspect"
