@@ -37,21 +37,40 @@ function plugin.init(deps)
     for _, speed in pairs(presets) do
         fcpxCmds
             :add("setSpeedRateTo" .. speed)
-            :whenActivated(function()
-                return Do(speedPopover:doShow())
-                    :Then(WaitUntil(speedPopover.isShowing):Is(true):TimeoutAfter(2000))
-                    :Then(function()
-                        speedPopover:rateValue(speed)
-                        speedPopover:hide()
-                    end)
-                    :Catch(function(message)
-                        displayErrorMessage(message)
-                        return false
-                    end)
-                    :Now()
-            end)
+            :whenActivated(
+                Do(speedPopover:doShow())
+                :Then(speedPopover.byRate:doPress())
+                :Then(function()
+                    speedPopover:rate(speed)
+                end)
+                :Then(speedPopover:doHide())
+                :Catch(function(message)
+                    displayErrorMessage(message)
+                    return false
+                end)
+            )
             :titled(i18n("setSpeedRateTo") .. " " .. tostring(speed) .. "%")
     end
+
+    --------------------------------------------------------------------------------
+    -- Set Speed to a Duration:
+    -- Note, only opens the popover and clicks "Duration", which then allows the
+    -- desired duration to be entered with the keyboard. Similar to the standard
+    -- `Modify > Change Duration...` menu item.
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("retimeToDuration")
+        :whenActivated(
+            Do(speedPopover:doShow():Debug())
+            :Then(speedPopover.byDuration:doPress():Debug())
+            -- :Then(function()
+            --     speedPopover.byDuration:press()
+            --     return true
+            -- end)
+            :Label("cmd:retimeToDuration")
+            :Debug()
+        )
+        :titled(i18n("retimeToDuration"))
 end
 
 return plugin
