@@ -109,7 +109,7 @@ end
 
 --- === cp.rx.Observer ===
 ---
---- Observers are simple objects that receive values from [Observables](cp.rx.Observables.md).
+--- Observers are simple objects that receive values from [Observables](cp.rx.Observable.md).
 local Observer = {}
 Observer.__index = Observer
 Observer.__tostring = util.constant('Observer')
@@ -507,7 +507,7 @@ function Observable:all(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -676,7 +676,7 @@ end
 function Observable:buffer(size)
   return Observable.create(function(observer)
     local buffer = {}
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       if active then
@@ -737,7 +737,7 @@ function Observable:catch(handler)
   handler = handler and (type(handler) == 'function' and handler or util.constant(handler))
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -879,7 +879,7 @@ function Observable:concat(other, ...)
   local others = {...}
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -935,7 +935,7 @@ end
 ---  * The new `Observable`.
 function Observable:contains(value)
   return Observable.create(function(observer)
-    local active, reference = true
+    local active, reference = true, nil
 
     local function done()
       active = false
@@ -999,7 +999,7 @@ function Observable:count(predicate)
   predicate = predicate or util.constant(true)
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local count = 0
 
     local function done()
@@ -1098,7 +1098,7 @@ function Observable:defaultIfEmpty(...)
   local defaults = util.pack(...)
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local hasValue = false
 
     local function done()
@@ -1304,7 +1304,7 @@ function Observable:filter(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1359,7 +1359,7 @@ end
 ---  * The new `Observable`.
 function Observable:switchIfEmpty(alternate)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local hasNext = false
 
     local function done()
@@ -1414,7 +1414,7 @@ end
 ---  * The new `Observable`.
 function Observable:finalize(handler)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1470,7 +1470,7 @@ function Observable:find(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1545,7 +1545,7 @@ end
 ---  * This is similar to [#first], but will not throw an error if no `onNext` signal is sent before `onCompleted`.
 function Observable:next()
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1611,7 +1611,7 @@ end
 function Observable:flatMapLatest(callback)
   callback = callback or util.identity
   return Observable.create(function(observer)
-    local active, outerRef, innerRef = true
+    local active, outerRef, innerRef = true, nil, nil
 
     local function cancelOuter()
       if outerRef then
@@ -2040,7 +2040,7 @@ function Observable:reject(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -2222,7 +2222,7 @@ function Observable:sample(sampler)
   if not Observable.is(sampler) then error('Expected an Observable') end
 
   return Observable.create(function(observer)
-    local active, sourceRef, sampleRef = true
+    local active, sourceRef, sampleRef = true, nil, nil
     local latest = {}
 
     local function cancelSource()
@@ -2290,7 +2290,7 @@ end
 ---  * The new `Observable`.
 function Observable:scan(accumulator, seed)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local result = seed
     local first = true
 
@@ -2472,7 +2472,7 @@ end
 ---  * The new `Observable`.
 function Observable:skipUntil(other)
   return Observable.create(function(observer)
-    local active, ref, otherRef = true
+    local active, ref, otherRef = true, nil, nil
     local triggered = false
 
     local function cancelOther()
@@ -2628,7 +2628,7 @@ end
 ---  * The new `Observable`.
 function Observable:switch()
   return Observable.create(function(observer)
-    local active, ref, sourceRef = true
+    local active, ref, sourceRef = true, nil, nil
 
     local function cancelSource()
       if sourceRef then
@@ -2758,7 +2758,7 @@ end
 ---  * The new `Observable`.
 function Observable:takeLast(count)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local buff = buffer.new()
 
     local function done()
@@ -2813,7 +2813,7 @@ end
 ---  * The new `Observable`.
 function Observable:takeUntil(other)
   return Observable.create(function(observer)
-    local active, ref, otherRef = true
+    local active, ref, otherRef = true, nil, nil
     local function done()
       active = false
       if ref then
@@ -2865,7 +2865,7 @@ function Observable:takeWhile(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local taking = true
 
     local function done()
@@ -2932,7 +2932,7 @@ function Observable:tap(_onNext, _onError, _onCompleted)
   _onCompleted = _onCompleted or util.noop
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -3001,7 +3001,7 @@ function Observable:timeout(timeInMs, next, scheduler)
   scheduler = scheduler or util.defaultScheduler()
 
   return Observable.create(function(observer)
-    local active, ref, actionRef = true
+    local active, ref, actionRef = true, nil, nil
 
     local function cancelRef()
       if ref then
@@ -3139,7 +3139,7 @@ function Observable:with(...)
   local sources = {...}
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local latest = List.sized(#sources)
     local sourceRefs = List.sized(#sources)
 

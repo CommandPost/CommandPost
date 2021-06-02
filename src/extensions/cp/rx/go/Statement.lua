@@ -65,6 +65,7 @@
 local inspect       = require "hs.inspect"
 
 local rx            = require "cp.rx"
+local clock         = require "hs.timer" .secondsSinceEpoch
 
 local Observable    = rx.Observable
 local Observer      = rx.Observer
@@ -264,7 +265,22 @@ end
 ---  * The `Statement.Definition`
 function Statement.Definition.mt:onObservable(observableFn)
     assert(type(observableFn) == "function", "Parameter #1 must be a function")
-    self._onObservable = observableFn
+    self._onObservable = function(context, ...)
+        local o = observableFn(context, ...)
+
+        if o and context._debug then
+            -- hijack the subscribe function to log debug.
+            local sub = o._subscribe
+            o._subscribe = function(...)
+                if context._debug then
+                    context._debugNow = clock()
+                    print("[NOW: " .. context._debug .. "]")
+                end
+                return sub(...)
+            end
+        end
+        return o
+    end
     return self
 end
 
@@ -578,13 +594,16 @@ function Statement.mt:toObservable(preserveTimer)
         local label = context._debug
         o = o:tap(
             function(...)
-                print("[NEXT: " .. label .."]: ", ...)
+                local diff = clock() - (context._debugNow or 0)
+                print(format("[NXT: %s; %f sec]: ", label, diff), ...)
             end,
             function(message)
-                print("[ERROR: " .. label .. "]: ", message)
+                local diff = clock() - (context._debugNow or 0)
+                print(format("[ERR: %s; %f sec]: ", label, diff),  message)
             end,
             function()
-                print("[COMPLETED: " .. label .. "]")
+                local diff = clock() - (context._debugNow or 0)
+                print(format("[CMP: %s; %f sec]", label, diff))
             end
         )
     end
