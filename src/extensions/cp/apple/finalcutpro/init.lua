@@ -1091,7 +1091,7 @@ end
 
 -- cp.apple.finalcutpro._listWindows() -> none
 -- Method
--- List Windows to Error Log.
+-- List Windows to Debug Log.
 --
 -- Parameters:
 --  * None
@@ -1101,14 +1101,20 @@ end
 function fcp:_listWindows()
     log.d("Listing FCPX windows:")
     self:show()
+    local ui = self:UI()
     local windows = self:windowsUI()
-    for i,w in ipairs(windows) do
-        log.df(format("%7d", i)..": "..self:_describeWindow(w))
+    if ui and windows then
+        for i,w in ipairs(windows) do
+            log.df("%7d: %s", i, self._describeWindow(w))
+        end
+
+        log.df("")
+        log.df("   Main: %s", self._describeWindow(ui.AXMainWindow))
+        log.df("Focused: %s", self._describeWindow(ui.AXFocusedWindow))
+    else
+        log.df("<none>")
     end
 
-    log.df("")
-    log.df("   Main: "..self:_describeWindow(self:UI():mainWindow()))
-    log.df("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
 end
 
 -- cp.apple.finalcutpro._describeWindow(w) -> string
@@ -1121,10 +1127,14 @@ end
 -- Returns:
 --  * A string
 function fcp._describeWindow(w)
-    return "title: "..inspect(w:attributeValue("AXTitle"))..
-           "; role: "..inspect(w:attributeValue("AXRole"))..
-           "; subrole: "..inspect(w:attributeValue("AXSubrole"))..
-           "; modal: "..inspect(w:attributeValue("AXModal"))
+    if w then
+        return format(
+            "title: %s; role: %s; subrole: %s; modal: %s",
+            inspect(w.AXTitle), inspect(w.AXRole), inspect(w.AXSubrole), inspect(w.AXModal)
+        )
+    else
+        return "<nil>"
+    end
 end
 
 local result = fcp()
