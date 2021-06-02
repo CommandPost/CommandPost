@@ -10,6 +10,8 @@ local require       = require
 
 --local log           = require "hs.logger".new "dockicon"
 
+local hs            = _G.hs
+
 local timer         = require "hs.timer"
 local window        = require "hs.window"
 

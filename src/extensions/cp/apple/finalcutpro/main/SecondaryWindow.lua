@@ -50,10 +50,6 @@ function SecondaryWindow:initialize(app)
     self._app = app
 end
 
-function SecondaryWindow:app()
-    return self._app
-end
-
 function SecondaryWindow.lazy.value:window()
     return Window(self:app().app, self.UI)
 end

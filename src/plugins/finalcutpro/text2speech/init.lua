@@ -5,13 +5,13 @@
 local require = require
 
 local log                               = require "hs.logger".new "text2speech"
+local inspect                           = require "hs.inspect"
 
 local application                       = require "hs.application"
 local chooser                           = require "hs.chooser"
 local drawing                           = require "hs.drawing"
 local eventtap                          = require "hs.eventtap"
 local fs                                = require "hs.fs"
-local http                              = require "hs.http"
 local menubar                           = require "hs.menubar"
 local mouse                             = require "hs.mouse"
 local pasteboard                        = require "hs.pasteboard"
@@ -368,7 +368,7 @@ function mod._completeProcess()
     end
     if next(tags) then
         if not fs.tagsAdd(savePath, tags) then
-            log.ef("Failed to add Finder Tags to: %s\n%s", savePath, hs.inspect(tags))
+            log.ef("Failed to add Finder Tags to: %s\n%s", savePath, inspect(tags))
             displayErrorMessage("The generated Text to Speech file could not be found.")
             return
         end
@@ -603,7 +603,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Get number of Selected Browser Clips:
         --------------------------------------------------------------------------------
-        clips = libraries:selectedClipsUI()
+        local clips = libraries:selectedClipsUI()
         if #clips ~= 1 then
             --------------------------------------------------------------------------------
             -- Maybe Reveal in Browser failed, so let's try again.
@@ -879,7 +879,7 @@ function mod._rightClickCallback()
     voicesMenu[1] = {
         title = "Default " .. "(" .. speech.defaultVoice() .. ")",
         fn = function()
-            mod.voice(hs.speech.defaultVoice())
+            mod.voice(speech.defaultVoice())
         end,
         checked = (speech.defaultVoice() == mod.voice()),
     }

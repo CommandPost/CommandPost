@@ -46,9 +46,10 @@ if basePath then
     end
 end
 
-local virtualMT    = hs.getObjectMetatable(USERDATA_TAG .. ".virtual")
-local itemMT       = hs.getObjectMetatable(USERDATA_TAG .. ".item")
-local barMT        = hs.getObjectMetatable(USERDATA_TAG .. ".bar")
+local hs            = _G.hs
+local virtualMT     = hs.getObjectMetatable(USERDATA_TAG .. ".virtual")
+local itemMT        = hs.getObjectMetatable(USERDATA_TAG .. ".item")
+local barMT         = hs.getObjectMetatable(USERDATA_TAG .. ".bar")
 
 local mouse        = require("hs.mouse")
 local screen       = require("hs.screen")
@@ -126,6 +127,7 @@ virtualMT.centered = function(self, top)
     return self:topLeft(origin)
 end
 
+local ls = _G.ls
 module.item.visibilityPriorities = ls.makeConstantsTable(module.item.visibilityPriorities)
 module.bar.builtInIdentifiers    = ls.makeConstantsTable(module.bar.builtInIdentifiers)
 
@@ -173,7 +175,7 @@ itemMT.groupItems = function(self, ...)
         local args = table.pack(...)
         if args.n == 0 then
             local itemsArray = {}
-            for i,v in ipairs(self:groupTouchbar():itemIdentifiers()) do
+            for _,v in ipairs(self:groupTouchbar():itemIdentifiers()) do
                 table.insert(itemsArray, self:groupTouchbar():itemForIdentifier(v))
             end
             return itemsArray

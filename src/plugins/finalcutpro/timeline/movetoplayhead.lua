@@ -48,7 +48,7 @@ function plugin.init(deps)
                 :Now()
         end)
 
-    return mod
+    return plugin
 end
 
 return plugin

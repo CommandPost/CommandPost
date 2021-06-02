@@ -6,6 +6,8 @@ local require = require
 
 local log           = require "hs.logger".new "fcpBug"
 
+local hs            = _G.hs
+
 local inspect       = require "hs.inspect"
 local screen        = require "hs.screen"
 local webview       = require "hs.webview"

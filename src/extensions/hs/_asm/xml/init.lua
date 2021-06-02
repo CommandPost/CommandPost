@@ -9,6 +9,7 @@
 local USERDATA_TAG = "hs._asm.xml"
 
 local module   = require(USERDATA_TAG .. ".internal")
+local hs       = _G.hs
 local internal = hs.getObjectMetatable(USERDATA_TAG)
 
 local basePath = package.searchpath(USERDATA_TAG, package.path)

@@ -6,6 +6,8 @@ local require           = require
 
 local log               = require "hs.logger".new "overlays"
 
+local hs                = _G.hs
+
 local canvas            = require "hs.canvas"
 local dialog            = require "hs.dialog"
 local eventtap          = require "hs.eventtap"

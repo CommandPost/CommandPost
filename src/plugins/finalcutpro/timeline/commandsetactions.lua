@@ -5,6 +5,7 @@
 local require               = require
 
 local log                   = require "hs.logger".new "commandsetactions"
+local inspect               = require "hs.inspect"
 
 local image                 = require "hs.image"
 local timer                 = require "hs.timer"
@@ -63,7 +64,7 @@ function plugin.init(deps)
                 :doShortcut(action)
                 :Catch(function(message)
                     displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
-                    log.ef("Failed to trigger shortcut with action: %s; %s", hs.inspect(action), message)
+                    log.ef("Failed to trigger shortcut with action: %s; %s", inspect(action), message)
                 end)
                 :Now()
         end
