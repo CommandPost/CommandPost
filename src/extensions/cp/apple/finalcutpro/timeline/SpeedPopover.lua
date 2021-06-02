@@ -26,14 +26,17 @@ local childWithRole         = axutils.childWithRole
 
 local If, WaitUntil         = go.If, go.WaitUntil
 
+-- local RadioGroup for 'Set Speed'
 local SetSpeed = RadioGroup:subclass("cp.apple.finalcutpro.timeline.SpeedPopover.SetSpeed")
 
+-- The 'Rate' radio button
 function SetSpeed.lazy.value:byRate()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromTop(original(), 1, RadioButton.matches)
     end))
 end
 
+-- The 'Duration' radio button
 function SetSpeed.lazy.value:byDuration()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromTop(original(), 2, RadioButton.matches)
@@ -143,9 +146,6 @@ end
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Rate" radio button.
 function SpeedPopover.lazy.value:byRate()
     return self.setSpeed.byRate
-    -- return RadioButton(self, self.setSpeed.UI:mutate(function(original)
-    --     return childFromTop(original(), 1, RadioButton.matches)
-    -- end))
 end
 
 --- cp.apple.finalcutpro.timeline.SpeedPopover:byDuration <cp.ui.RadioButton>
@@ -153,9 +153,6 @@ end
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Duration" radio button.
 function SpeedPopover.lazy.value:byDuration()
     return self.setSpeed.byDuration
-    -- return RadioButton(self, self.setSpeed.UI:mutate(function(original)
-    --     return childFromTop(original(), 2, RadioButton.matches)
-    -- end))
 end
 
 --- cp.apple.finalcutpro.timeline.SpeedPopover:ripple <cp.ui.RadioGroup>
