@@ -60,7 +60,7 @@
 --- > may get resolved before the user intends.
 
 
--- local log           = require("hs.logger").new("Statement")
+local log           = require("hs.logger").new("Statement")
 
 local inspect       = require "hs.inspect"
 
@@ -644,7 +644,11 @@ function Statement.mt:Now(onNext, onError, onCompleted)
         if Observer.is(onNext) then
             observer = onNext
         elseif type(onNext) == "function" or type(onError) == "function" or type(onCompleted) == "function" then
-            observer = Observer.create(onNext, onError or error, onCompleted)
+            onError = onError or function(message)
+                local label = self:context()._debug or 'unlabeled'
+                log.ef("%s [%s]: %s", self:fullName(), label, message)
+            end
+            observer = Observer.create(onNext, onError, onCompleted)
         else
             observer = defaultObserverFactory()
         end
