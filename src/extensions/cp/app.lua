@@ -767,7 +767,7 @@ end
 --- A [prop](cp.prop.md) that determines if window animations (eg. popups, etc.) are enabled for the
 --- application. Generally defaults to `true`.
 function app.lazy.prop:isWindowAnimationEnabled()
-    return prefs.prop(self.preferences, "NSAutomaticWindowAnimationsEnabled", true)
+    return self.preferences:prop("NSAutomaticWindowAnimationsEnabled", true)
 end
 
 --- cp.app.menu <cp.app.menu>
