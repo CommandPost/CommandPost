@@ -4,10 +4,10 @@
 
 local require = require
 
-local log                           = require("hs.logger").new("valueIndicator")
+local log                           = require "hs.logger" .new "valueIndicator"
 
-local Element                       = require("cp.ui.Element")
-local prop                          = require("cp.prop")
+local Element                       = require "cp.ui.Element"
+local prop                          = require "cp.prop"
 
 local ValueIndicator = Element:subclass("cp.apple.finalcutpro.inspector.color.ValueIndicator")
 

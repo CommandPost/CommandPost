@@ -4,22 +4,22 @@
 
 local require = require
 
--- local log                                    = require("hs.logger").new("colorPuck")
--- local inspect                                = require("hs.inspect")
+-- local log                                    = require "hs.logger" .new "colorPuck"
+-- local inspect                                = require "hs.inspect"
 
-local drawing                               = require("hs.drawing")
-local geometry                              = require("hs.geometry")
-local mouse                                 = require("hs.mouse")
-local timer                                 = require("hs.timer")
+local drawing                               = require "hs.drawing"
+local geometry                              = require "hs.geometry"
+local mouse                                 = require "hs.mouse"
+local timer                                 = require "hs.timer"
 
-local axutils                               = require("cp.ui.axutils")
-local Element                               = require("cp.ui.Element")
-local prop                                  = require("cp.prop")
-local PropertyRow                           = require("cp.ui.PropertyRow")
-local TextField                             = require("cp.ui.TextField")
-local tools                                 = require("cp.tools")
+local axutils                               = require "cp.ui.axutils"
+local Element                               = require "cp.ui.Element"
+local prop                                  = require "cp.prop"
+local PropertyRow                           = require "cp.ui.PropertyRow"
+local TextField                             = require "cp.ui.TextField"
+local tools                                 = require "cp.tools"
 
-local go                                    = require("cp.rx.go")
+local go                                    = require "cp.rx.go"
 local Do, Throw                             = go.Do, go.Throw
 
 local toRegionalNumber                      = tools.toRegionalNumber

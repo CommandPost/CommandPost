@@ -6,9 +6,9 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("titleInspect")
+-- local log								= require "hs.logger" .new "titleInspect"
 
-local BaseMotionPanel                   = require("cp.apple.finalcutpro.inspector.BaseMotionPanel")
+local BaseMotionPanel                   = require "cp.apple.finalcutpro.inspector.BaseMotionPanel"
 
 
 local TitleInspector = BaseMotionPanel:subclass("cp.apple.finalcutpro.inspector.title.TitleInspector")

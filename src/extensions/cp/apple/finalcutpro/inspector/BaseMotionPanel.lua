@@ -7,20 +7,19 @@
 
 local require = require
 
---local log								= require("hs.logger").new("bseMtnPnl")
+--local log								= require "hs.logger").new("bseMtnPnl"
 
-local axutils							= require("cp.ui.axutils")
+local axutils							= require "cp.ui.axutils"
 
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+local BasePanel                         = require "cp.apple.finalcutpro.inspector.BasePanel"
+local IP                                = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 
-local strings                           = require("cp.apple.finalcutpro.strings")
+local strings                           = require "cp.apple.finalcutpro.strings"
 local hasProperties                     = IP.hasProperties
 local section                           = IP.section
 
 local withRole, childWithRole, withValue    = axutils.withRole, axutils.childWithRole, axutils.withValue
 local cache                             = axutils.cache
-
 
 local BaseMotionPanel = BasePanel:subclass("cp.apple.finalcutpro.inspector.BaseMotionPanel")
 

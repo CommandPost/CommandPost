@@ -14,22 +14,22 @@
 
 local require = require
 
--- local log                               = require("hs.logger").new("colorCurves")
+-- local log                               = require "hs.logger" .new "colorCurves"
 
-local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
+local prop                              = require "cp.prop"
+local tools                             = require "cp.tools"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local MenuButton                        = require("cp.ui.MenuButton")
-local PropertyRow						= require("cp.ui.PropertyRow")
-local RadioGroup						= require("cp.ui.RadioGroup")
-local Slider							= require("cp.ui.Slider")
-local TextField                         = require("cp.ui.TextField")
+local axutils                           = require "cp.ui.axutils"
+local Element                           = require "cp.ui.Element"
+local MenuButton                        = require "cp.ui.MenuButton"
+local PropertyRow						= require "cp.ui.PropertyRow"
+local RadioGroup						= require "cp.ui.RadioGroup"
+local Slider							= require "cp.ui.Slider"
+local TextField                         = require "cp.ui.TextField"
 
-local If                                = require("cp.rx.go.If")
+local If                                = require "cp.rx.go.If"
 
-local HueSaturationCurve                = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurve")
+local HueSaturationCurve                = require "cp.apple.finalcutpro.inspector.color.HueSaturationCurve"
 
 local cache, childMatching              = axutils.cache, axutils.childMatching
 

@@ -4,10 +4,10 @@
 ---
 --- Extends [Element](cp.ui.Element.md).
 
-local axutils                       = require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
+local axutils                       = require "cp.ui.axutils"
+local Element                       = require "cp.ui.Element"
 
-local If                            = require("cp.rx.go.If")
+local If                            = require "cp.rx.go.If"
 
 local cache                         = axutils.cache
 

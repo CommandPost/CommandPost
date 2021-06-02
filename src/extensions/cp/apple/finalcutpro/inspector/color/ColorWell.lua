@@ -4,13 +4,13 @@
 
 local require = require
 
-local log                               = require("hs.logger").new("colorWell")
+local log                               = require "hs.logger" .new "colorWell"
 
-local color                             = require("hs.drawing.color")
-local inspect                           = require("hs.inspect")
+local color                             = require "hs.drawing.color"
+local inspect                           = require "hs.inspect"
 
-local Element                           = require("cp.ui.Element")
-local Do                                = require("cp.rx.go.Do")
+local Element                           = require "cp.ui.Element"
+local Do                                = require "cp.rx.go.Do"
 
 local ColorWell = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorWell")
 

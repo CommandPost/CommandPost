@@ -43,14 +43,14 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("shareInspect")
+-- local log								= require "hs.logger" .new "shareInspect"
 
-local axutils							= require("cp.ui.axutils")
-local StaticText                        = require("cp.ui.StaticText")
+local axutils							= require "cp.ui.axutils"
+local StaticText                        = require "cp.ui.StaticText"
 
-local strings                           = require("cp.apple.finalcutpro.strings")
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+local strings                           = require "cp.apple.finalcutpro.strings"
+local BasePanel                         = require "cp.apple.finalcutpro.inspector.BasePanel"
+local IP                                = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 
 local childFromBottom, childFromTop     = axutils.childFromBottom, axutils.childFromTop
 local hasAttributeValue                 = axutils.hasAttributeValue

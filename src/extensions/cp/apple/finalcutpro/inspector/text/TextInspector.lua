@@ -43,25 +43,25 @@
 
 local require = require
 
---local log                             = require("hs.logger").new("textInspect")
+--local log                             = require "hs.logger" .new "textInspect"
 
-local axutils                           = require("cp.ui.axutils")
-local If                                = require("cp.rx.go.If")
-local tools                             = require("cp.tools")
+local axutils                           = require "cp.ui.axutils"
+local If                                = require "cp.rx.go.If"
+local tools                             = require "cp.tools"
 
-local Button                            = require("cp.ui.Button")
-local CheckBox                          = require("cp.ui.CheckBox")
-local Group                             = require("cp.ui.Group")
-local PopUpButton                       = require("cp.ui.PopUpButton")
-local RadioButton                       = require("cp.ui.RadioButton")
-local RadioGroup                        = require("cp.ui.RadioGroup")
-local ScrollArea                        = require("cp.ui.ScrollArea")
-local StaticText                        = require("cp.ui.StaticText")
-local TextArea                          = require("cp.ui.TextArea")
-local TextField                         = require("cp.ui.TextField")
+local Button                            = require "cp.ui.Button"
+local CheckBox                          = require "cp.ui.CheckBox"
+local Group                             = require "cp.ui.Group"
+local PopUpButton                       = require "cp.ui.PopUpButton"
+local RadioButton                       = require "cp.ui.RadioButton"
+local RadioGroup                        = require "cp.ui.RadioGroup"
+local ScrollArea                        = require "cp.ui.ScrollArea"
+local StaticText                        = require "cp.ui.StaticText"
+local TextArea                          = require "cp.ui.TextArea"
+local TextField                         = require "cp.ui.TextField"
 
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+local BasePanel                         = require "cp.apple.finalcutpro.inspector.BasePanel"
+local IP                                = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 
 local childFromBottom                   = axutils.childFromBottom
 local childFromLeft                     = axutils.childFromLeft

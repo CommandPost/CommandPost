@@ -4,9 +4,9 @@
 
 local require = require
 
---local log                               = require("hs.logger").new("generatorInspector")
+--local log                               = require "hs.logger" .new "generatorInspector"
 
-local BaseMotionPanel                       = require("cp.apple.finalcutpro.inspector.BaseMotionPanel")
+local BaseMotionPanel                       = require "cp.apple.finalcutpro.inspector.BaseMotionPanel"
 
 
 local GeneratorInspector = BaseMotionPanel:subclass("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")

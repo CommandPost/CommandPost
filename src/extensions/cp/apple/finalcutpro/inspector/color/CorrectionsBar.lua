@@ -6,18 +6,18 @@
 
 local require = require
 
-local log                               = require("hs.logger").new("colorInspect")
+local log                               = require "hs.logger" .new "colorInspect"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local CheckBox                          = require("cp.ui.CheckBox")
-local just                              = require("cp.just")
-local MenuButton                        = require("cp.ui.MenuButton")
+local axutils                           = require "cp.ui.axutils"
+local Element                           = require "cp.ui.Element"
+local CheckBox                          = require "cp.ui.CheckBox"
+local just                              = require "cp.just"
+local MenuButton                        = require "cp.ui.MenuButton"
 
-local Do                                = require("cp.rx.go.Do")
-local If                                = require("cp.rx.go.If")
-local Throw                             = require("cp.rx.go.Throw")
-local Require                           = require("cp.rx.go.Require")
+local Do                                = require "cp.rx.go.Do"
+local If                                = require "cp.rx.go.If"
+local Throw                             = require "cp.rx.go.Throw"
+local Require                           = require "cp.rx.go.Require"
 
 local sort = table.sort
 

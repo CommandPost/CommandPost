@@ -4,13 +4,13 @@
 
 local require = require
 
---local log								= require("hs.logger").new("transInspect")
+--local log								= require "hs.logger" .new "transInspect"
 
-local axutils                           = require("cp.ui.axutils")
+local axutils                           = require "cp.ui.axutils"
 
-local strings                           = require("cp.apple.finalcutpro.strings")
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+local strings                           = require "cp.apple.finalcutpro.strings"
+local BasePanel                         = require "cp.apple.finalcutpro.inspector.BasePanel"
+local IP                                = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 
 local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
 local childMatching, withValue          = axutils.childMatching, axutils.withValue

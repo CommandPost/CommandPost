@@ -2,17 +2,17 @@
 ---
 --- A HueSaturationCurve [Element](cp.ui.Element.md).
 
-local axutils                               = require("cp.ui.axutils")
-local Element                               = require("cp.ui.Element")
-local Button                                = require("cp.ui.Button")
+local axutils                               = require "cp.ui.axutils"
+local Element                               = require "cp.ui.Element"
+local Button                                = require "cp.ui.Button"
 
-local If                                    = require("cp.rx.go.If")
+local If                                    = require "cp.rx.go.If"
 
 local childWithRole                         = axutils.childWithRole
 local childMatching, childrenMatching       = axutils.childMatching, axutils.childrenMatching
 local cache, childFromRight                 = axutils.cache, axutils.childFromRight
 
-local ColorWell                             = require("cp.apple.finalcutpro.inspector.color.ColorWell")
+local ColorWell                             = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 
 local HueSaturationCurve = Element:subclass("cp.apple.finalcutpro.inspector.color.HueSaturationCurve")
 
