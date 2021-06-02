@@ -4,14 +4,16 @@
 
 local require = require
 
-local log                               = require("hs.logger").new("audioConfiguration")
+local log                               = require "hs.logger" .new "audioConfiguration"
 
-local axutils                           = require("cp.ui.axutils")
-local just                              = require("cp.just")
+local axutils                           = require "cp.ui.axutils"
+local just                              = require "cp.just"
 
-local ScrollArea                        = require("cp.ui.ScrollArea")
+local ScrollArea                        = require "cp.ui.ScrollArea"
 
-local AudioComponent                    = require("cp.apple.finalcutpro.inspector.audio.AudioComponent")
+local AudioComponent                    = require "cp.apple.finalcutpro.inspector.audio.AudioComponent"
+
+local Do                                = require "cp.rx.go.Do"
 
 local AudioConfiguration = ScrollArea:subclass("cp.apple.finalcutpro.inspector.audio.AudioConfiguration")
 
@@ -115,7 +117,7 @@ end
 --- Returns:
 ---  * The `Statement`, which will resolve to `true` if successful, or send an `error` if not.
 function AudioConfiguration.lazy.method:doShow()
-    return self:parent():doShow()
+    return Do(self:parent():doShow())
 end
 
 return AudioConfiguration

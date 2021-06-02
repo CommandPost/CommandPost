@@ -6,14 +6,16 @@ local require = require
 
 --local log                               = require("hs.logger").new("AudioComponent")
 
-local axutils                           = require("cp.ui.axutils")
-local just                              = require("cp.just")
+local axutils                           = require "cp.ui.axutils"
+local just                              = require "cp.just"
 
-local Button                            = require("cp.ui.Button")
-local Element                           = require("cp.ui.Element")
-local Image                             = require("cp.ui.Image")
-local MenuButton                        = require("cp.ui.MenuButton")
-local ScrollArea                        = require("cp.ui.ScrollArea")
+local Button                            = require "cp.ui.Button"
+local Element                           = require "cp.ui.Element"
+local Image                             = require "cp.ui.Image"
+local MenuButton                        = require "cp.ui.MenuButton"
+local ScrollArea                        = require "cp.ui.ScrollArea"
+
+local Do                                = require "cp.rx.go.Do"
 
 local cache                             = axutils.cache
 local childFromLeft                     = axutils.childFromLeft
@@ -304,7 +306,7 @@ end
 --- Returns:
 ---  * The `Statement`, which will resolve to `true` if successful, or send an `error` if not.
 function AudioComponent.lazy.method:doShow()
-    return self:parent():doShow()
+    return Do(self:parent():doShow())
 end
 
 return AudioComponent
