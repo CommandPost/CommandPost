@@ -63,7 +63,6 @@ function Popover.lazy.method:doHide()
     return If(self.isShowing)
     :Then(self:doPerformAction("AXCancel"))
     :Otherwise(false)
-    :Label("Popover:doHide")
 end
 
 return Popover

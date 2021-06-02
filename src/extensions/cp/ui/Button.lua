@@ -83,7 +83,6 @@ function Button.lazy.method:doPress()
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("Button:doPress")
 end
 
 function Button:showMenu()
@@ -100,7 +99,6 @@ function Button.lazy.method:doShowMenu()
     end)
     :Then(WaitUntil(self.menu.isShowing))
     :Otherwise(false)
-    :Label("Button:doShowMenu")
 end
 
 function Button:cancelMenu()

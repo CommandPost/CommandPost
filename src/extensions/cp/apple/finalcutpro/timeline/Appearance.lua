@@ -65,7 +65,6 @@ function Appearance.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:parent():doCheck())
     :Then(WaitUntil(self.isShowing))
-    :Label("Appearance:doShow")
 end
 
 --- cp.apple.finalcutpro.timeline.Appearance:UI() -> Appearance
@@ -92,7 +91,6 @@ function Appearance.lazy.method:doHide()
         ui:performAction("AXCancel")
     end)
     :Then(WaitUntil(self.isShowing):Is(false))
-    :Label("Appearance:doHide")
 end
 
 -----------------------------------------------------------------------

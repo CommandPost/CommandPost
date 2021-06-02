@@ -30,7 +30,6 @@ function Sidebar.lazy.value:doShow()
     return If(self.isShowing):Is(false)
     :Then(self.document.doShow)
     :Then(self:app().menu:doSelectMenu({"View", "Toggle Sidebar"}))
-    :Label("Sidebar.show")
 end
 
 --- cp.highland2.Sidebar.doHide <cp.rx.go.Statement>
@@ -40,7 +39,6 @@ function Sidebar.lazy.value:doHide()
     return If(self.isShowing)
     :Then(self.document.doShow)
     :Then(self:app().menu:doSelectMenu({"View", "Toggle Sidebar"}))
-    :Label("Sidebar.hide")
 end
 
 return Sidebar

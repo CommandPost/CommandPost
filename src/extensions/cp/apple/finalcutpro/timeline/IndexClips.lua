@@ -182,7 +182,6 @@ function IndexClips.lazy.method:doShowAll()
     return If(self:doShow())
     :Then(self.all:doPress())
     :Otherwise(false)
-    :Label("IndexClips:doShowAll")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowVideo() -> cp.rx.go.Statement
@@ -198,7 +197,6 @@ function IndexClips.lazy.method:doShowVideo()
     return If(self:doShow())
     :Then(self.video:doPress())
     :Otherwise(false)
-    :Label("IndexClips:doShowVideo")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowAudio() -> cp.rx.go.Statement
@@ -214,7 +212,6 @@ function IndexClips.lazy.method:doShowAudio()
     return If(self:doShow())
     :Then(self.audio:doPress())
     :Otherwise(false)
-    :Label("IndexClips:doShowAudio")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowTitles() -> cp.rx.go.Statement
@@ -230,7 +227,6 @@ function IndexClips.lazy.method:doShowTitles()
     return If(self:doShow())
     :Then(self.titles:doPress())
     :Otherwise(false)
-    :Label("IndexClips:doShowTitles")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindClipsContaining(text) -> cp.rx.go.Statement
@@ -253,7 +249,7 @@ function IndexClips:doFindClipsContaining(text)
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("IndexClips:doFindClipsContaining('"..text.."')")
+    :Label("cp.apple.finalcutpro.timeline.IndexClips:doFindClipsContaining('"..text.."')")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindMissingMedia() -> cp.rx.go.Statement
@@ -267,7 +263,6 @@ end
 ---  * A Statement
 function IndexClips.lazy.method:doFindMissingMedia()
     return self:doFindClipsContaining(strings:find("FFTimelineIndexMissingMediaSearch"))
-    :Label("IndexClips:doFindMissingMedia")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindAuditions() -> cp.rx.go.Statement
@@ -281,7 +276,6 @@ end
 ---  * A Statement
 function IndexClips.lazy.method:doFindAuditions()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeAudition"))
-    :Label("IndexClips:doFindAuditions")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindMulticams() -> cp.rx.go.Statement
@@ -295,7 +289,6 @@ end
 ---  * A Statement
 function IndexClips.lazy.method:doFindMulticams()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeMultiCam"))
-    :Label("IndexClips:doFindMulticams")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindCompoundClips() -> cp.rx.go.Statement
@@ -309,7 +302,6 @@ end
 ---  * A Statement
 function IndexClips.lazy.method:doFindCompoundClips()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeCompound"))
-    :Label("IndexClips:doFindCompoundClips")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doFindSynchronized() -> cp.rx.go.Statement
@@ -323,7 +315,6 @@ end
 ---  * A Statement
 function IndexClips.lazy.method:doFindSynchronized()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeSynchronized"))
-    :Label("IndexClips:doFindSynchronized")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:saveLayout() -> table
@@ -362,7 +353,7 @@ function IndexClips:doLayout(layout)
     :Then(self.video:doLayout(layout.video))
     :Then(self.audio:doLayout(layout.audio))
     :Then(self.titles:doLayout(layout.titles))
-    :Label("IndexClips:doLayout")
+    :Label("cp.apple.finalcutpro.timeline.IndexClips:doLayout(layout)")
 end
 
 return IndexClips

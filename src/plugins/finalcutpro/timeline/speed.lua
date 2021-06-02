@@ -62,7 +62,7 @@ function plugin.init(deps)
         :whenActivated(
             Do(speedPopover:doShow())
             :Then(speedPopover.byDuration:doPress())
-            :Label("cmd:retimeToDuration")
+            :Label("plugins.finalcutpro.timeline:retimeToDuration")
         )
         :titled(i18n("retimeToDuration"))
 end

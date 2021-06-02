@@ -110,7 +110,6 @@ function ColorBoardAspect.lazy.method:doShow()
         :TimeoutAfter(3000, Throw("Unable to show the %q aspect of the Color Board", self:id()))
     )
     :Otherwise(true)
-    :Label("ColorBoardAspect:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:index() -> number
@@ -184,8 +183,7 @@ function ColorBoardAspect.lazy.method:doReset()
     :Then(self.master:doReset())
     :Then(self.shadows:doReset())
     :Then(self.midtones:doReset())
-    :Then(self:highlight():doReset())
-    :Labeled("ColorBoardAspect:doReset")
+    :Then(self.highlights:doReset())
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.master <ColorPuck>

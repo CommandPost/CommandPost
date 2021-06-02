@@ -124,7 +124,7 @@ end
 --- Returns:
 ---  * The `Statement`, which will resolve to `true` if successful, or send an `error` if not.
 function CorrectionsBar.lazy.method:doShow()
-    return self:parent():doShow():Label("CorrectionsBar:doShow")
+    return self:parent():doShow()
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.menuButton <MenuButton>
@@ -230,7 +230,7 @@ function CorrectionsBar:doActivate(correctionType, number)
 
         return Do(menuButton:doSelectItemMatching(pattern, altPattern))
     end)
-    :Label("CorrectionsBar:doActivate")
+    :Label("cp.apple.finalcutpro.inspector.color.CorrectionsBar:doActivate(correctionType, number)")
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
@@ -274,7 +274,7 @@ function CorrectionsBar:doAdd(correctionType)
         return Require(self.menuButton:doSelectItemMatching(pattern))
         :OrThrow("Unable to find correction using 'doAdd': '%s' (%s)", correctionType, correctionText)
     end)
-    :Label("CorrectionsBar:doAdd")
+    :Label("cp.apple.finalcutpro.inspector.color.CorrectionsBar:doAdd(correctionType)")
 end
 
 return CorrectionsBar

@@ -341,9 +341,8 @@ end
 function Element.loadLayout(_)
 end
 
-function Element:doSaveLayout()
+function Element.lazy.method:doSaveLayout()
     return Do(function() return self:saveLayout() end)
-    :Label("Element:doSaveLayout")
 end
 
 --- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement
@@ -377,7 +376,7 @@ function Element:doLayout(layout)
         self:loadLayout(_layout)
         return true
     end)
-    :Label("Element:doLayout")
+    :Label("cp.ui.Element:doLayout(layout)")
 end
 
 function Element:doStoreLayout(id)
@@ -388,7 +387,7 @@ function Element:doStoreLayout(id)
         self.__storedLayouts = layouts
         return layout
     end)
-    :Label("Element:doStoreLayout")
+    :Label("cp.ui.Element:doStoreLayout(id)")
 end
 
 function Element:doForgetLayout(id)
@@ -402,7 +401,7 @@ function Element:doForgetLayout(id)
         end
         self.__storedLayouts = nil
     end)
-    :Label("Element:doForgetLayout")
+    :Label("cp.ui.Element:doForgetLayout(id)")
 end
 
 function Element:doRecallLayout(id, preserve)
@@ -419,7 +418,7 @@ function Element:doRecallLayout(id, preserve)
         end
         return doLayout
     end)
-    :Label("Element:doRecallLayout")
+    :Label("cp.ui.Element:doRecallLayout(id, preserve)")
 end
 
 -- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp.viewer`)

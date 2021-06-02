@@ -89,7 +89,6 @@ function Sheet.lazy.method:doHide()
     ):Then(WaitUntil(self.isShowing():NOT()))
     :Otherwise(true)
     :TimeoutAfter(10000)
-    :Label("Sheet:doHide")
 end
 
 --- cp.ui.Sheet:doCancel() -> cp.rx.go.Statement <boolean>
@@ -136,7 +135,7 @@ function Sheet:doPress(buttonFromLeft)
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("Sheet:doPress("..tostring(buttonFromLeft)..")")
+    :Label("cp.ui.Sheet:doPress("..tostring(buttonFromLeft)..")")
 end
 
 --- cp.ui.Sheet:pressCancel() -> self, boolean

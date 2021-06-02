@@ -156,7 +156,6 @@ function DisclosureTriangle.lazy.method:doPress()
             end)
             :Otherwise(false)
             :ThenYield()
-            :Label("DisclosureTriangle:doPress")
         )
 end
 
@@ -176,7 +175,6 @@ function DisclosureTriangle.lazy.method:doOpen()
             :Then(self:doPress())
             :Otherwise(true)
             :ThenYield()
-            :Label("DisclosureTriangle:doOpen")
         )
 end
 
@@ -196,7 +194,6 @@ function DisclosureTriangle.lazy.method:doClose()
             :Then(self:doPress())
             :Otherwise(true)
             :ThenYield()
-            :Label("DisclosureTriangle:doClose")
         )
 end
 

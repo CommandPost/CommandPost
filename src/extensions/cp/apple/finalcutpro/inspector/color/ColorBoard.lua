@@ -148,7 +148,6 @@ function ColorBoard.lazy.method:doShow()
         self:parent():doActivateCorrection(CORRECTION_TYPE)
     )
     :Otherwise(true)
-    :Label("ColorBoard:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:hide() -> self
@@ -178,7 +177,6 @@ end
 ---  * The `Statement`, which will send a single `true` if successful, otherwise `false`, or an error being sent.
 function ColorBoard.lazy.method:doHide()
     return Do(self:parent():doHide())
-    :Label("ColorBoard:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:childUI(id) -> hs.axuielement object
@@ -273,7 +271,7 @@ function ColorBoard:doResetCurrent(range)
             return current:doReset()
         end
     end)
-    :Label("ColorBoard:doResetCurrent")
+    :Label("cp.apple.finalcutpro.inspector.color.ColorBoard:doResetCurrent(range)")
 end
 
 -----------------------------------------------------------------------
@@ -305,7 +303,7 @@ end
 function ColorBoard:doSelectAspect(index)
     return Do(self:doShow())
     :Then(self.aspectGroup:doSelectOption(index))
-    :Label("ColorBoard:doSelectAspect")
+    :Label("cp.apple.finalcutpro.inspector.color.ColorBoard:doSelectAspect(index)")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:nextAspect() -> ColorBoard object
@@ -341,7 +339,6 @@ function ColorBoard.lazy.method:doNextAspect()
     :Then(
         aspects:doNextOption()
     )
-    :Label("ColorBoard:doNextAspect")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:reset() -> self

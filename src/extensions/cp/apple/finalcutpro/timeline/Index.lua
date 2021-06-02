@@ -194,7 +194,7 @@ function Index:doLayout(layout)
     :Then(self.roles:doLayout(layout.roles))
     :Then(self.captions:doLayout(layout.captions))
     :Then(self.search:doLayout(layout.search))
-    :Label("Index:doLayout")
+    :Label("cp.apple.finalcutpro.timeline.Index:doLayout(layout)")
 end
 
 return Index

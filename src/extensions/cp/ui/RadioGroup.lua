@@ -154,7 +154,7 @@ function RadioGroup:doSelectOption(index)
         :TimeoutAfter(1000, Throw("Failed to select item %d", index))
     end)
     :Otherwise(Throw("The radio group is unavailable."))
-    :Label("RadioGroup:doSelectOption")
+    :Label("cp.ui.RadioGroup:doSelectOption(index)")
 end
 
 --- cp.ui.RadioGroup:nextOption() -> self
@@ -195,7 +195,6 @@ function RadioGroup.lazy.method:doNextOption()
         return self:doSelectOption(selected)
     end)
     :Otherwise(Throw("The radio group is unavailable."))
-    :Label("RadioGroup:doNextOption")
 end
 
 --- cp.ui.RadioGroup:previousOption() -> self
@@ -236,7 +235,6 @@ function RadioGroup.lazy.method:doPreviousOption()
         return self:doSelectOption(selected)
     end)
     :Otherwise(Throw("The radio group is unavailable."))
-    :Label("RadioGroup:doNextOption")
 end
 
 return RadioGroup

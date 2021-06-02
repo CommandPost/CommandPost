@@ -80,7 +80,6 @@ function BasePanel.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
         self:parent():doSelectTab(self:panelType())
     ):Otherwise(true)
-    :Label(self:panelType() .. ":doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.BasePanel:hide() -> none
@@ -113,7 +112,6 @@ function BasePanel.lazy.method:doHide()
     :Then(
         self:parent():doHide()
     )
-    :Label(self:panelType() .. ":doHide")
 end
 
 return BasePanel

@@ -188,7 +188,7 @@ function MediaFolder.mt:doTagFiles(files)
             end
         end
     end)
-    :Label("MediaFolder:doTagFiles")
+    :Label("plugins.finalcutpro.watchfolders.media.MediaFolder:doTagFiles(files)")
 end
 
 local function isFile(flags)
@@ -586,7 +586,7 @@ function MediaFolder.mt:doRestoreOriginalPasteboard(context)
         end
     end)
     :ThenYield()
-    :Label("MediaFolder:doRestoreOriginalPasteboard")
+    :Label("plugins.finalcutpro.watchfolders.media.MediaFolder:doRestoreOriginalPasteboard(context)")
 end
 
 --- plugins.finalcutpro.watchfolders.media.MediaFolder:doDeleteImportedFiles(context) -> nil
@@ -618,7 +618,7 @@ function MediaFolder.mt:doDeleteImportedFiles(files)
         end
         return false
     end)
-    :Label("MediaFolder:doDeleteImportedFiles")
+    :Label("plugins.finalcutpro.watchfolders.media.MediaFolder:doDeleteImportedFiles(files)")
 end
 
 --- plugins.finalcutpro.watchfolders.media.MediaFolder:doImportNext() -> nil
@@ -741,7 +741,7 @@ function MediaFolder.mt:doImportNext()
         self.importingNow = false
         self:updateReadyNotification()
     end)
-    :Label("MediaFolder:doImportNext")
+    :Label("plugins.finalcutpro.watchfolders.media.MediaFolder:doImportNext()")
 end
 
 --- plugins.finalcutpro.watchfolders.media.MediaFolder:save()

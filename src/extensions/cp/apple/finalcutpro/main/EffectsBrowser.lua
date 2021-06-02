@@ -147,7 +147,6 @@ function EffectsBrowser.lazy.method:doShow()
     return Given(self:app().timeline.doShow())
     :Then(button:doCheck())
     :Then(WaitUntil(button.isShowing))
-    :Label("EffectsBrowser:doShow")
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:hide() -> EffectsBrowser
@@ -183,7 +182,6 @@ function EffectsBrowser.lazy.method:doHide()
     return If(app.timeline.isShowing)
     :Then(button:doCheck())
     :Then(WaitUntil(button.isShowing):Is(false))
-    :Label("EffectsBrowser:doHide")
 end
 
 -----------------------------------------------------------------------------
@@ -219,7 +217,6 @@ end
 ---  * The `Statement`.
 function EffectsBrowser.lazy.method:doShowSidebar()
     return If(self.sidebar.isShowing):Is(false):Then(self.sidebarToggle:doCheck())
-    :Label("EffectsBrowser:doShowSidebar")
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:hideSidebar() -> EffectsBrowser
@@ -250,7 +247,6 @@ end
 ---  * The `Statement`.
 function EffectsBrowser.lazy.method:doHideSidebar()
     return If(self.sidebar.isShowing):Is(false):Then(self.sidebarToggle:doUncheck())
-    :Label("EffectsBrowser:doHideSidebar")
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:toggleSidebar() -> EffectsBrowser
@@ -523,7 +519,7 @@ function EffectsBrowser:doShowAudioCategory(name)
     :Then(function()
         Table.selectRow(self:audioCategoryRowsUI(), {name})
     end)
-    :Label("EffectsBrowser:doShowAudioCategory")
+    :Label("cp.apple.finalcutpro.main.EffectsBrowser:doShowAudioCategory(name)")
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:currentItemsUI() -> axuielementObject

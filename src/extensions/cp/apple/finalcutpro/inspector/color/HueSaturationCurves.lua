@@ -112,7 +112,6 @@ function HueSaturationCurves.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
         self:parent():doActivateCorrection(CORRECTION_TYPE)
     ):Otherwise(true)
-    :Label("HueSaturationCurves:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.contentUI <cp.prop: hs.axuielement; read-only>

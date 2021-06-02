@@ -179,7 +179,6 @@ function SecondaryWindow.lazy.method:doShow()
         :Then(self.window:doFocus())
         :TimeoutAfter(1000, "Unable to focus on Secondary Window.")
     )
-    :Label("SecondaryWindow:doShow")
 end
 
 -- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp:viewer()`)

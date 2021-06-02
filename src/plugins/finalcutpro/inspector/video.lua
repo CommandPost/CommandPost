@@ -63,7 +63,7 @@ local function doSpatialConformType(value)
         displayErrorMessage(message)
         return false
     end)
-    :Label("video.doSpatialConformType")
+    :Label("plugins.finalcutpro.inspector.video.doSpatialConformType(value)")
 end
 
 -- doBlendMode(value) -> none
@@ -98,7 +98,7 @@ local function doBlendMode(value)
         displayErrorMessage(message)
         return false
     end)
-    :Label("video.doBlendMode")
+    :Label("plugins.finalcut.inspector.video.doBlendMode(value)")
 end
 
 -- doStabilization(value) -> none
@@ -139,7 +139,7 @@ local function doStabilization(value)
         displayErrorMessage(message)
         return false
     end)
-    :Label("video.doStabilization")
+    :Label("plugins.finalcut.inspector.video.doStabilization(value)")
 end
 
 -- doStabilizationMethod(value) -> none
@@ -197,7 +197,7 @@ local function doStabilizationMethod(value)
         displayErrorMessage(message)
         return false
     end)
-    :Label("video.doStabilizationMethod")
+    :Label("plugins.finalcut.inspector.video.doStabilizationMethod(value)")
 end
 
 -- doRollingShutter(value) -> none
@@ -238,7 +238,7 @@ local function doRollingShutter(value)
         displayErrorMessage(message)
         return false
     end)
-    :Label("video.doRollingShutter")
+    :Label("plugins.finalcut.inspector.video.doRollingShutter(value)")
 end
 
 -- doRollingShutterAmount(value) -> none
@@ -296,7 +296,7 @@ local function doRollingShutterAmount(value)
         displayErrorMessage(message)
         return false
     end)
-    :Label("video.doRollingShutterAmount")
+    :Label("plugins.finalcut.inspector.video.doRollingShutterAmount(value)")
 end
 
 local plugin = {

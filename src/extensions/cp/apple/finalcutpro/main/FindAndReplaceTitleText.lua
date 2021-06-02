@@ -187,7 +187,6 @@ function FindAndReplace.lazy.method:doShow()
     :Then(self:app().menu:doSelectMenu({"Edit", "Find and Replace Title Text..."}))
     :Otherwise(false)
     :ThenYield()
-    :Label("FindAndReplaceTitleText:doShow")
 end
 
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText:doHide() -> cp.rx.go.Statement
@@ -204,7 +203,6 @@ function FindAndReplace.lazy.method:doHide()
     :Then(self:doClose())
     :Otherwise(true)
     :ThenYield()
-    :Label("FindAndReplaceTitleText:doHide")
 end
 
 local function centre(frame)
@@ -224,27 +222,27 @@ end
 
 function FindAndReplace.lazy.method:doReplaceAll()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self.replaceAll):Label("FindAndReplaceTitleText:doReplaceAll")
+    return doNinjaPress(self.replaceAll)
 end
 
 function FindAndReplace.lazy.method:doReplace()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self.replaceAll):Label("FindAndReplaceTitleText:doReplace")
+    return doNinjaPress(self.replaceAll)
 end
 
 function FindAndReplace.lazy.method:doReplaceAndFind()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self.replaceAndFind):Label("FindAndReplaceTitleText:doReplaceAndFind")
+    return doNinjaPress(self.replaceAndFind)
 end
 
 function FindAndReplace.lazy.method:doPrevious()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self.previous):Label("FindAndReplaceTitleText:doPrevious")
+    return doNinjaPress(self.previous)
 end
 
 function FindAndReplace.lazy.method:doNext()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self.next):Label("FindAndReplaceTitleText:doNext")
+    return doNinjaPress(self.next)
 end
 
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText:doFindAndReplaceAll(find, replace) -> cp.rx.go.Statement
@@ -278,7 +276,7 @@ function FindAndReplace:doFindAndReplaceAll(find, replace)
             return result
         end)
     )
-    :Label("FindAndReplaceTitleText:doFindAndReplaceAll")
+    :Label("cp.apple.finalcutpro.main.FindAndReplaceTitleText:doFindAndReplaceAll(find, replace)")
 end
 
 return FindAndReplace

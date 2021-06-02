@@ -100,7 +100,6 @@ function GeneratorsBrowser.lazy.method:doShow()
     return Do(menuBar:doSelectMenu({"Window", "Go To", GeneratorsBrowser.TITLE}))
     :Then(WaitUntil(self.isShowing))
     :ThenYield()
-    :Label("GeneratorsBrowser:doShow")
 end
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser:hide() -> GeneratorsBrowser
@@ -120,7 +119,6 @@ end
 
 function GeneratorsBrowser.lazy.method:doHide()
     return Do(self:parent():doHide())
-    :Label("GeneratorsBrowser:doHide")
 end
 
 -----------------------------------------------------------------------------

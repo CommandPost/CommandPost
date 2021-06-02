@@ -194,7 +194,6 @@ function Browser.lazy.method:doShowOnPrimary()
             menuBar:doSelectMenu({"Window", "Show in Workspace", "Browser"})
         ):Otherwise(true)
     )
-    :Label("Browser:doShowOnPrimary")
 end
 
 --- cp.apple.finalcutpro.main.Browser:showOnSecondary() -> Browser
@@ -235,7 +234,6 @@ function Browser.lazy.method:doShowOnSecondary()
             menuBar:doSelectMenu({"Window", "Show in Secondary Display", "Browser"})
         ):Otherwise(true)
     )
-    :Label("Browser:doShowOnSecondary")
 end
 
 --- cp.apple.finalcutpro.main.Browser:doShow() -> cp.rx.go.Statement
@@ -253,7 +251,6 @@ function Browser.lazy.method:doShow()
     return If(self.isShowing):IsNot(true):Then(
         self:doShowOnPrimary()
     )
-    :Label("Browser:doShow")
 end
 
 --- cp.apple.finalcutpro.main.Browser:hide() -> Browser
@@ -285,7 +282,7 @@ end
 function Browser.lazy.method:doHide()
     return If(self.isShowing):Then(
         self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Browser"})
-    ):Label("Browser:doHide")
+    )
 end
 
 -----------------------------------------------------------------------

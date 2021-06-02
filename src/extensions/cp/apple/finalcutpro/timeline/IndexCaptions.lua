@@ -79,7 +79,7 @@ function IndexCaptions:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)
     :Then(self:doShow())
-    :Label("IndexCaptions:doLayout")
+    :Label("cp.apple.finalcutpro.timeline.IndexCaptions:doLayout(layout)")
 end
 
 return IndexCaptions

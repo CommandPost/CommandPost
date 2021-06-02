@@ -304,7 +304,7 @@ end
 --- Returns:
 ---  * The `Statement`, which will resolve to `true` if successful, or send an `error` if not.
 function AudioComponent.lazy.method:doShow()
-    return self:parent():doShow():Label("AudioComponent:doShow")
+    return self:parent():doShow()
 end
 
 return AudioComponent

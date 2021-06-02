@@ -160,7 +160,6 @@ end
 --- * The `Statement` to execute.
 function FullScreenWindow.lazy.method:doShow()
     return self:app().menu:doSelectMenu({"View", "Playback", "Play Full Screen"})
-    :Label("FullScreenWindow:doShow")
 end
 
 return FullScreenWindow

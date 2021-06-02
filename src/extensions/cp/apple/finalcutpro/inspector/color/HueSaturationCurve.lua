@@ -96,7 +96,6 @@ function HueSaturationCurve.lazy.method:doShow()
         )
     ):Then(true)
     :Otherwise(true)
-    :Label("HueSaturationCurve:doShow")
 end
 
 function HueSaturationCurve.lazy.value:reset()

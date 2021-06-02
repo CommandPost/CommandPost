@@ -76,7 +76,6 @@ function Menu:doCancel()
     end)
     :Then(WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER))
     :Otherwise(false)
-    :Label("Menu:doCancel")
 end
 
 --- cp.ui.Menu:doSelectItem(index) -> cp.rx.go.Statement
@@ -101,7 +100,7 @@ function Menu:doSelectItem(index)
     end)
     :Then()
     :Otherwise(false)
-    :Label("Menu:doSelectItem")
+    :Label("cp.ui.Menu:doSelectItem(index)")
 end
 
 --- cp.ui.Menu:doSelectValue(value) -> cp.rx.go.Statement
@@ -126,7 +125,7 @@ function Menu:doSelectValue(value)
         return self:doCancel():Then(false)
     end)
     :Otherwise(false)
-    :Label("Menu:doSelectValue")
+    :Label("cp.ui.Menu:doSelectValue(value)")
 end
 
 --- cp.ui.Menu:doSelectValue(pattern[, altPattern]) -> cp.rx.go.Statement
@@ -160,7 +159,7 @@ function Menu:doSelectItemMatching(pattern, altPattern)
         return self:doCancel():Then(false)
     end)
     :Otherwise(false)
-    :Label("Menu:doSelectItemMatching")
+    :Label("cp.ui.Menu:doSelectItemMatching(pattern, altPattern)")
 end
 
 return Menu

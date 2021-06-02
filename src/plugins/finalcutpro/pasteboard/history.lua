@@ -143,7 +143,7 @@ function mod.doPasteHistoryItem(index)
         log.w("doPasteHistoryItem: %s", message)
         return false
     end)
-    :Label("history.doPastHistoryItem")
+    :Label("plugins.finalcutpro.pasteboard.history.doPastHistoryItem(index)")
 end
 
 -- watchUpdate(data, name) -> none

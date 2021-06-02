@@ -4,22 +4,23 @@
 
 local require = require
 
-local log               = require("hs.logger").new("PropertyRow")
+local log               = require "hs.logger" .new "PropertyRow"
 
-local inspect           = require("hs.inspect")
-local geometry          = require("hs.geometry")
+local inspect           = require "hs.inspect"
+local geometry          = require "hs.geometry"
 
-local axutils           = require("cp.ui.axutils")
-local Button            = require("cp.ui.Button")
-local is                = require("cp.is")
-local prop              = require("cp.prop")
+local axutils           = require "cp.ui.axutils"
+local Button            = require "cp.ui.Button"
+local is                = require "cp.is"
+local prop              = require "cp.prop"
 
-local Element           = require("cp.ui.Element")
+local Element           = require "cp.ui.Element"
+
+local Do                = require "cp.rx.go".Do
 
 local format            = string.format
 local childMatching     = axutils.childMatching
 local childrenMatching  = axutils.childrenMatching
-
 
 local PropertyRow = Element:subclass("cp.ui.PropertyRow")
 
@@ -271,7 +272,7 @@ end
 --- Returns:
 ---  * self
 function PropertyRow.lazy.method:doShow()
-    return self:parent():doShow():Label("PropertyRow:doShow")
+    return Do(self:parent():doShow())
 end
 
 --- cp.ui.PropertyRow:hide() -> self
@@ -301,7 +302,7 @@ end
 --- Returns:
 ---  * The `Statement`.
 function PropertyRow.lazy.method:doHide()
-    return self:parent():doHide():Label("PropertyRow:doHide")
+    return Do(self:parent():doHide())
 end
 
 --- cp.ui.PropertyRow:labelKeys() -> string
