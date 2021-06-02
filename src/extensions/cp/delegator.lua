@@ -160,13 +160,18 @@ local function _getDelegatedResult(instance, name, klass)
                     if type(value) == "function" then
                         -- we wrap the function so that we can redirect to the delegate when appropriate.
                         local fn = value
-                        value = function(self, ...)
-                            if self == instance then
+                        value = function(first, ...)
+                            if first == instance then
                                 -- it's getting called as a method with the instance as `self` so redirect it to the delegate.
-                                return fn(delegate, ...)
+                                local result = fn(delegate, ...)
+                                if result == delegate then
+                                    -- it is returning itself, so lets return the instance since most functions that do that are intended to be chained.
+                                    result = instance
+                                end
+                                return result
                             else
                                 -- it's probably a direct function call
-                                return fn(self, ...)
+                                return fn(first, ...)
                             end
                         end
                         -- cache it for future access.
