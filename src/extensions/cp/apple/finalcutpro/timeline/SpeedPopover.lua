@@ -24,7 +24,9 @@ local childrenWithRole      = axutils.childrenWithRole
 local childWith             = axutils.childWith
 local childWithRole         = axutils.childWithRole
 
-local If, WaitUntil         = go.If, go.WaitUntil
+local If                    = go.If
+local SetProp               = go.SetProp
+local WaitUntil             = go.WaitUntil
 
 -- local RadioGroup for 'Set Speed'
 local SetSpeed = RadioGroup:subclass("cp.apple.finalcutpro.timeline.SpeedPopover.SetSpeed")
@@ -97,8 +99,13 @@ end
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function SpeedPopover.lazy.method:doShow()
-    return If(self.isShowing):Is(false):Then(
-        self:app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"})
+    local animationEnabled = self:app().isWindowAnimationEnabled
+
+    return If(self.isShowing):Is(false)
+    :Then(
+        SetProp(animationEnabled):To(false)
+        :Then(self:app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"}))
+        :ThenReset()
     )
     :Then(WaitUntil(self.isShowing):TimeoutAfter(1000))
     :Otherwise(true)
