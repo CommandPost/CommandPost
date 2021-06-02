@@ -26,7 +26,7 @@ local toObservable      = Statement.toObservable
 ---  * The `Statement`.
 local Retry = Statement.named("Retry")
 :onInit(function(context, resolvable)
-    assert(resolvable ~= nil, "The `resolveable` may not be `nil`.")
+    assert(resolvable ~= nil, "The `resolvable` may not be `nil`.")
     context.resolvable = resolvable
 end)
 :onObservable(function(context)
