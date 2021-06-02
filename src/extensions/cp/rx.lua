@@ -1048,7 +1048,7 @@ end
 ---
 --- Parameters:
 ---  * time        - The number of milliseconds.
----  * scheduler   - The scheduler. Uses the [defaultScheduler](cp.rx.util#defaultScheduler) by default.
+---  * scheduler   - The scheduler. If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 ---  * The new `Observable`.
@@ -1146,7 +1146,7 @@ end
 --- Parameters:
 ---  * time      - An amount in milliseconds to delay by, or a `function` which returns
 ---               this value.
----  * scheduler - The [Scheduler](cp.rx.Scheduler.md) to run the `Observable` on.
+---  * scheduler - The [Scheduler](cp.rx.Scheduler.md) to run the `Observable` on. If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 ---  * The new `Observable`.
@@ -2992,7 +2992,7 @@ end
 --- Parameters:
 ---  * timeInMs          - The time in milliseconds to wait before an error is emitted.
 ---  * next              - If a `string`, it will be sent as an error. If an `Observable`, switch to that `Observable` instead of sending an error.
----  * scheduler         - The scheduler to use. Uses the [defaultScheduler](cp.rx.util#defaultSubscriber) if not provided.
+---  * scheduler         - The scheduler to use. If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 ---  * The new `Observable`.

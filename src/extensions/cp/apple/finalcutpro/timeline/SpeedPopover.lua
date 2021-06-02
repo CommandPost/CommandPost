@@ -98,9 +98,9 @@ end
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function SpeedPopover.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
-        self:parent():app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"}):Debug()
+        self:app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"}):Debug("Select 'Custom Speed...' Menu")
     )
-    :Then(WaitUntil(self.isShowing):TimeoutAfter(1000):Debug())
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(1000):Debug("WaitUntil(self.isShowing)"))
     :Otherwise(true)
 end
 
