@@ -65,6 +65,7 @@ function plugin.init(deps)
             :Label("plugins.finalcutpro.timeline:retimeToDuration")
         )
         :titled(i18n("retimeToDuration"))
+        :subtitled(i18n("retimeToDurationDescription"))
 end
 
 return plugin
