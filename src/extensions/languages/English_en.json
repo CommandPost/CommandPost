@@ -325,6 +325,7 @@
     "copyToFinalCutProPasteboardBuffer": "Copy to Final Cut Pro Pasteboard Buffer %{id}",
     "copyUnit": "Copy Unit",
     "copyUnitTo": "Copy Unit To",
+    "copyViewerContentsToPasteboard": "Copy Viewer Contents To Pasteboard",
     "core_accessibility_label": "Accessibility Permissions",
     "core_accessibility_screenrecording_label": "Screen Recording Permissions",
     "core_action_manager_label": "Manager: Actions",
