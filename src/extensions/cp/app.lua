@@ -762,6 +762,14 @@ function app.lazy.prop:localeResourcesPath()
     :monitor(self.currentLocale)
 end
 
+--- cp.app.isWindowAnimationEnabled <cp.prop: bool; live>
+--- Field
+--- A [prop](cp.prop.md) that determines if window animations (eg. popups, etc.) are enabled for the
+--- application. Generally defaults to `true`.
+function app.lazy.prop:isWindowAnimationEnabled()
+    return self.preferences:prop("NSAutomaticWindowAnimationsEnabled", true)
+end
+
 --- cp.app.menu <cp.app.menu>
 --- Field
 --- The main [menu](cp.app.menu.md) for the application.

@@ -257,7 +257,7 @@ function mod.doTranscodeSelectedTimelineClips(transcodeType)
             :Then(mod.doTranscodeSelectedBrowserClips(transcodeType))
         end)
     end)
-    :Label("doTranscodeSelectedTimelineClips")
+    :Label("plugins.finalcutpro.timeline.transcode.doTranscodeSelectedTimelineClips(transcodeType)")
 end
 
 --- plugins.finalcutpro.timeline.transcode.doTranscodeSelectedClips() -> Statement
@@ -280,7 +280,7 @@ function mod.doTranscodeSelectedClips(transcodeType)
             mod.doTranscodeSelectedBrowserClips(transcodeType)
         )
     )
-    :Label("doTranscodeSelectedClips")
+    :Label("plugins.finalcutpro.timeline.transcode.doTranscodeSelectedClips(transcodeType)")
 end
 
 local plugin = {

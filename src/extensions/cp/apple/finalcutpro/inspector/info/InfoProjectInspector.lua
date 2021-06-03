@@ -114,7 +114,6 @@ function InfoProjectInspector.lazy.method:doShow()
             end
         end):UpTo(10):DelayedBy(100)
     )
-    :Label(self:panelType() .. ":doShow")
 end
 
 return InfoProjectInspector

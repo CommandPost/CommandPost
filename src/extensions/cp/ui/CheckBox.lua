@@ -156,7 +156,6 @@ function CheckBox.lazy.method:doPress()
             end)
             :Otherwise(false)
             :ThenYield()
-            :Label("CheckBox:doPress")
         )
 end
 
@@ -176,7 +175,6 @@ function CheckBox.lazy.method:doCheck()
             :Then(self:doPress())
             :Otherwise(true)
             :ThenYield()
-            :Label("CheckBox:doCheck")
         )
 end
 
@@ -196,7 +194,6 @@ function CheckBox.lazy.method:doUncheck()
             :Then(self:doPress())
             :Otherwise(true)
             :ThenYield()
-            :Label("CheckBox:doUncheck")
         )
 end
 

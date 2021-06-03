@@ -77,17 +77,35 @@
 --- You can also create [cp.prop](cp.prop.md) values:
 ---
 --- ```lua
---- function MyClass.lazy.prop.enabled()
+--- function MyClass.lazy.value:enabled()
 ---     return prop.TRUE()
 --- end
+---
+--- ...
+--- myClassValue:enabled() -- `true`
 --- ```
 ---
---- It is very similar to the `value` factory, but the returned `cp.prop` will be automatically bound
+--- The returned `cp.prop` will be automatically bound
 --- to the new instance and labeled with the key ("enabled" in the example above).
+---
+--- You can also create `statement` methods or values, which expect a cachable `cp.rx.go.Statement` value to be returned.
+--- The `Statement` will automatically be labeled with the "class:method" name for debugging purposes.
+---
+--- For example:
+---
+--- ```lua
+--- function MyClass.lazy.method:doSomething()
+---     return Do(function() self:something() end)
+--- end
+---
+--- ...
+--- myClassValue:doSomething():Now()
+--- ```
 
 -- local log           = require "hs.logger".new("lazy")
 
 local prop          = require "cp.prop"
+local Statement     = require "cp.rx.go" .Statement
 local format        = string.format
 
 local lazy = {}
@@ -147,6 +165,52 @@ local function _initLazyStatics(klass, superLazy)
     klass.static.lazy = lzy
 end
 
+-- _preSetLazyResult(instance, name, result, isMethod) -> anything
+-- Local Function
+-- Prepares the `result` value, if it is a special value.
+--
+-- Parameters:
+--  * instance - The instance the lazy value belongs to.
+--  * name - The string value of the property name.
+--  * result - The actual result that was lazily-evaluated.
+--  * isMethod - If `true`, it's a method call, otherwise it's a value.
+--
+-- Returns:
+--  * The value to actually get set.
+local function _preSetLazyResult(instance, name, result, isMethod)
+    if prop.is(result) then
+        local owner = result:owner()
+        if owner and owner ~= instance then
+            result = result:wrap()
+        end
+        -- result:bind(instance, name)
+    elseif Statement.is(result) then
+        if isMethod then
+            result:Label(instance.class.name .. ":" .. name .. "()")
+        else
+            result:Label(instance.class.name .. "." .. name)
+        end
+    end
+    return result
+end
+
+-- _preSetLazyResult(instance, name, result, isMethod) -> nothing
+-- Local Function
+-- Performs any post-rawset properties on the value, if required.
+--
+-- Parameters:
+--  * instance - The instance the lazy value belongs to.
+--  * name - The string value of the property name.
+--  * result - The actual result that was lazily-evaluated.
+--
+-- Returns:
+--  * Nothing.
+local function _postSetLazyResult(instance, name, result)
+    if prop.is(result) then
+        result:bind(instance, name)
+    end
+end
+
 -- _getLazyResults(instance, name) -> anything
 -- Function
 -- Checks if there is a `lazy` factory function for the specified name, and if so returns
@@ -161,27 +225,29 @@ end
 local function _getLazyResults(instance, name)
     local klass = instance.class
     local lzy = klass and klass.lazy
-    local value
+    local result, isMethod = nil, false
     if lzy.value[name] then
-        value = lzy.value[name](instance, name)
-        rawset(instance, name, value)
+        result = lzy.value[name](instance, name)
     elseif lzy.method[name] then
-        local result = lzy.method[name](instance, name)
-        value = function() return result end
-        rawset(instance, name, value)
+        result = lzy.method[name](instance, name)
+        isMethod = true
     elseif lzy.prop[name] then
-        value = lzy.prop[name](instance, name)
-        if prop.is(value) then
-            local owner = value:owner()
-            if owner and owner ~= instance then
-                value = value:wrap()
-            end
-            rawset(instance, name, value)
-            value:bind(instance, name)
-        else
-            error(format("Expected a cp.prop for the lazy prop named '%s', but got %s", name, value))
+        result = lzy.prop[name](instance, name)
+        if not prop.is(result) then
+            error(format("Expected a cp.prop for the lazy prop named '%s', but got %s", name, result))
         end
     end
+
+    result = _preSetLazyResult(instance, name, result, isMethod)
+
+    local value = result
+    if isMethod then
+        value = function() return result end
+    end
+
+    rawset(instance, name, value)
+
+    _postSetLazyResult(instance, name, result)
     return value
 end
 

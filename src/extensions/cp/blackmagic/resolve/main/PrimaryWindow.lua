@@ -101,7 +101,6 @@ function PrimaryWindow.lazy.method:doShow()
         If(self.isShowing):Is(false)
         :Then(self:doFocus())
     )
-    :Label("PrimaryWindow:doShow")
 end
 
 return PrimaryWindow

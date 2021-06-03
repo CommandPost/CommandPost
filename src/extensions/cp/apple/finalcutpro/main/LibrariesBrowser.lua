@@ -142,7 +142,6 @@ function LibrariesBrowser.lazy.method:doShow()
         browser:librariesShowing(true)
     end)
     :ThenYield()
-    :Label("LibrariesBrowser:doShow")
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:hide() -> LibrariesBrowser
@@ -170,7 +169,6 @@ end
 ---  * The `Statement`.
 function LibrariesBrowser.lazy.method:doHide()
     return self:parent():doHide()
-    :Label("LibrariesBrowser:doHide")
 end
 
 -----------------------------------------------------------------------------
@@ -356,7 +354,6 @@ function LibrariesBrowser:doOpenClipTitled(title)
     :Then(menuBar:doSelectMenu({"Window", "Go To", "Libraries"}))
     :Then(menuBar:doSelectMenu({"Clip", "Open Clip"}))
     :Catch(Throw("Unable to open clip: %s", title))
-    :Label("LibrariesBrowser:doOpenClipTitled")
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:clipsUI(filterFn) -> table | nil
@@ -571,7 +568,6 @@ function LibrariesBrowser:doSelectClipTitled(title)
     end)
     :Catch(Throw(i18n("LibrariesBrowser_NoClipTitled", {title = title})))
     :ThenYield()
-    :Label("LibrariesBrowser:doSelectClipTitled")
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectAll([clips]) -> boolean

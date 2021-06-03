@@ -326,7 +326,7 @@ function mod.doDecodeHistoryItem(folderName, index)
         end
         return Throw("Unable to decode the item data for '%s' at %d.", folderName, index)
     end)
-    :Label("shared.doDecodeHistoryItem")
+    :Label("plugins.finalcutpro.pasteboard.shared.doDecodeHistoryItem(folderName, index)")
 end
 
 --- plugins.finalcutpro.pasteboard.shared.doPasteHistoryItem(folderName, index) -> none

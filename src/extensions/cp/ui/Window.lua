@@ -282,7 +282,6 @@ function Window.lazy.method:doClose()
     :Then(WaitUntil(self.visible:NOT())
     ):Otherwise(true)
     :ThenYield()
-    :Label("Window:doClose")
 end
 
 --- cp.ui.Window:focus() -> boolean
@@ -316,7 +315,6 @@ function Window.lazy.method:doFocus()
     :Otherwise(false)
     :TimeoutAfter(10000)
     :ThenYield()
-    :Label("Window:doFocus")
 end
 
 function Window.lazy.method:doRaise()
@@ -327,7 +325,6 @@ function Window.lazy.method:doRaise()
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("Window:doRaise")
 end
 
 --- cp.ui.Window.alert <cp.ui.Alert>

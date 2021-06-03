@@ -159,7 +159,7 @@ function IndexRolesList:doActivate(title)
         return role:doActivate()
     end)
     :Otherwise(false)
-    :Label("IndexRolesList:doActivate")
+    :Label("cp.apple.finalcutpro.timeline.IndexRolesList:doActivate(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRolesList:doDeactivate(title) -> cp.rx.go.Statement
@@ -180,7 +180,7 @@ function IndexRolesList:doDeactivate(title)
         return role:doDeactivate()
     end)
     :Otherwise(false)
-    :Label("IndexRolesList:doDeactivate")
+    :Label("cp.apple.finalcutpro.timeline.IndexRolesList:doDeactivate(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRolesList:doFocusInTimeline(title) -> cp.rx.go.Statement
@@ -201,7 +201,7 @@ function IndexRolesList:doFocusInTimeline(title)
         return role:isInstanceOf(AudioRole) and role:doFocusInTimeline()
     end)
     :Otherwise(false)
-    :Label("IndexRolesList:doFocusInTimeline")
+    :Label("cp.apple.finalcutpro.timeline.IndexRolesList:doFocusInTimeline(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRolesList:doUnfocusInTimeline(title) -> cp.rx.go.Statement
@@ -222,7 +222,7 @@ function IndexRolesList:doUnfocusInTimeline(title)
         return role:isInstanceOf(AudioRole) and role:doUnfocusInTimeline()
     end)
     :Otherwise(false)
-    :Label("IndexRolesList:doUnfocusInTimeline")
+    :Label("cp.apple.finalcutpro.timeline.IndexRolesList:doUnfocusInTimeline(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRolesList:doShowSubroleLanes(title) -> cp.rx.go.Statement
@@ -243,7 +243,7 @@ function IndexRolesList:doShowSubroleLanes(title)
         return role:isInstanceOf(AudioRole) and role:doShowSubroleLanes()
     end)
     :Otherwise(false)
-    :Label("IndexRolesList:doShowSubroleLanes")
+    :Label("cp.apple.finalcutpro.timeline.IndexRolesList:doShowSubroleLanes(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRolesList:doHideSubroleLanes(title) -> cp.rx.go.Statement
@@ -264,7 +264,7 @@ function IndexRolesList:doHideSubroleLanes(title)
         return role:isInstanceOf(AudioRole) and role:doHideSubroleLanes()
     end)
     :Otherwise(false)
-    :Label("IndexRolesList:doHideSubroleLanes")
+    :Label("cp.apple.finalcutpro.timeline.IndexRolesList:doHideSubroleLanes(title)")
 end
 
 return IndexRolesList

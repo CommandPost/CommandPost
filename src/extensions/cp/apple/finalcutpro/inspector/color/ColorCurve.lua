@@ -93,7 +93,6 @@ function ColorCurve.lazy.method:doShow()
         )
     ):Then(true)
     :Otherwise(true)
-    :Label("ColorCurve:doShow")
 end
 
 function ColorCurve.lazy.value:reset()

@@ -129,7 +129,8 @@ function plugin.init(deps)
                     )
                     :Finally(function() updating(false) end)
                 )
-            ):Label("color:update")
+            )
+            :Label("plugins.finalcutpro.tangent.color:update")
 
             updateUI:action(update)
 

@@ -280,7 +280,6 @@ function Inspector.lazy.method:doShow()
     :Then(self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing):TimeoutAfter(5000))
     :Otherwise(true)
-    :Label("Inspector:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:hide() -> Inspector
@@ -315,7 +314,6 @@ function Inspector.lazy.method:doHide()
     :Then(self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))
     :Otherwise(true)
-    :Label("Inspector:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean
@@ -404,7 +402,7 @@ function Inspector:doFindTabButton(type)
         end
         return Done()
     end)
-    :Label("Inpector:doFindTabButton")
+    :Label("cp.apple.finalcutpro.inspector.Inpector:doFindTabButton('"..type.."')")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:doSelectTab(title) -> cp.rx.go.Statement
@@ -426,7 +424,7 @@ function Inspector:doSelectTab(title)
         end)
         :Otherwise(false)
     )
-    :Label("Inspector:doSelectTab")
+    :Label("cp.apple.finalcutpro.inspector.Inspector:doSelectTab('"..title.."')")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:tabAvailable(tab) -> boolean

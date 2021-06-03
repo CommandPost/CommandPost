@@ -234,7 +234,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if successful or sending an error if not.
 function ColorPuck.lazy.method:doShow()
-    return self:parent():doShow():Label("ColorPuck:doShow")
+    return Do(self:parent():doShow())
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:select() -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -280,7 +280,6 @@ function ColorPuck.lazy.method:doSelect()
             return Throw("Unable to select the %q ColorPuck", self)
         end
     end)
-    :Label("ColorPuck:doSelect")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:shiftPercent(amount) -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -314,7 +313,7 @@ function ColorPuck:doShiftPercent(amount)
     :Then(function()
         return self:shiftPercent(amount)
     end)
-    :Label("ColorPuck:doShiftPercent")
+    :Label("cp.apple.finalcutpro.inspector.color.ColorPuck:doShiftPercent(amount)")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:shiftAngle(amount) -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -339,7 +338,7 @@ function ColorPuck:doShiftAngle(amount)
     :Then(function()
         return self:shiftAngle(amount)
     end)
-    :Label("ColorPuck:doShiftAngle")
+    :Label("cp.apple.finalcutpro.inspector.color.ColorPuck:doShiftAngle(amount)")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:reset() -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -372,7 +371,6 @@ function ColorPuck.lazy.method:doReset()
         self:reset()
         return true
     end)
-    :Label("ColorPuck:doReset")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:start() -> cp.apple.finalcutpro.inspector.color.ColorPuck

@@ -250,7 +250,6 @@ function Timeline.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:doShowOnPrimary())
     :Otherwise(true)
-    :Label("Timeline:doShow")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:showOnPrimary() -> Timeline
@@ -302,7 +301,6 @@ function Timeline.lazy.method:doShowOnPrimary()
             ):Otherwise(true)
         )
     ):Otherwise(false)
-    :Label("Timeline:doShowOnPrimary")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:showOnSecondary() -> Timeline
@@ -343,7 +341,6 @@ function Timeline.lazy.method:doShowOnSecondary()
         :Then(WaitUntil(self.isOnSecondary):TimeoutAfter(5000))
         :Otherwise(true)
     ):Otherwise(false)
-    :Label("Timeline:doShowOnSecondary")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:hide() -> Timeline
@@ -395,7 +392,6 @@ function Timeline.lazy.method:doHide()
             :Otherwise(true)
         )
     ):Otherwise(false)
-    :Label("Timeline:doHide")
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:doFocus(show) -> cp.rx.go.Statement
@@ -409,7 +405,7 @@ end
 --- * The `Statement`.
 function Timeline:doFocus(show)
     return self.contents:doFocus(show)
-    :Label("Timeline:doFocus")
+    :Label("cp.apple.finalcutpro.timeline.Timeline:doFocus(show)")
 end
 
 -----------------------------------------------------------------------
@@ -499,7 +495,7 @@ local function _doOpenProjectIn(button, pattern)
     :Then(button:doShowMenu())
     :Then(button.menu:doSelectItemMatching(pattern))
     :Otherwise(false)
-    :Label("Timeline:_doOpenProjectIn")
+    :Label("cp.apple.finalcutpro.timeline.Timeline:_doOpenProjectIn(button, pattern)")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:doOpenProject(title) -> cp.rx.go.Statement
@@ -523,7 +519,7 @@ function Timeline:doOpenProject(title)
         If(_doOpenProjectIn(forward, title)):Then(Done())
         :Otherwise(playErrorSound)
     )
-    :Label("Timeline:doOpenProject")
+    :Label("cp.apple.finalcutpro.timeline.Timeline:doOpenProject(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.speedPopover <cp.apple.finalcutpro.timeline.SpeedPopover>

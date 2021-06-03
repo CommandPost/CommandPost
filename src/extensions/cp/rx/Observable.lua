@@ -1,204 +1,24 @@
---- === cp.rx ===
+--- === cp.rx.Observable ===
 ---
---- Reactive Extensions for Lua.
----
---- RxLua gives Lua the power of Observables, which are data structures that represent a stream of values that arrive over time. They're very handy when dealing with events, streams of data, asynchronous requests, and concurrency.
----
----  * Originally forked from: https://github.com/bjornbytes/rxlua
----  * MIT License: https://github.com/bjornbytes/RxLua/blob/master/LICENSE
+--- Observables push values to [Observers](cp.rx.Observer.md).
 
 local require           = require
-
-local timer             = require "hs.timer"
 
 local List              = require "cp.collect.List"
 local Queue             = require "cp.collect.Queue"
 
-local doAfter           = timer.doAfter
+local Observer          = require "cp.rx.Observer"
+local Reference         = require "cp.rx.Reference"
+local TimeoutScheduler  = require "cp.rx.TimeoutScheduler"
+local util              = require "cp.rx.util"
+
 local format            = string.format
 local insert            = table.insert
 local remove            = table.remove
 
-local util = {}
+-- default to using the TimeoutScheduler
+util.defaultScheduler(TimeoutScheduler.create())
 
-local defaultScheduler = nil
-
-util.pack = table.pack or function(...) return { n = select('#', ...), ... } end
-util.unpack = table.unpack or _G.unpack
-util.eq = function(x, y) return x == y end
-util.noop = function() end
-util.identity = function(x) return x end
-util.constant = function(x) return function() return x end end
-util.isa = function(object, class)
-  if type(object) == 'table' then
-    local mt = getmetatable(object)
-    return mt ~= nil and rawequal(mt.__index, class) or not rawequal(mt, object) and util.isa(mt, class)
-  end
-  return false
-end
-util.tryWithObserver = function(observer, fn, ...)
-  local args = util.pack(...)
-  local success, result = xpcall(function() fn(util.unpack(args)) end, debug.traceback)
-  if not success then
-    observer:onError(result)
-  end
-  return success, result
-end
-util.defaultScheduler = function(newScheduler)
-    if newScheduler and type(newScheduler.schedule) == "function" then
-        defaultScheduler = newScheduler
-    end
-    return defaultScheduler
-end
-util.tableId = function(value)
-    local __tostring
-    local mt = getmetatable(value)
-    if mt then
-        __tostring = mt.__tostring
-        mt.__tostring = nil
-    end
-
-    local id = tostring(value)
-
-    if mt then
-        mt.__tostring = __tostring
-    end
-    return id
-end
-
---- === cp.rx.Reference ===
----
---- A handle representing the link between an [Observer](cp.rx.Observer.md) and an [Observable](cp.rx.Observable.md), as well as any
---- work required to clean up after the Observable completes or the Observer cancels.
-local Reference = {}
-Reference.__index = Reference
-Reference.__tostring = util.constant('Reference')
-
---- cp.rx.Reference.create(action) -> cp.rx.Reference
---- Constructor
---- Creates a new Reference.
----
---- Parameters:
----  * action - The action to run when the reference is canceld. It will only be run once.
----
---- Returns:
----  * the [Reference](cp.rx.Reference.md).
-function Reference.create(action)
-  local self = {
-    action = action or util.noop,
-    cancelled = false
-  }
-
-  return setmetatable(self, Reference)
-end
-
---- cp.rx.Reference:cancel() -> nil
---- Method
---- Unsubscribes the reference, performing any necessary cleanup work.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Nothing
-function Reference:cancel()
-  if self.cancelled then return end
-  self.action(self)
-  self.cancelled = true
-end
-
---- === cp.rx.Observer ===
----
---- Observers are simple objects that receive values from [Observables](cp.rx.Observables.md).
-local Observer = {}
-Observer.__index = Observer
-Observer.__tostring = util.constant('Observer')
-
---- cp.rx.Observer.is(thing) -> boolean
---- Function
---- Tests if the `thing` is an `Observer`.
----
---- Parameters:
----  * thing   - The thing to test.
----
---- Returns:
----  * `true` if the thing is an `Observer`, otherwise `false`.
-function Observer.is(thing)
-    return util.isa(thing, Observer)
-end
-
---- cp.rx.Observer.create(onNext, onError, onCompleted) -> cp.rx.Observer
---- Constructor
---- Creates a new Observer.
----
---- Parameters:
----  * onNext      - Called when the Observable produces a value.
----  * onError     - Called when the Observable terminates due to an error.
----  * onCompleted - Called when the Observable completes normally.
----
---- Returns:
----  * The new Observer.
-function Observer.create(onNext, onError, onCompleted)
-  local self = {
-    _onNext = onNext or util.noop,
-    _onError = onError or error,
-    _onCompleted = onCompleted or util.noop,
-    stopped = false
-  }
-
-  return setmetatable(self, Observer)
-end
-
---- cp.rx.Observer:onNext(...) -> nil
---- Method
---- Pushes zero or more values to the Observer.
----
---- Parameters:
----  * ...     - The list of values to send.
----
---- Returns:
----  * Nothing
-function Observer:onNext(...)
-  if not self.stopped then
-    self._onNext(...)
-  end
-end
-
---- cp.rx.Observer:onError(message) -> nil
---- Method
---- Notify the Observer that an error has occurred.
----
---- Parameters:
----  * message  - A string describing what went wrong.
----
---- Returns:
----  * Nothing
-function Observer:onError(message)
-  if not self.stopped then
-    self.stopped = true
-    self._onError(message)
-  end
-end
-
---- cp.rx.Observer:onCompleted() -> nil
---- Method
---- Notify the Observer that the sequence has completed and will produce no more values.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Nothing
-function Observer:onCompleted()
-  if not self.stopped then
-    self.stopped = true
-    self._onCompleted()
-  end
-end
-
---- === cp.rx.Observable ===
----
---- Observables push values to [Observers](cp.rx.Observer.md).
 local Observable = {}
 Observable.__index = Observable
 Observable.__tostring = util.constant('Observable')
@@ -507,7 +327,7 @@ function Observable:all(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -676,7 +496,7 @@ end
 function Observable:buffer(size)
   return Observable.create(function(observer)
     local buffer = {}
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       if active then
@@ -737,7 +557,7 @@ function Observable:catch(handler)
   handler = handler and (type(handler) == 'function' and handler or util.constant(handler))
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -879,7 +699,7 @@ function Observable:concat(other, ...)
   local others = {...}
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -935,7 +755,7 @@ end
 ---  * The new `Observable`.
 function Observable:contains(value)
   return Observable.create(function(observer)
-    local active, reference = true
+    local active, reference = true, nil
 
     local function done()
       active = false
@@ -999,7 +819,7 @@ function Observable:count(predicate)
   predicate = predicate or util.constant(true)
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local count = 0
 
     local function done()
@@ -1048,7 +868,7 @@ end
 ---
 --- Parameters:
 ---  * time        - The number of milliseconds.
----  * scheduler   - The scheduler. Uses the [defaultScheduler](cp.rx.util#defaultScheduler) by default.
+---  * scheduler   - The scheduler. If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 ---  * The new `Observable`.
@@ -1098,7 +918,7 @@ function Observable:defaultIfEmpty(...)
   local defaults = util.pack(...)
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local hasValue = false
 
     local function done()
@@ -1146,7 +966,7 @@ end
 --- Parameters:
 ---  * time      - An amount in milliseconds to delay by, or a `function` which returns
 ---               this value.
----  * scheduler - The [Scheduler](cp.rx.Scheduler.md) to run the `Observable` on.
+---  * scheduler - The [Scheduler](cp.rx.Scheduler.md) to run the `Observable` on. If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 ---  * The new `Observable`.
@@ -1304,7 +1124,7 @@ function Observable:filter(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1359,7 +1179,7 @@ end
 ---  * The new `Observable`.
 function Observable:switchIfEmpty(alternate)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local hasNext = false
 
     local function done()
@@ -1414,7 +1234,7 @@ end
 ---  * The new `Observable`.
 function Observable:finalize(handler)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1470,7 +1290,7 @@ function Observable:find(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1545,7 +1365,7 @@ end
 ---  * This is similar to [#first], but will not throw an error if no `onNext` signal is sent before `onCompleted`.
 function Observable:next()
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -1611,7 +1431,7 @@ end
 function Observable:flatMapLatest(callback)
   callback = callback or util.identity
   return Observable.create(function(observer)
-    local active, outerRef, innerRef = true
+    local active, outerRef, innerRef = true, nil, nil
 
     local function cancelOuter()
       if outerRef then
@@ -2040,7 +1860,7 @@ function Observable:reject(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -2222,7 +2042,7 @@ function Observable:sample(sampler)
   if not Observable.is(sampler) then error('Expected an Observable') end
 
   return Observable.create(function(observer)
-    local active, sourceRef, sampleRef = true
+    local active, sourceRef, sampleRef = true, nil, nil
     local latest = {}
 
     local function cancelSource()
@@ -2290,7 +2110,7 @@ end
 ---  * The new `Observable`.
 function Observable:scan(accumulator, seed)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local result = seed
     local first = true
 
@@ -2472,7 +2292,7 @@ end
 ---  * The new `Observable`.
 function Observable:skipUntil(other)
   return Observable.create(function(observer)
-    local active, ref, otherRef = true
+    local active, ref, otherRef = true, nil, nil
     local triggered = false
 
     local function cancelOther()
@@ -2628,7 +2448,7 @@ end
 ---  * The new `Observable`.
 function Observable:switch()
   return Observable.create(function(observer)
-    local active, ref, sourceRef = true
+    local active, ref, sourceRef = true, nil, nil
 
     local function cancelSource()
       if sourceRef then
@@ -2758,7 +2578,7 @@ end
 ---  * The new `Observable`.
 function Observable:takeLast(count)
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local buff = buffer.new()
 
     local function done()
@@ -2813,7 +2633,7 @@ end
 ---  * The new `Observable`.
 function Observable:takeUntil(other)
   return Observable.create(function(observer)
-    local active, ref, otherRef = true
+    local active, ref, otherRef = true, nil, nil
     local function done()
       active = false
       if ref then
@@ -2865,7 +2685,7 @@ function Observable:takeWhile(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local taking = true
 
     local function done()
@@ -2932,7 +2752,7 @@ function Observable:tap(_onNext, _onError, _onCompleted)
   _onCompleted = _onCompleted or util.noop
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
 
     local function done()
       active = false
@@ -2992,7 +2812,7 @@ end
 --- Parameters:
 ---  * timeInMs          - The time in milliseconds to wait before an error is emitted.
 ---  * next              - If a `string`, it will be sent as an error. If an `Observable`, switch to that `Observable` instead of sending an error.
----  * scheduler         - The scheduler to use. Uses the [defaultScheduler](cp.rx.util#defaultSubscriber) if not provided.
+---  * scheduler         - The scheduler to use. If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 ---  * The new `Observable`.
@@ -3001,7 +2821,7 @@ function Observable:timeout(timeInMs, next, scheduler)
   scheduler = scheduler or util.defaultScheduler()
 
   return Observable.create(function(observer)
-    local active, ref, actionRef = true
+    local active, ref, actionRef = true, nil, nil
 
     local function cancelRef()
       if ref then
@@ -3139,7 +2959,7 @@ function Observable:with(...)
   local sources = {...}
 
   return Observable.create(function(observer)
-    local active, ref = true
+    local active, ref = true, nil
     local latest = List.sized(#sources)
     local sourceRefs = List.sized(#sources)
 
@@ -3316,675 +3136,7 @@ function Observable.zip(...)
   end)
 end
 
---- === cp.rx.ImmediateScheduler ===
----
---- Schedules `Observables` by running all operations immediately.
-local ImmediateScheduler = {}
-ImmediateScheduler.__index = ImmediateScheduler
-ImmediateScheduler.__tostring = util.constant('ImmediateScheduler')
-
---- cp.rx.ImmediateScheduler.create() -> cp.rx.ImmediageScheduler
---- Constructor
---- Creates a new `ImmediateScheduler`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The new `ImmediateScheduler`.
-function ImmediateScheduler.create()
-  return setmetatable({}, ImmediateScheduler)
-end
-
---- cp.rx.ImmediateScheduler:schedule(action) -> cp.rx.Reference
---- Method
---- Schedules a `function` to be run on the scheduler. It is executed immediately.
----
---- Parameters:
----  * action    - The `function` to execute.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md).
-function ImmediateScheduler:schedule(action) --luacheck: ignore
-  action()
-  return Reference.create()
-end
-
---- === cp.rx.CooperativeScheduler ===
----
---- Manages [Observables](cp.rx.Observer.md) using `coroutines` and a virtual clock that must be updated
---- manually.
-local CooperativeScheduler = {}
-CooperativeScheduler.__index = CooperativeScheduler
-CooperativeScheduler.__tostring = util.constant('CooperativeScheduler')
-
---- cp.rx.CooperativeScheduler.create([currentTime]) -> cp.rx.CooperativeScheduler
---- Constructor
---- Creates a new `CooperativeScheduler`.
----
---- Parameters:
----  * currentTime     - A time to start the scheduler at. Defaults to `0`.
----
---- Returns:
----  * The new `CooperativeScheduler`.
-function CooperativeScheduler.create(currentTime)
-  local self = {
-    tasks = {},
-    currentTime = currentTime or 0
-  }
-
-  return setmetatable(self, CooperativeScheduler)
-end
-
---- cp.rx.CooperativeScheduler:schedule(action[, delay]) -> cp.rx.Reference
---- Method
---- Schedules a `function` to be run after an optional delay.  Returns a [Reference](cp.rx.Reference.md) that will stop
---- the action from running.
----
---- Parameters:
----  * action      - The `function` to execute. Will be converted into a coroutine. The
----                 coroutine may yield execution back to the scheduler with an optional
----                 number, which will put it to sleep for a time period.
----  * delay       - Delay execution of the action by a virtual time period. Defaults to `0`.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md).
-function CooperativeScheduler:schedule(action, delay)
-  local task = {
-    thread = coroutine.create(action),
-    due = self.currentTime + (delay or 0)
-  }
-
-  insert(self.tasks, task)
-
-  return Reference.create(function()
-    return self:unschedule(task)
-  end)
-end
-
-function CooperativeScheduler:unschedule(task)
-  for i = 1, #self.tasks do
-    if self.tasks[i] == task then
-      remove(self.tasks, i)
-    end
-  end
-end
-
---- cp.rx.CooperativeScheduler:update(delta) -> nil
---- Method
---- Triggers an update of the `CooperativeScheduler`. The clock will be advanced and the scheduler
---- will run any coroutines that are due to be run.
----
---- Parameters:
----  * delta     - An amount of time to advance the clock by. It is common to pass in the
---                time in seconds or milliseconds elapsed since this function was last
---                called. Defaults to `0`.
-function CooperativeScheduler:update(delta)
-  self.currentTime = self.currentTime + (delta or 0)
-
-  local i = 1
-  while i <= #self.tasks do
-    local task = self.tasks[i]
-
-    if self.currentTime >= task.due then
-      local success, delay = coroutine.resume(task.thread)
-
-      if coroutine.status(task.thread) == 'dead' then
-        remove(self.tasks, i)
-      else
-        task.due = math.max(task.due + (delay or 0), self.currentTime)
-        i = i + 1
-      end
-
-      if not success then
-        error(delay)
-      end
-    else
-      i = i + 1
-    end
-  end
-end
-
---- cp.rx.CooperativeScheduler:isEmpth() -> cp.rx.CooperativeScheduler
---- Method
---- Returns whether or not the `CooperativeScheduler`'s queue is empty.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the scheduler is empty, otherwise `false`.
-function CooperativeScheduler:isEmpty()
-  return not next(self.tasks)
-end
-
---- === cp.rx.TimeoutScheduler ===
----
---- A scheduler that uses the `hs.timer` library to schedule events on an event loop.
-local TimeoutScheduler = {}
-TimeoutScheduler.__index = TimeoutScheduler
-TimeoutScheduler.__tostring = util.constant('TimeoutScheduler')
-
---- cp.rx.TimeoutScheduler.create() -> cp.rx.TimeoutScheduler
---- Method
---- Creates a new `TimeoutScheduler`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The new `TimeoutScheduler`.
-function TimeoutScheduler.create()
-  return setmetatable({_timers = {}}, TimeoutScheduler)
-end
-
---- cp.rx.TimeoutScheduler:schedule(action[, delay]) -> cp.rx.TimeoutScheduler
---- Method
---- Schedules an action to run at a future point in time.
----
---- Parameters:
----  * action  - The action to run.
----  * delay   - The delay, in milliseconds. Defaults to `0`.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md).
-function TimeoutScheduler:schedule(action, delay)
-  delay = delay or 0
-  local t = doAfter(delay/1000.0, action)
-  self._timers[t] = true
-
-  return Reference.create(function()
-    t:stop()
-    self._timers[t] = nil
-  end)
-end
-
---- cp.rx.TimeoutScheduler:stopAll() -> nil
---- Method
---- Stops all future timers from running and clears them.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function TimeoutScheduler:stopAll()
-    for t,_ in pairs(self._timers) do
-        t:stop()
-    end
-    self._timers = {}
-end
-
--- default to using the TimeoutScheduler
-util.defaultScheduler(TimeoutScheduler.create())
-
---- === cp.rx.Subject ===
----
---- `Subjects` function both as an [Observer](cp.rs.Observer.md) and as an [Observable](cp.rx.Observable.md). Subjects inherit all
---- `Observable` functions, including [subscribe](#subscribe). Values can also be pushed to the `Subject`, which will
---- be broadcasted to any subscribed [Observers](cp.rx.Observers.md).
-local Subject = setmetatable({}, Observable)
-Subject.__index = Subject
-Subject.__tostring = util.constant('Subject')
-
----- Creates a new Subject.
--- @returns {Subject}
-function Subject.create()
-  local self = {
-    observers = {},
-    stopped = false
-  }
-
-  return setmetatable(self, Subject)
-end
-
---- cp.rx.Subject:subscribe(onNext[, onError[, onCompleted]]) -> cp.rx.Reference
---- Method
---- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the Subject.
----
---- Parameters:
----  * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a `function` called
----                           when the `Subject` produces a value.
----  * onError               - A `function` called when the `Subject` terminates due to an error.
----  * onCompleted           - A `function` called when the `Subject` completes normally.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md)
-function Subject:subscribe(onNext, onError, onCompleted)
-  local observer
-
-  if util.isa(onNext, Observer) then
-    observer = onNext
-  else
-    observer = Observer.create(onNext, onError, onCompleted)
-  end
-
-  if self.stopped then
-    observer:onError("Subject has already stopped.")
-    return Reference.create(util.noop)
-  end
-
-  insert(self.observers, observer)
-
-  return Reference.create(function()
-    if not self.stopping then
-      for i = 1, #self.observers do
-        if self.observers[i] == observer then
-          remove(self.observers, i)
-          return
-        end
-      end
-    end
-  end)
-end
-
--- cp.rx.Subject:_stop() -> nil
--- Method
--- Stops future signals from being sent, and unsubscribes any observers.
-function Subject:_stop()
-  self.stopped = true
-  self.observers = {}
-end
-
---- cp.rx.Subject:onNext(...) -> nil
---- Method
---- Pushes zero or more values to the `Subject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
----
---- Parameters:
----  * ...       - The values to send.
-function Subject:onNext(...)
-  if not self.stopped then
-    local observer
-    for i = 1, #self.observers do
-      observer = self.observers[i]
-      if observer then observer:onNext(...) end
-    end
-  end
-end
-
---- cp.rx.Subject:onError(message) -> nil
---- Method
---- Signal to all `Observers` that an error has occurred.
----
---- Parameters:
----  * message     - A string describing what went wrong.
-function Subject:onError(message)
-  if not self.stopped then
-    self.stopping = true
-    local observer
-    for i = 1, #self.observers do
-      observer = self.observers[i]
-      if observer then observer:onError(message) end
-    end
-    self.stopping = true
-    self:_stop()
-  end
-end
-
---- cp.rx.Subject:onCompleted() -> nil
---- Method
---- Signal to all [Observers](cp.rx.Observer.md) that the `Subject` will not produce any more values.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function Subject:onCompleted()
-  if not self.stopped then
-    self.stopping = true
-    local observer
-    for i = 1, #self.observers do
-      observer = self.observers[i]
-      if observer then observer:onCompleted() end
-    end
-    self.stopping = true
-    self:_stop()
-  end
-end
-
-Subject.__call = Subject.onNext
-
---- === cp.rx.AsyncSubject ===
----
---- `AsyncSubjects` are subjects that produce either no values or a single value.  If
---- multiple values are produced via `onNext`, only the last one is used.  If `onError` is called, then
---- no value is produced and `onError` is called on any subscribed [Observers](cp.rx.Observers.md).
---- If an [Observer](cp.rx.Observer.md) subscribes and the `AsyncSubject` has already terminated,
---- the `Observer` will immediately receive the value or the error.
-local AsyncSubject = setmetatable({}, Observable)
-AsyncSubject.__index = AsyncSubject
-AsyncSubject.__tostring = util.constant('AsyncSubject')
-
---- cp.rx.AsyncSubject.create() -> cp.rx.AsyncSubject
---- Constructor
---- Creates a new `AsyncSubject`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The new `AsyncSubject`.
-function AsyncSubject.create()
-  local self = {
-    observers = {},
-    stopped = false,
-    value = nil,
-    errorMessage = nil
-  }
-
-  return setmetatable(self, AsyncSubject)
-end
-
---- cp.rx.AsyncSubject:subscribe(onNext, onError, onCompleted) -> cp.rx.Reference
---- Method
---- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `AsyncSubject`.
----
---- Parameters:
----  * onNext | observer - A `function` called when the `AsyncSubject` produces a value
----                       or an existing [Observer](cp.rx.Observer.md) to attach to the `AsyncSubject`.
----  * onError           - A `function` called when the `AsyncSubject` terminates due to an error.
----  * onCompleted       - A `funtion` called when the `AsyncSubject` completes normally.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md).
-function AsyncSubject:subscribe(onNext, onError, onCompleted)
-  local observer
-
-  if util.isa(onNext, Observer) then
-    observer = onNext
-  else
-    observer = Observer.create(onNext, onError, onCompleted)
-  end
-
-  if self.value then
-    observer:onNext(util.unpack(self.value))
-    observer:onCompleted()
-    return Reference.create(util.noop)
-  elseif self.errorMessage then
-    observer:onError(self.errorMessage)
-    return Reference.create(util.noop)
-  else
-    insert(self.observers, observer)
-
-    return Reference.create(function()
-      for i = 1, #self.observers do
-        if self.observers[i] == observer then
-          remove(self.observers, i)
-          return
-        end
-      end
-    end)
-  end
-end
-
---- cp.rx.AsyncSubject:onNext(...) -> nil
---- Method
---- Pushes zero or more values to the `AsyncSubject`.
----
---- Parameters:
----  * ...       - The values to send.
-function AsyncSubject:onNext(...)
-  if not self.stopped then
-    self.value = util.pack(...)
-  end
-end
-
---- cp.rx.AsyncSubject:onError(message) -> nil
---- Method
---- Signal to all [Observers](cp.rx.Observer.md) that an error has occurred.
----
---- Parameters:
----  * message     - A string describing what went wrong.
-function AsyncSubject:onError(message)
-  if not self.stopped then
-    self.errorMessage = message
-
-    for i = 1, #self.observers do
-      self.observers[i]:onError(self.errorMessage)
-    end
-
-    self.stopped = true
-    self.observers = {}
-  end
-end
-
---- cp.rx.AsyncSubject:onCompleted() -> nil
---- Method
---- Signal to all [Observers](cp.rx.Observers.md) that the `AsyncSubject` will not produce any more values.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function AsyncSubject:onCompleted()
-  if not self.stopped then
-    for i = 1, #self.observers do
-      if self.value then
-        self.observers[i]:onNext(util.unpack(self.value))
-      end
-
-      self.observers[i]:onCompleted()
-    end
-
-    self.stopped = true
-    self.observers = {}
-  end
-end
-
-AsyncSubject.__call = AsyncSubject.onNext
-
---- === cp.rx.BehaviorSubject ===
----
---- A [Subject](cp.rx.Subject.md) that tracks its current value. Provides an accessor to retrieve the most
---- recent pushed value, and all subscribers immediately receive the latest value.
-local BehaviorSubject = setmetatable({}, Subject)
-BehaviorSubject.__index = BehaviorSubject
-BehaviorSubject.__tostring = util.constant('BehaviorSubject')
-
---- cp.rx.BehaviorSubject.create(...) -> cp.rx.BehaviorSubject
---- Method
---- Creates a new `BehaviorSubject`.
----
---- Parameters:
----  * ...     - The initial values.
----
---- Returns:
----  * The new `BehaviorSubject`.
-function BehaviorSubject.create(...)
-  local self = {
-    observers = {},
-    stopped = false
-  }
-
-  if select('#', ...) > 0 then
-    self.value = util.pack(...)
-  end
-
-  return setmetatable(self, BehaviorSubject)
-end
-
---- cp.rx.BehaviorSubject:subscribe(observer | onNext, onError, onCompleted) -> cp.rx.Reference
---- Method
---- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `BehaviorSubject`. Immediately broadcasts the most
---- recent value to the [Observer](cp.rx.Observer.md).
----
---- Parameters:
----  * observer | onNext       - The [Observer](cp.rx.Observer.md) subscribing, or the `function` called when the
----                             `BehaviorSubject` produces a value.
----  * onError                 - A `function` called when the `BehaviorSubject` terminates due to an error.
----  * onCompleted             - A `function` called when the `BehaviorSubject` completes normally.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md)
-function BehaviorSubject:subscribe(onNext, onError, onCompleted)
-  local observer
-
-  if util.isa(onNext, Observer) then
-    observer = onNext
-  else
-    observer = Observer.create(onNext, onError, onCompleted)
-  end
-
-  local reference = Subject.subscribe(self, observer)
-
-  if self.value then
-    observer:onNext(util.unpack(self.value))
-  end
-
-  return reference
-end
-
---- cp.rx.BehaviorSubject:onNext(...) -> nil
---- Method
---- Pushes zero or more values to the `BehaviorSubject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
----
---- Parameters:
----  * ...     - The values to send.
-function BehaviorSubject:onNext(...)
-  self.value = util.pack(...)
-  return Subject.onNext(self, ...)
-end
-
---- cp.rx.BehaviorSubject:getValue() -> anything
---- Method
---- Returns the last value emitted by the `BehaviorSubject`, or the initial value passed to the
---- constructor if nothing has been emitted yet.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The last value.
----
---- Note:
----  * You can also call the `BehaviorSubject` as a function to retrieve the value. E.g. `mySubject()`.
-function BehaviorSubject:getValue()
-  if self.value ~= nil then
-    return util.unpack(self.value)
-  end
-end
-
-BehaviorSubject.__call = BehaviorSubject.onNext
-
---- === cp.rx.RelaySubject ===
----
---- A [Subject](cp.rx.Subject.md) that provides new [Observers](cp.rx.Observer.md) with some or all of the most recently
---- produced values upon reference.
-local ReplaySubject = setmetatable({}, Subject)
-ReplaySubject.__index = ReplaySubject
-ReplaySubject.__tostring = util.constant('ReplaySubject')
-
---- cp.rx.RelaySubject.create([n]) -> cp.rx.RelaySubject
---- Constructor
---- Creates a new `ReplaySubject`.
----
---- Parameters:
----  * bufferSize      - The number of values to send to new subscribers. If `nil`, an infinite
----                     buffer is used (note that this could lead to memory issues).
----
---- Returns:
----  * The new `ReplaySubject.
-function ReplaySubject.create(n)
-  local self = {
-    observers = {},
-    stopped = false,
-    completed = false,
-    err = nil,
-    buffer = Queue(),
-    bufferSize = n
-  }
-
-  return setmetatable(self, ReplaySubject)
-end
-
---- cp.rx.RelaySubject:subscribe([observer | onNext[, onError[, onCompleted]]]) -> cp.rx.Reference
---- Method
---- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `ReplaySubject`.
---- Immediately broadcasts the most recent contents of the buffer to the Observer.
----
---- Parameters:
----  * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a
----                           `function` to call when the `ReplaySubject` produces a value.
----  * onError               - A `function` to call when the `ReplaySubject` terminates due to an error.
----  * onCompleted           - A `function` to call when the ReplaySubject completes normally.
----
---- Returns:
----  * The [Reference](cp.rx.Reference.md).
-function ReplaySubject:subscribe(onNext, onError, onCompleted)
-  local observer
-
-  if util.isa(onNext, Observer) then
-    observer = onNext
-  else
-    observer = Observer.create(onNext, onError, onCompleted)
-  end
-
-  if self.buffer then
-    for i = 1, #self.buffer do
-      observer:onNext(util.unpack(self.buffer[i]))
-    end
-  end
-
-  if self.stopped then
-    if self.completed then
-      observer:onCompleted()
-    else
-      observer:onError(self.err)
-    end
-    return Reference.create(util.noop)
-  else
-    return Subject.subscribe(self, observer)
-  end
-end
-
---- cp.rx.RelaySubject:onNext(...) -> nil
---- Method
---- Pushes zero or more values to the `ReplaySubject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
----
---- Parameters:
----  * ...   - The values to send.
-function ReplaySubject:onNext(...)
-  if not self.stopped then
-    self.buffer:pushRight(util.pack(...))
-    if self.bufferSize and #self.buffer > self.bufferSize then
-      self.buffer:popLeft()
-    end
-
-    Subject.onNext(self, ...)
-  end
-end
-
-function ReplaySubject:onError(err)
-  if not self.stopped then
-    self.err = err
-    Subject.onError(self, err)
-  end
-end
-
-function ReplaySubject:onCompleted()
-  if not self.stopped then
-    self.completed = true
-    Subject.onCompleted(self)
-  end
-end
-
-ReplaySubject.__call = ReplaySubject.onNext
-
 Observable.wrap = Observable.buffer
 Observable['repeat'] = Observable.replicate
 
-return {
-  util = util,
-  Reference = Reference,
-  Observer = Observer,
-  Observable = Observable,
-  ImmediateScheduler = ImmediateScheduler,
-  CooperativeScheduler = CooperativeScheduler,
-  TimeoutScheduler = TimeoutScheduler,
-  Subject = Subject,
-  AsyncSubject = AsyncSubject,
-  BehaviorSubject = BehaviorSubject,
-  ReplaySubject = ReplaySubject
-}
+return Observable

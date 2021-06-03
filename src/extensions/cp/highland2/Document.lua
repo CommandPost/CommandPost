@@ -71,7 +71,7 @@ end
 --- Field
 --- A [Statement](cp.rx.go.Statement.md) that will show the `Document` when run.
 function Document.lazy.value:doShow()
-    return Do(self:doFocus()):Label("Document.show")
+    return Do(self:doFocus())
 end
 
 return Document

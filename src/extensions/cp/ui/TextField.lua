@@ -168,7 +168,6 @@ function TextField.lazy.method:doConfirm()
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("TextField:doConfirm")
 end
 
 --- cp.ui.TextField:doFocus() -> cp.rx.go.Statement
@@ -188,7 +187,6 @@ function TextField.lazy.method:doFocus()
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("TextField:doFocus")
 end
 
 --- cp.ui.TextField:saveLayout() -> table

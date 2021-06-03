@@ -7,7 +7,7 @@
 --- For example:
 ---
 --- ```lua
---- local previewPrefs = require("cp.app.prefs") "com.apple.Preview"
+--- local previewPrefs = require "cp.app.prefs" "com.apple.Preview"
 --- previewPrefs.MyCustomPreference = "Hello world"
 --- print(previewPrefs.MyCustomPreference) --> "Hello world"
 ---
@@ -184,7 +184,7 @@ function mod.static.get(prefs, key, defaultValue)
     return defaultValue
 end
 
---- cp.app.prefs.set(prefs, key, value) -> none
+--- cp.app.prefs.set(prefs, key, value[, defaultValue]) -> none
 --- Function
 --- Sets the key/value for the specified `prefs` instance.
 ---
@@ -192,14 +192,23 @@ end
 ---  * prefs     - The `prefs` instance.
 ---  * key       - The key to set.
 ---  * value     - the new value.
+---  * defaultValue - The default value.
 ---
 --- Returns:
 ---  * Nothing.
-function mod.static.set(prefs, key, value)
+---
+--- Notes:
+---  * If the `value` equals the `defaultValue`, the preference is removed rather than being `set`.
+function mod.static.set(prefs, key, value, defaultValue)
     local data = metadata(prefs)
     local bundleID = data and data.bundleID
     if bundleID and key then
-        cfprefs.setValue(key, value, bundleID)
+        if value == defaultValue then
+            -- delete the pref if current value is the default value.
+            cfprefs.setValue(key, nil, bundleID)
+        else
+            cfprefs.setValue(key, value, bundleID)
+        end
         cfprefs.synchronize(bundleID)
 
         -- update the cp.prop if it exists.
@@ -211,7 +220,7 @@ function mod.static.set(prefs, key, value)
     end
 end
 
---- cp.app.prefs.prop(prefs, key[, defaultValue]) -> cp.prop
+--- cp.app.prefs.prop(prefs, key[, defaultValue[, deepTable]]) -> cp.prop
 --- Function
 --- Retrieves the `cp.prop` for the specified key. It can be `watched` for changes.
 --- Subsequent calls will return the same `cp.prop` instance.
@@ -219,7 +228,7 @@ end
 --- Parameters:
 ---  * prefs         - The `prefs` instance.
 ---  * key           - The key to get/set.
----  * defaultValue  - The value if no default values is currently set.
+---  * defaultValue  - The value if no default values is currently set (defaults to `nil`).
 ---  * deepTable     - Should the prop use deep table (defaults to `true`).
 ---
 --- Returns:
@@ -231,7 +240,7 @@ function mod.static.prop(prefs, key, defaultValue, deepTable)
     if not propValue then
         propValue = prop.new(
             function() return mod.get(prefs, key, defaultValue) end,
-            function(value) mod.set(prefs, key, value) end
+            function(value) mod.set(prefs, key, value, defaultValue) end
         ):label(key):preWatch(function() watchFiles(prefs) end)
         if deepTable == true or deepTable == nil then
             propValue:deepTable()

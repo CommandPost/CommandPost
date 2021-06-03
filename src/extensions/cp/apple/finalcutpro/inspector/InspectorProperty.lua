@@ -85,7 +85,7 @@ local function propDoShow(self)
         self.section:expanded(true)
     end)
     :ThenYield()
-    :Label("PropertyRow:doShow")
+    :Label("cp.apple.finalcutpro.inspector.PropertyRow:doShow()")
 end
 
 local function propDoHide(self)
@@ -93,7 +93,7 @@ local function propDoHide(self)
         self.section:expanded(false)
     end)
     :ThenYield()
-    :Label("PropertyRow:doHide")
+    :Label("cp.apple.finalcutpro.inspector.PropertyRow:doHide()")
 end
 
 --- cp.apple.finalcutpro.inspector.InspectorProperty.section(labelKey[, index]) -> function

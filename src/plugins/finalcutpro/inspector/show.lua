@@ -68,12 +68,11 @@ function plugin.init(deps)
 
     deps.fcpxCmds
         :add("modifyProject")
-        :whenActivated(function()
+        :whenActivated(
             Do(fcp.inspector.projectInfo:doShow())
                 :Then(fcp.inspector.projectInfo.modify:doPress())
                 :Label("plugins.finalcutpro.inspector.show.modifyProject")
-                :Now()
-        end)
+        )
         :titled(i18n("modifyProject"))
 end
 

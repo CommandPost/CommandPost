@@ -164,7 +164,7 @@ function MenuButton:doSelectItem(index)
     return If(self:doShowMenu())
     :Then(self.menu:doSelectItem(index))
     :Otherwise(false)
-    :Label("MenuButton:doSelectItem")
+    :Label("cp.ui.MenuButton:doSelectItem(index)")
 end
 
 --- cp.ui.MenuButton:doSelectValue(value) -> cp.rx.go.Statement
@@ -180,7 +180,7 @@ function MenuButton:doSelectValue(value)
     return If(self:doShowMenu())
     :Then(self.menu:doSelectValue(value))
     :Otherwise(false)
-    :Label("MenuButton:doSelectValue")
+    :Label("cp.ui.MenuButton:doSelectValue(value)")
 end
 
 --- cp.ui.MenuButton:selectItemMatching(pattern) -> boolean
@@ -243,7 +243,7 @@ function MenuButton:doSelectItemMatching(pattern, altPattern)
     return If(self:doShowMenu())
     :Then(self.menu:doSelectItemMatching(pattern, altPattern))
     :Otherwise(false)
-    :Label("MenuButton:doSelectItemMatching")
+    :Label("cp.ui.MenuButton:doSelectItemMatching(pattern, altPattern)")
 end
 
 --- cp.ui.MenuButton:getTitle() -> string | nil
@@ -320,7 +320,6 @@ function MenuButton.lazy.method:doPress()
     end)
     :ThenYield()
     :Otherwise(false)
-    :Label("MenuButton:doPress")
 end
 
 --- cp.ui.MenuButton:doShowMenu() -> cp.rx.go.Statement
@@ -336,7 +335,6 @@ function MenuButton.lazy.method:doShowMenu()
     return If(self.menu.isShowing):Is(false)
     :Then(If(self:doPress()):Then(WaitUntil(self.menu.isShowing):TimeoutAfter(TIMEOUT_AFTER)))
     :Otherwise(true)
-    :Label("MenuButton:doShowMenu")
 end
 
 --- cp.ui.MenuButton:saveLayout() -> table

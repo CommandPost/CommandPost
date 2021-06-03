@@ -402,7 +402,7 @@ function ColorWell:select()
 end
 
 function ColorWell.lazy.method:doSelect()
-    return self:parent():doSelect():Label("ColorWell:doSelect")
+    return Do(self:parent():doSelect())
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell:nudge(right, up) -> self

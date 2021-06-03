@@ -1704,6 +1704,8 @@
     "restoreBrowserLayoutForSelectedCollection_title": "Restore Browser Layout for Selected Collection",
     "restoreBrowserLayoutToMemory": "Restore Browser Layout to Memory",
     "restoreHiddenKeyword": "Restore Hidden Keyword",
+    "retimeToDuration": "Retime to Duration",
+    "retimeToDurationDescription": "Reveals the Custom Speed popup, 'Duration' and waits for the new duration to be entered.",
     "revealInKeywordCollection": "Reveal in Keyword Collection",
     "revealInKeywordCollectionAndSolo": "Reveal in Keyword Collection & Solo",
     "revealInKeywordCollectionAndSoloDescription": "Reveals the currently selected timeline clip in a specific Browser Keyword Collection & solo's it",

@@ -148,7 +148,6 @@ function ColorInspector.lazy.method:doShow()
     )
     :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the Color Inspector"))
     :Otherwise(true)
-    :Label("ColorInspector:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self
@@ -178,7 +177,8 @@ end
 --- Returns:
 ---  * The `Statement`, which sends a single `true` value if successful, or sends an error if not.
 function ColorInspector:doActivateCorrection(correctionType, number)
-    return self.corrections:doActivate(correctionType, number):Label("ColorInspector:doActivateCorrection")
+    return self.corrections:doActivate(correctionType, number):
+    Label("ColorInspector:doActivateCorrection")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:addCorrection(correctionType) -> self
@@ -205,7 +205,8 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if successful, or sending an error if not.
 function ColorInspector:doAddCorrection(correctionType)
-    return self.corrections:doAdd(correctionType):Label("ColorInspector:doAddCorrection")
+    return self.corrections:doAdd(correctionType):
+    Label("cp.apple.finalcutpro.inspector.color.ColorInspector:doAddCorrection")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:hide() -> ColorInspector

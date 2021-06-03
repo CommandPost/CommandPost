@@ -101,7 +101,8 @@ function plugin.init(deps)
                     )
                     :Finally(function() updating(false) end)
                 )
-            ):Label("colorboardv2:update")
+            )
+            :Label("plugins.finalcutpro.timeline.colorboardv2:update")
 
             updateUI:action(update)
 

@@ -62,7 +62,7 @@ end
 --- ```
 ---
 --- Parameters:
----  * requirement  - a `resolvable` value that will be checked.
+---  * value  - a `resolvable` value that will be checked.
 ---
 --- Returns:
 ---  * The `Statement` instance which will check if the `resolvable` matches the requirement.
@@ -76,7 +76,7 @@ local If = Statement.named("If")
 end)
 :onObservable(function(context)
     local thens = context.thens
-    assert(#thens > 0, "Please specify a 'Then'")
+    assert(#thens > 0, "Please specify a 'Then'.")
 
     -- we only deal with the first result
     local o = toObservable(context.value):next()

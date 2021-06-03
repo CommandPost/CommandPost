@@ -267,13 +267,6 @@ end
 --- Field
 --- The Final Cut Pro `axuielement`, if available.
 
---- cp.apple.finalcutpro.windowsUI <cp.prop: hs.axuielement; read-only; live>
---- Field
---- Returns the UI containing the list of windows in the app.
-function fcp.lazy.prop:windowsUI()
-    return self.app.windowsUI
-end
-
 --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only; live>
 --- Field
 --- Is Final Cut visible on screen?
@@ -357,67 +350,6 @@ end
 function fcp:keysWithString(string, locale)
     return self.strings:findKeys(string, locale)
 end
-
---- cp.apple.finalcutpro:launch([waitSeconds], [path]) -> self
---- Method
---- Launches Final Cut Pro, or brings it to the front if it was already running.
----
---- Parameters:
----  * `waitSeconds` - If provided, the number of seconds to wait until the launch
----                    completes. If `nil`, it will return immediately.
----  * `path`        - An optional full path to an application without an extension
----                    (i.e `/Applications/Final Cut Pro 10.3.4`). This allows you to
----                    load previous versions of the application.
----
---- Returns:
----  * The FCP instance.
-function fcp:launch(waitSeconds, path)
-    self.app:launch(waitSeconds, path)
-    return self
-end
-
---- cp.apple.finalcutpro:show() -> cp.apple.finalcutpro
---- Method
---- Activate Final Cut Pro, if it is running.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The FCP instance.
-function fcp:show()
-    self.app:show()
-    return self
-end
-
---- cp.apple.finalcutpro:hide() -> self
---- Method
---- Hides Final Cut Pro
----
---- Parameters:
----  * None
----
---- Returns:
----  * The FCP instance.
-function fcp:hide()
-    self.app:hide()
-    return self
-end
-
---- cp.apple.finalcutpro:quit([waitSeconds]) -> self
---- Method
---- Quits Final Cut Pro, if it's running.
----
---- Parameters:
----  * waitSeconds      - The number of seconds to wait for the quit to complete.
----
---- Returns:
----  * The FCP instance.
-function fcp:quit(waitSeconds)
-    self.app:quit(waitSeconds)
-    return self
-end
-
 
 --- cp.apple.finalcutpro:getPath() -> string or nil
 --- Method
@@ -1157,47 +1089,9 @@ function fcp:doShortcut(whichShortcut)
     :Label("fcp:doShortcut:"..whichShortcut)
 end
 
-----------------------------------------------------------------------------------------
---
--- LANGUAGE
---
-----------------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro:isSupportedLocale(locale) -> boolean
---- Method
---- Checks if the provided `locale` is supported by the app.
----
---- Parameters:
----  * `language`	- The `cp.i18n.localeID` or string code. E.g. "en" or "zh_CN"
----
---- Returns:
----  * `true` if the locale is supported.
-function fcp:isSupportedLocale(locale)
-    return self.app:isSupportedLocale(locale)
-end
-
---------------------------------------------------------------------------------
---
--- DEVELOPMENT TOOLS
---
---------------------------------------------------------------------------------
-
--- cp.apple.finalcutpro:searchResources(value) -> hs.task
--- Method
--- Searches the resources inside the FCP app for the specified value.
---
--- Parameters:
--- * value      - The value to search for.
---
--- Returns:
--- * The `hs.task` that is running the search.
-function fcp:searchResources(value)
-    return self.app:searchResources(value)
-end
-
 -- cp.apple.finalcutpro._listWindows() -> none
 -- Method
--- List Windows to Error Log.
+-- List Windows to Debug Log.
 --
 -- Parameters:
 --  * None
@@ -1207,14 +1101,20 @@ end
 function fcp:_listWindows()
     log.d("Listing FCPX windows:")
     self:show()
+    local ui = self:UI()
     local windows = self:windowsUI()
-    for i,w in ipairs(windows) do
-        log.df(format("%7d", i)..": "..self:_describeWindow(w))
+    if ui and windows then
+        for i,w in ipairs(windows) do
+            log.df("%7d: %s", i, self._describeWindow(w))
+        end
+
+        log.df("")
+        log.df("   Main: %s", self._describeWindow(ui.AXMainWindow))
+        log.df("Focused: %s", self._describeWindow(ui.AXFocusedWindow))
+    else
+        log.df("<none>")
     end
 
-    log.df("")
-    log.df("   Main: "..self:_describeWindow(self:UI():mainWindow()))
-    log.df("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
 end
 
 -- cp.apple.finalcutpro._describeWindow(w) -> string
@@ -1227,10 +1127,14 @@ end
 -- Returns:
 --  * A string
 function fcp._describeWindow(w)
-    return "title: "..inspect(w:attributeValue("AXTitle"))..
-           "; role: "..inspect(w:attributeValue("AXRole"))..
-           "; subrole: "..inspect(w:attributeValue("AXSubrole"))..
-           "; modal: "..inspect(w:attributeValue("AXModal"))
+    if w then
+        return format(
+            "title: %s; role: %s; subrole: %s; modal: %s",
+            inspect(w.AXTitle), inspect(w.AXRole), inspect(w.AXSubrole), inspect(w.AXModal)
+        )
+    else
+        return "<nil>"
+    end
 end
 
 local result = fcp()

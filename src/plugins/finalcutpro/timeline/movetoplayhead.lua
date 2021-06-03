@@ -44,7 +44,7 @@ function plugin.init(deps)
                 :Finally(function()
                     Do(pasteboardManager.startWatching):After(2000)
                 end)
-                :Label("Move To Playhead")
+                :Label("plugins.finalcutpro.timeline.movetoplayhead")
                 :Now()
         end)
 

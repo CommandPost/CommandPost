@@ -526,7 +526,7 @@ function Viewer.lazy.method:doShowOnPrimary()
             -----------------------------------------------------------------------
             menuBar:doSelectMenu({"Window", "Show in Workspace", "Event Viewer"})
         ):Otherwise(true)
-    ):Label("Viewer:doShowOnPrimary")
+    )
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer:showOnSecondary() -> self

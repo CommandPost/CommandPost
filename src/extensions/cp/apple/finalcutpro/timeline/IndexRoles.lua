@@ -130,7 +130,6 @@ function IndexRoles.lazy.method:doShowAudioLanes()
     local show = self.showAudioLanes
     return Do(self:doShow())
     :Then(If(show.isShowing):Then(show:doPress()))
-    :Label("IndexRoles:doShowAudioLanes")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doCollapseSubroles() -> cp.rx.go.Statement
@@ -146,7 +145,6 @@ function IndexRoles.lazy.method:doCollapseSubroles()
     local collapse = self.collapseSubroles
     return Do(self:doShow())
     :Then(If(collapse.isShowing):Then(collapse:doPress()))
-    :Label("IndexRoles:doCollapseSubroles")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doHideAudioLanes() -> cp.rx.go.Statement
@@ -163,7 +161,6 @@ function IndexRoles.lazy.method:doHideAudioLanes()
     return Do(self:doShow())
     :Then(self:doCollapseSubroles())
     :Then(If(hide.isShowing):Then(hide:doPress()))
-    :Label("IndexRoles:doHideAudioLanes")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:saveLayout() -> table
@@ -203,7 +200,7 @@ function IndexRoles:doLayout(layout)
     )
     :Then(self.area:doLayout(layout.area))
     :ThenYield()
-    :Label("IndexRoles:doLayout")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doLayout(layout)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:allRoles([includeSubroles]) -> table of Roles
@@ -292,7 +289,7 @@ function IndexRoles:doActivate(title)
     :Then(self:doShow())
     :Then(self.list:doActivate(title))
     :Finally(self.index:doRecallLayout("doActivate"))
-    :Label("IndexRoles:doActivate")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doActivate(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doDeactivate(title) -> cp.rx.go.Statement
@@ -313,7 +310,7 @@ function IndexRoles:doDeactivate(title)
     :Then(self:doShow())
     :Then(self.list:doDeactivate(title))
     :Finally(self.index:doRecallLayout("doDeactivate"))
-    :Label("IndexRoles:doDeactivate")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doDeactivate(title)")
 end
 
 -- These help with caching the Statements for store/recall
@@ -343,7 +340,7 @@ function IndexRoles:doFocusInTimeline(title)
     :Then(self:doShow())
     :Then(self.list:doFocusInTimeline(title))
     :Finally(self:_doRecallIndexLayout())
-    :Label("IndexRoles:doFocusInTimeline")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doFocusInTimeline(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doUnfocusInTimeline(title) -> cp.rx.go.Statement
@@ -364,7 +361,7 @@ function IndexRoles:doUnfocusInTimeline(title)
     :Then(self:doShow())
     :Then(self.list:doUnfocusInTimeline(title))
     :Finally(self:_doRecallIndexLayout())
-    :Label("IndexRoles:doUnfocusInTimeline")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doUnfocusInTimeline(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doShowSubroleLanes(title) -> cp.rx.go.Statement
@@ -385,7 +382,7 @@ function IndexRoles:doShowSubroleLanes(title)
     :Then(self:doShow())
     :Then(self.list:doShowSubroleLanes(title))
     :Finally(self:_doRecallIndexLayout())
-    :Label("IndexRoles:doSubroleLanes")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doSubroleLanes(title)")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doHideSubroleLanes(title) -> cp.rx.go.Statement
@@ -406,7 +403,7 @@ function IndexRoles:doHideSubroleLanes(title)
     :Then(self:doShow())
     :Then(self.list:doHideSubroleLanes(title))
     :Finally(self:_doRecallIndexLayout())
-    :Label("IndexRoles:doHideSubroleLanes")
+    :Label("cp.apple.finalcutpro.timeline.IndexRoles:doHideSubroleLanes(title)")
 end
 
 return IndexRoles

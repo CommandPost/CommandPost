@@ -100,13 +100,13 @@ end
 --- Returns:
 ---  * The `Statement` which will toggle the button when executed.
 function RadioButton.lazy.method:doToggle()
-    return If(self.UI):Then(function()
+    return If(self.UI)
+    :Then(function()
         self.checked:toggle()
         return true
     end)
     :Otherwise(false)
     :ThenYield()
-    :Label("RadioButton:doToggle")
 end
 
 --- cp.ui.RadioButton:doCheck() -> cp.rx.go.Statement
@@ -169,13 +169,8 @@ end
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
 function RadioButton.lazy.method:doPress()
-    return If(self.UI):Then(function(ui)
-        ui:performAction("AXPress")
-        return true
-    end)
-    :Otherwise(false)
+    return Do(self:doPerformAction("AXPress"))
     :ThenYield()
-    :Label("RadioButton:doPress")
 end
 
 --- cp.ui.RadioButton:saveLayout() -> table
@@ -224,7 +219,7 @@ function RadioButton:doLayout(layout)
         :Then(self:doPress())
         :Otherwise(true)
     )
-    :Label("RadioButton:doLayout")
+    :Label("cp.ui.RadioButton:doLayout(layout)")
 end
 
 -- Allows the RadioButton to be called as a function and will return the `checked` value.

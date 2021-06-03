@@ -85,7 +85,7 @@ end)
 --- The parameters can be any 'resolvable' type.
 ---
 --- Parameters:
----  * ...  - The list of `resolveable` values to process for each `Do` result.
+---  * ...  - The list of `resolvable` values to process for each `Do` result.
 ---
 --- Returns:
 ---  * The [Then](cp.rx.go.Do.Then.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).

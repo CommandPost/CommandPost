@@ -4,7 +4,7 @@
 ---
 --- Represents the Speed Popover.
 
---local log                 = require "hs.logger" .new "SpeedPopover"
+-- local log                   = require "hs.logger" .new "SpeedPopover"
 
 local go                    = require "cp.rx.go"
 
@@ -25,6 +25,25 @@ local childWith             = axutils.childWith
 local childWithRole         = axutils.childWithRole
 
 local If                    = go.If
+local SetProp               = go.SetProp
+local WaitUntil             = go.WaitUntil
+
+-- local RadioGroup for 'Set Speed'
+local SetSpeed = RadioGroup:subclass("cp.apple.finalcutpro.timeline.SpeedPopover.SetSpeed")
+
+-- The 'Rate' radio button
+function SetSpeed.lazy.value:byRate()
+    return RadioButton(self, self.UI:mutate(function(original)
+        return childFromTop(original(), 1, RadioButton.matches)
+    end))
+end
+
+-- The 'Duration' radio button
+function SetSpeed.lazy.value:byDuration()
+    return RadioButton(self, self.UI:mutate(function(original)
+        return childFromTop(original(), 2, RadioButton.matches)
+    end))
+end
 
 local SpeedPopover = Popover:subclass("cp.apple.finalcutpro.timeline.SpeedPopover")
 
@@ -79,12 +98,17 @@ end
 ---
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
-function SpeedPopover:doShow()
-    return If(function() return self:isShowing() == false end):Then(
-        self:parent():app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"})
+function SpeedPopover.lazy.method:doShow()
+    local animationEnabled = self:app().isWindowAnimationEnabled
+
+    return If(self.isShowing):Is(false)
+    :Then(
+        SetProp(animationEnabled):To(false)
+        :Then(self:app():doSelectMenu({"Modify", "Retime", "Custom Speed.*"}))
+        :ThenReset()
     )
-    :Otherwise(false)
-    :Label("SpeedPopover:doShow")
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(1000))
+    :Otherwise(true)
 end
 
 --- cp.apple.finalcutpro.timeline.SpeedPopover:direction <cp.ui.RadioGroup>
@@ -118,27 +142,23 @@ end
 --- Field
 --- The [RadioGroup](cp.ui.RadioGroup.md) for the "Set Speed" radio group.
 function SpeedPopover.lazy.value:setSpeed()
-    return RadioGroup(self, self.UI:mutate(function(original)
+    return SetSpeed(self, self.UI:mutate(function(original)
         return childFromTop(original(), 2, RadioGroup.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.SpeedPopover:rate <cp.ui.RadioButton>
+--- cp.apple.finalcutpro.timeline.SpeedPopover:byRate <cp.ui.RadioButton>
 --- Field
---- The [RadioButton](cp.ui.RadioButton.md) for the "Forward" radio button.
-function SpeedPopover.lazy.value:rate()
-    return RadioButton(self, self.setSpeed.UI:mutate(function(original)
-        return childFromTop(original(), 1, RadioButton.matches)
-    end))
+--- The [RadioButton](cp.ui.RadioButton.md) for the "Rate" radio button.
+function SpeedPopover.lazy.value:byRate()
+    return self.setSpeed.byRate
 end
 
---- cp.apple.finalcutpro.timeline.SpeedPopover:duration <cp.ui.RadioButton>
+--- cp.apple.finalcutpro.timeline.SpeedPopover:byDuration <cp.ui.RadioButton>
 --- Field
---- The [RadioButton](cp.ui.RadioButton.md) for the "Forward" radio button.
-function SpeedPopover.lazy.value:duration()
-    return RadioButton(self, self.setSpeed.UI:mutate(function(original)
-        return childFromTop(original(), 2, RadioButton.matches)
-    end))
+--- The [RadioButton](cp.ui.RadioButton.md) for the "Duration" radio button.
+function SpeedPopover.lazy.value:byDuration()
+    return self.setSpeed.byDuration
 end
 
 --- cp.apple.finalcutpro.timeline.SpeedPopover:ripple <cp.ui.RadioGroup>
@@ -150,10 +170,10 @@ function SpeedPopover.lazy.value:ripple()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.SpeedPopover:rateValue <cp.ui.RadioButton>
+--- cp.apple.finalcutpro.timeline.SpeedPopover:rate <cp.ui.TextField>
 --- Field
 --- The [TextField](cp.ui.TextField.md) for the "Rate" text field.
-function SpeedPopover.lazy.value:rateValue()
+function SpeedPopover.lazy.value:rate()
     return TextField(self, self.UI:mutate(function(original)
         if self.rate:checked() then
             return childWithRole(original(), "AXTextField")
@@ -161,10 +181,10 @@ function SpeedPopover.lazy.value:rateValue()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.SpeedPopover:durationValue <cp.ui.RadioButton>
+--- cp.apple.finalcutpro.timeline.SpeedPopover:duration <cp.ui.TextField>
 --- Field
 --- The [TextField](cp.ui.TextField.md) for the "Duration" text field.
-function SpeedPopover.lazy.value:durationValue()
+function SpeedPopover.lazy.value:duration()
     return TextField(self, self.UI:mutate(function(original)
         if self.duration:checked() then
             return childWithRole(original(), "AXTextField")

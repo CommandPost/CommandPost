@@ -183,7 +183,6 @@ function ColorWheel.lazy.method:doShow()
         )
         :Otherwise(true)
     )
-    :Label("ColorWheel:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:select() -> cp.apple.finalcutpro.inspector.color.ColorWheel
@@ -318,7 +317,8 @@ end
 --- Returns:
 --- * The `Statement`, resolving to `true` if successful.
 function ColorWheel:doNudgeColor(right, up)
-    return self.colorWell:doNudge(right, up):Label("ColorWheel:doNudgeColor")
+    return self.colorWell:doNudge(right, up)
+    :Label("cp.apple.finalcutpro.inspector.color.ColorWheel:doNudgeColor(right, up)")
 end
 
 return ColorWheel

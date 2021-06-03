@@ -132,12 +132,11 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     cmds
         :add("setViewerZoomFactorToFit")
-        :whenActivated(function()
+        :whenActivated(
             Do(infoBar.zoomMenu:doShow())
                 :Then(infoBar.zoomMenu:doSelectValue(fcp:string("PEViewerZoomFit")))
                 :Label("plugins.finalcutpro.viewer.actions.setViewerZoomFactorToFit")
-                :Now()
-        end)
+        )
         :groupedBy("viewer")
         :titled(i18n("setViewerTo") .. " " .. i18n("fit"))
 

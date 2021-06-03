@@ -10,6 +10,7 @@ local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
 local go                = require "cp.rx.go"
 
+local Do                = go.Do
 local If                = go.If
 local WaitUntil         = go.WaitUntil
 
@@ -145,7 +146,7 @@ function PopUpButton:doSelectItem(index)
     end)
     :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
     :Otherwise(false)
-    :Label("PopUpMenu:doSelectItem")
+    :Label("cp.ui.PopUpMenu:doSelectItem(index)")
 end
 
 --- cp.ui.PopUpButton:doSelectValue(value) -> cp.rx.go.Statement
@@ -179,7 +180,7 @@ function PopUpButton:doSelectValue(value)
         )
     )
     :Otherwise(false)
-    :Label("PopUpButton:doSelectValue")
+    :Label("cp.ui.PopUpButton:doSelectValue(value)")
 end
 
 --- cp.ui.PopUpButton:getValue() -> string | nil
@@ -236,12 +237,7 @@ end
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md)
 function PopUpButton.lazy.method:doPress()
-    return If(self.UI)
-    :Then(function(ui)
-        ui:performAction("AXPress")
-    end)
-    :ThenYield()
-    :Label("PopUpButton:doPress")
+    return Do(self:doPerformAction("AXPress")):ThenYield()
 end
 
 -- cp.ui.PopUpButton:__call() -> boolean

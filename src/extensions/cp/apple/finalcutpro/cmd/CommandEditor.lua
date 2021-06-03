@@ -151,7 +151,6 @@ function CommandEditor.lazy.method:doShow()
     :Otherwise(false)
     :TimeoutAfter(10000)
     :ThenYield()
-    :Label("CommandEditor:doShow")
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:hide() -> cp.apple.finalcutpro.cmd.CommandEditor
@@ -208,7 +207,6 @@ function CommandEditor.lazy.method:doHide()
     ):Otherwise(true)
     :TimeoutAfter(10000)
     :ThenYield()
-    :Label("CommandEditor:doHide")
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doSave() -> cp.rx.go.Statement <boolean>

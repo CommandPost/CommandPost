@@ -416,7 +416,7 @@ function Contents:doSelectClips(clipsUI)
     end)
     :Then(WaitUntil(self.selectedChildren):Matches(containsOnly(clipsUI)))
     :TimeoutAfter(5000)
-    :Label("Contents:doSelectClips")
+    :Label("cp.apple.finalcutpro.timeline.Contents:doSelectClips(clipsUI)")
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:doSelectClip(clipUI) -> cp.rx.go.Statement
@@ -430,7 +430,7 @@ end
 --- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
 function Contents:doSelectClip(clipUI)
     return self:doSelectClips({clipUI})
-    :Label("Contents:doSelectClip")
+    :Label("cp.apple.finalcutpro.timeline.Contents:doSelectClip(clipUI)")
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:doFocus(show) -> cp.rx.go.Statement
@@ -454,7 +454,7 @@ function Contents:doFocus(show)
         :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
         :Otherwise(true)
     )
-    :Label("Contents:doFocus")
+    :Label("cp.apple.finalcutpro.timeline.Contents:doFocus(show)")
 end
 
 -----------------------------------------------------------------------
