@@ -24,14 +24,17 @@ local PrimaryWindow                     = require "cp.apple.finalcutpro.main.Pri
 local SecondaryWindow                   = require "cp.apple.finalcutpro.main.SecondaryWindow"
 
 local cache                             = axutils.cache
-local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local childFromLeft                     = axutils.childFromLeft
+local childFromRight                    = axutils.childFromRight
 local childrenMatching                  = axutils.childrenMatching
 local childrenWithRole                  = axutils.childrenWithRole
+local childWithDescription              = axutils.childWithDescription
 local childWithRole                     = axutils.childWithRole
+local topToBottom                       = axutils.compareTopToBottom
+
 local delayedTimer                      = timer.delayed
 local Do                                = go.Do
 local If                                = go.If
-local topToBottom                       = axutils.compareTopToBottom
 
 local Viewer = Group:subclass("cp.apple.finalcutpro.viewer.Viewer")
 
@@ -257,6 +260,19 @@ function Viewer.lazy.prop:contentsUI()
             local groups = splitGroup and childrenWithRole(splitGroup, "AXGroup")
             local contentGroup = groups and groups[#groups]
             return contentGroup
+        end)
+    end)
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.videoImage <cp.prop: hs.axuielement; read-only>
+--- Field
+--- Provides the `axuielement` for video image within the Viewer, or `nil` if not available.
+function Viewer.lazy.prop:videoImage()
+    return self.contentsUI:mutate(function(original)
+        return cache(self, "_videoImage", function()
+            local ui = original()
+            local images = ui and childrenWithRole(ui, "AXImage")
+            return images and childWithDescription(images, "video image")
         end)
     end)
 end

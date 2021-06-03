@@ -2,11 +2,17 @@
 ---
 --- Viewer Actions
 
-local require   = require
+local require           = require
 
-local Do        = require "cp.rx.go.Do"
-local fcp       = require "cp.apple.finalcutpro"
-local i18n      = require "cp.i18n"
+local pasteboard        = require "hs.pasteboard"
+
+local axutils           = require "cp.ui.axutils"
+local tools             = require "cp.tools"
+local Do                = require "cp.rx.go.Do"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+
+local playErrorSound    = tools.playErrorSound
 
 local plugin = {
     id = "finalcutpro.viewer.actions",
@@ -156,6 +162,26 @@ function plugin.init(deps)
             :groupedBy("viewer")
             :titled(i18n("setViewerTo") .. " " .. zoomFactor)
     end
+
+    --------------------------------------------------------------------------------
+    -- Copy Viewer Contents to Pasteboard:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("copyViewerContentsToPasteboard")
+        :whenActivated(function()
+            local videoImage = fcp.viewer.videoImage()
+            if videoImage then
+                local img = axutils.snapshot(videoImage)
+                if img then
+                    if pasteboard.writeObjects(img) then
+                        return
+                    end
+                end
+            end
+            playErrorSound()
+        end)
+        :groupedBy("viewer")
+        :titled(i18n("copyViewerContentsToPasteboard"))
 
 end
 
