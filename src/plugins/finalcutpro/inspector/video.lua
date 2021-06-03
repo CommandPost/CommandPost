@@ -502,6 +502,108 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Anchor:
+    --------------------------------------------------------------------------------
+    local anchorX = 0
+    local anchorY = 0
+
+    local anchor = transform:anchor()
+
+    local updateAnchor = deferred.new(0.01)
+    local anchorUpdating = false
+    updateAnchor:action(function()
+        return If(function() return not anchorUpdating and (anchorX ~= 0 or anchorY ~= 0) end)
+        :Then(
+            Do(anchor:doShow())
+            :Then(function()
+                anchorUpdating = true
+                if anchorX ~= 0 then
+                    local current = anchor:x()
+                    if current then
+                        anchor:x(current + anchorX)
+                    end
+                    anchorX = 0
+                end
+                if anchorY ~= 0 then
+                    local current = anchor:y()
+                    if current then
+                        anchor:y(current + anchorY)
+                    end
+                    anchorY = 0
+                end
+                anchorUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateAnchor")
+        :Now()
+    end)
+
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftAnchorLeftPixels" .. shiftAmount  .. "Pixels")
+            :titled(i18n("shiftAnchorLeftPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function()
+                anchorX = anchorX - shiftAmount
+                updateAnchor()
+            end)
+            :whenRepeated(function()
+                anchorX = anchorX - shiftAmount
+                updateAnchor()
+            end)
+
+        fcpxCmds:add("shiftAnchorRightPixels" .. shiftAmount .. "Pixels")
+            :titled(i18n("shiftAnchorRightPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function()
+                anchorX = anchorX + shiftAmount
+                updateAnchor()
+            end)
+            :whenRepeated(function()
+                anchorX = anchorX + shiftAmount
+                updateAnchor()
+            end)
+
+        fcpxCmds:add("shiftAnchorUp" .. shiftAmount .. "Pixels")
+            :titled(i18n("shiftAnchorUpPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function()
+                anchorY = anchorY + shiftAmount
+                updateAnchor()
+            end)
+            :whenRepeated(function()
+                anchorY = anchorY + shiftAmount
+                updateAnchor()
+            end)
+        fcpxCmds:add("shiftAnchorDown" .. shiftAmount .. "Pixels")
+            :titled(i18n("shiftAnchorDownPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function()
+                anchorY = anchorY - shiftAmount
+                updateAnchor()
+            end)
+            :whenRepeated(function()
+                anchorY = anchorY - shiftAmount
+                updateAnchor()
+            end)
+    end
+
+    fcpxCmds:add("resetAnchorX")
+        :titled(i18n("reset") .. " " .. i18n("anchor") .. " X")
+        :groupedBy("timeline")
+        :whenPressed(function()
+            anchor:show()
+            anchor:x(0)
+        end)
+
+    fcpxCmds:add("resetAnchorY")
+        :titled(i18n("reset") .. " " .. i18n("anchor") .. " Y")
+        :groupedBy("timeline")
+        :whenPressed(function()
+            anchor:show()
+            anchor:y(0)
+        end)
+
+    --------------------------------------------------------------------------------
     -- Scale All:
     --------------------------------------------------------------------------------
     local scaleAll = transform:scaleAll()
@@ -553,9 +655,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Rotation:
     --------------------------------------------------------------------------------
+    local rotation = fcp.inspector.video:transform():rotation()
+
     local shiftRotationValue = 0
     local updateShiftRotation = deferred.new(0.01):action(function()
-        local rotation = fcp.inspector.video:transform():rotation()
         rotation:show()
         local original = rotation:value()
         rotation:value(original + shiftRotationValue)
@@ -583,7 +686,6 @@ function plugin.init(deps)
         :titled(i18n("reset") .. " " .. i18n("rotation"))
         :groupedBy("timeline")
         :whenPressed(function()
-            local rotation = fcp.inspector.video:transform():rotation()
             rotation:show()
             rotation:value(0)
         end)
@@ -591,9 +693,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Opacity:
     --------------------------------------------------------------------------------
+    local opacity = fcp.inspector.video:compositing():opacity()
     local shiftOpacityValue = 0
     local updateShiftOpacity = deferred.new(0.01):action(function()
-        local opacity = fcp.inspector.video:compositing():opacity()
         opacity:show()
         local original = opacity:value()
         opacity:value(original + shiftOpacityValue)
@@ -621,9 +723,21 @@ function plugin.init(deps)
         :titled(i18n("reset") .. " " .. i18n("opacity"))
         :groupedBy("timeline")
         :whenPressed(function()
-            local opacity = fcp.inspector.video:compositing():opacity()
             opacity:show()
             opacity:value(100)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Compositing Reset:
+    --------------------------------------------------------------------------------
+    fcpxCmds:add("resetCompositing")
+        :titled(i18n("reset") .. " " .. i18n("compositing"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            doBlendMode("FFHeliumBlendModeNormal"):Then(function()
+                opacity:show()
+                opacity:value(100)
+            end):Now()
         end)
 
     --------------------------------------------------------------------------------
@@ -757,6 +871,15 @@ function plugin.init(deps)
     fcpxCmds:add("cropResetBottom")
         :titled(i18n("crop") .. " " .. i18n("bottom") .. " " .. i18n("reset"))
         :whenPressed(function()
+            fcp.inspector.video:crop():bottom():show():value(0)
+        end)
+
+    fcpxCmds:add("cropReset")
+        :titled(i18n("crop") .. " " .. i18n("reset"))
+        :whenPressed(function()
+            fcp.inspector.video:crop():left():show():value(0)
+            fcp.inspector.video:crop():right():show():value(0)
+            fcp.inspector.video:crop():top():show():value(0)
             fcp.inspector.video:crop():bottom():show():value(0)
         end)
 
@@ -999,6 +1122,22 @@ function plugin.init(deps)
             fcp.inspector.video:distort():topRight().y:show():value(0)
         end)
 
+    fcpxCmds:add("distortReset")
+        :titled(i18n("distort") .. " " .. i18n("reset"))
+        :whenPressed(function()
+            fcp.inspector.video:distort():bottomLeft().x:show():value(0)
+            fcp.inspector.video:distort():bottomLeft().y:show():value(0)
+
+            fcp.inspector.video:distort():bottomRight().x:show():value(0)
+            fcp.inspector.video:distort():bottomRight().y:show():value(0)
+
+            fcp.inspector.video:distort():topLeft().x:show():value(0)
+            fcp.inspector.video:distort():topLeft().y:show():value(0)
+
+            fcp.inspector.video:distort():topRight().x:show():value(0)
+            fcp.inspector.video:distort():topRight().y:show():value(0)
+        end)
+
     --------------------------------------------------------------------------------
     -- Effects:
     --------------------------------------------------------------------------------
@@ -1023,6 +1162,36 @@ function plugin.init(deps)
                 end
             end)
     end
+
+    --------------------------------------------------------------------------------
+    -- Reset Transform:
+    --------------------------------------------------------------------------------
+    fcpxCmds:add("resetTransform")
+        :titled(i18n("reset") .. " " .. i18n("transform"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            position:show()
+            position:x(0)
+            position:y(0)
+
+            rotation:show()
+            rotation:value(0)
+
+            local scaleX = transform:scaleX()
+            scaleX:show()
+            scaleX:value(100)
+
+            local scaleY = transform:scaleY()
+            scaleY:show()
+            scaleY:value(100)
+
+            scaleAll:show()
+            scaleAll:value(100)
+
+            anchor:show()
+            anchor:x(0)
+            anchor:y(0)
+        end)
 
 end
 
