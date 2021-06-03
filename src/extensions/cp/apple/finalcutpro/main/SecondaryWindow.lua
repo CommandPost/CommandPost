@@ -6,11 +6,11 @@ local require       = require
 
 --local log           = require "hs.logger".new "secondaryWindow"
 
+local is            = require "cp.is"
 local axutils       = require "cp.ui.axutils"
 local Window        = require "cp.ui.Window"
 
 local go            = require "cp.rx.go"
-
 
 local class         = require "middleclass"
 local lazy          = require "cp.lazy"
@@ -123,11 +123,11 @@ end
 function SecondaryWindow.lazy.prop:timelineGroupUI()
     return self.rootGroupUI:mutate(function(original)
         return axutils.cache(self, "_timelineGroup", function()
-            -- for some reason, the Timeline is burried under three levels
+            -- for some reason, the Timeline is buried under three levels
             local root = original()
-            if root and root[1] and root[1][1] then
-                return root[1][1]
-            end
+            local one = is.object(root) and root[1] or nil
+            local two = is.object(one) and one[1] or nil
+            return two
         end)
     end)
 end
