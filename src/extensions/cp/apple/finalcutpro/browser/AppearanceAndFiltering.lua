@@ -71,8 +71,13 @@ AppearanceAndFiltering.DURATION = {
     ["5sec"]        = 8,
     ["2sec"]        = 9,
     ["1sec"]        = 10,
-    ["1/2sec"]      = 11
+    ["1/2sec"]      = 11,
 }
+
+-- Local wrapper for `isWindowAnimationEnabled`.
+function AppearanceAndFiltering.lazy.prop:_windowAnimation()
+    return self:app().isWindowAnimationEnabled
+end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:show() -> self
 --- Method
@@ -85,9 +90,31 @@ AppearanceAndFiltering.DURATION = {
 ---  * Self
 function AppearanceAndFiltering:show()
     if not self:isShowing() then
+        local originalAnimation = self._windowAnimation:get()
+        self._windowAnimation:set(false)
         self.button:press()
+        self._windowAnimation:set(originalAnimation)
     end
     return self
+end
+
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering:doShow() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that shows the Browser's "Clip Appearance & Filtering" popover.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function AppearanceAndFiltering.lazy.method:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        SetProp(self._windowAnimation):To(false)
+        :Then(self.button:doPress())
+        :Then(WaitUntil(self.isShowing))
+        :ThenReset()
+    )
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering.button <cp.ui.Button>
