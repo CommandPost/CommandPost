@@ -2,22 +2,23 @@
 ---
 --- Timeline Appearance Popup module.
 
-local require = require
+local require           = require
 
-local just                              = require "cp.just"
-local axutils                           = require "cp.ui.axutils"
+local axutils           = require "cp.ui.axutils"
+local CheckBox          = require "cp.ui.CheckBox"
+local Popover           = require "cp.ui.Popover"
+local RadioGroup        = require "cp.ui.RadioGroup"
+local Slider            = require "cp.ui.Slider"
 
-local CheckBox                          = require "cp.ui.CheckBox"
-local Popover                           = require "cp.ui.Popover"
-local RadioGroup                        = require "cp.ui.RadioGroup"
-local Slider	                            = require "cp.ui.Slider"
+local go                = require "cp.rx.go"
 
-local go                                = require "cp.rx.go"
-local If, SetProp, WaitUntil            = go.If, go.SetProp, go.WaitUntil
+local If                = go.If
+local SetProp           = go.SetProp
+local WaitUntil         = go.WaitUntil
 
-local cache                             = axutils.cache
-local childFromTop                      = axutils.childFromTop
-local childMatching                     = axutils.childMatching
+local cache             = axutils.cache
+local childFromTop      = axutils.childFromTop
+local childMatching     = axutils.childMatching
 
 local Appearance = Popover:subclass("cp.apple.finalcutpro.timeline.Appearance")
 
