@@ -901,7 +901,8 @@ function menu:findMenuUI(path, options)
                                 menuItemUI = axutils.childMatching(menuUI, function(child)
                                     local title = child:attributeValue("AXTitle")
                                     if title == nil then
-                                        error(format("Unexpected `nil` menu item title while searching for '%s'", currentTitle))
+                                        log.wf("Note: Unexpected `nil` menu item title while searching for '%s'", currentTitle)
+                                        return false
                                     end
                                     --log.df("checking menu item: %s", title)
                                     return exactMatch(title, currentTitle, options.plain)
@@ -911,7 +912,8 @@ function menu:findMenuUI(path, options)
                                 --------------------------------------------------------------------------------
                                 item.ui = menuItemUI
                             else
-                                error(format("Unable to find '%s' in '%s' with %s.", pathItemTitle, concat(currentPath, " > ", appLocale)))
+                                log.wf("Unable to find '%s' in '%s' with %s.", pathItemTitle, concat(currentPath, " > ", appLocale))
+                                return false
                             end
                         end
                         menuTitles = item.submenu
