@@ -7,19 +7,23 @@ local require = require
 --local log                   = require("hs.logger").new("appearanceAndFiltering")
 
 local axutils               = require "cp.ui.axutils"
-
-local Button			    = require "cp.ui.Button"
+local Button                = require "cp.ui.Button"
 local CheckBox              = require "cp.ui.CheckBox"
 local Popover               = require "cp.ui.Popover"
 local PopUpButton           = require "cp.ui.PopUpButton"
 local Slider                = require "cp.ui.Slider"
+
+local go                    = require "cp.rx.go"
+
+local If                    = go.If
+local SetProp               = go.SetProp
+local WaitUntil             = go.WaitUntil
 
 local cache                 = axutils.cache
 local childFromRight        = axutils.childFromRight
 local childFromTop          = axutils.childFromTop
 local childMatching         = axutils.childMatching
 local childrenWithRole      = axutils.childrenWithRole
-
 
 local AppearanceAndFiltering = Popover:subclass("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
 
