@@ -507,8 +507,6 @@ function plugin.init(deps)
     local anchorX = 0
     local anchorY = 0
 
-    local video = fcp.inspector.video
-    local transform = video:transform()
     local anchor = transform:anchor()
 
     local updateAnchor = deferred.new(0.01)
