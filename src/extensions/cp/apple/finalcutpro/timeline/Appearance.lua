@@ -62,7 +62,7 @@ end
 function Appearance:show()
     if not self:isShowing() then
         local originalAnimation = self._windowAnimation:get()
-        local self._windowAnimation:set(false)
+        self._windowAnimation:set(false)
         self:parent():checked(true)
         self._windowAnimation:set(originalAnimation)
     end
