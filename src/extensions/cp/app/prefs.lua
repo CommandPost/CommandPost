@@ -204,6 +204,7 @@ function mod.static.set(prefs, key, value, defaultValue)
     local bundleID = data and data.bundleID
     if bundleID and key then
         if value == defaultValue then
+            -- delete the pref if current value is the default value.
             cfprefs.setValue(key, nil, bundleID)
         else
             cfprefs.setValue(key, value, bundleID)
