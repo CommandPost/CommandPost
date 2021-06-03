@@ -24,6 +24,7 @@ local displayNotification       = dialog.displayNotification
 local playErrorSound            = tools.playErrorSound
 local sort                      = table.sort
 local tableCount                = tools.tableCount
+local wait                      = just.wait
 
 local mod = {}
 
@@ -756,6 +757,95 @@ local function revealInKeywordCollection(solo)
     end
 end
 
+-- commitMulticam() -> none
+-- Function
+-- Macro to Commit Multicam
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function commitMulticam()
+    --------------------------------------------------------------------------------
+    -- Store the originally-selected clips:
+    --------------------------------------------------------------------------------
+    local contents              = fcp.timeline.contents
+    local originalSelection     = contents:selectedClipsUI()
+    local menuBar               = fcp.menu
+
+    --------------------------------------------------------------------------------
+    -- If nothing is selected, select the top clip under the playhead:
+    --------------------------------------------------------------------------------
+    if not originalSelection or #originalSelection == 0 then
+        local playheadClips = contents:playheadClipsUI(true)
+        contents:selectClip(playheadClips[1])
+    elseif #originalSelection > 1 then
+        log.ef("Commit Multicam: More than one clip is selected. Please select a single clip and try again.")
+        playErrorSound()
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Get Multicam Angle:
+    --------------------------------------------------------------------------------
+    local multicamAngle = mod.getMulticamAngleFromSelectedClip()
+    if not multicamAngle then
+        log.ef("Commit Multicam: The selected clip is not a multicam clip.")
+        playErrorSound()
+        contents:selectClips(originalSelection)
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Open in Angle Editor:
+    --------------------------------------------------------------------------------
+    if menuBar:isEnabled({"Clip", "Open in Angle Editor"}) then
+        menuBar:selectMenu({"Clip", "Open in Angle Editor"})
+    else
+        log.ef("Commit Multicam: Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?")
+        playErrorSound()
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Put focus back on the timeline:
+    --------------------------------------------------------------------------------
+    if menuBar:isEnabled({"Window", "Go To", "Timeline"}) then
+        menuBar:selectMenu({"Window", "Go To", "Timeline"})
+    else
+        log.ef("Commit Multicam: Unable to return to timeline.")
+        playErrorSound()
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Ensure the playhead is visible:
+    --------------------------------------------------------------------------------
+    contents.playhead:show()
+
+    --------------------------------------------------------------------------------
+    -- Select the correct angle:
+    --------------------------------------------------------------------------------
+    contents:selectClipInAngle(multicamAngle)
+
+    --------------------------------------------------------------------------------
+    -- Fire off a bunch of menu items:
+    --------------------------------------------------------------------------------
+    wait(0.7)
+    fcp:selectMenu({"File", "Reveal in Browser"})
+    wait(0.7)
+    fcp:selectMenu({"Mark", "Set Range Start"})
+    wait(1.5)
+    fcp:selectMenu({"View", "Timeline History Back"})
+    wait(1.5)
+    fcp:selectMenu({"Window", "Go To", "Timeline"})
+    wait(0.5)
+    fcp:selectMenu({"Mark", "Set Range Start"})
+    wait(0.5)
+    fcp:doShortcut("AnchorWithSelectedMediaVideo"):Now()
+end
+
 local plugin = {
     id = "finalcutpro.timeline.matchframe",
     group = "finalcutpro",
@@ -813,6 +903,12 @@ function plugin.init(deps)
         :whenActivated(function() revealInKeywordCollection(true) end)
         :titled(i18n("revealInKeywordCollectionAndSolo"))
         :subtitled(i18n("revealInKeywordCollectionAndSoloDescription"))
+
+    cmds
+        :add("commitMulticam")
+        :whenActivated(commitMulticam)
+        :titled(i18n("commitMulticam"))
+        :subtitled(i18n("commitMulticamDescription"))
 
     return mod
 end
