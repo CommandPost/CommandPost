@@ -287,6 +287,8 @@
     "commandLineTool": "Command Line Tool",
     "commandPost_group": "CommandPost",
     "commandType": "Type",
+    "commitMulticam": "Commit Multicam",
+    "commitMulticamDescription": "Finds the angle's source clip, then connects that clip to the Primary Storyline.",
     "commonErrorMessageEnd": "Would you like to submit a bug report?",
     "commonErrorMessageStart": "The following error has occurred:",
     "component": "Component",
