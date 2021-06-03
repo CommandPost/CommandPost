@@ -18,7 +18,7 @@ util.isa = function(object, class)
 end
 util.tryWithObserver = function(observer, fn, ...)
   local args = util.pack(...)
-  local success, result = xpcall(function() fn(util.unpack(args)) end, debug.traceback)
+  local success, result = xpcall(function() fn(util.unpack(args)) end, function(message) return debug.traceback(message, 2) end)
   if not success then
     observer:onError(result)
   end

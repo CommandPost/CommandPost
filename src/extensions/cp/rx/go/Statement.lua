@@ -371,7 +371,7 @@ end
 
 -- stores the default observer
 local function simpleObserverFactory()
-    return Observer.create(nil, error, nil)
+    return Observer.create(nil, print, nil)
 end
 
 local defaultObserverFactory = simpleObserverFactory
@@ -644,10 +644,6 @@ function Statement.mt:Now(onNext, onError, onCompleted)
         if Observer.is(onNext) then
             observer = onNext
         elseif type(onNext) == "function" or type(onError) == "function" or type(onCompleted) == "function" then
-            onError = onError or function(message)
-                local label = self:context()._debug or 'unlabeled'
-                log.ef("%s [%s]: %s", self:fullName(), label, message)
-            end
             observer = Observer.create(onNext, onError, onCompleted)
         else
             observer = defaultObserverFactory()

@@ -281,9 +281,9 @@ end
 ---  * onCompleted - The `completed` handler.
 function Run.This:toObserver(onNext, onError, onCompleted)
     onNext = onNext or function(value) self:log("onNext: %s", inspect(value)) end
-    onError = onError or error
+    onError = onError or print
     onCompleted = onCompleted or function() self:done() end
-    return Observer.create(onNext, onError or error, onCompleted)
+    return Observer.create(onNext, onError, onCompleted)
 end
 
 --- cp.spec.Run.This:isActive() -> boolean

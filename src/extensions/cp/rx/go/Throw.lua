@@ -26,9 +26,11 @@ local format                = string.format
 local Throw = Statement.named("Throw")
 :onInit(function(context, message, ...)
     context.message = message and format(message, ...) or nil
+    context.info = debug.getinfo(3, "Sl")
+    context.trace = debug.traceback(format("%s:%d: %s", context.info.short_src, context.info.currentline, context.message), 3)
 end)
 :onObservable(function(context)
-    return Observable.throw(context.message)
+    return Observable.throw(context.trace or context.message)
 end)
 :define()
 

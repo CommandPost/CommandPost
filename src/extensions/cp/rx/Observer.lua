@@ -38,7 +38,7 @@ end
 function Observer.create(onNext, onError, onCompleted)
   local self = {
     _onNext = onNext or util.noop,
-    _onError = onError or error,
+    _onError = onError or print,
     _onCompleted = onCompleted or util.noop,
     stopped = false
   }
