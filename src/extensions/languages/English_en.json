@@ -1366,7 +1366,7 @@
     "monitor": "Monitor",
     "monogram": "Monogram",
     "monogramFavouriteDescription": "You can assign any action in CommandPost to a Favourite below, which is then accessible in the Monogram Creator.",
-    "monogramPreferencesDescription": "CommandPost uses the official Monogram Creator API to allow users to control both legacy Palette modules and the latest Monogram modules, such as Orbiter.<br /><br /><span style='color: #9d623a'><b>Monogram support requires the latest beta or alpha builds of Monogram Creator - it won't work on the public release yet.</b></span>",
+    "monogramPreferencesDescription": "CommandPost uses the official Monogram Creator API to allow users to control both legacy Palette modules and the latest Monogram modules, such as Orbiter.<br /><br /><span style='color: #9d623a'><b>Monogram support requires Monogram Creator 4.1.11 or later.</b></span>",
     "monogramSupport": "Monogram Support",
     "motion_application_manager_label": "Application Manager",
     "motion_feedback_bugreport_label": "Help & Support: Report Bug to Apple",
