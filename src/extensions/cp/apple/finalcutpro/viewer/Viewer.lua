@@ -475,6 +475,51 @@ end
 
 -----------------------------------------------------------------------
 --
+-- OVERLAYS:
+--
+-----------------------------------------------------------------------
+
+-- FFCustomOverlaySelectedCanvas = "Test.png",
+-- FFCustomOverlaySelectedCanvas_Opacity = 50,
+-- FFCustomOverlaySelectedViewer = "Test.png",
+-- FFCustomOverlaySelectedViewer_Opacity = 50,
+-- FFPlayerDisplayedCustomOverlayCanvas = 1,
+-- FFPlayerDisplayedCustomOverlayViewer = 1,
+-- ["YouTube UI.png_Opacity_Canvas"] = 50,
+-- ["YouTube UI.png_Opacity_Viewer"] = 50,
+
+local VIEWER_OVERLAY_POSTFIX = "Canvas"
+local EVENT_VIEWER_OVERLAY_POSTFIX = "Viewer"
+
+function Viewer:_overlayPostfix()
+    return self:isEventViewer() and EVENT_VIEWER_OVERLAY_POSTFIX or VIEWER_OVERLAY_POSTFIX
+end
+
+function Viewer.lazy.prop:overlayEnabled()
+    -- TODO: Trigger "View > Show in Viewer > Show Custom Overlay" to actually toggle, to avoid UI update lag
+    local postfix = self:_overlayPostfix()
+    return self:app().preferences:prop("FFPlayerDisplayedCustomOverlay"..postfix):mutate(
+        function(original) return original() == 1 end,
+        function(newValue, original) original(newValue == 1) end
+    )
+end
+
+function Viewer.lazy.prop:overlayFileName()
+    local postfix = self:_overlayPostfix()
+    return self:app().preferences:prop("FFCustomOverlaySelected"..postfix)
+end
+
+function Viewer.lazy.prop:overlayOpacity()
+    local postfix = self:_overlayPostfix()
+    return self:app().preferences:prop("FFCustomOverlaySelected"..postfix.."_Opacity")
+end
+
+function Viewer.lazy.prop:overlay()
+    -- TODO: Figuring out the best way to handle this...
+end
+
+-----------------------------------------------------------------------
+--
 -- BROWSER UI:
 --
 -----------------------------------------------------------------------
