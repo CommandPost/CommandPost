@@ -23,6 +23,7 @@ if basePath then
 end
 
 local hs      = _G.hs
+local ls      = _G.ls
 
 local textMT  = hs.getObjectMetatable(USERDATA_TAG)
 local utf16MT = hs.getObjectMetatable(USERDATA_TAG..".utf16")
@@ -325,14 +326,14 @@ end
 utf16MT.composedCharacters = function(self)
     return function(iterSelf, index)
         if index > 0 then
-            local i, j = iterSelf:composedCharacterRange(index)
+            local _, j = iterSelf:composedCharacterRange(index)
             index = j
         end
         index = index + 1
         if index > #iterSelf then
             return nil
         else
-            local i, j = iterSelf:composedCharacterRange(index)
+            local _, j = iterSelf:composedCharacterRange(index)
             return index, j
         end
     end, self, 0

@@ -200,9 +200,10 @@ local function len(bigEndian, s, i, j)
     end
     local length = 0
     local bytes
-    local k, size = i
+    local k = i
     while k <= j do
         bytes = read2Bytes(bigEndian, s, k)
+        local size = 2
         if bytes >= UPPER_MASK and bytes <= UPPER_MAX then
             bytes = read2Bytes(bigEndian, s, k+2)
             if bytes < LOWER_MASK or bytes > LOWER_MAX then -- invalid bytes
@@ -211,8 +212,6 @@ local function len(bigEndian, s, i, j)
             size = 4
         elseif bytes >= LOWER_MASK and bytes <= LOWER_MAX then
             return false, k
-        else
-            size = 2
         end
         length = length + 1
         k = k + size

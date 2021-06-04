@@ -452,7 +452,7 @@ end
 
 function test.config(newHandler, isVerbose)
     if newHandler then
-        self.handler(newHandler) -- luacheck: ignore
+        test.handler(newHandler)
     end
     if verbose ~= nil then
         verbose = isVerbose
