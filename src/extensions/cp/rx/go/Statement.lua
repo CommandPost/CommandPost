@@ -59,8 +59,7 @@
 --- > late as possible, typically in the `onObservable` function handler. Otherwise, input values
 --- > may get resolved before the user intends.
 
-
-local log           = require("hs.logger").new("Statement")
+-- local log           = require("hs.logger").new("Statement")
 
 local inspect       = require "hs.inspect"
 
