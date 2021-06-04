@@ -509,6 +509,11 @@ function mod.getItem(item, button, bundleID, bankID)
     return items and items[bundleID] and items[bundleID][bankID] and items[bundleID][bankID][button] and items[bundleID][bankID][button][item]
 end
 
+-- loupedeckPlusDuplicateBuffer -> table
+-- Variable
+-- A buffer to detect duplicate P1 to P8 triggers.
+local loupedeckPlusDuplicateBuffer = {}
+
 -- callback(object, deviceName, commandType, description, metadata) -> none
 -- Function
 -- MIDI Callback
@@ -702,6 +707,22 @@ local function callback(_, deviceName, commandType, _, metadata)
                         end
                     end)
                 elseif commandType == "pitchWheelChange" or commandType == "controlChange" or commandType == "noteOff" or (commandType == "noteOn" and metadata.velocity ~= 0) then
+                    --------------------------------------------------------------------------------
+                    -- Prevent duplicate actions for the P1-P8 buttons on a Loupedeck+:
+                    --------------------------------------------------------------------------------
+                    if deviceName == "Loupedeck+" and controllerNumber >= 1 and controllerNumber <= 24 then
+                        local currentBufferID = bundleID .. bankID .. deviceName .. channel .. commandType .. controllerNumber
+                        if loupedeckPlusDuplicateBuffer[currentBufferID] == true then
+                            loupedeckPlusDuplicateBuffer[currentBufferID] = nil
+                            return
+                        else
+                            loupedeckPlusDuplicateBuffer[currentBufferID] = true
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Trigger the action:
+                    --------------------------------------------------------------------------------
                     doAfter(0, function()
                         local handler = mod._actionmanager.getHandler(v.handlerID)
                         if handler then
