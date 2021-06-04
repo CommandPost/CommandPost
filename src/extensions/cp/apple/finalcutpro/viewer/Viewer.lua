@@ -20,6 +20,7 @@ local prop                              = require "cp.prop"
 local SplitGroup                        = require "cp.ui.SplitGroup"
 
 local ControlBar                        = require "cp.apple.finalcutpro.viewer.ControlBar"
+local CustomOverlay                     = require "cp.apple.finalcutpro.viewer.CustomOverlay"
 local InfoBar                           = require "cp.apple.finalcutpro.viewer.InfoBar"
 local PrimaryWindow                     = require "cp.apple.finalcutpro.main.PrimaryWindow"
 local SecondaryWindow                   = require "cp.apple.finalcutpro.main.SecondaryWindow"
@@ -479,43 +480,48 @@ end
 --
 -----------------------------------------------------------------------
 
--- FFCustomOverlaySelectedCanvas = "Test.png",
--- FFCustomOverlaySelectedCanvas_Opacity = 50,
--- FFCustomOverlaySelectedViewer = "Test.png",
--- FFCustomOverlaySelectedViewer_Opacity = 50,
--- FFPlayerDisplayedCustomOverlayCanvas = 1,
--- FFPlayerDisplayedCustomOverlayViewer = 1,
--- ["YouTube UI.png_Opacity_Canvas"] = 50,
--- ["YouTube UI.png_Opacity_Viewer"] = 50,
-
-local VIEWER_OVERLAY_POSTFIX = "Canvas"
-local EVENT_VIEWER_OVERLAY_POSTFIX = "Viewer"
-
-function Viewer:_overlayPostfix()
-    return self:isEventViewer() and EVENT_VIEWER_OVERLAY_POSTFIX or VIEWER_OVERLAY_POSTFIX
-end
-
+--- cp.apple.finalcutpro.viewer.Viewer.overlayEnabled <cp.prop: boolean; live>
+--- Field
+--- Specifies if the custom overlay is enabled.
 function Viewer.lazy.prop:overlayEnabled()
-    -- TODO: Trigger "View > Show in Viewer > Show Custom Overlay" to actually toggle, to avoid UI update lag
-    local postfix = self:_overlayPostfix()
-    return self:app().preferences:prop("FFPlayerDisplayedCustomOverlay"..postfix):mutate(
-        function(original) return original() == 1 end,
-        function(newValue, original) original(newValue == 1) end
-    )
+    if self:isEventViewer() then
+        return CustomOverlay.eventViewerEnabled
+    else
+        return CustomOverlay.viewerEnabled
+    end
 end
 
+--- cp.apple.finalcutpro.viewer.Viewer.overlayFileName <cp.prop: string; live>
+--- Field
+--- Specifies if the custom overlay file name.
 function Viewer.lazy.prop:overlayFileName()
-    local postfix = self:_overlayPostfix()
-    return self:app().preferences:prop("FFCustomOverlaySelected"..postfix)
+    if self:isEventViewer() then
+        return CustomOverlay.eventViewerFileName
+    else
+        return CustomOverlay.viewerFileName
+    end
 end
 
+--- cp.apple.finalcutpro.viewer.Viewer.overlayOpacity <cp.prop: number; live>
+--- Field
+--- Specifies if custom overlay's opacity setting.
 function Viewer.lazy.prop:overlayOpacity()
-    local postfix = self:_overlayPostfix()
-    return self:app().preferences:prop("FFCustomOverlaySelected"..postfix.."_Opacity")
+    if self:isEventViewer() then
+        return CustomOverlay.eventViewerOpacity
+    else
+        return CustomOverlay.viewerOpacity
+    end
 end
 
+--- cp.apple.finalcutpro.viewer.Viewer.overlay <cp.prop: CustomOverlay; live>
+--- Field
+--- The current `CustomOverlay` instance. May be `nil` if none is specified.
 function Viewer.lazy.prop:overlay()
-    -- TODO: Figuring out the best way to handle this...
+    if self:isEventViewer() then
+        return CustomOverlay.eventViewerOverlay
+    else
+        return CustomOverlay.viewerOverlay
+    end
 end
 
 -----------------------------------------------------------------------
