@@ -1629,6 +1629,7 @@
     "prowlMissingAPIKeyMessage": "You must enter a valid Prowl API Key to enable Prowl Notifications.",
     "prowlNotifications": "Prowl Notifications",
     "proxy": "Proxy",
+    "proxyPreferred": "Proxy Preferred",
     "proxySelectedMedia": "Create Proxy Media of Selected Clips",
     "puck": "Puck",
     "pushover": "Pushover",

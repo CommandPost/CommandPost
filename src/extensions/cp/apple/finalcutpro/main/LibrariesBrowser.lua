@@ -168,7 +168,7 @@ end
 --- Returns:
 ---  * The `Statement`.
 function LibrariesBrowser.lazy.method:doHide()
-    return self:parent():doHide()
+    return Do(self:parent():doHide())
 end
 
 -----------------------------------------------------------------------------

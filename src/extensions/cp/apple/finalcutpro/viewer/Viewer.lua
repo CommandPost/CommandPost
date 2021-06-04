@@ -4,7 +4,7 @@
 
 local require                           = require
 
-local log                               = require "hs.logger".new "viewer"
+-- local log                               = require "hs.logger".new "viewer"
 
 local eventtap                          = require "hs.eventtap"
 local geometry                          = require "hs.geometry"
@@ -14,6 +14,7 @@ local axutils                           = require "cp.ui.axutils"
 local deferred                          = require "cp.deferred"
 local go                                = require "cp.rx.go"
 local Group                             = require "cp.ui.Group"
+local Image                             = require "cp.ui.Image"
 local notifier                          = require "cp.ui.notifier"
 local prop                              = require "cp.prop"
 local SplitGroup                        = require "cp.ui.SplitGroup"
@@ -264,10 +265,10 @@ function Viewer.lazy.prop:contentsUI()
     end)
 end
 
---- cp.apple.finalcutpro.viewer.Viewer.videoImage <cp.prop: hs.axuielement; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.videoImageUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Provides the `axuielement` for video image within the Viewer, or `nil` if not available.
-function Viewer.lazy.prop:videoImage()
+function Viewer.lazy.prop:videoImageUI()
     return self.contentsUI:mutate(function(original)
         return cache(self, "_videoImage", function()
             local ui = original()
@@ -275,6 +276,13 @@ function Viewer.lazy.prop:videoImage()
             return images and childWithDescription(images, "video image")
         end)
     end)
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.videoImage <cp.ui.Image>
+--- Field
+--- The `Image` for the video content.
+function Viewer.lazy.value:videoImage()
+    return Image(self, self.videoImageUI)
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer.infoBar <cp.apple.finalcutpro.viewer.InfoBar>
@@ -430,6 +438,25 @@ function Viewer.lazy.prop:betterQuality()
             return original() == PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY
         end
     )
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.BACKGROUND -> table
+--- Constant
+--- Lists the possible background values: `BLACK`, `WHITE`, `CHECKERBOARD`.
+Viewer.static.BACKGROUND = {
+    BLACK = 0,
+    WHITE = 1,
+    CHECKERBOARD = 2,
+}
+
+--- cp.apple.finalcutpro.viewer.Viewer.background -> <cp.prop: number, live?>
+--- Field
+--- The viewer background mode. See `Viewer.BACKGROUND` for options.
+---
+--- Notes:
+---  * sets the background for all viewers.
+function Viewer.lazy.prop:background()
+    return self:app().preferences.prop("FFPlayerBackground")
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer.getFormat <cp.prop: string; read-only>
