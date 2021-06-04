@@ -6,8 +6,9 @@ local require       = require
 
 --local log           = require "hs.logger".new "secondaryWindow"
 
-local is            = require "cp.is"
 local axutils       = require "cp.ui.axutils"
+local Group         = require "cp.ui.Group"
+local SplitGroup    = require "cp.ui.SplitGroup"
 local Window        = require "cp.ui.Window"
 
 local go            = require "cp.rx.go"
@@ -30,9 +31,9 @@ local SecondaryWindow = class("cp.apple.finalcutpro.main.SecondaryWindow"):inclu
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function SecondaryWindow.static.matches(element)
-    if element ~= nil and element:attributeValue("AXModal") == false then
-        local children = element:attributeValue("AXChildren")
-        return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
+    if element ~= nil and element.AXModal == false then
+        local children = axutils.children(element)
+        return #children == 1 and SplitGroup.matches(children[1])
     end
     return false
 end
@@ -98,7 +99,7 @@ function SecondaryWindow.lazy.prop:rootGroupUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_rootGroup", function()
             local ui = original()
-            return ui and axutils.childWithRole(ui, "AXSplitGroup")
+            return ui and axutils.childMatching(ui, SplitGroup.matches)
         end)
     end)
 end
@@ -125,9 +126,15 @@ function SecondaryWindow.lazy.prop:timelineGroupUI()
         return axutils.cache(self, "_timelineGroup", function()
             -- for some reason, the Timeline is buried under three levels
             local root = original()
-            local one = is.object(root) and root[1] or nil
-            local two = is.object(one) and one[1] or nil
-            return two
+            local group = axutils.children(root)[1]
+            if not Group.matches(group) then
+                return nil
+            end
+            local splitGroup = axutils.children(group)[1]
+            if not SplitGroup.matches(splitGroup) then
+                return nil
+            end
+            return splitGroup
         end)
     end)
 end
