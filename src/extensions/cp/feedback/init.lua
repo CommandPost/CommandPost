@@ -93,17 +93,10 @@ local function generateHTML()
     env.send = i18n("send")
 
     --------------------------------------------------------------------------------
-    -- Attempt to get Full Name & Email from the Contacts App:
+    -- Get full name and email from preferences:
     --------------------------------------------------------------------------------
-    local fullname = tools.getFullname()
-    local email = ""
-    if fullname then email = tools.getEmail(fullname) end
-
-    if fullname == "" then fullname = i18n("fullName") end
-    if email == "" then email = i18n("emailAddress") end
-
-    env.userFullName = config.get("userFullName", fullname)
-    env.userEmail = config.get("userEmail", email)
+    env.userFullName = config.get("userFullName", i18n("fullName"))
+    env.userEmail = config.get("userEmail", i18n("emailAddress"))
 
     --------------------------------------------------------------------------------
     -- Get Console output:
