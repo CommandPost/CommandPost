@@ -6,10 +6,10 @@ local require           = require
 
 local pasteboard        = require "hs.pasteboard"
 
-local axutils           = require "cp.ui.axutils"
 local tools             = require "cp.tools"
 local Do                = require "cp.rx.go.Do"
 local fcp               = require "cp.apple.finalcutpro"
+local Viewer            = require "cp.apple.finalcutpro.viewer.Viewer"
 local i18n              = require "cp.i18n"
 
 local playErrorSound    = tools.playErrorSound
@@ -64,7 +64,7 @@ function plugin.init(deps)
     cmds
         :add("setPlayerBackgroundToBlack")
         :whenActivated(function()
-            fcp.preferences:set("FFPlayerBackground", 0)
+            fcp.viewer:background(Viewer.BACKGROUND.BLACK)
         end)
         :groupedBy("viewer")
         :titled(i18n("setPlayerBackgroundTo") .. " " .. i18n("black"))
@@ -75,7 +75,7 @@ function plugin.init(deps)
     cmds
         :add("setPlayerBackgroundToWhite")
         :whenActivated(function()
-            fcp.preferences:set("FFPlayerBackground", 1)
+            fcp.viewer:background(Viewer.BACKGROUND.WHITE)
         end)
         :groupedBy("viewer")
         :titled(i18n("setPlayerBackgroundTo") .. " " .. i18n("white"))
@@ -86,7 +86,7 @@ function plugin.init(deps)
     cmds
         :add("setPlayerBackgroundToCheckerboard")
         :whenActivated(function()
-            fcp.preferences:set("FFPlayerBackground", 2)
+            fcp.viewer:background(Viewer.BACKGROUND.CHECKERBOARD)
         end)
         :groupedBy("viewer")
         :titled(i18n("setPlayerBackgroundTo") .. " " .. i18n("checkerboard"))
@@ -97,16 +97,9 @@ function plugin.init(deps)
     cmds
         :add("togglePlayerBackground")
         :whenActivated(function()
-            local current = fcp.preferences:get("FFPlayerBackground")
-            local new = 0
-            if current == 0 then
-                new = 1
-            elseif current == 1 then
-                new = 2
-            elseif current == 2 then
-                new = 0
-            end
-            fcp.preferences:set("FFPlayerBackground", new)
+            local current = fcp.viewer:background()
+            local new = (current + 1) % 3
+            fcp.viewer:background(new)
         end)
         :groupedBy("viewer")
         :titled(i18n("togglePlayerBackground"))
@@ -117,10 +110,21 @@ function plugin.init(deps)
     cmds
         :add("setViewerToProxy")
         :whenActivated(function()
-            fcp.preferences:set("FFPlayerQuality", 4)
+            fcp.viewer:playbackMode(Viewer.PLAYBACK_MODE.PROXY_ONLY)
         end)
         :groupedBy("viewer")
         :titled(i18n("setViewerTo") .. " " .. i18n("proxy"))
+
+    --------------------------------------------------------------------------------
+    -- Set Viewer to Proxy Preferred:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("setViewerToProxyPreferred")
+        :whenActivated(function()
+            fcp.viewer:playbackMode(Viewer.PLAYBACK_MODE.PROXY_PREFERRED)
+        end)
+        :groupedBy("viewer")
+        :titled(i18n("setViewerTo") .. " " .. i18n("proxyPreferred"))
 
     --------------------------------------------------------------------------------
     -- Set Viewer to Optimized/Original:
@@ -128,7 +132,7 @@ function plugin.init(deps)
     cmds
         :add("setViewerToOptimizedOriginal")
         :whenActivated(function()
-            fcp.preferences:set("FFPlayerQuality", 10)
+            fcp.viewer:playbackMode(Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_QUALITY)
         end)
         :groupedBy("viewer")
         :titled(i18n("setViewerTo") .. " " .. i18n("optimizedOriginal"))
@@ -153,12 +157,11 @@ function plugin.init(deps)
     for _, zoomFactor in pairs(zoomFactors) do
         cmds
             :add("setViewerZoomFactorTo" .. zoomFactor)
-            :whenActivated(function()
+            :whenActivated(
                 Do(infoBar.zoomMenu:doShow())
                     :Then(infoBar.zoomMenu:doSelectValue(zoomFactor))
-                    :Label("plugins.finalcutpro.viewer.actions.setViewerZoomFactorToFit")
-                    :Now()
-            end)
+                    :Label("plugins.finalcutpro.viewer.actions.setViewerZoomFactorTo"..zoomFactor)
+            )
             :groupedBy("viewer")
             :titled(i18n("setViewerTo") .. " " .. zoomFactor)
     end
@@ -169,9 +172,9 @@ function plugin.init(deps)
     cmds
         :add("copyViewerContentsToPasteboard")
         :whenActivated(function()
-            local videoImage = fcp.viewer.videoImage()
+            local videoImage = fcp.viewer:videoImage()
             if videoImage then
-                local img = axutils.snapshot(videoImage)
+                local img = videoImage:snapshot()
                 if img then
                     if pasteboard.writeObjects(img) then
                         return
@@ -182,7 +185,6 @@ function plugin.init(deps)
         end)
         :groupedBy("viewer")
         :titled(i18n("copyViewerContentsToPasteboard"))
-
 end
 
 return plugin

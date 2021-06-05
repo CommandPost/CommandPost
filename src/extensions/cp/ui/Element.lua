@@ -163,7 +163,7 @@ end
 
 --- cp.ui.Element:focus() -> self
 --- Method
---- Set the focus on an element.
+--- Attempt to set the focus on the element.
 ---
 --- Parameters:
 ---  * None
@@ -171,14 +171,97 @@ end
 --- Returns:
 ---  * self
 function Element:focus()
-    local ui = self.UI()
-    if ui then
-        ui:setAttributeValue("AXFocused", true)
-    end
-    return self
+    return self:setAttributeValue("AXFocused", true)
 end
 
---- cp.ui.Element:doPerformAction() -> cp.rx.go.Statement
+--- cp.ui.Element:doFocus() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that attempts to set the focus on the element.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function Element.lazy.method:doFocus()
+    return self:doSetAttributeValue("AXFocused", true)
+end
+
+--- cp.ui.Element:attributeValue(id) -> anything, true | nil, false
+--- Method
+--- Attempts to retrieve the specified `AX` attribute value, if the `UI` is available.
+---
+--- Parameters:
+---  * id - The `AX` attribute to retrieve.
+---
+--- Returns:
+---  * The current value for the attribute, or `nil` if the `UI` is not available, followed by `true` if the `UI` is present and was called.
+function Element:attributeValue(id)
+    local ui = self:UI()
+    if ui then
+        return ui:attributeValue(id), true
+    end
+    return nil, false
+end
+
+--- cp.ui.Element:setAttributeValue(id, value) -> self, boolean
+--- Method
+--- If the `UI` is available, set the named `AX` attribute to the `value`.
+---
+--- Parameters:
+---  * id - The `AX` id to set.
+---  * value - The new value.
+---
+--- Returns:
+---  * The `Element` instance, then `true` if the UI is available and the value was set, otherwise false.
+function Element:setAttributeValue(id, value)
+    local ui = self:UI()
+    if ui then
+        ui:setAttributeValue(id, value)
+        return self, true
+    end
+    return self, false
+end
+
+--- cp.ui.Element:performAction(id) -> boolean
+--- Method
+--- Attempts to perform the specified `AX` action, if the `UI` is available.
+---
+--- Parameters:
+---  * id - The `AX` action to perform.
+---
+--- Returns:
+---  * `true` if the `UI` is available and the action was performed, otherwise `false`.
+function Element:performAction(id)
+    local ui = self:UI()
+    if ui then
+        ui:performAction(id)
+        return self, true
+    end
+    return self, false
+end
+
+--- cp.ui.Element:doSetAttributeValue(id, value) -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will attempt to update the specified `AX` attribute to the new `value`.
+---
+--- Parameters:
+---  * id   - The `string` for the AX action to perform.
+---  * value - The new value to set.
+---
+--- Returns:
+---  * The `Statement` which will perform the action and resolve to `true` if the UI is available and set, otherwise `false`.
+function Element:doSetAttributeValue(id, value)
+    return If(self.UI)
+    :Then(function(ui)
+        ui:setAttributeValue(id, value)
+        return true
+    end)
+    :Otherwise(false)
+    :Label("cp.ui.Element:doSetAttributeValue('" .. id .. "', value)")
+end
+
+--- cp.ui.Element:doPerformAction(id) -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` which will attempt to perform the action with the specified id (eg. "AXCancel")
 ---
@@ -230,6 +313,13 @@ end
 --- Returns the table containing the `x`, `y`, `w`, and `h` values for the `Element` frame, or `nil` if not available.
 function Element.lazy.prop:frame()
     return axutils.prop(self.UI, "AXFrame")
+end
+
+--- cp.ui.Element.isFocused <cp.prop: boolean; read-only?; live?>
+--- Field
+--- Returns `true` if the `AXFocused` attribute is `true`. Not always a reliable way to determine focus however.
+function Element.lazy.prop:isFocused()
+    return axutils.prop(self.UI, "AXFocused")
 end
 
 --- cp.ui.Element.position <cp.prop: table; read-only; live?>
@@ -292,7 +382,6 @@ function Element:snapshot(path)
     end
     return nil
 end
-
 
 --- cp.ui.Element:saveLayout() -> table
 --- Method
