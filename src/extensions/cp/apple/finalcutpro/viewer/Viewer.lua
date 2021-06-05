@@ -480,48 +480,34 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.viewer.Viewer.overlayEnabled <cp.prop: boolean; live>
+--- cp.apple.finalcutpro.viewer.Viewer.isOverlayEnabled <cp.prop: boolean; live>
 --- Field
 --- Specifies if the custom overlay is enabled.
-function Viewer.lazy.prop:overlayEnabled()
+function Viewer.lazy.prop:isOverlayEnabled()
     if self:isEventViewer() then
-        return CustomOverlay.eventViewerEnabled
+        return CustomOverlay.isEnabledOnEventViewer
     else
-        return CustomOverlay.viewerEnabled
-    end
-end
-
---- cp.apple.finalcutpro.viewer.Viewer.overlayFileName <cp.prop: string; live>
---- Field
---- Specifies if the custom overlay file name.
-function Viewer.lazy.prop:overlayFileName()
-    if self:isEventViewer() then
-        return CustomOverlay.eventViewerFileName
-    else
-        return CustomOverlay.viewerFileName
-    end
-end
-
---- cp.apple.finalcutpro.viewer.Viewer.overlayOpacity <cp.prop: number; live>
---- Field
---- Specifies if custom overlay's opacity setting.
-function Viewer.lazy.prop:overlayOpacity()
-    if self:isEventViewer() then
-        return CustomOverlay.eventViewerOpacity
-    else
-        return CustomOverlay.viewerOpacity
+        return CustomOverlay.isEnabledOnViewer
     end
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer.overlay <cp.prop: CustomOverlay; live>
 --- Field
 --- The current `CustomOverlay` instance. May be `nil` if none is specified.
+--- May also be specified even if the overlay for the `Viewer` isn't enabled.
 function Viewer.lazy.prop:overlay()
     if self:isEventViewer() then
         return CustomOverlay.eventViewerOverlay
     else
         return CustomOverlay.viewerOverlay
     end
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.userOverlays <cp.prop: table of CustomOverlay; read-only>
+--- Constant
+--- Contains the current list of `CustomOverlay`s available.
+function Viewer.lazy.prop.userOverlays()
+    return CustomOverlay.userOverlays
 end
 
 -----------------------------------------------------------------------
