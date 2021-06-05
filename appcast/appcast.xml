@@ -7,7 +7,7 @@
 		<language>en</language>
 		<item>
 			<title>Version 1.2.4</title>
-			<sparkle:releaseNotesLink>http://htmlpreview.github.io/?https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/releasenotes.html</sparkle:releaseNotesLink>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
 			<pubDate>Fri,  4 Jun 2021 00:54:28 +1000</pubDate>
 			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.4/CommandPost_1.2.4.dmg"
 				sparkle:version="6922"
