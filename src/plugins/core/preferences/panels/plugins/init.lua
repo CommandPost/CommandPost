@@ -161,6 +161,8 @@ local function controllerCallback(id, params)
         disablePlugin(params.pluginID)
     elseif action == "enable" then
         enablePlugin(params.pluginID)
+    elseif action == "edit" then
+        hs.execute([[open "]] .. params.pluginID .. [["]])
     else
         log.ef("Unrecognised action: %s %s", id, inspect(params))
     end
@@ -190,6 +192,7 @@ local function generateContent()
         info.category = pluginCategory(plugin)
         info.status = pluginStatus(plugin)
         info.shortName = pluginShortName(plugin.id)
+        info.scriptFile = plugin:getScriptFile()
 
         local action = nil
 
@@ -265,7 +268,7 @@ function mod.init(deps, env)
         label       = i18n("pluginsPanelLabel"),
         image       = imageFromPath(iconFallback(config.basePath .. "/plugins/core/preferences/panels/images/Extensions.icns")),
         tooltip     = i18n("pluginsPanelTooltip"),
-        height      = 492,
+        height      = 590,
     })
 
     mod.panel:addContent(10, generateContent, false)
