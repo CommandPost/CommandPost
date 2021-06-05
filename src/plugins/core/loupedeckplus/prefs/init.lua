@@ -869,7 +869,7 @@ function plugin.init(deps, env)
         label           = i18n("loupedeckPlus"),
         image           = icon,
         tooltip         = i18n("loupedeckPlus"),
-        height          = 910,
+        height          = 950,
     })
         :addHeading(6, i18n("loupedeckPlus"))
         :addCheckbox(7,
@@ -878,6 +878,24 @@ function plugin.init(deps, env)
                 checked     = mod.enabled,
                 onchange    = function(_, params)
                     mod.enabled(params.checked)
+                end,
+            }
+        )
+        :addCheckbox(9,
+            {
+                label       = i18n("ignoreEverySecondP1ToP8WheelCommand"),
+                checked     = mod._midi.ignoreEverySecondP1ToP8WheelCommand,
+                onchange    = function(_, params)
+                    mod._midi.ignoreEverySecondP1ToP8WheelCommand(params.checked)
+                end,
+            }
+        )
+        :addCheckbox(10,
+            {
+                label       = i18n("ignoreEverySecondControlDialCommand"),
+                checked     = mod._midi.ignoreEverySecondControlDialCommand,
+                onchange    = function(_, params)
+                    mod._midi.ignoreEverySecondControlDialCommand(params.checked)
                 end,
             }
         )
