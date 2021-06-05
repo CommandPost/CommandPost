@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>CommandPost</title>
+	</head>
+	<body>
+		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
+		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
+		<div class="content">
+			<h1>CommandPost 1.2.4</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>Added a preference to disable User Interface Animations within Final Cut Pro. This will allow you to disable, for example, the animated fade effect of the "Custom Speed" window and the timeline Appearance popup when they open and close.</li>
+			<li>Added an action to copy the Final Cut Pro Viewer contents to the Pasteboard. Thanks for suggesting Alex Gollner!</li>
+			<li>Added an action to "commit multicam" within Final Cut Pro using automation. It’s a bit clunky, but it works. We essential “Reveal in Angle Editor”, then “Reveal in Browser”, mark an in-point, then connect that clip back on top of the timeline. Essentially a macro, like Timeline Batch Export. One day I hope to use the Pasteboard instead to make it a one click thing. Thanks for suggesting Knut Hake & Sam Pluemacher!</li>
+			<li>Added actions to control the Anchor controls within the Final Cut Pro Video Inspector.</li>
+			<li>Added actions to reset Compositing, Crop, Distort and Transform within the Final Cut Pro Video Inspector. Thanks for suggesting Nariman Gafurov!</li>
+			<li>Added a "Retime to Duration" action for Final Cut Pro. This will trigger a "Custom Speed" action and select the "Duration" radio button, so that you can then just type in the new duration, rather than having to click it manually with the mouse.</li></ul>
+
+			<h2>💪 Changes</h2>
+			<ul><li>The wording on Monogram Preferences panel has been changed. You can now use the public version of Monogram Creator 4.1.11 or later, as opposed to just the beta and alpha releases.</li>
+			<li>We now disable certain user interface animations within Final Cut Pro when triggering CommandPost actions, so that the actions are more responsive.</li></ul>
+
+			<h2>👿 Known Issues</h2>
+			<ul><li>Due to a suspected bug in Xcode 12, the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. We've contacted Apple to try and come up with a fix.</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.2.3</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>Added support for the Loupedeck CT and Loupedeck Live beta firmware, which changes the connection method from a virtual ethernet port to a virtual serial port.</li>
+			<li>Added support for multiple Loupedeck CT and multiple Loupedeck Live devices at the same time. Each device can now have its own unique layout.</li>
+			<li>Added actions for triggering virtual mouse clicks. Thanks for suggesting Chase Guidroz!</li></ul>
+
+			<h2>💪 Changes</h2>
+			<ul><li>The setup screen no longer refers to the "satellite icon". Thanks for reporting Shahin Shokoui!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.2.2</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>Improved the Search Console so that, for example, if you open it when setting up a layout for Final Cut Pro in the Loupedeck CT preferences, it now shows Final Cut Pro actions by default - but you still have access to all the other application actions by using one of the toolbar icons, or right-clicking on the Search Console to change which Action Groups you want to filter.</li>
+			<li>Added a preference to the Loupedeck CT/Live Preferences to "Automatically Apply Icon From Action". Thanks for suggesting Eric Badura!</li>
+			<li>We now automatically add a text label based on the action title, when you assign an action in the Loupedeck CT/Live Preferences.</li>
+			<li>Added an action to "Reset Color Wheel" in Final Cut Pro, which resets all the controls for the selected color wheel. Thanks for suggesting Matthew H Green!</li>
+			<li>Added the ability to delete custom applications from Loupedeck CT/Live preferences. Thanks for reporting Eric Badura!</li>
+			<li>Improved the reliability of the Final Cut Pro Color Wheel Tint Controls on Tangent Panels. Thanks for reporting David Brown!</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug where enabling then disabling a Loupedeck CT/Live vibration control wouldn't actually disable it, requiring you to reset the whole control to get rid of the vibration. Thanks for reporting Eric Badura!</li>
+			<li>Fixes some mistakes in the German language translation for CommandPost. Thanks for reporting Eric Badura!</li>
+			<li>Fixed a bug where resetting the Color Wheels on a Tangent Panel would not work correctly. Thanks for reporting Richard Guinand!</li>
+			<li>Fixed a bug in our Final Cut Pro Angle Editor API. Thanks for reporting Sam Pluemacher!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.2.1</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>When you click an action select button in the Loupedeck CT/Live Preferences panel, if there was previously an action already assigned, this name will now be automatically populated in the Search Console.</li>
+			<li>When you click an action select button in the Loupedeck CT/Live Preferences panel, the selected action groups will now default to whatever application you currently have selected in the Loupedeck CT/Live Preferences. For example, if you're changing the layout for TextEdit, which you click an action select button, only the actions for TextEdit will appear by default. However, you can still access all the other application actions via the toolbar, or the right-click menu for complete control.		</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug in the Loupedeck CT/Live manager, where resizing some legacy icons could fail, preventing the Loupedeck screens from updating correctly. Thanks for reporting Eric Badura!</li>
+			<li>Fixed some user interface issues in the Loupedeck CT/Live Preferences when the interface is in Dutch. Thanks for reporting Jeroen van Amerongen!</li>
+			<li>The default Loupedeck Live layout incorrectly had actions for the Loupedeck CT, which just made things very confusing. This has now been corrected.</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.2.0</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>We have a new dock and menubar icon by the incredible Matthew Skiles. Woohoo!</li>
+			<li>We have also added the option to select 5 new built-in menubar icons, or select any image from your machine to use as a menubar icon. You can also now customise the menubar text label for full control.</li>
+			<li>We now support the Monogram and Palette control surfaces. CommandPost integrates closely with the Monogram Creator, so once you enable Monogram support in CommandPost, you can jump into Monogram Creator to set up your layout. It also supports Automatic Profile Switching. Monogram support requires the latest beta or alpha builds of Monogram Creator - it won't work on the public release yet. Any ideas, comments, suggestions welcome!</li>
+			<li>You can now use Lua Snippets to programatically generate Loupedeck CT/Live icons, and also define the LED color. With some simple lines of code, you can now make your Loupedeck device appear exactly how you want it. There's a new option in the preferences to adjust the refresh frequency (defaults to 1 second).</li>
+			<li>Added option to "Resize Images on Import" and set a custom "Image Background Colour on Import" in the Loupedeck CT/Live Preferences panel.</li>
+			<li>Added ability to customise the font, font size and colour of text labels in the Loupedeck CT/Live Preferences panel.</li>
+			<li>Added the ability to consolidate images when using the Shot Data Toolbox. This means if you have any images "connected" to the Shot Data Motion Template in your timeline, they'll be copied to the same location as the CSV export. Thanks for the suggestion Vigneswaran Rajkumar!</li>
+			<li>Added actions to control the individual red, green and blue parameters for the Color Wheels in Final Cut Pro. Thanks for suggesting Eric Badura!</li></ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>We've renamed "All Applications" to "Unlisted & Ignored Applications" in the Control Surfaces panels to better describe what this option does.</li>
+			<li>We've improved how the Search Console searches and orders the results.</li>
+			<li>Updated all the translations, and improved the Lua documentation.</li>
+			<li>Various user interface improvements in the Preferences and Control Surfaces windows.</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug in both the Shot Data Toolbox, Save Browser Contents to CSV and Save Timeline Index to CSV. Thanks for reporting Aaron Villa!</li>
+
+			<li>Various improvements and bug fixes in the Loupedeck CT/Live Preferences panels - especially in regards to dragging and dropping icons. Thanks to Eric Badura for all your testing and ideas!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.1.5</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>If you assign an action to a Loupedeck CT/Live Touchscreen button that has an image in the Search Console, that image will now be automatically applied to the button. For example, if you apply the action to launch Disk Utility to a Loupedeck CT/Live Touchscreen Button, the Disk Utility icon will be automatically applied. Thanks for suggesting Eric Badura!</li>
+			<li>You can now select Applications (in addition to image files) when you click the Image Drop Zone in the Loupedeck CT/Live Control Surfaces panel.</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.1.4</h1>
+
+			<h2>💪 Changes</h2>
+			<ul><li>On a fresh installation, CommandPost will no longer ask you if you want to copy the CommandPost application to your application folder. Instead, you should manually copy CommandPost to the application folder via the Applications shortcut in the DMG package. This has been changed to get around issues where people want to install CommandPost in their user-specific application folder, or when there's permission issues trying to copy CommandPost across, which can happen on some Big Sur installations.</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed the "Zoom to selection" action in Final Cut Pro. Thanks for reporting Jeffrey Linneman!</li>
+			<li>Fixed the "Save Current Frame" option in the Final Cut Pro Viewer Overlay popup. Thanks for reporting David Brown!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.1.3</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>Added actions that adjust the Position controls in Final Cut Pro's inspector in reverse using MIDI. Thanks Joe Dull!</li>
+			<li>Added an action to "Toggle Opacity Fade Handles in Video Animation Popup on Selected Clips". Thanks for the suggestion Ripple Training! Unfortunately, due to a bug in Final Cut Pro's Accessibility API this doesn't work for clips within a secondary storyline container.</li>
+			<li>Added preferences to change the Search Console width and height. This can be found when you right click on the Search Console. Each individual Search Console has its own unique width and height (i.e. the Search Console in Final Cut Pro can be different than in After Effects).</li></ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>DaVinci Resolve & After Effects Tangent support is now disabled by default on a fresh install.</li>
+			<li>Updated the Shot Data Motion Template, so that it works with all common aspect ratios. Thanks Iain Anderson!</li>
+			<li>We've removed the EULA from the CommandPost DMG, and updated the tag-line to match the website.</li>
+			<li>We've adjusted the window sizes on Big Sur so there's not as much wasted space at the bottom of the windows.</li>
+			<li>The Shared Pasteboard will no longer prompt you on CommandPost's startup if the shared folder is not accessible. This means that if you're using something like PostLab Drive, the Shared Pasteboard will now work when the drive is connected, and you won't get notified if the drive becomes disconnected. Thanks for reporting Dale Ryan Leckie!</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug where the menu bar actions had the wrong menu path in the Search Console subtext.</li>
+			<li>Fixed a bug where you will be asked for Accessibility Permissions straight away on a fresh install. Thanks for reporting Iain Anderson!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.1.2</h1>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug that could cause the hue control in the Final Cut Pro Colour Wheels to change its value to 90 degrees when CommandPost first loads, if the Colour Wheel is active on a clip. Thanks for reporting Valerio D'Andrassi.</li></ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>The Shot Data Motion Template has been updated. Thanks Vigneswaran Rajkumar!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.1.1</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>We've added some caching to dramatically increase the responsiveness of control surfaces, such as the Loupedeck CT. This has massive improvements for controlling the Color Wheels with the Loupedeck CT Touch Screen, for example.</li></ul>
+
+			<h2>🆕 New Actions</h2>
+			<ul><li>We've added new actions to control the Final Cut Pro Color Board, by increments of 1, 2, 3, 4, 5 and 10. They are all contained within their own Action Group called "Color Board" on the Search Console. Thanks for suggesting Eric Badura!</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed the Hue controls on Tangent Panels. Thanks for reporting Robert J. Bradshaw!</li>
+			<li>Fixed an error that could occur randomly when refreshing Loupedeck devices. Thanks for reporting Eric Badura!</li>
+			<li>Some actions that used popup menus (such as "Show Horizon") weren't working correctly. This is now fixed. Thanks for reporting Adam Terlanda!</li>
+			<li>Some fields weren't being correctly exported in the Shot Data Toolbox Utility. This is now fixed. Thanks for reporting Vigneswaran Rajkumar!</li>
+			<li>Fixed a bug which cause a MIDI error when launching CommandPost 1.1 or later for the first time. Thanks for reporting Scott Dodson!</li>
+			<li>Fixed a bug where Stream Deck settings weren't migrated from CommandPost 1.0.6 (or earlier) to 1.1 (or later). The Final Cut Pro and All Applications settings are now automatically migrated to the Stream Deck Unit 1.</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.1.0</h1>
+
+			<h2>🎛 Control Surfaces Support</h2>
+			<ul><li>Control Surfaces have been moved out of Preferences into their own window.</li>
+			<li>Added Loupedeck (original), Loupedeck CT and Loupedeck Live support.</li>
+			<li>Added Stream Deak XL and Stream Deck Mini support.</li>
+			<li>Added TourBox support.</li>
+			<li>Added placeholder Control Surface panels for Monogram and Gamepad, with an explanation of how to use these control surfaces with CommandPost until we add built-in support.</li>
+			<li>MIDI, Loupedeck &amp; Stream Deck Preferences panels now support Custom Applications.</li>
+			<li>AudioSwift now correctly works with CommandPost&#39;s MIDI functionality. Thanks for reporting Nigel Rios!</li>
+			<li>Added Skype, Microsoft Teams, Zoom, Disk Utility, System Preferences and TextEdit to the default Control Surfaces application drop-down lists. However, currently there is only basic keyboard shortcut actions for Skype.</li>
+			<li>Tangent panel support has been re-engineered to support multiple CommandPost applications within Tangent Mapper (i.e. you can now have a completely seperate Tangent Mapper layout for Final Cut Pro and DaVinci Resolve). Better support for DaVinci Resolve will come in a future beta - this release it just laying the foundations.</li></ul>
+
+			<h2>🧰 Toolbox Utilities</h2>
+			<ul><li>The FCPXML Titles Processor allows you update the titles within a FCPXML, based on new data from a CSV file. This utility was commissioned by Connor Eberhart.</li>
+			<li>Shot Data is new specialised Toolbox utility that allows you to import a FCPXML which contains one or more Shot Data Titles in a timeline, and converts the data from these Motion Templates into a single CSV file for use in other applications. This feature has been commissioned by Vigneswaran Rajkumar for his upcoming feature film.</li></ul>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>Added non-keyboard shortcut actions for Final Cut Pro Browser Clip Height &amp; Browser Duration.</li>
+			<li>Added speed rate actions for 40, 50, and 200.</li>
+			<li>Added actions to increase and decrease display brightness.</li>
+			<li>Added actions for adjusting opacity in Final Cut Pro.</li>
+			<li>Added actions for Filmstrip &amp; List Mode in the Final Cut Pro Browser.</li>
+			<li>Added a Contrast action for Final Cut Pro which adjusts shadows &amp; highlights brightness at the same time.</li>
+			<li>Added actions for Timeline Zoom (using the Appearance Popup). Thanks for suggesting Prescott Van Leer!</li>
+			<li>All your Keyboard Maestro Macros are now available in the Search Console as actions.</li>
+			<li>Added initial support for Adobe After Effects. There are now actions for each individual effect in After Effects, as well as actions for all the shortcut keys and menubar items.</li>
+			<li>Added actions for Zoom keyboard shortcuts. Thanks for your assistance Jonathan Zuck!</li>
+			<li>CommandPost can now generate menu bar actions for all Custom Applications.</li>
+			<li>Added an option to create Captions when using the Text To Speech feature in Final Cut Pro. Thanks for the suggestion Vigneswaran Rajkumar!</li>
+			<li>Added actions that allow you to &quot;emulate&quot; a Tangent Element panel in DaVinci Resolve. This feature requires Tangent support to be enabled, and at least one physical Tangent device to be connected to your machine (i.e. a Tangent Ripple). This means you can now use Tangent Mapper to customise your DaVinci Resolve layout for any Tangent panel, as well as trigger Tangent actions from any other control surface or shortcut key (i.e. you can control a colour wheel from a Loupedeck CT or TourBox). It also means you can control DaVinci Resolve from a Tangent Arc or CP200.</li>
+			<li>Added a Contrast Color Wheel control to Tangent Mapper. Thanks for suggesting Von Jackson!</li></ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>Recompiled CommandPost to natively support Apple Silicon.</li>
+			<li>Improved the method we detect &quot;Screen Recording&quot; permissions on macOS Catalina &amp; Big Sur.</li>
+			<li>We now use Sentry instead of Firebase Crashlytics for tracking crashes.</li>
+			<li>CommandPost now uses Lua 5.4.</li>
+			<li>We&#39;ve made lots of changes and improvements to our underlying Final Cut Pro X API. These changes should make writing your own Lua Snippets a lot more simple and easy to understand.</li>
+			<li>The Search Console now loads faster, and displays a &quot;loading&quot; message when the contents of the Search Console is still populating. We&#39;ve also adjusted the way the Search Console orders its results to improve usability.</li>
+			<li>Added more Touch Bar icons. Thanks Daniele Di Tuccio!</li>
+			<li>Changed the way we trigger shortcut keys for better performance.</li>
+			<li>HUD now watches for Viewer resizing.</li>
+			<li>Browser Playhead Highlight now follows playhead when visible.</li>
+			<li>&quot;Select Clips Forward/Backwards&quot; actions now selects clips with speed handles.</li>
+			<li>Timeline Batch Export now correctly handles clips with speed handles visible.</li>
+			<li>Removed unnecessary &quot;Failed to cache User Effects Presets” debug message in Plugin Scanner.</li>
+			<li>Added option to enable/disable all draggable guides in Final Cut Pro Viewer Overlay.</li>
+			<li>Improved the performance of the Video Inspector actions.</li>
+			<li>Improved the MIDI Controls for Colour Wheels, so that you can use both the horizontal and vertical actions at the same time. This allows you to use the controls smoothly in AudioSwift using X/Y mode. Thanks for reporting Nigel Rios!</li>
+			<li>Added relative MIDI actions for controlling the Final Cut Pro Colour Board. Thanks Nigel Rios!</li>
+			<li>We now just play an error sound instead of showing a dialog box when a menubar action cannot be triggered. Thanks Knut Hake!</li>
+			<li>You can now use a velocity value for the &quot;Note Off&quot; and &quot;Note On&quot; MIDI commands. The velocity is also now detected and filled out in the MIDI Preferences panel when you use the &quot;Learn&quot; button. Thanks Nigel Rios!</li>
+			<li>Improved the &quot;Relative A&quot; MIDI Controls for the Color Board &amp; Color Wheels, for use with AudioSwift (and other MIDI devices).</li>
+			<li>&quot;Sections&quot; in the Search Console has been renamed to &quot;Show Action Groups&quot;, and is now grouped by application.</li>
+			<li>The &quot;Text to Speech&quot; feature has been re-designed and improved.</li>
+			<li>Actions that trigger virtual keyboard presses now take into account any modifier keys triggered by the &quot;Press and hold Modifier Key&quot; actions. Thanks for reporting Flavio Saramin!</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed Touch Bar support on 16-inch MacBook Pro.</li>
+			<li>Fixed bug in Search Console where toggling “Search Subtext” wouldn’t take affect until the Search Console was closed and re-opened.</li>
+			<li>Fixed bug where the Effects &amp; Transitions search box contents would not be restored correctly after applying an effect or transition via an action.</li>
+			<li>Fixed bug in Notes HUD panel.</li>
+			<li>Fixed bug in Final Cut Pro Crop Bottom Action.</li>
+			<li>Fixed bug where double quotation marks in Snippet names prevented the Snippets from being editable.</li>
+			<li>Fixed bug which prevented the &quot;Clear&quot; buttons in the Loupedeck+ preferences panel from working.</li>
+			<li>Fixed a bug in the &quot;Press and hold&quot; modifier actions for CONTROL, OPTION and COMMAND. Thanks for reporting Knut Hake!</li>
+			<li>Fixed a bug where the &quot;Make Pasteboard Text Uppercase/Lowercase/Camelcase&quot; actions would not affect certain characters such as &quot;å&quot;. Thanks for reporting Eivind Lie Nitter!</li>
+			<li>Fixed a bug where the Search Console was incorrectly case sensitive.</li>
+			<li>Fixed a bug which prevented the individual &quot;Play&quot; and &quot;Pause&quot; actions from functioning. A better description for these actions has also been added to the Search Console, so that it&#39;s clearer to understand their purpose (i.e. the play button only plays - it won&#39;t stop playback). Thanks for reporting Prescott Van Leer!</li>
+			<li>Fixed a bug where Colour Wheel actions wouldn&#39;t not automatically change to the Colour Wheel Inspector if you were on the Colour Curves. Thanks for reporting Prescott Van Leer!</li>
+			<li>Fixed a bug in the Timeline Batch Export tool, where sometimes CommandPost could fail to change the destination directory.</li>
+			<li>Fixed a bug which prevented MIDI commands from applying correctly if you manually entered them in the MIDI Preferences panel (as opposed to using the &quot;Learn&quot; button). Thanks Nigel Rios!</li>
+			<li>Fixed a bug in the Text to Speech function and Media Watch Folders where certain non-alphanumeric characters in filenames could cause the functions to fail. Thanks for reporting Vigneswaran Rajkumar!</li>
+			<li>Fixed a bug which prevented Color Wheels from opening correctly in the Final Cut Pro Inspector when you moved a Tangent wheel or knob.</li>
+			<li>Fixed a bug in MIDI Timeline Scroll action.</li>
+			<li>Fixed a bug where the &quot;Leave Files in Place&quot; menubar item tick was incorrectly reversed. Thanks for reporting Mark Westcott!</li>
+			<li>Fixed a bug that could cause certain items to not appear in the Search Console, due to a &quot;Share Destinations&quot; folder not existing on some machines. Thanks for reporting Peter Moss!</li>
+			<li>Fixed a bug with the Jog/Shuttle control for Tangent Panels in Final Cut Pro. Thanks for reporting Vigneswaran Rajkumar!</li>
+			<li>Fixed a bug where a deleted Media Watch Folder would reappear when you restarted CommandPost. Thanks for reporting Erik Lathouwers, Matt Steeves &amp; Jiří Fiala!</li>
+			<li>Fixed a bug which prevented Color Board controls from working in some newer versions of Final Cut Pro when the interface was in German. Thanks for reporting Eric Badura!</li>
+			<li>Fixed a bug that would cause an error if you tried to Restore a Browser Layout that wasn&#39;t previously saved. Thanks for reporting Gábor Kertai!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.6</h1>
+
+			<h2>🎉 New Feature</h2>
+			<ul><li>Improved the Batch Rename HUD. You can now add sequential numbers to clip names. Thanks for the suggestion Vigneswaran Rajkumar! You can also process clip names with custom Lua code, giving you the ultimate renaming freedom.</li></ul>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul><li>Fixed bug in "Color Wheel - Midtones - Brightness - Down" actions. Thanks for reporting Valerio D'Andrassi!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.5</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>Added additional Colour Wheel actions for different increments. For example, you can now increase or decrease the Tint by 0.1, 0.2, 0.3, 0.4, 0.5, 1, 5 or 10. This applies to Saturation, Brightness, Tint, & Temperature. Thanks for suggesting Rafa Alejandro!</li>
+			<li>Added actions to trigger custom keyboard shortcuts (for example COMMAND+C).</li></ul>
+
+			<h2>💪 Changes</h2>
+			<ul><li>CommandPost will now prompt for Screen Recording permissions on macOS Catalina, and will not start until those permissions are granted. CommandPost requires Screen Recording permission on macOS Catalina to detect the state of various user interface elements - for example, to detect when Final Cut Pro is playing or stopped. We also allow users to optionally share screenshots when submitting feedback.</li>
+			<li>The CommandPost Dock Item is now disabled by default. You can change this in CommandPost's General Preferences panel if required.</li>
+			<li>The contextual menu that appears when you right-click on the top of the Final Cut Pro Viewer is now disabled by default. You now have to click "Enable Viewer Contextual Menu" from the CommandPost menubar to enable it.</li>
+			<li>The Uninstall tool now removes all of CommandPost's permissions in macOS Catalina.</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug that prevented Timeline Batch Export from working correctly in macOS Catalina. Thanks for reporting Chris Walton!</li>
+			<li>Fixed a bug that prevented the Batch Name Tool in the HUD from permanently renaming items in the browser. Thanks for reporting Vigneswaran Rajkumar!</li>
+			<li>Fixed bug in Timeline Batch Export. Thanks for reporting Rima H. Bassil!</li>
+			<li>Fixed a bug which prevented the "Reveal Multicam Clip in Browser" action from working correctly.</li></ul>
+
+			<h2>翻訳 Translations</h2>
+			<ul><li>Added Danish Translation. Thanks for adding Patrick Fust!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.4</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul><li>Fixes a bug introduced in 1.0.3 that can prevent Effects & Generators from being applied correctly. Thanks for reporting Anton Lopez & Wayne Kopping!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.3</h1>
+
+			<h2>🎉 New Feature</h2>
+			<ul><li>Added option to "Use Better Quality in Angles Viewer" in the Advanced Final Cut Pro Preferences.</li></ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>Added a preference to enable or disable the Text Pasteboard History, and also set a History Size in the Finder Preferences panel. The Text Pasteboard History is now off by default.</li>
+			<li>CommandPost now disconnects from Tangent Hub when the Color Finale 2 window is open, allowing you to control Color Finale 2 with Tangent Panels. When you close the Color Finale 2 window, CommandPost reconnects to Tangent Hub.</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>The "Select Active/Topmost Library in Browser" actions now put focus on the Browser Sidebar when triggered so that the Library becomes active in the Inspector. Thanks for reporting Mads Larsen Nielsen!</li>
+			<li>Fixed a bug where Final Cut Pro could freeze temporarily when importing clips from a Media Watch Folder notification. Thanks for reporting Corky Ballas!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.2</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>You can now apply multiple Compressor presets to the same watch folder.</li>
+			<li>Added Final Cut Pro X preference for "Correct Spelling Automatically". Thanks for the suggestion Afshin Rohani!</li>
+			<li>Added support for IFTTT Notifications. Thanks <a href="https://github.com/JFtechOfficial">JFtechOfficial</a> for implementing!</li>
+			<li>Added action for "Select Topmost Library in Browser" and "Select Active Library in Browser". Thanks for the suggestion Mads Larsen Nielsen!</li></ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Improved reliability of "Change Duration" menu item action. Thanks for reporting Vigneswaran Rajkumar.</li>
+			<li>Fixed the naming of destinations in Timeline Batch Export if you have a fresh install of Final Cut Pro X without any custom destinations.</li>
+			<li>Updated the Final Cut Pro, Motion & Compressor Feedback Form assistant.</li>
+			<li>Fixed bug when disabling the Custom Touch Bar on Mojave.</li></ul>
+
+			<h2>🧨 Workarounds</h2>
+			<ul><li>The Touch Bar features are currently not working correctly on the new 16-inch MacBook Pro so we have temporarily disabled Touch Bar support on these machines until we can come up with a proper fix. If anyone has any ideas, please get in touch.</li></ul>
+
+			<h2>翻訳 Translations</h2>
+			<ul><li>Added Hungarian Translation. Thanks Gyula Hegedüs!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.1</h1>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul><li>Fixed a bug where the Timeline Batch Export feature would not list all the installed Destination Presets. Thanks for reporting Edgar Davis!</li>
+			<li>Fixed a bug where Snippets assigned as an action (i.e. as a keyboard shortcut) would not trigger the latest Snippet code if the Snippet was updated in the Preferences panel after being assigned. Thanks for reporting Stefan Benz!</li></ul>
+
+			<h2>🎉 New Additions</h2>
+			<ul><li>Added Polish Translation. Thanks Robert!</li></ul>
+
+			<hr />
+
+			<h1>CommandPost 1.0.0</h1>
+
+			<h2>Woohoo! 🎉</h2>
+			<p>After <strong>78 releases</strong> of FCPX Hacks and <strong>91 beta releases</strong> of CommandPost, we're extremely excited to announce that we're finally removing the beta label from CommandPost.</p>
+
+		</div>
+	</body>
+	<style>
+		html,
+		body {
+			padding: 0;
+			margin: 0;
+			color: #282829;
+			background-color: white;
+			font: 13px/20px "Helvetica Neue", Arial;
+			height: 100%;
+			position: relative;
+		}
+
+		h1 {
+			font: 16px/23px "Helvetica Neue", Arial;
+			font-weight:bold;
+		}
+
+		h2 {
+			font: 13px/20px "Helvetica Neue", Arial;
+			font-weight:bold;
+		}
+
+		* {
+			-webkit-box-sizing: border-box;
+			box-sizing: border-box;
+		}
+
+		body {
+			padding: 0;
+			overflow: auto
+		}
+
+		.head-title,
+		.head-title-fixed {
+			background: -webkit-linear-gradient(top, #fff, #f5f5f5);
+			background: -moz-linear-gradient(top, #fff, #f5f5f5);
+			background: linear-gradient(to bottom, #fff, #f5f5f5);
+			-ms-filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f5f5f5', GradientType=0);
+			filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f5f5f5', GradientType=0);
+			min-height: 20px;
+			line-height: 20px;
+			border-bottom: 1px #d2d2d2 solid;
+			color: #333;
+			background-repeat: no-repeat;
+			background-position: 0 center;
+			padding: 10px 20px 10px 20px;
+			margin: 0;
+			width: 100%;
+			-webkit-box-shadow: 0 1px 1px #f2f2f2, inset 0 -1px 0 #fbfbfb;
+			box-shadow: 0 1px 1px #f2f2f2, inset 0 -1px 0 #fbfbfb;
+		}
+
+		.head-title-fixed {
+			top: 0;
+			width: 100%;
+			margin-left: 0px;
+			position: fixed;
+		}
+
+		.head-title span,
+		.head-title-fixed span {
+			color: #666;
+		}
+
+		hr {
+			height: 1px;
+			background: #d6d6d6;
+			border: 0;
+			overflow: hidden;
+			margin: 30px 0;
+		}
+
+		.content {
+			padding: 10px 20px 20px 20px;
+		}
+
+		.red {
+			color: red;
+		}
+	</style>
+</html>
