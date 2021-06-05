@@ -16,26 +16,35 @@
 	}
 </script>
 <h3 class="uiItem">{{ i18n "pluginsManagerLabel" }}</h3>
-<table class="plugins">
-	<thead>
-		<tr>
-			<th class="rowCategory">{{ i18n "pluginCategory" }}</th>
-			<th class="rowName">{{ i18n "pluginName" }}</th>
-			<th class="rowStatus">{{ i18n "pluginStatus" }}</th>
-			<th class="rowOption">{{ i18n "pluginAction" }}</th>
-		</tr>
-	</thead>
-	<tbody>
-	{% for _,plugin in ipairs(plugins) do %}
-		<tr>
-			<td class="rowCategory">{{ plugin.currentCategory }}</td>
-			<td class="rowName">{* plugin.shortName *}</td>
-			<td class="rowStatus">{* plugin.status *}</td>
-			<td class="rowOption">{% if plugin.action then %}<a id="{{ plugin.id }}" href="#" onclick="pressPluginAction('{{ plugin.id }}', '{{ plugin.action }}')">{{ plugin.actionLabel }}</a>{% else %}<i>{{ i18n("pluginRequired") }}</i>{% end %}</td>
-		</tr>
-	{% end %}
-	</tbody>
-</table>
+<p class="uiItem">{{ i18n "pluginsPanelDescription" }}</p>
+<div id="pluginsTable">
+	<input class="search" style="width: 95.4%; margin-left: 20px;" placeholder="{{ i18n "filterPlugins" }}" />
+	<table class="plugins">
+		<thead>
+			<tr>
+				<th class="rowCategory">{{ i18n "pluginCategory" }}</th>
+				<th class="rowName">{{ i18n "pluginName" }}</th>
+				<th class="rowStatus">{{ i18n "pluginStatus" }}</th>
+				<th class="rowOption">{{ i18n "pluginAction" }}</th>
+				<th class="rowOption">{{ i18n "edit" }}</th>
+			</tr>
+		</thead>
+		<tbody class="list">
+		{% for _,plugin in ipairs(plugins) do %}
+			<tr>
+				<td class="rowCategory">{{ plugin.currentCategory }}</td>
+				<td class="rowName">{* plugin.shortName *}</td>
+				<td class="rowStatus">{* plugin.status *}</td>
+				<td class="rowOption">{% if plugin.action then %}<a id="{{ plugin.id }}" href="#" onclick="pressPluginAction('{{ plugin.id }}', '{{ plugin.action }}')">{{ plugin.actionLabel }}</a>{% else %}<i>{{ i18n("pluginRequired") }}</i>{% end %}</td>
+				<td class="rowEdit"><a href="#" onclick="pressPluginAction('{{ plugin.scriptFile }}', 'edit')">{{ i18n "openInEditor" }}</a></td>
+			</tr>
+		{% end %}
+		</tbody>
+	</table>
+</div>
+<script>
+	var pluginsTable = new List('pluginsTable', {valueNames: ['rowName']});
+</script>
 <div class="divTable">
 	<div class="divTableBody">
 		<div class="divTableRow">
