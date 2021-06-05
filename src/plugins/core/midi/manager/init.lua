@@ -54,6 +54,16 @@ mod.activeLoupedeckBanks = config.prop("loupedeck.activeBanks", {})
 --- Table of active banks for each application.
 mod.activeLoupedeckPlusBanks = config.prop("loupedeckplus.activeBanks", {})
 
+--- plugins.core.midi.manager.ignoreEverySecondP1ToP8WheelCommand <cp.prop: boolean>
+--- Field
+--- A preference for ignoring double actions when turning a P1 to P8 wheel.
+mod.ignoreEverySecondP1ToP8WheelCommand = config.prop("loupedeckplus.ignoreEverySecondP1ToP8WheelCommand", true)
+
+--- plugins.core.midi.manager.ignoreEverySecondControlDialCommand <cp.prop: boolean>
+--- Field
+--- A preference for ignoring double actions when turning the Control Dial
+mod.ignoreEverySecondControlDialCommand = config.prop("loupedeckplus.ignoreEverySecondControlDialCommand", false)
+
 --- plugins.core.midi.manager.defaultLayout -> table
 --- Variable
 --- Default MIDI Layout
@@ -708,15 +718,18 @@ local function callback(_, deviceName, commandType, _, metadata)
                     end)
                 elseif commandType == "pitchWheelChange" or commandType == "controlChange" or commandType == "noteOff" or (commandType == "noteOn" and metadata.velocity ~= 0) then
                     --------------------------------------------------------------------------------
-                    -- Prevent duplicate actions for the P1-P8 buttons on a Loupedeck+:
+                    -- Prevent duplicate actions for the P1-P8 wheels and Control Dial
+                    -- on a Loupedeck+:
                     --------------------------------------------------------------------------------
-                    if deviceName == "Loupedeck+" and controllerNumber >= 1 and controllerNumber <= 24 then
-                        local currentBufferID = bundleID .. bankID .. deviceName .. channel .. commandType .. controllerNumber
-                        if loupedeckPlusDuplicateBuffer[currentBufferID] == true then
-                            loupedeckPlusDuplicateBuffer[currentBufferID] = nil
-                            return
-                        else
-                            loupedeckPlusDuplicateBuffer[currentBufferID] = true
+                    if deviceName == "Loupedeck+" then
+                        if (mod.ignoreEverySecondP1ToP8WheelCommand() and controllerNumber >= 1 and controllerNumber <= 24) or (mod.ignoreEverySecondControlDialCommand() and controllerNumber == 48) then
+                            local currentBufferID = bundleID .. bankID .. deviceName .. channel .. commandType .. controllerNumber
+                            if loupedeckPlusDuplicateBuffer[currentBufferID] == true then
+                                loupedeckPlusDuplicateBuffer[currentBufferID] = nil
+                                return
+                            else
+                                loupedeckPlusDuplicateBuffer[currentBufferID] = true
+                            end
                         end
                     end
 

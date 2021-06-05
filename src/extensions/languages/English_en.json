@@ -1168,6 +1168,8 @@
     "ignoreApplication": "Ignore Application",
     "ignoreBackgroundTasks": "Ignore Background Tasks Warning",
     "ignoreESCKeyWhenFinalCutProIsFullscreen": "Ignore ESC Key when Final Cut Pro is Fullscreen",
+    "ignoreEverySecondControlDialCommand": "Ignore Every Second Control Dial Command",
+    "ignoreEverySecondP1ToP8WheelCommand": "Ignore Every Second P1 to P8 Wheel Command",
     "ignoreFirstRow": "Ignore first row",
     "ignoreInsertedCameraCards": "Ignore Inserted Camera Cards",
     "ignoreInvalidCaptions": "Ignore Invalid Captions Warning",
