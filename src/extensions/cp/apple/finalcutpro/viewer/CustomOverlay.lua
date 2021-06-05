@@ -77,7 +77,7 @@ end
 
 --- cp.apple.finalcutpro.viewer.CustomOverlay.forceViewerUpdate()
 --- Function
---- Forces the current `Viewer` overlay to update. May cause a flicker. 
+--- Forces the current `Viewer` overlay to update. May cause a flicker.
 --- NOTE: In general, most changes will force an update automatically anyway.
 function CustomOverlay.static.forceViewerUpdate()
     forceUpdate(CustomOverlay.viewerFileName)
@@ -85,7 +85,7 @@ end
 
 --- cp.apple.finalcutpro.viewer.CustomOverlay.forceEventViewerUpdate()
 --- Function
---- Forces the current `Viewer` overlay to update. May cause a flicker. 
+--- Forces the current `Viewer` overlay to update. May cause a flicker.
 --- NOTE: In general, most changes will force an update automatically anyway.
 function CustomOverlay.static.forceEventViewerUpdate()
     forceUpdate(CustomOverlay.eventViewerFileName)
@@ -225,7 +225,7 @@ function CustomOverlay.static.forFileName(fileName)
         return nil
     end
     local name, ext = getNameAndExtensionFromFile(fileName)
-    if ext and CustomOverlay.ALLOWED_IMAGE_EXTENSIONS:has(ext) 
+    if ext and CustomOverlay.ALLOWED_IMAGE_EXTENSIONS:has(ext)
         and pathToAbsolute(CustomOverlay.userOverlaysPath().."/"..fileName)
     then
         return CustomOverlay(name, ext)
