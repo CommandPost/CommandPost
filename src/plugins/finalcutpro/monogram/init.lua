@@ -442,8 +442,12 @@ function mod._registerActions(manager)
     --------------------------------------------------------------------------------
     -- Jog:
     --------------------------------------------------------------------------------
+    local timeline = fcp:timeline()
     registerAction("Timeline.Jog", function(data)
         if data.operation == "+" then
+            if not timeline:isFocused() then
+                fcp.menu:selectMenu({"Window", "Go To", "Timeline"})
+            end
             if data.params[1] == -1 then
                 fcp:doShortcut("JumpToPreviousFrame"):Now()
             elseif data.params[1] == 1 then
@@ -461,6 +465,9 @@ function mod._registerActions(manager)
     --------------------------------------------------------------------------------
     registerAction("Timeline.Nudge", function(data)
         if data.operation == "+" then
+            if not timeline:isFocused() then
+                fcp.menu:selectMenu({"Window", "Go To", "Timeline"})
+            end
             if data.params[1] == -1 then
                 fcp:doShortcut("NudgeLeft"):Now()
             elseif data.params[1] == 1 then
