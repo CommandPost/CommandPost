@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "mouse"
+--local log               = require "hs.logger".new "mouse"
 
 local eventtap          = require "hs.eventtap"
 local event             = require "hs.eventtap.event"
