@@ -58,7 +58,7 @@
 }
 
 .rowName {
-	width:50%;
+	width:35%;
 }
 
 .rowStatus {
@@ -69,7 +69,15 @@
 	width:15%;
 }
 
+.rowEdit {
+	width:15%;
+}
+
 .rowOption a {
+	color: white;
+}
+
+.rowEdit a {
 	color: white;
 }
 
