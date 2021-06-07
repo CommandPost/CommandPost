@@ -28,76 +28,8 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
-    -- Setup Action Functions:
-    --------------------------------------------------------------------------------
-    local modeFunctions = {
-        ["leftClick"] = function()
-            local absolutePosition = mouse.absolutePosition()
-            eventtap.leftClick(absolutePosition, 0)
-        end,
-        ["leftDoubleClick"] = function()
-            local doubleClickInterval = eventtap.doubleClickInterval()
-            local absolutePosition = mouse.absolutePosition()
-            eventtap.leftClick(absolutePosition, 0)
-            just.wait(doubleClickInterval)
-            eventtap.leftClick(absolutePosition, 0)
-        end,
-        ["rightClick"] = function()
-            local absolutePosition = mouse.absolutePosition()
-            eventtap.rightClick(absolutePosition, 0)
-        end,
-        ["middleClick"] = function()
-            local absolutePosition = mouse.absolutePosition()
-            eventtap.middleClick(absolutePosition, 0)
-        end,
-        ["otherClick"] = function(action)
-            local absolutePosition = mouse.absolutePosition()
-            eventtap.otherClick(absolutePosition, 0, action.otherButton)
-        end,
-        ["scroll"] = function(action)
-            event.newScrollEvent({action.x, action.y}, action.modifiers, action.unit):post()
-        end,
-    }
-
-    --------------------------------------------------------------------------------
-    -- Setup Clicking Actions:
-    --------------------------------------------------------------------------------
-    local options = {
-        {
-            text = i18n("triggerALeftMouseClick"),
-            subText = i18n("triggersAVirtualMouseClick"),
-            mode = "leftClick"
-        },
-        {
-            text = i18n("triggerARightMouseClick"),
-            subText = i18n("triggersAVirtualMouseClick"),
-            mode = "rightClick"
-        },
-        {
-            text = i18n("triggerAMiddleMouseClick"),
-            subText = i18n("triggersAVirtualMouseClick"),
-            mode = "middleClick"
-        },
-        {
-            text = i18n("triggerALeftDoubleMouseClick"),
-            subText = i18n("triggersAVirtualMouseClick"),
-            mode = "leftDoubleClick"
-        },
-    }
-
-    for i=2, 31 do
-        table.insert(options, {
-            text = i18n("triggerOtherMouseButton") .. " " .. i,
-            subText = i18n("triggersAVirtualMouseClick"),
-            mode = "otherClick",
-            otherButton = i
-        })
-    end
-
-    --------------------------------------------------------------------------------
-    -- Setup Scroll Wheel Actions:
+    -- Define Modifiers:
     --------------------------------------------------------------------------------
     local modifiers = {
         { description = "",                                                         label = "", mods = {} },
@@ -133,6 +65,105 @@ function plugin.init(deps)
         { description = "CONTROL and FUNCTION",                                     label = "Fn⌃", mods = {"ctrl", "fn"} },
         { description = "FUNCTION",                                                 label = "Fn", mods = {"fn"} },
     }
+
+    --------------------------------------------------------------------------------
+    -- Setup Action Functions:
+    --------------------------------------------------------------------------------
+    local modeFunctions = {
+        ["leftClick"] = function(action)
+            local absolutePosition = mouse.absolutePosition()
+            event.newMouseEvent(event.types.leftMouseDown, absolutePosition, action.modifiers):post()
+            event.newMouseEvent(event.types.leftMouseUp, absolutePosition, action.modifiers):post()
+        end,
+        ["leftDoubleClick"] = function(action)
+            local doubleClickInterval = eventtap.doubleClickInterval()
+            local absolutePosition = mouse.absolutePosition()
+            event.newMouseEvent(event.types.leftMouseDown, absolutePosition, action.modifiers):post()
+            event.newMouseEvent(event.types.leftMouseUp, absolutePosition, action.modifiers):post()
+            just.wait(doubleClickInterval)
+            event.newMouseEvent(event.types.leftMouseDown, absolutePosition, action.modifiers):post()
+            event.newMouseEvent(event.types.lefttMouseUp, absolutePosition, action.modifiers):post()
+        end,
+        ["rightClick"] = function(action)
+            local absolutePosition = mouse.absolutePosition()
+            event.newMouseEvent(event.types.rightMouseDown, absolutePosition, action.modifiers):post()
+            event.newMouseEvent(event.types.rightMouseUp, absolutePosition, action.modifiers):post()
+        end,
+        ["otherClick"] = function(action)
+            local absolutePosition = mouse.absolutePosition()
+            event.newMouseEvent(event.types.otherMouseDown, absolutePosition, action.modifiers):setProperty(mouseEventButtonNumber, action.otherButton):post()
+            event.newMouseEvent(event.types.otherMouseUp, absolutePosition, action.modifiers):setProperty(mouseEventButtonNumber, action.otherButton):post()
+        end,
+        ["scroll"] = function(action)
+            event.newScrollEvent({action.x, action.y}, action.modifiers, action.unit):post()
+        end,
+    }
+
+    --------------------------------------------------------------------------------
+    -- Setup Clicking Actions:
+    --------------------------------------------------------------------------------
+    local options = {
+        {
+            text = i18n("leftMouseClick"),
+            subText = i18n("triggersAVirtualMouseClick"),
+            mode = "leftClick"
+        },
+        {
+            text = i18n("rightMouseClick"),
+            subText = i18n("triggersAVirtualMouseClick"),
+            mode = "rightClick"
+        },
+        {
+            text = i18n("middleMouseClick"),
+            subText = i18n("triggersAVirtualMouseClick"),
+            mode = "otherClick",
+            otherButton = 2
+        },
+        {
+            text = i18n("leftDoubleMouseClick"),
+            subText = i18n("triggersAVirtualMouseClick"),
+            mode = "leftDoubleClick"
+        },
+    }
+
+    for i=2, 31 do
+        table.insert(options, {
+            text = i18n("otherMouseButton") .. " " .. i,
+            subText = i18n("triggersAVirtualMouseClick"),
+            mode = "otherClick",
+            otherButton = i
+        })
+    end
+
+    for _, modifier in pairs(modifiers) do
+        if modifier.description ~= "" then
+            table.insert(options, {
+                text = i18n("leftMouseClick") .. " - " .. modifier.description .. " (" .. modifier.label .. ")",
+                subText = i18n("triggersAVirtualMouseClick"),
+                mode = "leftClick",
+                modifiers = modifier.mods
+            })
+
+            table.insert(options, {
+                text = i18n("rightMouseClick") .. " - " .. modifier.description .. " (" .. modifier.label .. ")",
+                subText = i18n("triggersAVirtualMouseClick"),
+                mode = "rightClick",
+                modifiers = modifier.mods
+            })
+
+            table.insert(options, {
+                text = i18n("middleMouseClick") .. " - " .. modifier.description .. " (" .. modifier.label .. ")",
+                subText = i18n("triggersAVirtualMouseClick"),
+                mode = "otherClick",
+                otherButton = 2,
+                modifiers = modifier.mods
+            })
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Setup Scroll Wheel Actions:
+    --------------------------------------------------------------------------------
     local amounts = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10}
     local directions = {"horizontal", "vertical"}
     local units = {"Line", "Pixel"}
@@ -156,7 +187,7 @@ function plugin.init(deps)
                     end
 
                     table.insert(options, {
-                        text = i18n("triggerMouseScrollWheel") .. " - " .. math.abs(amount) .. " " .. unit .. " " .. directionLabel .. (modifier.description ~= "" and " - " .. modifier.description .. " (" .. modifier.label .. ")" or ""),
+                        text = i18n("mouseScrollWheel") .. " - " .. math.abs(amount) .. " " .. unit .. " " .. directionLabel .. (modifier.description ~= "" and " - " .. modifier.description .. " (" .. modifier.label .. ")" or ""),
                         subText = i18n("triggerAVirtualMouseScrollWheelEvent"),
                         mode = "scroll",
                         amount = amount,
