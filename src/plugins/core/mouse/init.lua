@@ -91,8 +91,8 @@ function plugin.init(deps)
         end,
         ["otherClick"] = function(action)
             local absolutePosition = mouse.absolutePosition()
-            event.newMouseEvent(event.types.otherMouseDown, absolutePosition, action.modifiers):setProperty(mouseEventButtonNumber, action.otherButton):post()
-            event.newMouseEvent(event.types.otherMouseUp, absolutePosition, action.modifiers):setProperty(mouseEventButtonNumber, action.otherButton):post()
+            event.newMouseEvent(event.types.otherMouseDown, absolutePosition, action.modifiers):setProperty(event.properties.mouseEventButtonNumber, action.otherButton):post()
+            event.newMouseEvent(event.types.otherMouseUp, absolutePosition, action.modifiers):setProperty(event.properties.mouseEventButtonNumber, action.otherButton):post()
         end,
         ["scroll"] = function(action)
             event.newScrollEvent({action.x, action.y}, action.modifiers, action.unit):post()
