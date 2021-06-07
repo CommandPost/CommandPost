@@ -81,16 +81,18 @@ function mod.defaultSearchConsoleToolbar()
     return {
         global_applications             = { path = iconPath .. "apps.png",              priority = 50},
         global_shortcuts                = { path = iconPath .. "Keyboard.icns",         priority = 51},
-        global_snippets                 = { path = iconPath .. "snippets.png",          priority = 52},
-        global_keyboardmaestro_macros   = { path = iconPath .. "keyboardmaestro.icns",  priority = 53},
-        global_loupedeck_banks          = { path = iconPath .. "loupedeckbank.png",     priority = 54},
-        global_loupedeckbanks           = { path = iconPath .. "loupedeckplusbank.png", priority = 55},
-        global_loupedeckct_banks        = { path = iconPath .. "loupedeckctbank.png",   priority = 56},
-        global_loupedecklive_banks      = { path = iconPath .. "loupedecklivebank.png", priority = 57},
-        global_midibanks                = { path = iconPath .. "midibank.png",          priority = 58},
-        global_streamDeckbanks          = { path = iconPath .. "streamdeckbank.png",    priority = 59},
-        global_touchbarbanks            = { path = iconPath .. "touchbarbank.png",      priority = 60},
-        global_tourbox_banks            = { path = iconPath .. "tourboxbank.png",       priority = 61},
+        global_mouse                    = { path = iconPath .. "mouse.png",             priority = 52},
+        global_gestures                 = { path = iconPath .. "Trackpad.icns",         priority = 53},
+        global_snippets                 = { path = iconPath .. "snippets.png",          priority = 54},
+        global_keyboardmaestro_macros   = { path = iconPath .. "keyboardmaestro.icns",  priority = 55},
+        global_loupedeck_banks          = { path = iconPath .. "loupedeckbank.png",     priority = 56},
+        global_loupedeckbanks           = { path = iconPath .. "loupedeckplusbank.png", priority = 57},
+        global_loupedeckct_banks        = { path = iconPath .. "loupedeckctbank.png",   priority = 58},
+        global_loupedecklive_banks      = { path = iconPath .. "loupedecklivebank.png", priority = 59},
+        global_midibanks                = { path = iconPath .. "midibank.png",          priority = 60},
+        global_streamDeckbanks          = { path = iconPath .. "streamdeckbank.png",    priority = 61},
+        global_touchbarbanks            = { path = iconPath .. "touchbarbank.png",      priority = 62},
+        global_tourbox_banks            = { path = iconPath .. "tourboxbank.png",       priority = 63},
     }
 end
 
