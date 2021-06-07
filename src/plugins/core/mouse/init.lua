@@ -141,7 +141,7 @@ function plugin.init(deps)
             for _, direction in pairs(directions) do
                 for _, unit in pairs(units) do
                     local directionLabel
-                    if amount >= 1 then
+                    if amount > 0 then
                         if direction == "horizontal" then
                             directionLabel = i18n("right")
                         else
