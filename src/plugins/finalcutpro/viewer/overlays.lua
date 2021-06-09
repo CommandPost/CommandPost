@@ -213,9 +213,9 @@ function mod.show()
     --------------------------------------------------------------------------------
     mod.hide()
 
-    local fcpFrame = fcp.viewer:contentsUI()
-    if fcpFrame then
-        local frame = fcpFrame:attributeValue("AXFrame")
+    local videoImage = fcp.viewer.videoImage
+    if videoImage then
+        local frame = videoImage:frame()
         if frame then
             --------------------------------------------------------------------------------
             -- New Canvas:
