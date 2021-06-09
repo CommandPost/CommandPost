@@ -1,15 +1,17 @@
---- === cp.apple.finalcutpro.main.FullScreenWindow ===
+--- === cp.apple.finalcutpro.main.FullScreenPlayer ===
 ---
 --- Full Screen Window Player.
 ---
 --- Triggered by the "View > Playback > Play Full Screen" menubar item.
 
 -- TODO: This needs to be updated to use middleclass.
---       Maybe also rename this to FullScreenPlayer?
 
 local require       = require
 
+--local log           = require "hs.logger" .new "FullScreenPlayer"
+
 local axutils       = require "cp.ui.axutils"
+local Group         = require "cp.ui.Group"
 local SplitGroup    = require "cp.ui.SplitGroup"
 local Window        = require "cp.ui.Window"
 
@@ -18,7 +20,7 @@ local children      = axutils.children
 local childMatching = axutils.childMatching
 local childWithRole = axutils.childWithRole
 
-local FullScreenWindow = Window:subclass("cp.apple.finalcutpro.main.FullScreenWindow")
+local FullScreenPlayer = Window:subclass("cp.apple.finalcutpro.main.FullScreenPlayer")
 
 -- _findWindowUI(windows) -> window | nil
 -- Function
@@ -31,12 +33,12 @@ local FullScreenWindow = Window:subclass("cp.apple.finalcutpro.main.FullScreenWi
 --  * An `axuielementObject` or `nil`
 local function _findWindowUI(windows)
     for _,w in ipairs(windows) do
-        if FullScreenWindow.matches(w) then return w end
+        if FullScreenPlayer.matches(w) then return w end
     end
     return nil
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.matches(element) -> boolean
+--- cp.apple.finalcutpro.main.FullScreenPlayer.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -45,38 +47,39 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function FullScreenWindow.static.matches(element)
-    return Window.matches(element)
-    and element:attributeValue("AXSubrole") == "AXUnknown"
-    and element:attributeValue("AXTitle") == ""
-    and SplitGroup.matches(children(element)[1])
+function FullScreenPlayer.static.matches(element)
+    local window = Window.matches(element) and element:attributeValue("AXSubrole") == "AXUnknown" and element:attributeValue("AXTitle") == "" and element
+    local splitGroup = window and childWithRole(window, "AXSplitGroup")
+    local group = splitGroup and childWithRole(splitGroup, "AXGroup")
+    local image = group and childWithRole(group, "AXImage")
+    return image
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow(app) -> FullScreenWindow
+--- cp.apple.finalcutpro.main.FullScreenPlayer(app) -> FullScreenPlayer
 --- Constructor
---- Creates a new FCPX `FullScreenWindow` instance.
+--- Creates a new FCPX `FullScreenPlayer` instance.
 ---
 --- Parameters:
 --- * app       - The FCP app instance.
 ---
 --- Returns:
---- * The new `FullScreenWindow`.
-function FullScreenWindow:initialize(app)
+--- * The new `FullScreenPlayer`.
+function FullScreenPlayer:initialize(app)
     local UI = app.windowsUI:mutate(function(original)
         return cache(self, "_ui", function()
             local windowsUI = original()
             return windowsUI and _findWindowUI(windowsUI)
         end,
-        FullScreenWindow.matches)
+        FullScreenPlayer.matches)
     end)
 
     Window.initialize(self, app.app, UI)
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.rootGroupUI <cp.prop: hs.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.FullScreenPlayer.rootGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The root `AXGroup`.
-function FullScreenWindow.lazy.prop:rootGroupUI()
+function FullScreenPlayer.lazy.prop:rootGroupUI()
     return self.UI:mutate(function(original)
         return cache(self, "_rootGroup", function()
             local ui = original()
@@ -85,10 +88,10 @@ function FullScreenWindow.lazy.prop:rootGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.viewerGroupUI <cp.prop: hs.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.FullScreenPlayer.viewerGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The Viewer's group UI element.
-function FullScreenWindow.lazy.prop:viewerGroupUI()
+function FullScreenPlayer.lazy.prop:viewerGroupUI()
     return self.rootGroupUI:mutate(function(original)
         local ui = original()
         if ui then
@@ -106,10 +109,10 @@ function FullScreenWindow.lazy.prop:viewerGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.isFullScreen <cp.prop; boolean; read-only; live>
+--- cp.apple.finalcutpro.main.FullScreenPlayer.isFullScreen <cp.prop; boolean; read-only; live>
 --- Field
 --- Checks if the window is full-screen.
-function FullScreenWindow.lazy.prop:isFullScreen()
+function FullScreenPlayer.lazy.prop:isFullScreen()
     return self.rootGroupUI:mutate(
         function(original)
             local ui = original()
@@ -135,7 +138,7 @@ function FullScreenWindow.lazy.prop:isFullScreen()
     )
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow:show() -> cp.apple.finalcutpro
+--- cp.apple.finalcutpro.main.FullScreenPlayer:show() -> cp.apple.finalcutpro
 --- Method
 --- Attempts to show the full screen window.
 ---
@@ -144,12 +147,12 @@ end
 ---
 --- Returns:
 --- * The window instance.
-function FullScreenWindow:show()
+function FullScreenPlayer:show()
     self:app().menu:selectMenu({"View", "Playback", "Play Full Screen"})
     return self
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow:doShow() -> <cp.rx.go.Statement>
+--- cp.apple.finalcutpro.main.FullScreenPlayer:doShow() -> <cp.rx.go.Statement>
 --- Method
 --- A `Statement` that attempts to show the full screen window.
 ---
@@ -158,8 +161,8 @@ end
 ---
 --- Returns:
 --- * The `Statement` to execute.
-function FullScreenWindow.lazy.method:doShow()
+function FullScreenPlayer.lazy.method:doShow()
     return self:app().menu:doSelectMenu({"View", "Playback", "Play Full Screen"})
 end
 
-return FullScreenWindow
+return FullScreenPlayer

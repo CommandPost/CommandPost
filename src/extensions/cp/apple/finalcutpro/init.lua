@@ -94,7 +94,7 @@ local strings                                   = require "cp.apple.finalcutpro.
 
 local BackgroundTasksDialog                     = require "cp.apple.finalcutpro.main.BackgroundTasksDialog"
 local Browser									= require "cp.apple.finalcutpro.main.Browser"
-local FullScreenWindow							= require "cp.apple.finalcutpro.main.FullScreenWindow"
+local FullScreenPlayer							= require "cp.apple.finalcutpro.main.FullScreenPlayer"
 local KeywordEditor								= require "cp.apple.finalcutpro.main.KeywordEditor"
 local PrimaryWindow								= require "cp.apple.finalcutpro.main.PrimaryWindow"
 local SecondaryWindow							= require "cp.apple.finalcutpro.main.SecondaryWindow"
@@ -702,11 +702,11 @@ function fcp.lazy.value:secondaryWindow()
     return SecondaryWindow(self)
 end
 
---- cp.apple.finalcutpro.fullScreenWindow <FullScreenWindow>
+--- cp.apple.finalcutpro.fullScreenPlayer <FullScreenPlayer>
 --- Field
 --- Returns the Final Cut Pro Full Screen Window (usually triggered by Cmd+Shift+F)
-function fcp.lazy.value:fullScreenWindow()
-    return FullScreenWindow(self)
+function fcp.lazy.value:fullScreenPlayer()
+    return FullScreenPlayer(self)
 end
 
 --- cp.apple.finalcutpro.commandEditor <CommandEditor>
