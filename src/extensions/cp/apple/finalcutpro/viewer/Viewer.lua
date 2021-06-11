@@ -283,7 +283,9 @@ end
 --- Field
 --- The `Image` for the video content.
 function Viewer.lazy.value:videoImage()
-    return Image(self, self.videoImageUI)
+    local videoImage = Image(self, self.videoImageUI)
+    videoImage.frame:monitor(self.frame)
+    return videoImage
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer.infoBar <cp.apple.finalcutpro.viewer.InfoBar>
