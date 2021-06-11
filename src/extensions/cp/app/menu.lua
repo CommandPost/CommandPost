@@ -943,8 +943,13 @@ function menu:findMenuUI(path, options)
             local menuItemNameEn = _translateTitle(menuTitles, menuItemName, pathLocale, en)
             insert(currentPath, menuItemNameEn)
         else
-            local value = type(step) == "string" and '"' .. step .. '" (' .. pathLocale.code .. ")" or tostring(step)
-            log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
+            --------------------------------------------------------------------------------
+            -- Only write error message if we're not supplying a function:
+            --------------------------------------------------------------------------------
+            if type(step) ~= "function" then
+                local value = type(step) == "string" and '"' .. step .. '" (' .. pathLocale.code .. ")" or tostring(step)
+                log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
+            end
             return nil
         end
     end
