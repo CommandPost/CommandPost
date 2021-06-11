@@ -2,6 +2,16 @@
 ---
 --- Provides access to the list of Share Destinations configured for the user.
 ---
+--- UPDATE (11th JUNE 2021):
+--- ========================
+---
+--- It seems that as of FCPX 10.5.x, the UserDestinations file can go up to version
+--- 5 (i.e. `com.apple.FinalCut.UserDestinations5.plist`). I've left the original
+--- explanation below for future reference, as it goes into more detail as to
+--- exactly what's happening.
+---
+--- ----------------------------------------------------------------------------------
+---
 --- If...
 ---
 --- `~/Library/Preferences/com.apple.FinalCut.UserDestinations3.plist`
@@ -136,10 +146,8 @@ end
 ---  * The table of Share Destination names, or `nil` if an error has occurred.
 ---  * An error message as a string.
 function mod.names()
-    local path          = "~/Library/Preferences/com.apple.FinalCut.UserDestinations3.plist"
-    local legacyPath    = "~/Library/Preferences/com.apple.FinalCut.UserDestinations2.plist"
+    local path = "~/Library/Preferences/com.apple.FinalCut.UserDestinations%s.plist"
     local defaultPath   = fcpApp:path() .. "/Contents/Resources/DefaultDestinations.plist"
-
     local userPath      = os.getenv("HOME") .. "/Library/Application Support/ProApps/Share Destinations/"
     local systemPath    = "/Library/Application Support/ProApps/Share Destinations/"
 
@@ -148,25 +156,21 @@ function mod.names()
     local result = {}
 
     -----------------------------------------------------
-    -- Determine which destination file to use:
+    -- Find the latest and greatest UserDestinations
+    -- file:
     -----------------------------------------------------
-    if doesFileExist(path) then
-        -----------------------------------------------------
-        -- Using UserDestinations3.plist:
-        -----------------------------------------------------
-        destinations = readDestinationFile(path)
-    else
-        if doesFileExist(legacyPath) then
-            -----------------------------------------------------
-            -- Using UserDestinations2.plist:
-            -----------------------------------------------------
-            destinations = readDestinationFile(legacyPath)
-        else
-            -----------------------------------------------------
-            -- Using defaults:
-            -----------------------------------------------------
-            destinations = readDestinationFile(defaultPath)
+    for i=50, 1, -1 do
+        local currentPath = string.format(path, i)
+        if doesFileExist(currentPath) then
+            destinations = readDestinationFile(currentPath)
+            break
         end
+    end
+    if not destinations then
+        -----------------------------------------------------
+        -- Using defaults:
+        -----------------------------------------------------
+        destinations = readDestinationFile(defaultPath)
     end
 
     -----------------------------------------------------
