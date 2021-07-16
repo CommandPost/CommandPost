@@ -1563,7 +1563,6 @@ function mod.mt:executeAction(thisAction, deviceNumber)
             local handler = mod.actionmanager.getHandler(handlerID)
             if handler then
                 doAfter(0, function()
-                    action[deviceNumber] = deviceNumber
                     handler:execute(action)
                     self._delayedTimer:start()
                 end)
