@@ -73,42 +73,44 @@ local DEFAULT_FLAG = "false"
 -- Constant
 -- A table containing the order of the headings when exporting to a CSV.
 local TEMPLATE_ORDER = {
-    [1]     = "Shot Number",
-    [2]     = "Scene Location",
-    [3]     = "Shot Duration",
-    [4]     = "Scene Number",
-    [5]     = "Scene Prefix",
-    [6]     = "Scene Time",
-    [7]     = "Scene Time Range",
-    [8]     = "Scene Set",
-    [9]     = "Script Page No.",
-    [10]    = "Scene Characters",
-    [11]    = "Scene Cast",
-    [12]    = "Scene Description",
-    [13]    = "Shot Size & Type",
-    [14]    = "Camera Movement",
-    [15]    = "Camera Angle",
-    [16]    = "Equipment",
-    [17]    = "Lens",
-    [18]    = "Lighting Notes",
-    [19]    = "VFX",
-    [20]    = "VFX Description",
-    [21]    = "SFX",
-    [22]    = "SFX Description",
-    [23]    = "Music Track",
-    [24]    = "Production Design",
-    [25]    = "Props",
-    [26]    = "Props Notes",
-    [27]    = "Wardrobe ID",
-    [28]    = "Wardrobe Notes",
-    [29]    = "Hair",
-    [30]    = "Make Up",
-    [31]    = "Flag",
-    [32]    = "User Notes 1",
-    [33]    = "User Notes 2",
-    [34]    = "Start Date",
-    [35]    = "End Date",
-    [36]    = "Days",
+    [1]     = "Shot ID",
+    [2]     = "Shot Number",
+    [3]     = "Scene Location",
+    [4]     = "Shot Duration",
+    [5]     = "Scene Number",
+    [6]     = "Scene Prefix",
+    [7]     = "Scene Time",
+    [8]     = "Scene Time Range",
+    [9]     = "Scene Set",
+    [10]     = "Script Page No.",
+    [11]    = "Scene Characters",
+    [12]    = "Scene Cast",
+    [13]    = "Scene Description",
+    [14]    = "Shot Size & Type",
+    [15]    = "Camera Movement",
+    [16]    = "Camera Angle",
+    [17]    = "Equipment",
+    [18]    = "Lens",
+    [19]    = "Lighting Notes",
+    [20]    = "VFX",
+    [21]    = "VFX Description",
+    [22]    = "SFX",
+    [23]    = "SFX Description",
+    [24]    = "Music Track",
+    [25]    = "Production Design",
+    [26]    = "Props",
+    [27]    = "Props Notes",
+    [28]    = "Wardrobe ID",
+    [29]    = "Wardrobe Notes",
+    [30]    = "Hair",
+    [31]    = "Make Up",
+    [32]    = "Flag",
+    [33]    = "User Notes 1",
+    [34]    = "User Notes 2",
+    [35]    = "Start Date",
+    [36]    = "End Date",
+    [37]    = "Days",
+    [38]    = "Image Filename"
 }
 
 -- TEMPLATE -> table
@@ -357,15 +359,11 @@ end
 -- Returns:
 --  * A string
 local function secondsToClock(seconds)
-    seconds = tonumber(seconds)
-    if seconds <= 0 then
-        return "00:00:00";
-    else
-        local hours = string.format("%02.f", math.floor(seconds/3600));
-        local mins = string.format("%02.f", math.floor(seconds/60 - (hours*60)));
-        local secs = string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
-        return hours..":"..mins..":"..secs
-    end
+    seconds = tonumber(seconds) or 0
+    local hours = string.format("%02.f", math.floor(seconds/3600));
+    local mins = string.format("%02.f", math.floor(seconds/60 - (hours*60)));
+    local secs = string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
+    return hours..":"..mins..":"..secs
 end
 
 -- processTitles(nodes) -> none
@@ -424,12 +422,7 @@ local function processTitles(nodes)
                         local elements = split(titleDuration, "/")
                         titleDuration = tostring(tonumber(elements[1]) / tonumber(elements[2]))
                     end
-                    local convertedValue = secondsToClock(titleDuration)
-                    if convertedValue ~= "00:00:00" then
-                        titleDuration = convertedValue
-                    else
-                        titleDuration = titleDuration .. " seconds"
-                    end
+                    titleDuration = secondsToClock(titleDuration)
                 end
 
                 --------------------------------------------------------------------------------
@@ -515,6 +508,7 @@ local function processTitles(nodes)
                     results["VFX"] = vfxFlagValue
                     results["SFX"] = sfxFlagValue
 
+
                     --------------------------------------------------------------------------------
                     -- If the Shot Duration field is empty, populate it with the Title Duration:
                     --------------------------------------------------------------------------------
@@ -523,11 +517,17 @@ local function processTitles(nodes)
                     end
 
                     --------------------------------------------------------------------------------
+                    -- Generate a unique Shot ID:
+                    --------------------------------------------------------------------------------
+                    local shotID = results["Scene Number"] .. "-" .. results["Shot Number"]
+                    results["Shot ID"] = shotID
+
+                    --------------------------------------------------------------------------------
                     -- If there's an image "attached" to the title, include it in filesToCopy:
                     --------------------------------------------------------------------------------
                     if photoPath then
-                        local filename = "Scene " .. results["Scene Number"] .. " - Shot " .. results["Shot Number"]
-                        filesToCopy[filename] = photoPath
+                        filesToCopy[shotID] = photoPath
+                        results["Image Filename"] = shotID .. ".png"
                     end
 
                     --------------------------------------------------------------------------------
@@ -672,9 +672,9 @@ local function processFCPXML(path)
                         end
                     else
                         --------------------------------------------------------------------------------
-                        -- This should never happen, unless the Motion Template has changed:
+                        -- It's a blank/empty field:
                         --------------------------------------------------------------------------------
-                        log.ef("Invalid Heading: %s", currentHeading)
+                        output = output .. ","
                     end
                 end
                 output = output .. "\n"
@@ -708,17 +708,20 @@ local function processFCPXML(path)
                     if consolidatePath then
                         mod.lastConsolidatePath(consolidatePath)
                         for destinationFilename, sourcePath in pairs(filesToCopy) do
+                            local status = false
                             if doesFileExist(sourcePath) then
-                                local extension = getFileExtensionFromPath(sourcePath)
-                                local copyCommand = [[cp "]] .. sourcePath .. [[" "]] .. consolidatePath .. "/" .. destinationFilename .. "." .. extension .. [["]]
-                                local errors, status = hs.execute(copyCommand)
-                                if not status then
-                                    consolidateSuccessful = false
-                                    log.ef("Failed to copy source file: %s", errors)
+                                --------------------------------------------------------------------------------
+                                -- Save the image as PNG:
+                                --------------------------------------------------------------------------------
+                                local originalImage = image.imageFromPath(sourcePath)
+                                if originalImage then
+                                    local destinationPath = consolidatePath .. "/" .. destinationFilename .. ".png"
+                                    status = originalImage:saveToFile(destinationPath)
                                 end
-                            else
+                            end
+                            if not status then
                                 consolidateSuccessful = false
-                                log.ef("Failed to find source file: %s", sourcePath)
+                                log.ef("Failed to copy source file: %s", sourcePath)
                             end
                         end
                     end
