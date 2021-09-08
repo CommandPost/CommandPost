@@ -812,6 +812,12 @@ function mod.performBatchExport()
     end
 
     --------------------------------------------------------------------------------
+    -- Disable rendering in the background:
+    --------------------------------------------------------------------------------
+    local originalSuspendBackgroundRenders = fcp.preferences:get("FFSuspendBGOpsDuringPlay", true)
+    fcp.preferences:set("FFSuspendBGOpsDuringPlay", true)
+
+    --------------------------------------------------------------------------------
     -- Export the clips:
     --------------------------------------------------------------------------------
     if mod.batchExportTimelineClips(mod._clips, sendToCompressor) then
@@ -824,6 +830,11 @@ function mod.performBatchExport()
             displayMessage(i18n("batchExportComplete"), {i18n("done")})
         end
     end
+
+    --------------------------------------------------------------------------------
+    -- Restore FFSuspendBGOpsDuringPlay preference:
+    --------------------------------------------------------------------------------
+    fcp.preferences:set("FFSuspendBGOpsDuringPlay", originalSuspendBackgroundRenders)
 end
 
 -- nextID() -> number
