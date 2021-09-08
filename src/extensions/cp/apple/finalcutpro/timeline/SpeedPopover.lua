@@ -4,7 +4,7 @@
 ---
 --- Represents the Speed Popover.
 
--- local log                   = require "hs.logger" .new "SpeedPopover"
+--local log                   = require "hs.logger" .new "SpeedPopover"
 
 local go                    = require "cp.rx.go"
 
@@ -175,7 +175,7 @@ end
 --- The [TextField](cp.ui.TextField.md) for the "Rate" text field.
 function SpeedPopover.lazy.value:rate()
     return TextField(self, self.UI:mutate(function(original)
-        if self.rate:checked() then
+        if self.byRate:checked() then
             return childWithRole(original(), "AXTextField")
         end
     end))
@@ -186,7 +186,7 @@ end
 --- The [TextField](cp.ui.TextField.md) for the "Duration" text field.
 function SpeedPopover.lazy.value:duration()
     return TextField(self, self.UI:mutate(function(original)
-        if self.duration:checked() then
+        if self.byDuration:checked() then
             return childWithRole(original(), "AXTextField")
         end
     end))
