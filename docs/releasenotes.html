@@ -12,13 +12,16 @@
 			<h1>CommandPost 1.2.9</h1>
 
 			<h2>🔨 Improvements</h2>
-			<ul><li>The "Shot Data" Toolbox has been improved. The duration is now always in the hh:mm:ss format. Fixed a bug where the CSV output would be broken if a field is blank/empty in the Motion Template. Added a column in the CSV for "Shot ID" and "Image Filename". Images are now converted to PNG files for consistency. Thanks for your feedback Vigneswaran Rajkumar!</li></ul>
+			<ul><li>The "Shot Data" Toolbox has been improved. The duration is now always in the hh:mm:ss format. Fixed a bug where the CSV output would be broken if a field is blank/empty in the Motion Template. Added a column in the CSV for "Shot ID" and "Image Filename". Images are now converted to PNG files for consistency. Thanks for your feedback Vigneswaran Rajkumar!</li>
+			<li>"Rendering During Playback" is now disabled when performing Batch Export to improve performance and reliability. Thanks for the suggestion Mitchell!</li>
+			<li>Updated translations. Thanks to everyone who submitted fixes!</li></ul>
 
 			<h2>🐞 Bug Fixes</h2>
 			<ul><li>Fixed a bug when applying transitions in cases where there's multiple transitions with the same name. We now properly take into account the theme name as well. Thanks for reporting Selina Tannenberg!</li>
 			<li>Fixed bug in the Loupedeck Manager.</li>
 			<li>Fixed a bug that would cause CommandPost to fail to load if you were running an application that had no application bundle identifier. Thanks for reporting Helder S Ribeiro!</li>
-			<li>Fixed a bug that would cause actions that changed the speed of clips in Final Cut Pro (such as "Speed to -50%") to fail. Thanks for reporting Prawit Sarathamwuthikul!</li></ul>
+			<li>Fixed a bug that would cause actions that changed the speed of clips in Final Cut Pro (such as "Speed to -50%") to fail. Thanks for reporting Prawit Sarathamwuthikul!</li>
+			<li>Fixed some potential errors with MIDI banks. Thanks for reporting Marco Malaca!</li></ul>
 
 			<h2>👿 Known Issues</h2>
 			<ul><li>Due to a suspected bug in Xcode 12, the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. We've contacted Apple to try and come up with a fix.</li>
