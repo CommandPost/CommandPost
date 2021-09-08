@@ -358,18 +358,23 @@ function plugin.postInit(deps)
     local apps = runningApplications()
     for _, app in pairs(apps) do
         local bundleID = app:bundleID()
-        if not mod._cache[bundleID] then
-            local visibleWindows = app:visibleWindows()
-            if next(visibleWindows) and accessibilityState() then
-                getMenuItems(app, function(result)
-                    if not mod._cache[bundleID] then
-                        mod._cache[bundleID] = result
-                        mod._handler:reset()
-                        if mod._handlers[bundleID] then
-                            mod._handlers[bundleID]:reset()
+        --------------------------------------------------------------------------------
+        -- For some reason, some apps don't have a bundle ID:
+        --------------------------------------------------------------------------------
+        if bundleID and bundleID ~= "" then
+            if not mod._cache[bundleID] then
+                local visibleWindows = app:visibleWindows()
+                if next(visibleWindows) and accessibilityState() then
+                    getMenuItems(app, function(result)
+                        if not mod._cache[bundleID] then
+                            mod._cache[bundleID] = result
+                            mod._handler:reset()
+                            if mod._handlers[bundleID] then
+                                mod._handlers[bundleID]:reset()
+                            end
                         end
-                    end
-                end)
+                    end)
+                end
             end
         end
     end
