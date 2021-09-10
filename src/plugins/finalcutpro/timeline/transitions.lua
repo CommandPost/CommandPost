@@ -118,13 +118,15 @@ function mod.apply(action)
     -- Take into account the Theme if needed:
     --------------------------------------------------------------------------------
     local transition = matches[1]
-    local requestedTitle = action.theme .. " - " .. action.name
-    if #matches > 1 then
-        for _, ui in pairs(matches) do
-            local title = ui:attributeValue("AXTitle")
-            if title == requestedTitle then
-                transition = ui
-                break
+    if action.theme and action.theme ~= "" then
+        local requestedTitle = action.theme .. " - " .. action.name
+        if #matches > 1 then
+            for _, ui in pairs(matches) do
+                local title = ui:attributeValue("AXTitle")
+                if title == requestedTitle then
+                    transition = ui
+                    break
+                end
             end
         end
     end
