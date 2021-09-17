@@ -302,6 +302,35 @@ function Contents:rangeSelectionUI()
     return nil
 end
 
+--- cp.apple.finalcutpro.timeline.Contents:positionClipsUI(position, expandedGroups, filterFn) -> table of axuielements
+--- Function
+--- Returns a table array containing the list of clips in the Timeline at the specified `position`, ordered with the
+--- highest clips at the beginning of the array.
+---
+--- If `expandsGroups` is `true` any `AXGroup` items will be expanded to the list of contained `AXLayoutItems`.
+---
+--- If `filterFn` is provided it will be called with a single argument to check if the provided
+--- clip should be included in the final table.
+---
+--- Parameters:
+---  * position     - The position value to find clips under.
+---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
+---  * filterFn		- (optional) if provided, the function will be called to check each clip
+---
+--- Returns:
+---  * The table of axuielements that match the conditions
+function Contents:positionClipsUI(position, expandGroups, filterFn)
+    local clips = self:clipsUI(expandGroups, function(clip)
+        local frame = clip.AXFrame
+        return frame and position >= frame.x and position <= (frame.x + frame.w)
+           and (filterFn == nil or filterFn(clip))
+    end)
+    if not clips then return nil end
+
+    table.sort(clips, function(a, b) return a.AXPosition.y < b.AXPosition.y end)
+    return clips
+end
+
 --- cp.apple.finalcutpro.timeline.Contents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the
@@ -319,14 +348,27 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function Contents:playheadClipsUI(expandGroups, filterFn)
-    local playheadPosition = self.playhead:position()
-    local clips = self:clipsUI(expandGroups, function(clip)
-        local frame = clip:attributeValue("AXFrame")
-        return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
-           and (filterFn == nil or filterFn(clip))
-    end)
-    table.sort(clips, function(a, b) return a:position().y < b:position().y end)
-    return clips
+    return self:positionClipsUI(self.playhead:position(), expandGroups, filterFn)
+end
+
+--- cp.apple.finalcutpro.timeline.Contents:skimmingPlayheadClipsUI(expandedGroups, filterFn) -> table of axuielements
+--- Function
+--- Returns a table array containing the list of clips in the Timeline under the skimming playhead, ordered with the
+--- highest clips at the beginning of the array.
+---
+--- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
+---
+--- If `filterFn` is provided it will be called with a single argument to check if the provided
+--- clip should be included in the final table.
+---
+--- Parameters:
+---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
+---  * filterFn		- (optional) if provided, the function will be called to check each clip
+---
+--- Returns:
+---  * The table of axuielements that match the conditions
+function Contents:skimmingPlayheadClipsUI(expandGroups, filterFn)
+    return self:positionClipsUI(self.skimmingPlayhead:position(), expandGroups, filterFn)
 end
 
 -- TODO: Add documentation

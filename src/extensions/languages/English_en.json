@@ -481,6 +481,7 @@
     "cpMakeSelectedTextCamelcase_title": "Make Selected Text Camelcase",
     "cpMakeSelectedTextLowercase_title": "Make Selected Text Lowercase",
     "cpMakeSelectedTextUppercase_title": "Make Selected Text Uppercase",
+    "cpMarkAllClips_title": "Mark All Clips",
     "cpMIDI_title": "Toggle MIDI Controls",
     "cpMoveAndResizeCenter_title": "Move & Resize Focussed Window: Center",
     "cpMoveAndResizeCornerNorthEast_title": "Move & Resize Focussed Window: Top Right Corner",
