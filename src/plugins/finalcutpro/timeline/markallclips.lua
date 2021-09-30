@@ -6,6 +6,7 @@
 local require       = require
 
 local fcp           = require "cp.apple.finalcutpro"
+local axutils       = require "cp.ui.axutils"
 
 local go            = require "cp.rx.go"
 local Observable    = require "cp.rx.Observable"
@@ -26,6 +27,11 @@ function mod.markAllClips()
     local clipsUI = contents:positionClipsUI(position, true)
 
     if not clipsUI then return end
+
+    local selectedUI = axutils.childrenMatching(clipsUI, function(child) return child.AXSelected end)
+    if #selectedUI > 1 then
+        clipsUI = selectedUI
+    end
 
     Do(
         Given(Observable.fromTable(clipsUI, ipairs))
