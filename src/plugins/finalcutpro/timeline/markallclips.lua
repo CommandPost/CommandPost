@@ -1,20 +1,33 @@
-
 --- === plugins.finalcutpro.timeline.markallclips ===
 ---
 --- Add a marker to all selected clips under the playhead, or all clips if only one clip is selected.
 
-local require       = require
+local require           = require
 
-local fcp           = require "cp.apple.finalcutpro"
-local axutils       = require "cp.ui.axutils"
+local axutils           = require "cp.ui.axutils"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
-local go            = require "cp.rx.go"
-local Observable    = require "cp.rx.Observable"
+local go                = require "cp.rx.go"
+local Observable        = require "cp.rx.Observable"
 
-local Given, Do     = go.Given, go.Do
+local playErrorSound    = tools.playErrorSound
+
+local Do                = go.Do
+local Given             = go.Given
 
 local mod = {}
 
+--- plugins.finalcutpro.timeline.markallclips.markAllClips -> none
+--- Function
+--- Add a marker to all selected clips under the playhead, or all clips if only one clip is selected.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.markAllClips()
     local contents = fcp.timeline.contents
     local playhead = fcp.timeline.playhead
@@ -22,15 +35,26 @@ function mod.markAllClips()
 
     local position = skimmer:position() or playhead:position()
 
-    if not position then return end
+    if not position then
+        playErrorSound()
+        return
+    end
 
     local clipsUI = contents:positionClipsUI(position, true)
 
-    if not clipsUI then return end
+    if not clipsUI then
+        playErrorSound()
+        return
+    end
 
     local selectedUI = axutils.childrenMatching(clipsUI, function(child) return child.AXSelected end)
     if #selectedUI > 1 then
         clipsUI = selectedUI
+    end
+
+    if #clipsUI < 1 then
+        playErrorSound()
+        return
     end
 
     Do(
@@ -66,6 +90,7 @@ function plugin.init(deps)
         :add("cpMarkAllClips")
         :activatedBy():option():shift("m")
         :whenActivated(mod.markAllClips)
+        :subtitled(i18n("cpMarkAllClips_subtitle"))
 
     return mod
 end
