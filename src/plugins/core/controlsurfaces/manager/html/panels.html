@@ -42,6 +42,14 @@
 					document.getElementById(id).value = value;
 				}
 			}
+
+			function setStyleDisplayByClass(className, value) {
+				var x, i;
+				x = document.querySelectorAll("." + className);
+				for (i = 0; i < x.length; i++) {
+					x[i].style.display = value;
+				}
+			}
 		</script>
 	</head>
 	<body>

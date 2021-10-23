@@ -1338,7 +1338,11 @@ function mod.mt:panelCallback(id, params)
             local buttonType = params["buttonType"]
             local activatorID = params["application"]
 
-            if buttonType == "snippetAction" then
+            --------------------------------------------------------------------------------
+            -- NOTE: "nippetAction" is not a type as it could be "snippetAction" or
+            --       "ledSnippetAction"
+            --------------------------------------------------------------------------------
+            if buttonType:sub(-12) == "nippetAction" then
                  activatorID = "snippet"
             end
 
@@ -1346,7 +1350,7 @@ function mod.mt:panelCallback(id, params)
                 self.activator = {}
             end
 
-            if buttonType == "snippetAction" and not self.activator[activatorID] then
+            if activatorID == "snippet" and not self.activator[activatorID] then
                 --------------------------------------------------------------------------------
                 -- Create a new Snippet Activator:
                 --------------------------------------------------------------------------------

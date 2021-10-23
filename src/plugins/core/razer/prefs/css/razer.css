@@ -1,0 +1,155 @@
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 21px;
+	height: 21px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
+.bottomButton {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	cursor: default;
+	text-align: center;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  	width: 180px;
+  	font-weight: normal;
+	font-family: -apple-system;
+	font-size: 13px;
+}
+
+.bottomButton:active {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.selected {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.disabled {
+	color: #999!important;
+	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+}
+
+.razer {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.razer td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.razerLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
+.razer thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.razer thead tr, .razer tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.razer thead tr {
+	width: calc( 100% - 8px);
+}
+
+.razer tbody {
+	display:block;
+	/* height: 65px; */
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.importSettings {
+	margin: 10px 0px;
+	text-align: center;
+	width: 180px;
+}
+
+.applyTopDeviceToAll {
+	margin: 10px 0px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
+	text-align: right;
+	float: right;
+}
+
+.buttonDisabled {
+	pointer-events:none;
+	opacity: 0.4;
+}
+
+.razerActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 186px;
+}
+
+.razerActionButton {
+	padding: 5px 5px !important;
+}

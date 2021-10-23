@@ -81,7 +81,9 @@ function mod.init(deps)
         end)
         :onReset(toggleMute)
 
-    local iOn, iOff = i18n("on"), i18n("off")
+    local iOn   = string.upper(i18n("on"))
+    local iOff  = string.upper(i18n("off"))
+
     local mute = soundGroup:menu(0x0AA00002)
         :name(i18n("mute"))
         :name9(i18n("mute9"))
