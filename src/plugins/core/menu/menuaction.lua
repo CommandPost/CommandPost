@@ -156,6 +156,7 @@ local plugin = {
         ["core.midi.manager"]                   = "midimanager",
         ["core.streamdeck.manager"]             = "streamdeckmanager",
         ["core.tourbox.manager"]                = "tourboxmanager",
+        ["core.razer.manager"]                  = "razermanager",
     }
 }
 
@@ -242,6 +243,7 @@ function plugin.postInit(deps)
     local midiItems             = deps.midimanager.items
     local streamDeckItems       = deps.streamdeckmanager.items
     local tourBoxItems          = deps.tourboxmanager.items
+    local razerItems            = deps.razermanager.items
 
     local registeredApps        = appManager.getApplications()
 
@@ -300,8 +302,12 @@ function plugin.postInit(deps)
             midiItems,
             streamDeckItems,
             tourBoxItems,
+            razerItems,
         }
         for _, item in pairs(items) do
+            --------------------------------------------------------------------------------
+            -- One layer (i.e. MIDI):
+            --------------------------------------------------------------------------------
             for bundleID, v in pairs(item()) do
                 if v.displayName then
                     if not bundleIDsHash[bundleID] then
@@ -310,18 +316,34 @@ function plugin.postInit(deps)
                     end
                 end
             end
-        end
 
-        --------------------------------------------------------------------------------
-        -- Get a list of custom applications used in Stream Deck:
-        --------------------------------------------------------------------------------
-        for _, device in pairs(streamDeckItems()) do
-            for _, unit in pairs(device) do
+            --------------------------------------------------------------------------------
+            -- Two layers (i.e. Razer):
+            --------------------------------------------------------------------------------
+            for _, unit in pairs(item()) do
                 for bundleID, v in pairs(unit) do
-                    if v.displayName then
+                    if type(v) == "table" and v.displayName then
                         if not bundleIDsHash[bundleID] then
                             bundleIDsHash[bundleID] = true
                             insert(bundleIDs, bundleID)
+                        end
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Three layers (i.e. Stream Deck):
+            --------------------------------------------------------------------------------
+            for _, device in pairs(item()) do
+                for _, unit in pairs(device) do
+                    if type(unit) == "table" then
+                        for bundleID, v in pairs(unit) do
+                            if type(v) == "table" and v.displayName then
+                                if not bundleIDsHash[bundleID] then
+                                    bundleIDsHash[bundleID] = true
+                                    insert(bundleIDs, bundleID)
+                                end
+                            end
                         end
                     end
                 end
@@ -346,6 +368,7 @@ function plugin.postInit(deps)
     midiItems:watch(function() scanPreferences() end)
     streamDeckItems:watch(function() scanPreferences() end)
     tourBoxItems:watch(function() scanPreferences() end)
+    razerItems:watch(function() scanPreferences() end)
 
     --------------------------------------------------------------------------------
     -- Scan preferences:
