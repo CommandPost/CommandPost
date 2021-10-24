@@ -1,0 +1,146 @@
+{
+  "Razer Tartarus V2" : {
+    "org.latenitefilms.CommandPost" : {
+      "ignore" : true
+    },
+    "All Applications" : {
+      "7" : {
+        "scrollWheel" : {
+          "1" : {
+            "led" : "00ff55"
+          }
+        },
+        "button" : {
+          "20" : {
+            "led" : "2b00ff"
+          },
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      },
+      "3" : {
+        "scrollWheel" : {
+          "1" : {
+            "led" : "00ff11"
+          }
+        },
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      },
+      "4" : {
+        "scrollWheel" : {
+          "1" : {
+            "led" : "3300ff"
+          }
+        },
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      },
+      "5" : {
+        "scrollWheel" : {
+          "1" : {
+            "led" : "ffc400"
+          }
+        },
+        "button" : {
+          "20" : {
+            "led" : "5eff00"
+          },
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      },
+      "1" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      },
+      "6" : {
+        "scrollWheel" : {
+          "1" : {
+            "led" : "ffbb00"
+          }
+        },
+        "button" : {
+          "20" : {
+            "led" : "003cff"
+          },
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      },
+      "2" : {
+        "scrollWheel" : {
+          "1" : {
+            "led" : "ff9900"
+          }
+        },
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "handlerID" : "global_razertartarusv2_banks",
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus V2"
+              },
+              "actionTitle" : "Next Razer Tartarus V2 Bank"
+            }
+          }
+        }
+      }
+    }
+  }
+}

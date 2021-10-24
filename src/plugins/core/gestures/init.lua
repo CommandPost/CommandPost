@@ -18,7 +18,7 @@ local mod = {}
 
 local plugin = {
     id              = "core.gestures",
-    group           = "gestures",
+    group           = "core",
     dependencies    = {
         ["core.action.manager"] = "actionmanager",
     }

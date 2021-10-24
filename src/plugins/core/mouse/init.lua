@@ -21,7 +21,7 @@ local mod = {}
 
 local plugin = {
     id              = "core.mouse",
-    group           = "mouse",
+    group           = "core",
     dependencies    = {
         ["core.action.manager"] = "actionmanager",
     }
