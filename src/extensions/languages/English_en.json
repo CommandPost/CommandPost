@@ -550,6 +550,8 @@
     "cpRollingShutterEnable_title": "Enable Rolling Shutter",
     "cpSaveKeywordPreset_customTitle": "Save Keyword Preset %{count}",
     "cpScrollingTimeline_title": "Toggle Scrolling Timeline",
+    "cpSelectAllEvenClips_title": "Select All Even Clips In Timeline",
+    "cpSelectAllOddClips_title": "Select All Odd Clips In Timeline",
     "cpSelectBackwards_title": "Select Clips Backwards",
     "cpSelectClipAtLane_customTitle": "Select Clip at Lane %{count}",
     "cpSelectColorBoardPuck_customTitle": "Select Color Board Puck %{count}",
