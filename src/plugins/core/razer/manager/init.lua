@@ -8,12 +8,11 @@ local log                       = require "hs.logger".new "razer"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
-local bytes                     = require "hs.bytes"
 local eventtap                  = require "hs.eventtap"
 local image                     = require "hs.image"
-local serial                    = require "hs.serial"
 local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
+local fnutils                   = require "hs.fnutils"
 
 local razer                     = require "hs.razer"
 
@@ -23,16 +22,15 @@ local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
-local applicationsForBundleID   = application.applicationsForBundleID
+local copy                      = fnutils.copy
 local displayNotification       = dialog.displayNotification
 local doAfter                   = timer.doAfter
 local doEvery                   = timer.doEvery
-local hexToBytes                = bytes.hexToBytes
 local imageFromPath             = image.imageFromPath
 local isColor                   = tools.isColor
 local keyRepeatInterval         = eventtap.keyRepeatInterval
-local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local tableCount                = tools.tableCount
+local tableMatch                = tools.tableMatch
 
 local mod = {}
 
@@ -201,6 +199,67 @@ local repeatTimers = {}
 -- The last bundle ID processed.
 local cachedBundleID = ""
 
+-- cachedLedValues -> table
+-- Variable
+-- A table of cached LED values
+local cachedStatusLights = {}
+
+-- cachedLedMode -> table
+-- Variable
+-- A table of cached LED values
+local cachedLedMode = {}
+
+-- cachedCustomColors -> table
+-- Variable
+-- A table of cached custom colors
+local cachedCustomColors = {}
+
+local function resetStatusLights(device)
+    local deviceName = device:name()
+    if deviceName == "Razer Tartarus V2" then
+        cachedStatusLights[deviceName]["orange"] = false
+        cachedStatusLights[deviceName]["green"] = false
+        cachedStatusLights[deviceName]["blue"] = false
+
+        device:orangeStatusLight(false)
+        device:greenStatusLight(false)
+        device:blueStatusLight(false)
+    end
+end
+
+-- setStatusLights(device, orange, green, blue) -> none
+-- Function
+-- Sets the Status Lights on a Razer Device.
+--
+-- Parameters:
+--  * device - The Razer device object
+--  * orange - Whether or not the orange light is on or off as a boolean
+--  * green - Whether or not the green light is on or off as a boolean
+--  * blue - Whether or not the blue light is on or off as a boolean
+--
+-- Returns:
+--  * None
+local function setStatusLights(device, orange, green, blue)
+    local deviceName = device:name()
+    if deviceName == "Razer Tartarus V2" then
+        if not cachedStatusLights[deviceName]["orange"] == orange then
+            device:orangeStatusLight(orange)
+        end
+
+        if not cachedStatusLights[deviceName]["green"] == green then
+            device:greenStatusLight(green)
+        end
+
+        if not cachedStatusLights[deviceName]["blue"] == blue then
+            device:blueStatusLight(blue)
+        end
+
+        cachedStatusLights[deviceName]["orange"] = orange
+        cachedStatusLights[deviceName]["green"] = green
+        cachedStatusLights[deviceName]["blue"] = blue
+    end
+end
+
 --- plugins.core.razer.manager.refresh() -> none
 --- Function
 --- Refreshes the LEDs on a Razer device.
@@ -289,64 +348,13 @@ function mod.refresh()
         --------------------------------------------------------------------------------
         -- Update status lights based on current bank:
         --------------------------------------------------------------------------------
-        if deviceName == "Razer Tartarus V2" then
-            local statusLights = mod.bankLabels["Razer Tartarus V2"][bankID]
-            device:orangeStatusLight(statusLights.orange)
-            device:greenStatusLight(statusLights.green)
-            device:blueStatusLight(statusLights.blue)
-        end
+        local statusLights = mod.bankLabels[deviceName][bankID]
+        setStatusLights(device, statusLights.orange, statusLights.green, statusLights.blue)
 
-        if currentMode == "Off" then
-            --------------------------------------------------------------------------------
-            -- Off:
-            --------------------------------------------------------------------------------
-            device:backlightsOff()
-        elseif currentMode == "Wave" then
-            --------------------------------------------------------------------------------
-            -- Wave:
-            --
-            --  * speed - A number between 1 (fast) and 255 (slow)
-            --  * direction - "left" or "right" as a string
-            --------------------------------------------------------------------------------
-            device:backlightsWave(speed, direction)
-        elseif currentMode == "Spectrum" then
-            --------------------------------------------------------------------------------
-            -- Spectrum:
-            --------------------------------------------------------------------------------
-            device:backlightsSpectrum()
-        elseif currentMode == "Reactive" then
-            --------------------------------------------------------------------------------
-            -- Reactive:
-            --
-            --  * speed - A number between 1 (fast) and 4 (slow)
-            --  * color - A `hs.drawing.color` object
-            --------------------------------------------------------------------------------
-            device:backlightsReactive(speed, colorA)
-        elseif currentMode == "Static" then
-            --------------------------------------------------------------------------------
-            -- Static:
-            --
-            --  * color - A `hs.drawing.color` object.
-            --------------------------------------------------------------------------------
-            device:backlightsStatic(colorA)
-        elseif currentMode == "Starlight" then
-            --------------------------------------------------------------------------------
-            -- Starlight:
-            --
-            --  * speed - A number between 1 (fast) and 3 (slow)
-            --  * [color] - An optional `hs.drawing.color` value
-            --  * [secondaryColor] - An optional secondary `hs.drawing.color`
-            --------------------------------------------------------------------------------
-            device:backlightsStarlight(speed, colorA, colorB)
-        elseif currentMode == "Breathing" then
-            --------------------------------------------------------------------------------
-            -- Breathing:
-            --
-            --  * [color] - An optional `hs.drawing.color` value
-            --  * [secondaryColor] - An optional secondary `hs.drawing.color`
-            --------------------------------------------------------------------------------
-            device:backlightsBreathing(colorA, colorB)
-        elseif currentMode == "User Defined" then
+        --------------------------------------------------------------------------------
+        -- Only update if we need to:
+        --------------------------------------------------------------------------------
+        if currentMode == "User Defined" then
             --------------------------------------------------------------------------------
             -- Custom:
             --------------------------------------------------------------------------------
@@ -398,24 +406,81 @@ function mod.refresh()
                             local successful, result = pcall(load(code))
                             if type(successful) and isColor(result) then
                                 snippetResult = result
-                                containsIconSnippets = true
                             end
                         end
                     end
 
-                    local led = snippetResult or (button and button.led)
-                    if led then
-                        if isColor(led) then
-                            customColors[i + offset] = led
+                    local buttonLed = snippetResult or (button and button.led)
+                    if buttonLed then
+                        if isColor(buttonLed) then
+                            customColors[i + offset] = buttonLed
                         else
-                            customColors[i + offset] = {hex="#"..led}
+                            customColors[i + offset] = {hex="#"..buttonLed}
                         end
                     end
                 end
             end
 
-            device:backlightsCustom(customColors)
+            if not tableMatch(cachedCustomColors[deviceName], customColors) then
+                device:backlightsCustom(customColors)
+            end
+
+            cachedCustomColors[deviceName] = copy(customColors)
+        elseif not cachedLedMode[deviceName] == currentMode then
+            if currentMode == "Off" then
+                --------------------------------------------------------------------------------
+                -- Off:
+                --------------------------------------------------------------------------------
+                device:backlightsOff()
+            elseif currentMode == "Wave" then
+                --------------------------------------------------------------------------------
+                -- Wave:
+                --
+                --  * speed - A number between 1 (fast) and 255 (slow)
+                --  * direction - "left" or "right" as a string
+                --------------------------------------------------------------------------------
+                device:backlightsWave(speed, direction)
+            elseif currentMode == "Spectrum" then
+                --------------------------------------------------------------------------------
+                -- Spectrum:
+                --------------------------------------------------------------------------------
+                device:backlightsSpectrum()
+            elseif currentMode == "Reactive" then
+                --------------------------------------------------------------------------------
+                -- Reactive:
+                --
+                --  * speed - A number between 1 (fast) and 4 (slow)
+                --  * color - A `hs.drawing.color` object
+                --------------------------------------------------------------------------------
+                device:backlightsReactive(speed, colorA)
+            elseif currentMode == "Static" then
+                --------------------------------------------------------------------------------
+                -- Static:
+                --
+                --  * color - A `hs.drawing.color` object.
+                --------------------------------------------------------------------------------
+                device:backlightsStatic(colorA)
+            elseif currentMode == "Starlight" then
+                --------------------------------------------------------------------------------
+                -- Starlight:
+                --
+                --  * speed - A number between 1 (fast) and 3 (slow)
+                --  * [color] - An optional `hs.drawing.color` value
+                --  * [secondaryColor] - An optional secondary `hs.drawing.color`
+                --------------------------------------------------------------------------------
+                device:backlightsStarlight(speed, colorA, colorB)
+            elseif currentMode == "Breathing" then
+                --------------------------------------------------------------------------------
+                -- Breathing:
+                --
+                --  * [color] - An optional `hs.drawing.color` value
+                --  * [secondaryColor] - An optional secondary `hs.drawing.color`
+                --------------------------------------------------------------------------------
+                device:backlightsBreathing(colorA, colorB)
+            end
         end
+
+        cachedLedMode[deviceName] = currentMode
     end
 end
 
@@ -591,6 +656,16 @@ local function deviceCallback(connected, device)
         mod.devices[deviceName] = device
         mod.devices[deviceName]:defaultKeyboardLayout(false)
         mod.devices[deviceName]:callback(razerCallback)
+
+        -- Reset the caches:
+        cachedStatusLights[deviceName] = {}
+        cachedLedMode[deviceName] = {}
+        cachedCustomColors[deviceName] = {}
+
+        -- Reset the status lights:
+        resetStatusLights(device)
+
+        -- Update the LEDs:
         mod.refresh()
     else
         --------------------------------------------------------------------------------
@@ -607,11 +682,7 @@ local function deviceCallback(connected, device)
         -- Turn off the LEDs:
         --------------------------------------------------------------------------------
         mod.devices[deviceName]:backlightsOff()
-        if deviceName == "Razer Tartarus V2" then
-            mod.devices[deviceName]:orangeStatusLight(false)
-            mod.devices[deviceName]:greenStatusLight(false)
-            mod.devices[deviceName]:blueStatusLight(false)
-        end
+        setStatusLights(mod.devices[deviceName], false, false, false)
 
         --------------------------------------------------------------------------------
         -- Destroy the device:
@@ -652,7 +723,10 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
         mod._appWatcher = appWatcher.new(function(_, event)
             if event == appWatcher.activated then
                 local frontmostApplication = application.frontmostApplication()
-                cachedBundleID = frontmostApplication:bundleID()
+                local frontmostBundleID = frontmostApplication:bundleID()
+                if frontmostBundleID then
+                    cachedBundleID = frontmostBundleID
+                end
                 mod.resetTimers()
                 mod.refresh()
             end
@@ -669,17 +743,22 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
             end
             if eventType == sleepWatcher.systemWillSleep then
                 if mod.enabled() then
-                    for i, device in pairs(mod.devices) do
+                    for _, device in pairs(mod.devices) do
                         device:backlightsOff()
-                        if device:name() == "Razer Tartarus V2" then
-                            device:orangeStatusLight(false)
-                            device:greenStatusLight(false)
-                            device:blueStatusLight(false)
-                        end
+                        setStatusLights(device, false, false, false)
                     end
                 end
             end
         end):start()
+
+        --------------------------------------------------------------------------------
+        -- Pre-populate the frontmost application cache:
+        --------------------------------------------------------------------------------
+        local frontmostApplication = application.frontmostApplication()
+        local frontmostBundleID = frontmostApplication:bundleID()
+        if frontmostBundleID then
+            cachedBundleID = frontmostBundleID
+        end
 
         razer.init(deviceCallback)
     else
@@ -696,11 +775,7 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
         for i, device in pairs(mod.devices) do
             device:defaultKeyboardLayout(true)
             device:backlightsOff()
-            if device:name() == "Razer Tartarus V2" then
-                device:orangeStatusLight(false)
-                device:greenStatusLight(false)
-                device:blueStatusLight(false)
-            end
+            setStatusLights(device, false, false, false)
             mod.devices[i] = nil
         end
 
@@ -748,7 +823,7 @@ function plugin.init(deps, env)
     -- Turn off LEDs and restore default keyboard layout on shutdown:
     --------------------------------------------------------------------------------
     config.shutdownCallback:new("razer", function()
-        for i, device in pairs(mod.devices) do
+        for _, device in pairs(mod.devices) do
             device:defaultKeyboardLayout(true)
             device:backlightsOff()
         end
@@ -797,7 +872,7 @@ function plugin.init(deps, env)
         :titled(i18n("toggleRazerSupport"))
 
     --------------------------------------------------------------------------------
-    -- Connect to the TourBox:
+    -- Connect to the Razer:
     --------------------------------------------------------------------------------
     mod.enabled:update()
 

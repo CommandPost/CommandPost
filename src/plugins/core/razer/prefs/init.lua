@@ -455,13 +455,6 @@ local function razerPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Update the preferences file:
                 --------------------------------------------------------------------------------
-                local device        = params["device"]
-                local app           = params["application"]
-                local bank          = params["bank"]
-                local controlType   = params["controlType"]
-                local controlID     = params["controlID"]
-                local buttonType    = params["buttonType"]
-
                 local result = {
                     ["actionTitle"] = actionTitle,
                     ["handlerID"] = handlerID,
@@ -1016,7 +1009,7 @@ local function razerPanelCallback(id, params)
 
             local userApps = {}
             local items = mod.items()
-            local devices = items[device] or {}
+            local devices = items[mod.lastDevice()] or {}
             for bundleID, v in pairs(devices) do
                 if v.displayName then
                     userApps[bundleID] = v.displayName
