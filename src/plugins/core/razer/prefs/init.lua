@@ -859,72 +859,139 @@ local function razerPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Reset Device:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local items = mod.items()
-                    local device = mod.lastDevice()
+            local resetDevice = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local items = mod.items()
+                        local device = mod.lastDevice()
 
-                    local defaultLayout = mod._razerManager.defaultLayout
-                    if not items[device] then items[device] = {} end
-                    items[device] = defaultLayout and defaultLayout[device] or {}
+                        local defaultLayout = mod._razerManager.defaultLayout
+                        if not items[device] then items[device] = {} end
+                        items[device] = defaultLayout and defaultLayout[device] or {}
 
-                    mod.items(items)
-                    mod._manager.refresh()
+                        if completelyEmpty then
+                            items[device] = {}
+                        end
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the hardware:
-                    --------------------------------------------------------------------------------
-                    mod._razerManager.refresh()
-                end
-            end, i18n("razerResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        mod.items(items)
+                        mod._manager.refresh()
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        mod._razerManager.refresh()
+                    end
+                end, i18n("razerResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetDevice(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetDevice(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetApplication" then
             --------------------------------------------------------------------------------
             -- Reset Application:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local items = mod.items()
-                    local device = mod.lastDevice()
-                    local app = mod.lastApplication()
+            local resetApplication = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local items = mod.items()
+                        local device = mod.lastDevice()
+                        local app = mod.lastApplication()
 
-                    local defaultLayout = mod._razerManager.defaultLayout
-                    if not items[device] then items[device] = {} end
-                    items[device][app] = defaultLayout and defaultLayout[device] and defaultLayout[device][app] or {}
+                        local defaultLayout = mod._razerManager.defaultLayout
+                        if not items[device] then items[device] = {} end
+                        items[device][app] = defaultLayout and defaultLayout[device] and defaultLayout[device][app] or {}
 
-                    mod.items(items)
-                    mod._manager.refresh()
+                        if completelyEmpty then
+                            items[device][app] = {}
+                        end
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the hardware:
-                    --------------------------------------------------------------------------------
-                    mod._razerManager.refresh()
-                end
-            end, i18n("razerResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        mod.items(items)
+                        mod._manager.refresh()
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        mod._razerManager.refresh()
+                    end
+                end, i18n("razerResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetApplication(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetApplication(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetBank" then
             --------------------------------------------------------------------------------
             -- Reset Bank:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local items = mod.items()
-                    local device = mod.lastDevice()
-                    local app = mod.lastApplication()
-                    local bank = mod.lastBank()
+            local resetBank = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local items = mod.items()
+                        local device = mod.lastDevice()
+                        local app = mod.lastApplication()
+                        local bank = mod.lastBank()
 
-                    local defaultLayout = mod._razerManager.defaultLayout
+                        local defaultLayout = mod._razerManager.defaultLayout
 
-                    if items[device] and items[device][app] and items[device][app][bank] then
-                        items[device][app][bank] = defaultLayout and defaultLayout[device] and defaultLayout[device][app] and defaultLayout[device][app][bank] or {}
+                        if items[device] and items[device][app] and items[device][app][bank] then
+                            items[device][app][bank] = defaultLayout and defaultLayout[device] and defaultLayout[device][app] and defaultLayout[device][app][bank] or {}
+
+                            if completelyEmpty then
+                                items[device][app][bank] = {}
+                            end
+                        end
+
+                        mod.items(items)
+                        mod._manager.refresh()
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        mod._razerManager.refresh()
                     end
-                    mod.items(items)
-                    mod._manager.refresh()
+                end, i18n("razerResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the hardware:
-                    --------------------------------------------------------------------------------
-                    mod._razerManager.refresh()
-                end
-            end, i18n("razerResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetBank(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetBank(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "ledExamples" then
             --------------------------------------------------------------------------------
             -- Examples Button:
