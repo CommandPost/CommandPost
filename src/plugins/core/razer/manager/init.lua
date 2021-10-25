@@ -14,8 +14,6 @@ local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
 local fnutils                   = require "hs.fnutils"
 
-local razer                     = require "hs.razer"
-
 local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
 local i18n                      = require "cp.i18n"
@@ -33,6 +31,11 @@ local tableCount                = tools.tableCount
 local tableMatch                = tools.tableMatch
 
 local mod = {}
+
+-- razer -> hs.razer object
+-- Variable
+-- The Razer extension. We only want to load it when Razer support is enabled.
+local razer
 
 --- plugins.core.razer.manager.supportedDevices -> table
 --- Constant
@@ -214,6 +217,15 @@ local cachedLedMode = {}
 -- A table of cached custom colors
 local cachedCustomColors = {}
 
+-- resetStatusLights(device) -> none
+-- Function
+-- Reset Status Lights
+--
+-- Parameters:
+--  * device - A hs.razer object
+--
+-- Returns:
+--  * None
 local function resetStatusLights(device)
     local deviceName = device:name()
     if deviceName == "Razer Tartarus V2" then
@@ -720,6 +732,10 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
         --------------------------------------------------------------------------------
         -- Watch for application changes:
         --------------------------------------------------------------------------------
+        if mod._appWatcher then
+            mod._appWatcher:stop()
+            mod._appWatcher = nil
+        end
         mod._appWatcher = appWatcher.new(function(_, event)
             if event == appWatcher.activated then
                 local frontmostApplication = application.frontmostApplication()
@@ -735,6 +751,10 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
         --------------------------------------------------------------------------------
         -- Turn off LEDs when sleeping:
         --------------------------------------------------------------------------------
+        if mod._sleepWatcher then
+            mod._sleepWatcher:stop()
+            mod._sleepWatcher = nil
+        end
         mod._sleepWatcher = sleepWatcher.new(function(eventType)
             if eventType == sleepWatcher.systemDidWake then
                 if mod.enabled() then
@@ -759,8 +779,10 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
         if frontmostBundleID then
             cachedBundleID = frontmostBundleID
         end
-
-        razer.init(deviceCallback)
+		if not razer then
+    		razer = require("hs.razer")
+			razer.init(deviceCallback)
+		end
     else
         if mod._appWatcher then
             mod._appWatcher:stop()
@@ -779,10 +801,19 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
             mod.devices[i] = nil
         end
 
-        razer.discoveryCallback(nil)
+        --------------------------------------------------------------------------------
+        -- Destroy the Razer object:
+        --------------------------------------------------------------------------------
+        razer = nil
 
+        --------------------------------------------------------------------------------
+        -- Reset Timers:
+        --------------------------------------------------------------------------------
         mod.resetTimers()
 
+        --------------------------------------------------------------------------------
+        -- Take out the trash (...and hopefully don't crash!)
+        --------------------------------------------------------------------------------
         collectgarbage()
         collectgarbage()
     end
