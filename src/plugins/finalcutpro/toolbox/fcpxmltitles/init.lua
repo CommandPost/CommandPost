@@ -751,7 +751,7 @@ function plugin.init(deps, env)
     -- Setup Utilities Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
-        priority        = 1,
+        priority        = 2,
         id              = "fcpxmlTitles",
         label           = i18n("fcpxmlTitles"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),

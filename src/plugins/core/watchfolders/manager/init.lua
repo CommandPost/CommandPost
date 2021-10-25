@@ -338,16 +338,20 @@ function mod.new()
 
 end
 
---- plugins.core.watchfolders.manager.show() -> boolean
+--- plugins.core.watchfolders.manager.show([panelID]) -> boolean
 --- Function
 --- Shows the Watch Folders Window
 ---
 --- Parameters:
----  * None
+---  * [panelID] - An optional panel ID
 ---
 --- Returns:
 ---  * True if successful or nil if an error occurred
-function mod.show()
+function mod.show(panelID)
+    if panelID then
+        mod.lastTab(panelID)
+    end
+
     if not mod._webview or not mod._toolbar then
         mod.new()
     end

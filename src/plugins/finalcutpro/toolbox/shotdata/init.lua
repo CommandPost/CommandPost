@@ -857,7 +857,7 @@ function plugin.init(deps, env)
     -- Setup Utilities Panel:
     --------------------------------------------------------------------------------
     mod._panel = deps.manager.addPanel({
-        priority        = 2,
+        priority        = 3,
         id              = "shotdata",
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
