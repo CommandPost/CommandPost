@@ -4,6 +4,8 @@
 
 local require           = require
 
+local log               = require "hs.logger".new "menu"
+
 local hs                = _G.hs
 
 local image             = require "hs.image"
@@ -191,6 +193,7 @@ local plugin = {
         ["core.preferences.panels.menubar"]     = "prefs",
         ["core.preferences.manager"]            = "prefsManager",
         ["core.controlsurfaces.manager"]        = "controlSurfaces",
+        ["core.watchfolders.manager"]	        = "watchFolders",
         ["core.toolbox.manager"]                = "toolbox",
     }
 }
@@ -200,10 +203,11 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Plugin Dependancies:
     --------------------------------------------------------------------------------
-    local prefs = deps.prefs.panel
-    local prefsManager = deps.prefsManager
-    local controlSurfaces = deps.controlSurfaces
-    local toolbox = deps.toolbox
+    local prefs             = deps.prefs.panel
+    local prefsManager      = deps.prefsManager
+    local controlSurfaces   = deps.controlSurfaces
+    local toolbox           = deps.toolbox
+    local watchFolders      = deps.watchFolders
 
     --------------------------------------------------------------------------------
     -- Watch for menubar label and icon changes in Preferences panel:
@@ -276,23 +280,49 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Settings Section:
     --------------------------------------------------------------------------------
-    mod.settings = mod.bottom
-        :addHeading(i18n("settings"))
-        :addItem(10.1, function()
-            return { title = i18n("preferences"), fn = prefsManager.show }
+    mod.settings = mod.bottom:addHeading(i18n("settings"))
+
+    --------------------------------------------------------------------------------
+    -- Settings > Preferences Section:
+    --------------------------------------------------------------------------------
+    mod.preferences = mod.settings:addMenu(10.1, function() return i18n("preferences") end)
+        :addItem(0.000000001, function()
+            return { title = i18n("openLastPanel"), fn = prefsManager.show }
         end)
-        :addItem(10.2, function()
-            return { title = i18n("controlSurfaces"), fn = controlSurfaces.show }
+        :addSeparator(0.000000002)
+
+    --------------------------------------------------------------------------------
+    -- Settings > Control Surfaces Section:
+    --------------------------------------------------------------------------------
+    mod.controlSurfaces = mod.settings:addMenu(10.2, function() return i18n("controlSurfaces") end)
+        :addItem(0.000000001, function()
+            return { title = i18n("openLastPanel"), fn = controlSurfaces.show }
         end)
-        :addItem(10.3, function()
-            return { title = "-" }
+        :addSeparator(0.000000002)
+
+    --------------------------------------------------------------------------------
+    -- Settings > Watch Folders Section:
+    --------------------------------------------------------------------------------
+    mod.watchFolders = mod.settings:addMenu(10.3, function() return i18n("watchFolders") end)
+        :addItem(0.000000001, function()
+            return { title = i18n("openLastPanel"), fn = watchFolders.show }
         end)
-        :addItem(10.4, function()
-            return { title = i18n("toolbox"), fn = toolbox.show }
+        :addSeparator(0.000000002)
+
+    -- Separator:
+    mod.settings:addSeparator(10.4)
+
+    --------------------------------------------------------------------------------
+    -- Settings > Toolbox Section:
+    --------------------------------------------------------------------------------
+    mod.toolbox = mod.settings:addMenu(10.5, function() return i18n("toolbox") end)
+        :addItem(0.000000001, function()
+            return { title = i18n("openLastPanel"), fn = toolbox.show }
         end)
-        :addItem(11, function()
-            return { title = "-" }
-        end)
+        :addSeparator(0.000000002)
+
+    -- Separator:
+    mod.settings:addSeparator(10.6)
 
     --------------------------------------------------------------------------------
     -- Restart Menu Item:
@@ -319,6 +349,58 @@ function plugin.init(deps)
     end)
 
     return mod
+end
+
+function plugin.postInit(deps)
+    local prefsManager      = deps.prefsManager
+    local controlSurfaces   = deps.controlSurfaces
+    local watchFolders      = deps.watchFolders
+    local toolbox           = deps.toolbox
+
+    --------------------------------------------------------------------------------
+    -- Preferences Panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(prefsManager._panels) do
+        mod.preferences:addItem(v.priority, function()
+            return { title = v.label, fn = function()
+                prefsManager.show(v.id)
+            end }
+        end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Control Surfaces Panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(controlSurfaces._panels) do
+        mod.controlSurfaces:addItem(v.priority, function()
+            return { title = v.label, fn = function()
+                controlSurfaces.show(v.id)
+            end }
+        end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Watch Folders Panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(watchFolders._panels) do
+        mod.watchFolders:addItem(v.priority, function()
+            return { title = v.label, fn = function()
+                watchFolders.show(v.id)
+            end }
+        end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Toolbox Panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(toolbox._panels) do
+        mod.toolbox:addItem(v.priority, function()
+            return { title = v.label, fn = function()
+                toolbox.show(v.id)
+            end }
+        end)
+    end
+
 end
 
 return plugin

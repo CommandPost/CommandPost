@@ -379,16 +379,20 @@ function mod.new()
     return mod
 end
 
---- plugins.core.controlsurfaces.manager.show() -> boolean
+--- plugins.core.controlsurfaces.manager.show([panelID]) -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
 --- Parameters:
----  * None
+---  * [panelID] - An optional panel ID
 ---
 --- Returns:
 ---  * True if successful or nil if an error occurred
-function mod.show()
+function mod.show(panelID)
+    if panelID then
+        mod.lastTab(panelID)
+    end
+
     if mod._webview == nil then
         mod.new()
     end
