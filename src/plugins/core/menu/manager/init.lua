@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "menu"
+--local log               = require "hs.logger".new "menu"
 
 local hs                = _G.hs
 
