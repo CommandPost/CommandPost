@@ -9,6 +9,7 @@ local hs            = _G.hs
 local log           = require "hs.logger".new "watchMan"
 
 local inspect       = require "hs.inspect"
+local mouse         = require "hs.mouse"
 local screen        = require "hs.screen"
 local timer         = require "hs.timer"
 local toolbar       = require "hs.webview.toolbar"
@@ -447,7 +448,20 @@ function mod.selectPanel(id)
         -- Resize Panel:
         --------------------------------------------------------------------------------
         if v.id == id and v.height and type(v.height) == "number" and mod._webview:hswindow() and mod._webview:hswindow():isVisible() then
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = v.height })
+            --------------------------------------------------------------------------------
+            -- Make sure the panel isn't bigger than the screen:
+            --------------------------------------------------------------------------------
+            local heightWithOffset = v.height
+
+            local currentScreen = mouse.getCurrentScreen()
+            local currentFrame = currentScreen and currentScreen:frame()
+            local currentHeight = currentFrame and currentFrame.h
+
+            if heightWithOffset > currentHeight then
+                heightWithOffset = currentHeight - 10
+            end
+
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = heightWithOffset})
         end
 
         local style = v.id == id and "block" or "none"
