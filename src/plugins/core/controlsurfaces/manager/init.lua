@@ -8,6 +8,7 @@ local hs          = _G.hs
 local log         = require "hs.logger".new "prefsMgr"
 
 local inspect     = require "hs.inspect"
+local mouse       = require "hs.mouse"
 local screen      = require "hs.screen"
 local timer       = require "hs.timer"
 local toolbar     = require "hs.webview.toolbar"
@@ -525,7 +526,20 @@ function mod.selectPanel(id)
                 offset = -20
             end
 
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height + offset})
+            --------------------------------------------------------------------------------
+            -- Make sure the panel isn't bigger than the screen:
+            --------------------------------------------------------------------------------
+            local heightWithOffset = height + offset
+
+            local currentScreen = mouse.getCurrentScreen()
+            local currentFrame = currentScreen and currentScreen:frame()
+            local currentHeight = currentFrame and currentFrame.h
+
+            if heightWithOffset > currentHeight then
+                heightWithOffset = currentHeight - 10
+            end
+
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = heightWithOffset})
         end
 
     end
