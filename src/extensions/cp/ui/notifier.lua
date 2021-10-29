@@ -522,10 +522,12 @@ function mod.mt:update(force)
             --------------------------------------------------------------------------------
             if next(watchers) ~= nil then
                 if element then
-                    observer:addWatcher(element, n)
+                    if not observer:addWatcher(element, n) then
+                        log.ef("[cp.ui.notifier:update()] Failed to add a hs.axuielement.observer watcher.\n\nObserver: %s\nElement: %s\nObserver Running: %s\nBundle ID: %s", observer, element, observer and observer:isRunning(), self.__bundleID)
+                    end
                 end
             else
-                --------------------------------------------------------------------------------
+                ----------------------------------- ---------------------------------------------
                 -- No more watchers registered, remove it:
                 --------------------------------------------------------------------------------
                 self.__watchers[n] = nil

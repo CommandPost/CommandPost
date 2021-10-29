@@ -203,7 +203,6 @@
 --
 --------------------------------------------------------------------------------
 
-
 local log                   = require("hs.logger").new("fcpxml")
 
 local fnutils               = require("hs.fnutils")
@@ -212,6 +211,8 @@ local config                = require("cp.config")
 local tools                 = require("cp.tools")
 
 local xml                   = require("hs._asm.xml")
+
+local semver                = require("semver")
 
 --------------------------------------------------------------------------------
 -- Local Extensions:
@@ -227,7 +228,6 @@ local secondaryStoryline    = require("cp.apple.fcpxml.secondaryStoryline")
 local title                 = require("cp.apple.fcpxml.title")
 
 local execute               = _G.hs.execute
-
 
 local mod = {}
 mod.mt = {}
@@ -727,7 +727,9 @@ function mod.supportedDTDs()
     local files = tools.dirFiles(path)
     for _, file in pairs(files) do
         if file:sub(-4) == ".dtd" then
-            table.insert(result, file:sub(8, 8) .. "." .. file:sub(10, 10))
+            local vPosition = file:find("v")
+            local version = file:sub(vPosition + 1, -5):gsub("_", ".")
+            table.insert(result, version)
         end
     end
     return result
@@ -744,12 +746,12 @@ end
 ---  * The latest DTD version as a string, for example: "1.8".
 function mod.latestDTDVersion()
     local supportedDTDs = mod.supportedDTDs()
-    table.sort(supportedDTDs)
+    table.sort(supportedDTDs, function(a,b) return semver(a) < semver(b) end)
     return supportedDTDs[#supportedDTDs]
 end
 
---- cp.apple.fcpxml:valid(filename[, version]) -> boolean
---- Method
+--- cp.apple.fcpxml:valid(filename[, version]) -> string | nil
+--- Function
 --- Validates an FCPXML document against a document type definition (DTD).
 ---
 --- Parameters:
@@ -757,7 +759,7 @@ end
 ---  * version - The optional FCPXML version you want to validate against.
 ---
 --- Returns:
----  * `true` if valid, otherwise `false`.
+---  * The FCPXML path or `nil` if not valid.
 function mod.valid(filename, version)
     if not filename or not tools.doesFileExist(filename) then
         log.ef("Filename is not valid: %s", filename)
@@ -770,17 +772,24 @@ function mod.valid(filename, version)
         return false
     end
 
-    if not version then
-        version = mod.latestDTDVersion()
+    if version then
+        version = semver(version)
+    else
+        version = semver(mod.latestDTDVersion())
     end
 
-    local major = version:sub(1,1)
-    local minor = version:sub(3,3)
+    --------------------------------------------------------------------------------
+    -- FCPXML Bundles:
+    --------------------------------------------------------------------------------
+    local extension = tools.getFileExtensionFromPath(filename)
+    if extension and extension == "fcpxmld" then
+        filename = filename .. "/Info.fcpxml"
+    end
 
-    local dtdPath = config.scriptPath .. "/cp/apple/fcpxml/dtd/" .. "FCPXMLv" .. major .. "_" .. minor .. ".dtd"
+    local dtdPath = config.scriptPath .. "/cp/apple/fcpxml/dtd/" .. "FCPXMLv" .. version.major .. "_" .. version.minor .. ".dtd"
 
     local _, status = execute([[xmllint --noout --dtdvalid "]] .. dtdPath .. [[" "]] .. filename .. [["]])
-    return status or false
+    return status and filename or nil
 end
 
 --------------------------------------------------------------------------------

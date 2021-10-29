@@ -433,18 +433,19 @@ local function callback(id, params)
             if not doesDirectoryExist(mod.lastFCPXMLPath()) then
                 mod.lastFCPXMLPath(desktopPath)
             end
-            local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLTemplate") .. ":", mod.lastFCPXMLPath(), true, false, false, {"fcpxml"}, true)
+            local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLTemplate") .. ":", mod.lastFCPXMLPath(), true, false, false, {"fcpxml", "fcpxmld"}, true)
             local path = result and result["1"]
             if path then
-                if fcpxml.valid(path) then
+                local fcpxmlPath = fcpxml.valid(path)
+                if fcpxmlPath then
                     mod.lastFCPXMLPath(removeFilenameFromPath(path))
-                    xmlPath = path
+                    xmlPath = fcpxmlPath
                     originalFilename = getFilenameFromPath(path, true)
 
                     data = {} -- Reset data.
                     count = 1 -- Reset count.
 
-                    local document = xml.open(path)
+                    local document = xml.open(fcpxmlPath)
                     local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
                     local spineChildren = spine and spine[1] and spine[1]:children()
                     getTitles(spineChildren)
@@ -475,14 +476,15 @@ local function callback(id, params)
             ---------------------------------------------------
             -- Process the FCPXML:
             ---------------------------------------------------
-            if fcpxml.valid(path) then
-                xmlPath = path
+            local fcpxmlPath = fcpxml.valid(path)
+            if fcpxmlPath then
+                xmlPath = fcpxmlPath
                 originalFilename = "Dragged FCPXML"
 
                 data = {} -- Reset data.
                 count = 1 -- Reset count.
 
-                local document = xml.open(path)
+                local document = xml.open(fcpxmlPath)
                 local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
                 local spineChildren = spine and spine[1] and spine[1]:children()
                 getTitles(spineChildren)
