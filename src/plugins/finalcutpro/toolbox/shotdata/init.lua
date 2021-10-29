@@ -552,11 +552,12 @@ end
 --  * None
 local function processFCPXML(path)
     if path then
-        if fcpxml.valid(path) then
+        local fcpxmlPath = fcpxml.valid(path)
+        if fcpxmlPath then
             --------------------------------------------------------------------------------
             -- Open the FCPXML:
             --------------------------------------------------------------------------------
-            local document = xml.open(path)
+            local document = xml.open(fcpxmlPath)
 
             --------------------------------------------------------------------------------
             -- Process Resources:
@@ -760,7 +761,7 @@ local function convertFCPXMLtoCSV()
     if not doesDirectoryExist(mod.lastOpenPath()) then
         mod.lastOpenPath(desktopPath)
     end
-    local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLFileToConvert") .. ":", mod.lastOpenPath(), true, false, false, {"fcpxml"}, true)
+    local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLFileToConvert") .. ":", mod.lastOpenPath(), true, false, false, {"fcpxml", "fcpxmld"}, true)
     local path = result and result["1"]
     if path then
         originalFilename = getFilenameFromPath(path, true)
