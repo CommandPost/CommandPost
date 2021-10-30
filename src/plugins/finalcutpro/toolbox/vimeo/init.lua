@@ -155,7 +155,6 @@ local function sendVimeoCSVToFinalCutProX()
         --------------------------------------------------------------------------------
         -- Include any replies:
         --------------------------------------------------------------------------------
-        local reply = rowData[6]
         if mod.includeReplies() then
             local replies = ""
             local replyCount = 0

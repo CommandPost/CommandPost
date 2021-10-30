@@ -2029,7 +2029,7 @@ function tools.fromCSV(s)
     repeat
         -- next field is quoted? (start with `"'?)
         if string.find(s, '^"', fieldstart) then
-            local a, c
+            local a, c -- luacheck: ignore
             local i  = fieldstart
             repeat
                 -- find closing quote
