@@ -884,7 +884,7 @@ end
 --- Returns:
 ---  * A boolean value indicating whether the AppleScript succeeded or not
 function fcp:importXML(path)
-    if self:isRunning() then
+    --if self:isRunning() then
         local appleScript = [[
             set whichSharedXMLPath to "]] .. path .. [["
             tell application "Final Cut Pro"
@@ -894,7 +894,7 @@ function fcp:importXML(path)
         ]]
         local bool, _, _ = osascript.applescript(appleScript)
         return bool
-    end
+    --end
 end
 
 --- cp.apple.finalcutpro:openAndSavePanelDefaultPath <cp.prop: string>
