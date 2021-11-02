@@ -137,52 +137,57 @@ local function sendVimeoCSVToFinalCutProX()
         local seconds = times[3]
 
         --------------------------------------------------------------------------------
-        -- Include the username:
+        -- Skip any CSV lines that don't have hours, minutes and seconds:
         --------------------------------------------------------------------------------
-        if mod.includeUsername() then
-            if rowData[4] ~= "" then
-                note = "[" .. rowData[4] .. "]: " .. note
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Include Date Added:
-        --------------------------------------------------------------------------------
-        if mod.includeDateAdded() then
-           note = note .. " (" .. rowData[7] .. ")"
-        end
-
-        --------------------------------------------------------------------------------
-        -- Include any replies:
-        --------------------------------------------------------------------------------
-        if mod.includeReplies() then
-            local replies = ""
-            local replyCount = 0
-            for ii=i + 1, #dataLines do
-                local replyRowData = fromCSV(dataLines[ii])
-                local currentTimecode = replyRowData[3]
-                if timecode == currentTimecode then
-                    replyCount = replyCount + 1
-                    replies = replies .. ". [" .. i18n("reply") .. " " .. replyCount .. "]: " .. replyRowData[6]
-                    if mod.includeDateAdded() then
-                        replies = replies .. " (" .. rowData[7] .. ")"
-                    end
-                else
-                    break
+        if hours and minutes and seconds then
+            --------------------------------------------------------------------------------
+            -- Include the username:
+            --------------------------------------------------------------------------------
+            if mod.includeUsername() then
+                if rowData[4] ~= "" then
+                    note = "[" .. rowData[4] .. "]: " .. note
                 end
             end
-            note = note .. replies
+
+            --------------------------------------------------------------------------------
+            -- Include Date Added:
+            --------------------------------------------------------------------------------
+            if mod.includeDateAdded() then
+               note = note .. " (" .. rowData[7] .. ")"
+            end
+
+            --------------------------------------------------------------------------------
+            -- Include any replies:
+            --------------------------------------------------------------------------------
+            if mod.includeReplies() then
+                local replies = ""
+                local replyCount = 0
+                for ii=i + 1, #dataLines do
+                    local replyRowData = fromCSV(dataLines[ii])
+                    local currentTimecode = replyRowData[3]
+                    if timecode == currentTimecode then
+                        replyCount = replyCount + 1
+                        replies = replies .. ". [" .. i18n("reply") .. " " .. replyCount .. "]: " .. replyRowData[6]
+                        if mod.includeDateAdded() then
+                            replies = replies .. " (" .. rowData[7] .. ")"
+                        end
+                    else
+                        break
+                    end
+                end
+                note = note .. replies
+            end
+
+            --------------------------------------------------------------------------------
+            -- Calculate Start Time:
+            --------------------------------------------------------------------------------
+            totalSeconds = (tonumber(hours) * 3600) + (tonumber(minutes) * 60) + tonumber(seconds) + videoStartTime
+
+            --------------------------------------------------------------------------------
+            -- Generate the Marker FCPXML:
+            --------------------------------------------------------------------------------
+            fcpxmlMiddle = fcpxmlMiddle .. [[                                <marker start="]] .. totalSeconds .. [[s" duration="100/2500s" value="]] .. escapeXML(note) .. [[" completed="]] .. completed .. [["/>]] .. "\n"
         end
-
-        --------------------------------------------------------------------------------
-        -- Calculate Start Time:
-        --------------------------------------------------------------------------------
-        totalSeconds = (tonumber(hours) * 3600) + (tonumber(minutes) * 60) + tonumber(seconds) + videoStartTime
-
-        --------------------------------------------------------------------------------
-        -- Generate the Marker FCPXML:
-        --------------------------------------------------------------------------------
-        fcpxmlMiddle = fcpxmlMiddle .. [[                                <marker start="]] .. totalSeconds .. [[s" duration="100/2500s" value="]] .. escapeXML(note) .. [[" completed="]] .. completed .. [["/>]] .. "\n"
     end
 
     --------------------------------------------------------------------------------
