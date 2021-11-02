@@ -364,7 +364,8 @@ function mod.refresh()
         setStatusLights(device, statusLights.orange, statusLights.green, statusLights.blue)
 
         --------------------------------------------------------------------------------
-        -- Only update if we need to:
+        -- We only update the LEDs if they actually need changing (to avoid messing
+        -- up any LED animation cycles):
         --------------------------------------------------------------------------------
         if currentMode == "User Defined" then
             --------------------------------------------------------------------------------
@@ -437,8 +438,16 @@ function mod.refresh()
                 device:backlightsCustom(customColors)
             end
 
+            --------------------------------------------------------------------------------
+            -- Cache the colour matrix, so we don't send it more than once:
+            --------------------------------------------------------------------------------
             cachedCustomColors[deviceName] = copy(customColors)
-        elseif not cachedLedMode[deviceName] == currentMode then
+        elseif not (cachedLedMode[deviceName] == currentMode) then
+            --------------------------------------------------------------------------------
+            -- Kill the custom colours cache:
+            --------------------------------------------------------------------------------
+            cachedCustomColors[deviceName] = {}
+
             if currentMode == "Off" then
                 --------------------------------------------------------------------------------
                 -- Off:
@@ -492,6 +501,9 @@ function mod.refresh()
             end
         end
 
+        --------------------------------------------------------------------------------
+        -- Cache the current LED mode ID:
+        --------------------------------------------------------------------------------
         cachedLedMode[deviceName] = currentMode
     end
 end
@@ -669,15 +681,22 @@ local function deviceCallback(connected, device)
         mod.devices[deviceName]:defaultKeyboardLayout(false)
         mod.devices[deviceName]:callback(razerCallback)
 
+        --------------------------------------------------------------------------------
         -- Reset the caches:
+        --------------------------------------------------------------------------------
         cachedStatusLights[deviceName] = {}
-        cachedLedMode[deviceName] = {}
         cachedCustomColors[deviceName] = {}
 
+        cachedLedMode[deviceName] = ""
+
+        --------------------------------------------------------------------------------
         -- Reset the status lights:
+        --------------------------------------------------------------------------------
         resetStatusLights(device)
 
+        --------------------------------------------------------------------------------
         -- Update the LEDs:
+        --------------------------------------------------------------------------------
         mod.refresh()
     else
         --------------------------------------------------------------------------------
