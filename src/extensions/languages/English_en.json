@@ -141,6 +141,7 @@
     "backToFront9": "Bak2Front",
     "backupInterval": "Backup Interval",
     "backupMinimumDuration": "Backup Minimum Duration",
+    "badCSVFileForVimeoToolbox": "This CSV file does not contain the contents we expect from Vimeo.\n\nPlease check the contents of the file and try again.\n\nIf you're still having issues importing a CSV file from Vimeo, please contact the CommandPost developers.",
     "badLoupedeckIcon": "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) can be dragged and dropped here.",
     "badLoupedeckIconTip": "However, you can click the Drop Zone to import the icons from Application files.",
     "badStreamDeckIcon": "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are allowed as Stream Deck icons.",

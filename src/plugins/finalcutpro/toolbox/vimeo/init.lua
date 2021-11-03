@@ -15,10 +15,11 @@ local i18n                      = require "cp.i18n"
 local text                      = require "cp.web.text"
 local tools                     = require "cp.tools"
 
+local csv                       = require "csv"
+
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeXML                 = text.escapeXML
-local fromCSV                   = tools.fromCSV
 local lines                     = tools.lines
 local readFromFile              = tools.readFromFile
 local removeFilenameFromPath    = tools.removeFilenameFromPath
@@ -26,6 +27,11 @@ local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
+
+-- VIMEO_CSV_HEADER -> table
+-- Constant
+-- A table of the header items in a Vimeo CSV.
+local VIMEO_CSV_HEADER = {"Video Version","#","Timecode","Username","Note","Reply","Date Added","Resolved"}
 
 -- desktopPath -> string
 -- Constant
@@ -78,14 +84,29 @@ local function sendVimeoCSVToFinalCutProX()
     --------------------------------------------------------------------------------
     -- Read the CSV file:
     --------------------------------------------------------------------------------
-    local data = readFromFile(path)
-    local dataLines = data and lines(data) or {}
+    local data = csv.open(path, {header=true})
+    if not data then
+        webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
+        return
+    end
 
     --------------------------------------------------------------------------------
-    -- Make sure the CSV is in the format we expect:
+    -- Make sure the first line has valid columns:
     --------------------------------------------------------------------------------
-    if not dataLines[1] == [["Video Version","#","Timecode","Username","Note","Reply","Date Added","Resolved"]] or not dataLines[2] then
-        webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("pleaseCheckTheContentsOfTheCSVFileAndTryAgain"), i18n("ok"), nil, "warning")
+    local valid = true
+    for line in data:lines() do
+        for _, v in pairs(VIMEO_CSV_HEADER) do
+            if not line[v] then
+                valid = false
+                break
+            end
+        end
+        if not valid then
+            break
+        end
+    end
+    if not valid then
+        webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
         return
     end
 
@@ -98,38 +119,36 @@ local function sendVimeoCSVToFinalCutProX()
     local totalSeconds = 0
 
     --------------------------------------------------------------------------------
-    -- Process each line:
+    -- Put the results into an ordered table:
     --------------------------------------------------------------------------------
-    for i=2, #dataLines do
-        --------------------------------------------------------------------------------
-        -- Make sure each row has 8 columns:
-        --------------------------------------------------------------------------------
-        local rowData = fromCSV(dataLines[i])
-        if not #rowData == 8 then
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("pleaseCheckTheContentsOfTheCSVFileAndTryAgain"), i18n("ok"), nil, "warning")
-            return
-        end
+    local results = {}
+    local counter = 1
+    for line in data:lines() do
+        results[counter] = line
+        counter = counter + 1
+    end
 
+    --------------------------------------------------------------------------------
+    -- Process the results:
+    --------------------------------------------------------------------------------
+    for i, line in tools.spairs(results) do
         --------------------------------------------------------------------------------
         -- Handle Note:
         --------------------------------------------------------------------------------
-        local note = rowData[5]
+        local note = line["Note"]
 
         --------------------------------------------------------------------------------
         -- Handled Completed Tag:
         --------------------------------------------------------------------------------
-        local completed = "0"
-        if rowData[8] == "Yes" then
-            completed = "1"
-        end
+        local completed = (line["Resolved"] == "Yes") and "1" or "0"
 
         --------------------------------------------------------------------------------
         -- Handle Timecode:
         --------------------------------------------------------------------------------
-        local timecode = rowData[3]
+        local timecode = line["Timecode"]
         local times = timecode:split(":")
         if not #times == 3 then
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("pleaseCheckTheContentsOfTheCSVFileAndTryAgain"), i18n("ok"), nil, "warning")
+            webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
             return
         end
         local hours = times[1]
@@ -144,8 +163,9 @@ local function sendVimeoCSVToFinalCutProX()
             -- Include the username:
             --------------------------------------------------------------------------------
             if mod.includeUsername() then
-                if rowData[4] ~= "" then
-                    note = "[" .. rowData[4] .. "]: " .. note
+                local username = line["Username"]
+                if username and username ~= "" then
+                    note = "[" .. username .. "]: " .. note
                 end
             end
 
@@ -153,7 +173,10 @@ local function sendVimeoCSVToFinalCutProX()
             -- Include Date Added:
             --------------------------------------------------------------------------------
             if mod.includeDateAdded() then
-               note = note .. " (" .. rowData[7] .. ")"
+                local dateAdded = line["Date Added"]
+                if dateAdded and dateAdded ~= "" then
+                    note = note .. " (" .. dateAdded .. ")"
+                end
             end
 
             --------------------------------------------------------------------------------
@@ -162,17 +185,23 @@ local function sendVimeoCSVToFinalCutProX()
             if mod.includeReplies() then
                 local replies = ""
                 local replyCount = 0
-                for ii=i + 1, #dataLines do
-                    local replyRowData = fromCSV(dataLines[ii])
-                    local currentTimecode = replyRowData[3]
-                    if timecode == currentTimecode then
-                        replyCount = replyCount + 1
-                        replies = replies .. ". [" .. i18n("reply") .. " " .. replyCount .. "]: " .. replyRowData[6]
-                        if mod.includeDateAdded() then
-                            replies = replies .. " (" .. rowData[7] .. ")"
+                for ii=i + 1, #results do
+                    local replyData = results[ii]
+                    if replyData then
+                        local currentTimecode = replyData["Timecode"]
+                        if timecode == currentTimecode then
+                            replyCount = replyCount + 1
+                            local reply = replyData["Reply"]
+                            local dataAdded = replyData["Date Added"]
+                            if reply and reply ~= "" then
+                                replies = replies .. ". [" .. i18n("reply") .. " " .. replyCount .. "]: " .. replyData["Reply"]
+                                if mod.includeDateAdded() and dataAdded and dataAdded ~= "" then
+                                    replies = replies .. " (" ..dataAdded .. ")"
+                                end
+                            end
+                        else
+                            break
                         end
-                    else
-                        break
                     end
                 end
                 note = note .. replies
