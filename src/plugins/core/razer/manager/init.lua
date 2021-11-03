@@ -272,21 +272,30 @@ local function setStatusLights(device, orange, green, blue)
     end
 end
 
---- plugins.core.razer.manager.refresh() -> none
+--- plugins.core.razer.manager.refresh(trashCache) -> none
 --- Function
 --- Refreshes the LEDs on a Razer device.
 ---
 --- Parameters:
----  * None
+---  * trashCache - an optional boolean to trash the LED cache
 ---
 --- Returns:
 ---  * None
-function mod.refresh()
+function mod.refresh(trashCache)
     for _, device in pairs(mod.devices) do
+        --------------------------------------------------------------------------------
+        -- Check if we should trash the cache:
+        --------------------------------------------------------------------------------
+        local deviceName = device:name()
+        if trashCache then
+			cachedStatusLights[deviceName] = {}
+			cachedCustomColors[deviceName] = {}
+			cachedLedMode[deviceName] = ""
+		end
+
         --------------------------------------------------------------------------------
         -- Get settings from preferences:
         --------------------------------------------------------------------------------
-        local deviceName = device:name()
         local backlightsMode = mod.backlightsMode()
         local currentMode = backlightsMode[deviceName]
 
@@ -686,7 +695,6 @@ local function deviceCallback(connected, device)
         --------------------------------------------------------------------------------
         cachedStatusLights[deviceName] = {}
         cachedCustomColors[deviceName] = {}
-
         cachedLedMode[deviceName] = ""
 
         --------------------------------------------------------------------------------

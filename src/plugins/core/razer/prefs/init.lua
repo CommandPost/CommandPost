@@ -1367,7 +1367,7 @@ function plugin.init(deps, env)
                                     local backlightsMode = mod._razerManager.backlightsMode()
                                     backlightsMode[device] = params.value
                                     mod._razerManager.backlightsMode(backlightsMode)
-                                    mod._razerManager.refresh()
+                                    mod._razerManager.refresh(true)
                                 end,
             }
         )
@@ -1413,7 +1413,7 @@ function plugin.init(deps, env)
                                     local backlightBrightness = mod._razerManager.backlightBrightness()
                                     backlightBrightness[device] = params.value
                                     mod._razerManager.backlightBrightness(backlightBrightness)
-                                    mod._razerManager.refresh()
+                                    mod._razerManager.refresh(true)
                                 end,
             }
         )
@@ -1432,7 +1432,7 @@ function plugin.init(deps, env)
                                     local backlightEffectColorA = mod._razerManager.backlightEffectColorA()
                                     backlightEffectColorA[device] = params.value
                                     mod._razerManager.backlightEffectColorA(backlightEffectColorA)
-                                    mod._razerManager.refresh()
+                                    mod._razerManager.refresh(true)
                                 end,
             }
         )
@@ -1451,7 +1451,7 @@ function plugin.init(deps, env)
                                     local backlightEffectColorB = mod._razerManager.backlightEffectColorB()
                                     backlightEffectColorB[device] = params.value
                                     mod._razerManager.backlightEffectColorB(backlightEffectColorB)
-                                    mod._razerManager.refresh()
+                                    mod._razerManager.refresh(true)
                                 end,
             }
         )
@@ -1478,7 +1478,7 @@ function plugin.init(deps, env)
                                     local backlightEffectDirection = mod._razerManager.backlightEffectDirection()
                                     backlightEffectDirection[device] = params.value
                                     mod._razerManager.backlightEffectDirection(backlightEffectDirection)
-                                    mod._razerManager.refresh()
+                                    mod._razerManager.refresh(true)
                                 end,
             }
         )
@@ -1534,7 +1534,7 @@ function plugin.init(deps, env)
                                     local backlightEffectSpeed = mod._razerManager.backlightEffectSpeed()
                                     backlightEffectSpeed[device] = params.value
                                     mod._razerManager.backlightEffectSpeed(backlightEffectSpeed)
-                                    mod._razerManager.refresh()
+                                    mod._razerManager.refresh(true)
                                 end,
             }
         )
