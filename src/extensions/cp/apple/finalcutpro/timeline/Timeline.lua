@@ -452,6 +452,19 @@ function Timeline.lazy.value:skimmingPlayhead()
     return self.contents.skimmingPlayhead
 end
 
+--- cp.apple.finalcutpro.timeline.Timeline:activePlayhead() -> Playhead
+--- Method
+--- Returns the active Playhead. If the Skimming Playhead is available, return that, otherwise, return the normal Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The active `Playhead`.
+function Timeline:activePlayhead()
+    return self.skimmingPlayhead:isShowing() and self.skimmingPlayhead or self.playhead
+end
+
 --- cp.apple.finalcutpro.timeline.Timeline.toolbar <Toolbar>
 --- Field
 --- The bar at the top of the timeline.

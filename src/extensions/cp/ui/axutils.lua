@@ -12,6 +12,7 @@ local geometry      = require "hs.geometry"
 
 local is            = require "cp.is"
 local prop          = require "cp.prop"
+local tools         = require "cp.tools"
 
 local sort          = table.sort
 
@@ -830,5 +831,58 @@ function axutils.match.role(roleName)
         return axutils.hasAttributeValue(element, "AXRole", roleName)
     end
 end
+
+--- cp.ui.axutils.match.exactly(value) -> function
+--- Function
+--- Returns a `match` function that will return true if the `axuielement` matches the provided value exactly.
+---
+--- Parameters:
+---  * value  - The value to check for.
+---
+--- Returns:
+---  * `function(element) -> boolean` that checks the value matches exactly.
+function axutils.match.exactly(value)
+    return function(element)
+        return element == value
+    end
+end
+
+--- cp.ui.axutils.match.emptyList(element) -> function
+--- Function
+--- Returns a `match` function that will return true if `element` is an empty list, or has no children.
+---
+--- Parameters:
+---  * element  - The `axuielement` to check.
+---
+--- Returns:
+---  * `true` if the element is an empty list.
+function axutils.match.emptyList(element)
+    return element and #element == 0
+end
+
+
+-- cp.ui.axutils.match.containsOnly(values) -> function
+-- Function
+-- Returns a "match" function which will check its input value to see if it is a table which contains the same values in any order.
+--
+-- Parameters:
+-- * values     - A [Set](cp.collect.Set.md) or `table` specifying exactly what items must be in the matching table, in any order.
+--
+-- Returns:
+-- * A `function` that will accept a single input value, which will only return `true` the input is a `table` containing exactly the items in `values` in any order.
+function axutils.match.containsOnly(values)
+    return function(other)
+        if other and values and #other == #values then
+            for _,v in ipairs(other) do
+                if not tools.tableContains(values, v) then
+                    return false
+                end
+            end
+            return true
+        end
+        return false
+    end
+end
+
 
 return axutils

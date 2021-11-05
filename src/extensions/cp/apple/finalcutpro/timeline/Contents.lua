@@ -19,6 +19,7 @@ local Playhead							= require "cp.apple.finalcutpro.main.Playhead"
 local go                                = require "cp.rx.go"
 local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 
+local emptyList                         = axutils.match.emptyList
 
 local Contents = Element:subclass("cp.apple.finalcutpro.timeline.Contents")
 
@@ -397,6 +398,13 @@ function Contents:_expandClips(clips, filterFn)
     end)
 end
 
+function Contents:selectNone()
+    local ui = self:UI()
+    if ui then
+        self:app():selectMenu({"Edit", "Deselect All"})
+    end
+end
+
 -- TODO: Add documentation
 function Contents:selectClips(clipsUI)
     local ui = self:UI()
@@ -438,6 +446,27 @@ local function containsOnly(values)
     end
 end
 
+--- cp.apple.finalcutpro.timeline.Contents:doSelectNone() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will clear any clip selection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function Contents.lazy.method:doSelectNone()
+    return If(self.selectedChildren):Then(function(selectedChildren)
+        if #selectedChildren > 0 then
+            return self:app():doSelectMenu({"Edit", "Deselect All"})
+        end
+        return true
+    end)
+    :Then(WaitUntil(self.selectedChildren):Matches(emptyList))
+    :TimeoutAfter(2000)
+    :Label("cp.apple.finalcutpro.timeline.contents:doSelectNone")
+end
+
 --- cp.apple.finalcutpro.timeline.Contents:doSelectClips(clipsUI) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs.axuielement` values in the Timeline Contents area.
@@ -471,7 +500,8 @@ end
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
 function Contents:doSelectClip(clipUI)
-    return self:doSelectClips({clipUI})
+    local clipsUI = clipUI and {clipUI} or {}
+    return self:doSelectClips(clipsUI)
     :Label("cp.apple.finalcutpro.timeline.Contents:doSelectClip(clipUI)")
 end
 
