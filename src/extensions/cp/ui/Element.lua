@@ -432,6 +432,7 @@ end
 
 function Element.lazy.method:doSaveLayout()
     return Do(function() return self:saveLayout() end)
+    :Label("cp.ui.Element:doSaveLayout()")
 end
 
 --- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement

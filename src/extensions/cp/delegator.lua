@@ -240,7 +240,7 @@ end
 local function _getNewSubclassMethod(prevSubclass)
     return function(klass, name)
         local subclass = prevSubclass(klass, name)
-        _initDelegated(subclass, klass.static[DELEGATES])
+        _initDelegated(subclass)
         _modifyInstanceIndex(subclass)
         return subclass
     end
