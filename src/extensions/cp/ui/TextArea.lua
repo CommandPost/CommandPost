@@ -53,13 +53,6 @@ function TextArea.lazy.prop:value()
     )
 end
 
---- cp.ui.TextArea.focused <cp.prop: boolean>
---- Field
---- Whether or not the Text Area if focused.
-function TextArea.lazy.prop:focused()
-    return axutils.prop(self.UI, "AXFocused", true)
-end
-
 --- cp.ui.TextArea:append(moreText) -> string
 --- Method
 --- Appends `moreText` to the end of the current value, returning the combined text value. If no text is currently set, `moreText` becomes the value.

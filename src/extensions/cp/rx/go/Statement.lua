@@ -815,11 +815,11 @@ function Statement.Modifier.Definition.mt:define()
         end
 
         -- allows an existing modifier to be applied to this Statement.Modifier.
-        function statement.allow(modifier, ...)
+        function statement.allow(modifier)
             if not Statement.Modifier.Definition.is(modifier) then
                 error(format("Parameter #1 must be a Statement.Modifier Definition but was: %s", inspect(modifier)))
             end
-            return Statement.Modifier.Definition.allow(statement, modifier, ...)
+            return Statement.Modifier.Definition.allow(statement, modifier)
         end
 
         setmetatable(statement, {

@@ -140,42 +140,37 @@ function ControlBar.lazy.prop:timecode()
             local shortcuts = self:app():getCommandShortcuts("PasteTimecode")
             if shortcuts and #shortcuts > 0 then
                 --------------------------------------------------------------------------------
-                -- Use "Paste Timecode" method:
+                -- Get current Pasteboard Contents:
                 --------------------------------------------------------------------------------
-                if timecodeValue then
-                    --------------------------------------------------------------------------------
-                    -- Get current Pasteboard Contents:
-                    --------------------------------------------------------------------------------
-                    local originalPasteboard = pasteboard.getContents()
+                local originalPasteboard = pasteboard.getContents()
 
-                    --------------------------------------------------------------------------------
-                    -- Set Pasteboard Contents to timecode value we want to go to:
-                    --------------------------------------------------------------------------------
-                    pasteboard.setContents(timecodeValue)
+                --------------------------------------------------------------------------------
+                -- Set Pasteboard Contents to timecode value we want to go to:
+                --------------------------------------------------------------------------------
+                pasteboard.setContents(timecodeValue)
 
-                    --------------------------------------------------------------------------------
-                    -- Wait until the timecode is on the pasteboard:
-                    --------------------------------------------------------------------------------
-                    local pasteboardReady = doUntil(function()
-                        return pasteboard.getContents() == timecodeValue
-                    end, 5)
+                --------------------------------------------------------------------------------
+                -- Wait until the timecode is on the pasteboard:
+                --------------------------------------------------------------------------------
+                local pasteboardReady = doUntil(function()
+                    return pasteboard.getContents() == timecodeValue
+                end, 5)
 
-                    if not pasteboardReady then
-                        log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to add timecode to pasteboard.")
-                        return
-                    else
-                        local app = self:app():application()
-                        shortcuts[1]:trigger(app)
-                    end
+                if not pasteboardReady then
+                    log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to add timecode to pasteboard.")
+                    return
+                else
+                    local app = self:app():application()
+                    shortcuts[1]:trigger(app)
+                end
 
-                    --------------------------------------------------------------------------------
-                    -- Restore Original Pasteboard Contents:
-                    --------------------------------------------------------------------------------
-                    if originalPasteboard then
-                        doAfter(0.1, function()
-                            pasteboard.setContents(originalPasteboard)
-                        end)
-                    end
+                --------------------------------------------------------------------------------
+                -- Restore Original Pasteboard Contents:
+                --------------------------------------------------------------------------------
+                if originalPasteboard then
+                    doAfter(0.1, function()
+                        pasteboard.setContents(originalPasteboard)
+                    end)
                 end
             else
                 --------------------------------------------------------------------------------
