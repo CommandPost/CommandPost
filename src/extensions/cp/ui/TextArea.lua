@@ -4,7 +4,6 @@
 
 local require = require
 
-local axutils   = require "cp.ui.axutils"
 local Element   = require "cp.ui.Element"
 
 --- cp.ui.TextArea(parent, uiFinder) -> TextArea

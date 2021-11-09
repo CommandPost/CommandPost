@@ -7,7 +7,6 @@ local require = require
 -- local log                       = require "hs.logger" .new "TextField"
 
 local go                        = require "cp.rx.go"
-local axutils                   = require "cp.ui.axutils"
 local Element                   = require "cp.ui.Element"
 
 local If                        = go.If
