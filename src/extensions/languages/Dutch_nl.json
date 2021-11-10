@@ -142,6 +142,7 @@
     "backlightsMode": "Achtergrondverlichtingsmodus",
     "backupInterval": "Back-up interval",
     "backupMinimumDuration": "Minimale Back-up tijd",
+    "badCSVFileForVimeoToolbox": "Dit CSV-bestand bevat niet de inhoud die we van Vimeo verwachten.\n\nControleer de inhoud van het bestand en probeer het opnieuw.\n\nAls je nog steeds problemen hebt met het importeren van een CSV-bestand uit Vimeo, neem dan contact op met de CommandPost-ontwikkelaars.",
     "badLoupedeckIcon": "Alleen ondersteunde afbeeldingsbestanden (JPEG, PNG, TIFF, GIF of BMP) kunnen hier worden gesleept en neergezet.",
     "badLoupedeckIconTip": "U kunt echter op de neerzetzone klikken om de pictogrammen uit toepassingsbestanden te importeren.",
     "badStreamDeckIcon": "Alleen ondersteunde afbeeldingsbestanden (JPEG, PNG, TIFF, GIF of BMP) worden ondersteund als Stream Deck-pictogrammen.",
