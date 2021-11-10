@@ -142,6 +142,7 @@
     "backlightsMode": "وضع الإضاءة الخلفية",
     "backupInterval": "الفاصل الزمني النسخ الاحتياطي",
     "backupMinimumDuration": "النسخ الاحتياطي مدة الحد الأدنى",
+    "badCSVFileForVimeoToolbox": "لا يحتوي ملف CSV هذا على المحتويات التي نتوقعها من Vimeo.\n\nيرجى التحقق من محتويات الملف والمحاولة مرة أخرى.\n\nإذا كنت لا تزال تواجه مشكلات في استيراد ملف CSV من Vimeo ، فيرجى الاتصال بمطوري CommandPost.",
     "badLoupedeckIcon": "يمكن سحب ملفات الصور المدعومة فقط (JPEG أو PNG أو TIFF أو GIF أو BMP) وإفلاتها هنا.",
     "badLoupedeckIconTip": "ومع ذلك ، يمكنك النقر فوق منطقة الإسقاط لاستيراد الرموز من ملفات التطبيق.",
     "badStreamDeckIcon": "يتم دعم ملفات الصور المدعومة فقط (JPEG أو PNG أو TIFF أو GIF أو BMP) كأيقونات Stream Deck.",
