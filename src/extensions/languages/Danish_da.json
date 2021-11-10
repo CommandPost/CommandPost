@@ -142,6 +142,7 @@
     "backlightsMode": "Baggrundsbelysningstilstand",
     "backupInterval": "Backup-interval",
     "backupMinimumDuration": "Sikkerhedskopi Minimum Varighed",
+    "badCSVFileForVimeoToolbox": "Denne CSV-fil indeholder ikke det indhold, vi forventer fra Vimeo.\n\nTjek venligst indholdet af filen og prøv igen.\n\nHvis du stadig har problemer med at importere en CSV-fil fra Vimeo, bedes du kontakte CommandPost-udviklerne.",
     "badLoupedeckIcon": "Kun understøttede billedfiler (JPEG, PNG, TIFF, GIF eller BMP) kan trækkes og slippes her.",
     "badLoupedeckIconTip": "Du kan dog klikke på Drop Zone for at importere ikonerne fra applikationsfiler.",
     "badStreamDeckIcon": "Kun understøttede billedfiler (JPEG, PNG, TIFF, GIF eller BMP) er tilladt som Stream Deck-ikoner.",
