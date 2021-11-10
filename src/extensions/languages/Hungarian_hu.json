@@ -142,6 +142,7 @@
     "backlightsMode": "Háttérvilágítás mód",
     "backupInterval": "Biztonsági mentési időköz",
     "backupMinimumDuration": "Biztonsági mentés minimális időtartama",
+    "badCSVFileForVimeoToolbox": "Ez a CSV-fájl nem tartalmazza azt a tartalmat, amelyet a Vimeótól várunk.\n\nKérjük, ellenőrizze a fájl tartalmát, és próbálja újra.\n\nHa továbbra is problémái vannak a CSV-fájl Vimeóból történő importálásával, forduljon a CommandPost fejlesztőihez.",
     "badLoupedeckIcon": "Csak a támogatott képfájlokat (JPEG, PNG, TIFF, GIF vagy BMP) lehet ide húzni.",
     "badLoupedeckIconTip": "Az ikonok alkalmazásfájlokból történő importálásához azonban rákattinthat a Dobási zónára.",
     "badStreamDeckIcon": "Csak a támogatott képfájlok (JPEG, PNG, TIFF, GIF vagy BMP) engedélyezettek adatfolyam-ikonként.",
