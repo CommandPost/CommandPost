@@ -142,7 +142,7 @@ function Viewer:initialize(app, eventViewer)
         Viewer.matches)
     end)
 
-    Group.initialize(self, app, UI, SplitGroup)
+    Group.initialize(self, app, UI)
 
     self._eventViewer = eventViewer
 
@@ -340,6 +340,36 @@ end
 --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
 function Viewer.lazy.prop:isPlaying()
     return self.controlBar.isPlaying
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer:doPlay() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will play the `Viewer`.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function Viewer.lazy.method:doPlay()
+    return If(self.isPlaying):Is(false)
+    :Then(function() self:isPlaying(true) end)
+    :Label("cp.apple.finalcutpro.viewer.Viewer:doPlay()")
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.doPause() -> cp.rx.go.Statement
+--- Method
+--- Pause the `Viewer`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function Viewer.lazy.method:doPause()
+    return If(self.isPlaying)
+    :Then(function() self:isPlaying(false) end)
+    :Label("cp.apple.finalcutpro.viewer.Viewer:doPause()")
 end
 
 -- PLAYER_QUALITY -> table
