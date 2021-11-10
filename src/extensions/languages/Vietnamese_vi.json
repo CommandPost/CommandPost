@@ -142,6 +142,7 @@
     "backlightsMode": "Chế độ đèn nền",
     "backupInterval": "Khoảng thời gian sao lưu",
     "backupMinimumDuration": "Thời lượng tối thiểu sao lưu",
+    "badCSVFileForVimeoToolbox": "Tệp CSV này không chứa nội dung chúng tôi mong đợi từ Vimeo.\n\nVui lòng kiểm tra nội dung của tệp và thử lại.\n\nNếu bạn vẫn gặp sự cố khi nhập tệp CSV từ Vimeo, vui lòng liên hệ với nhà phát triển CommandPost.",
     "badLoupedeckIcon": "Chỉ có thể kéo và thả các tệp hình ảnh được hỗ trợ (JPEG, PNG, TIFF, GIF hoặc BMP) tại đây.",
     "badLoupedeckIconTip": "Tuy nhiên, bạn có thể nhấp vào Vùng thả để nhập các biểu tượng từ tệp Ứng dụng.",
     "badStreamDeckIcon": "Chỉ các tệp hình ảnh được hỗ trợ (JPEG, PNG, TIFF, GIF hoặc BMP) mới được hỗ trợ dưới dạng biểu tượng Stream Deck.",
