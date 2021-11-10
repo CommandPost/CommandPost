@@ -142,6 +142,7 @@
     "backlightsMode": "バックライトモード",
     "backupInterval": "バックアップ間隔",
     "backupMinimumDuration": "バックアップ最小期間",
+    "badCSVFileForVimeoToolbox": "このCSVファイルには、Vimeoに期待されるコンテンツが含まれていません。\n\nファイルの内容を確認して、再試行してください。\n\nそれでもVimeoからCSVファイルをインポートする際に問題が発生する場合は、CommandPost開発者に連絡してください。",
     "badLoupedeckIcon": "ここにドラッグアンドドロップできるのは、サポートされている画像ファイル（JPEG、PNG、TIFF、GIF、またはBMP）のみです。",
     "badLoupedeckIconTip": "ただし、ドロップゾーンをクリックして、アプリケーションファイルからアイコンをインポートすることはできます。",
     "badStreamDeckIcon": "サポートされている画像ファイル（JPEG、PNG、TIFF、GIF、またはBMP）のみがストリームデッキアイコンとしてサポートされています。",
