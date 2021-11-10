@@ -142,6 +142,7 @@
     "backlightsMode": "Tryb podświetlenia",
     "backupInterval": "Interwał tworzenia kopii zapasowych",
     "backupMinimumDuration": "Minimalny czas tworzenia kopii zapasowej",
+    "badCSVFileForVimeoToolbox": "Ten plik CSV nie zawiera treści, których oczekujemy od Vimeo.\n\nSprawdź zawartość pliku i spróbuj ponownie.\n\nJeśli nadal masz problemy z importowaniem pliku CSV z Vimeo, skontaktuj się z programistami CommandPost.",
     "badLoupedeckIcon": "Tutaj można przeciągać i upuszczać tylko obsługiwane pliki graficzne (JPEG, PNG, TIFF, GIF lub BMP).",
     "badLoupedeckIconTip": "Możesz jednak kliknąć strefę upuszczania, aby zaimportować ikony z plików aplikacji.",
     "badStreamDeckIcon": "Tylko obsługiwane pliki obrazów (JPEG, PNG, TIFF, GIF lub BMP) są dozwolone jako ikony Stream Deck.",
