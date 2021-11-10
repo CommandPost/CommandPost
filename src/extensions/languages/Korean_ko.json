@@ -142,6 +142,7 @@
     "backlightsMode": "백라이트 모드",
     "backupInterval": "백업 간격",
     "backupMinimumDuration": "백업 최소 기간",
+    "badCSVFileForVimeoToolbox": "이 CSV 파일에는 Vimeo에서 기대하는 내용이 포함되어 있지 않습니다.\n\n파일의 내용을 확인하고 다시 시도하십시오.\n\nVimeo에서 CSV 파일을 가져오는 데 여전히 문제가 있으면 CommandPost 개발자에게 문의하세요.",
     "badLoupedeckIcon": "지원되는 이미지 파일 (JPEG, PNG, TIFF, GIF 또는 BMP) 만 여기로 끌어서 놓을 수 있습니다.",
     "badLoupedeckIconTip": "그러나 드롭 존을 클릭하여 애플리케이션 파일에서 아이콘을 가져올 수 있습니다.",
     "badStreamDeckIcon": "지원되는 이미지 파일 (JPEG, PNG, TIFF, GIF 또는 BMP) 만 스트림 데크 아이콘으로 허용됩니다.",
