@@ -1,4 +1,7 @@
--- imports
+--- === plugins.finalcutpro.timeline.editnewtitle ===
+---
+--- Allows adding and editing titles in Final Cut Pro's timeline.
+
 local require = require
 
 local log               = require "hs.logger" .new "editnewtitle"
@@ -18,7 +21,6 @@ local playErrorSound    = tools.playErrorSound
 local Do                = go.Do
 local Throw             = go.Throw
 
--- local mod
 local mod = {}
 
 local skimmingBugVersion = v("10.5")
@@ -46,7 +48,7 @@ local doConnectLowerThird = Do(fcp:doSelectMenu({"Edit", "Connect Title", 2}))
 local _doEditNewTitle
 local _doEditNewLowerThird
 
---- finalcutpro.timeline.editnewtitle.doEditNewTitle() -> cp.rx.go.Statement
+--- plugins.finalcutpro.timeline.editnewtitle.doEditNewTitle() -> cp.rx.go.Statement
 --- Function
 --- Creates the new default title.
 ---
@@ -61,7 +63,7 @@ function mod.doEditNewTitle()
     return _doEditNewTitle
 end
 
---- finalcutpro.timeline.editnewtitle.doEditNewLowerThirds() -> cp.rx.go.Statement
+--- plugins.finalcutpro.timeline.editnewtitle.doEditNewLowerThirds() -> cp.rx.go.Statement
 --- Function
 --- Creates the new two-thirds title.
 ---
