@@ -70,9 +70,8 @@ function Element:initialize(parent, uiFinder)
         error "Expected either a cp.prop or function for uiFinder."
     end
 
-    prop.bind(self) {
-        UI = UI
-    }
+    self.UI = UI
+    UI:bind(self, "UI")
 
     if prop.is(parent.UI) then
         UI:monitor(parent.UI)
@@ -161,7 +160,7 @@ function Element:show()
     return self
 end
 
---- cp.ui.Element:focus() -> self
+--- cp.ui.Element:focus() -> self, boolean
 --- Method
 --- Attempt to set the focus on the element.
 ---
@@ -169,7 +168,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * self
+---  * self, boolean - the boolean indicates if the focus was set.
 function Element:focus()
     return self:setAttributeValue("AXFocused", true)
 end
@@ -185,6 +184,7 @@ end
 ---  * The `Statement`.
 function Element.lazy.method:doFocus()
     return self:doSetAttributeValue("AXFocused", true)
+    :Label("cp.ui.Element:doFocus()")
 end
 
 --- cp.ui.Element:attributeValue(id) -> anything, true | nil, false
@@ -319,7 +319,7 @@ end
 --- Field
 --- Returns `true` if the `AXFocused` attribute is `true`. Not always a reliable way to determine focus however.
 function Element.lazy.prop:isFocused()
-    return axutils.prop(self.UI, "AXFocused")
+    return axutils.prop(self.UI, "AXFocused", true)
 end
 
 --- cp.ui.Element.position <cp.prop: table; read-only; live?>
@@ -432,6 +432,7 @@ end
 
 function Element.lazy.method:doSaveLayout()
     return Do(function() return self:saveLayout() end)
+    :Label("cp.ui.Element:doSaveLayout()")
 end
 
 --- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement

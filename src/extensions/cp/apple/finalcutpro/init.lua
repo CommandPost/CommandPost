@@ -1065,6 +1065,21 @@ function fcp:getCommandShortcuts(id)
     return shortcuts
 end
 
+
+--- cp.apple.finalcutpro.isSkimmingEnabled <bool; live>
+--- Field
+--- Returns `true` if the skimming playhead is enabled for the application.
+function fcp.lazy.prop:isSkimmingEnabled()
+    return self.preferences:prop("FFDisableSkimming", false):NOT()
+end
+
+--- cp.apple.finalcutpro.isAudioScrubbingEnabled <bool; live>
+--- Field
+--- Returns `true` if the audio scrubbing is enabled for the application.
+function fcp.lazy.prop:isAudioScrubbingEnabled()
+    return self.preferences:prop("FFDisableAudioScrubbing", false):NOT()
+end
+
 --- cp.apple.finalcutpro:doShortcut(whichShortcut) -> Statement
 --- Method
 --- Perform a Final Cut Pro Keyboard Shortcut

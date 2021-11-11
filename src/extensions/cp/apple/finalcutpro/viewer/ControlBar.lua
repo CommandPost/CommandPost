@@ -5,7 +5,6 @@
 
 local log               = require "hs.logger" .new "ViewerCB"
 
-local canvas            = require "hs.canvas"
 local geometry          = require "hs.geometry"
 local pasteboard        = require "hs.pasteboard"
 local timer             = require "hs.timer"
@@ -44,24 +43,20 @@ function ControlBar.static.matches(element)
     if Group.matches(element) and #element >= 4 then
         -- Note: sorting right-to-left
         local children = axutils.children(element, rightToLeft)
-        return
-            (
-                -- Normal Control Bar:
-                #children >= 5
-                and Button.matches(children[1])
-                and Button.matches(children[2])
-                and StaticText.matches(children[3])
-                and Button.matches(children[4])
-                and Button.matches(children[5])
-            )
-            or
-            (
-                -- Timecode Entry Mode:
-                #children >= 4
-                and Button.matches(children[1])
-                and Button.matches(children[2])
-                and StaticText.matches(children[3])
-                and Image.matches(children[4])
+        return  Button.matches(children[1])
+            and Button.matches(children[2])
+            and StaticText.matches(children[3])
+            and (
+                (
+                    -- Normal Control Bar:
+                    Button.matches(children[4])
+                    and Button.matches(children[5])
+                )
+                or
+                (
+                    -- Timecode Entry Mode:
+                    Image.matches(children[4])
+                )
             )
     end
     return false
@@ -140,42 +135,37 @@ function ControlBar.lazy.prop:timecode()
             local shortcuts = self:app():getCommandShortcuts("PasteTimecode")
             if shortcuts and #shortcuts > 0 then
                 --------------------------------------------------------------------------------
-                -- Use "Paste Timecode" method:
+                -- Get current Pasteboard Contents:
                 --------------------------------------------------------------------------------
-                if timecodeValue then
-                    --------------------------------------------------------------------------------
-                    -- Get current Pasteboard Contents:
-                    --------------------------------------------------------------------------------
-                    local originalPasteboard = pasteboard.getContents()
+                local originalPasteboard = pasteboard.getContents()
 
-                    --------------------------------------------------------------------------------
-                    -- Set Pasteboard Contents to timecode value we want to go to:
-                    --------------------------------------------------------------------------------
-                    pasteboard.setContents(timecodeValue)
+                --------------------------------------------------------------------------------
+                -- Set Pasteboard Contents to timecode value we want to go to:
+                --------------------------------------------------------------------------------
+                pasteboard.setContents(timecodeValue)
 
-                    --------------------------------------------------------------------------------
-                    -- Wait until the timecode is on the pasteboard:
-                    --------------------------------------------------------------------------------
-                    local pasteboardReady = doUntil(function()
-                        return pasteboard.getContents() == timecodeValue
-                    end, 5)
+                --------------------------------------------------------------------------------
+                -- Wait until the timecode is on the pasteboard:
+                --------------------------------------------------------------------------------
+                local pasteboardReady = doUntil(function()
+                    return pasteboard.getContents() == timecodeValue
+                end, 5)
 
-                    if not pasteboardReady then
-                        log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to add timecode to pasteboard.")
-                        return
-                    else
-                        local app = self:app():application()
-                        shortcuts[1]:trigger(app)
-                    end
+                if not pasteboardReady then
+                    log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to add timecode to pasteboard.")
+                    return
+                else
+                    local app = self:app():application()
+                    shortcuts[1]:trigger(app)
+                end
 
-                    --------------------------------------------------------------------------------
-                    -- Restore Original Pasteboard Contents:
-                    --------------------------------------------------------------------------------
-                    if originalPasteboard then
-                        doAfter(0.1, function()
-                            pasteboard.setContents(originalPasteboard)
-                        end)
-                    end
+                --------------------------------------------------------------------------------
+                -- Restore Original Pasteboard Contents:
+                --------------------------------------------------------------------------------
+                if originalPasteboard then
+                    doAfter(0.1, function()
+                        pasteboard.setContents(originalPasteboard)
+                    end)
                 end
             else
                 --------------------------------------------------------------------------------
@@ -266,67 +256,27 @@ end
 --- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
 --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
 function ControlBar.lazy.prop:isPlaying()
+    local playButton = self.playButton
     return prop(
         function()
-            local element = self.playButton:UI()
-            if element then
-                local window = element:attributeValue("AXWindow")
-                if window then
-                    local hsWindow = window:asHSWindow()
-                    local windowSnap = hsWindow and hsWindow:snapshot()
-
-                    if not windowSnap then
-                        log.ef("[cp.apple.finalcutpro.main.ControlBar.isPlaying] Snapshot could not be captured, so aborting.")
-                        return
-                    end
-
-                    local windowFrame = window and window:attributeValue("AXFrame")
-                    local shotSize = windowSnap and windowSnap:size()
-
-                    local ratio = shotSize and windowFrame and shotSize.h/windowFrame.h
-                    local elementFrame = element and element:attributeValue("AXFrame")
-
-                    if not elementFrame then return end
-
-                    local imageFrame = {
-                        x = (windowFrame.x-elementFrame.x)*ratio,
-                        y = (windowFrame.y-elementFrame.y)*ratio,
-                        w = shotSize.w,
-                        h = shotSize.h,
-                    }
-
-                    local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-                    c[1] = {
-                        type = "image",
-                        image = windowSnap,
-                        imageScaling = "none",
-                        imageAlignment = "topLeft",
-                        frame = imageFrame,
-                    }
-
-                    local elementSnap = c:imageFromCanvas()
-                    c:delete()
-                    c = nil -- luacheck: ignore
-
-                    if elementSnap then
-                        elementSnap:size({h=60,w=60})
-                        local spot = elementSnap:colorAt({x=31,y=31})
-                        return spot and spot.blue < 0.5
-                    end
-                end
+            local elementSnap = playButton:snapshot()
+            if elementSnap then
+                elementSnap:size({h=60,w=60})
+                local spot = elementSnap:colorAt({x=31,y=31})
+                return spot and spot.blue < 0.5
             end
             return false
         end,
-        function(newValue, owner, thisProp)
+        function(newValue, _, thisProp)
             local currentValue = thisProp:value()
             if newValue ~= currentValue then
-                owner:playButton():press()
+                playButton:press()
             end
         end
     )
 end
 
---- cp.apple.finalcutpro.viewer.playButton <cp.ui.Image>
+--- cp.apple.finalcutpro.viewer.playImage <cp.ui.Image>
 --- Field
 --- Play Image.
 function ControlBar.lazy.value:playImage()

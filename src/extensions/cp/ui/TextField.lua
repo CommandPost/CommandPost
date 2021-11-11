@@ -7,7 +7,6 @@ local require = require
 -- local log                       = require "hs.logger" .new "TextField"
 
 local go                        = require "cp.rx.go"
-local axutils                   = require "cp.ui.axutils"
 local Element                   = require "cp.ui.Element"
 
 local If                        = go.If
@@ -79,9 +78,9 @@ function TextField.lazy.prop:value()
                 value = convert(value)
                 local focused
                 if self._forceFocus then
-                    focused = self:focused()
+                    focused = self:isFocused()
                     if not focused then
-                        self:focused(true)
+                        self:isFocused(true)
                     end
                 end
                 ui:setAttributeValue("AXValue", value)
@@ -89,10 +88,6 @@ function TextField.lazy.prop:value()
             end
         end
     )
-end
-
-function TextField.lazy.prop:focused()
-    return axutils.prop(self.UI, "AXFocused", true)
 end
 
 --- cp.ui.TextField:forceFocus()
@@ -180,9 +175,9 @@ end
 --- Returns:
 ---  * A Statement
 function TextField.lazy.method:doFocus()
-    return If(self.focused):Is(false)
+    return If(self.isFocused):Is(false)
     :Then(function()
-        self:focused(true)
+        self:isFocused(true)
         return true
     end)
     :Otherwise(false)
