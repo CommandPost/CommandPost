@@ -6,55 +6,35 @@ local log               = require "hs.logger" .new "editnewtitle"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
-local axutils           = require "cp.ui.axutils"
 
 local geometry          = require "hs.geometry"
 
 local go                = require "cp.rx.go"
 
+local v                 = require "semver"
+
 local playErrorSound    = tools.playErrorSound
 
 local Do                = go.Do
 local Throw             = go.Throw
-local WaitUntil         = go.WaitUntil
-local toObservable      = go.Statement.toObservable
-
-local exactly           = axutils.match.exactly
 
 -- local mod
 local mod = {}
 
---- finalcutpro.timeline.editnewtitle.doSelectTopClip(position) -> cp.rx.go.Statement
---- Function
---- Creates a [Statement](cp.rx.go.Statement.md) that will select the top clip at the given position, 
---- resolving to the top clip if available.
----
---- Parameters:
----  * position - The position `table` to select the top clip at.
----
---- Returns:
----  * The [Statement](cp.rx.go.Statement)
-function mod.doSelectTopClip(position)
-    local contents = fcp.timeline.contents
+local skimmingBugVersion = v("10.5")
 
-    return Do(function()
-        position = position or fcp.timeline:activePlayhead():position()
-
-        local clipsUI = contents:positionClipsUI(position)
-        if not clipsUI or #clipsUI == 0 then
-            return Throw(i18n("doSelectTopClip_noclips_error"))
-        end
-
-        local topClip = axutils.childFromTop(clipsUI, 1)
-        return Do(contents:doSelectClip(topClip))
-        :Then(
-            WaitUntil(function() return contents:selectedClipsUI() end)
-            :Matches(exactly({topClip}))
-            :TimeoutAfter(2000)
-        )
-        :Then(toObservable(topClip))
-    end)
-    :Label("finalcutpro.editnewtitle.doSelectTopClip")
+-- requireSkimmingDisabled() -> boolean
+-- Function
+-- Return `true` if skimming should be disabled for the current version of FCP to work around bug #2799.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if skimming should be disabled.
+local function requireSkimmingDisabled()
+    -- TODO: Determine which versions of FCP do not give access to the skimming playhead
+    return fcp:version() >= skimmingBugVersion
 end
 
 local doConnectTitle = Do(fcp:doSelectMenu({"Edit", "Connect Title", 1}))
@@ -97,16 +77,25 @@ function mod.doEditNewLowerThirds()
 end
 
 function mod._doEditNewTitle(doConnectNewTitle)
-    local timeline = fcp.timeline
-    local contents = timeline.contents
+    local contents = fcp.timeline.contents
 
     -- Show the timeline...
-    return Do(timeline:doShow())
+    return Do(contents:doShow())
     -- Focus on it...
-    :Then(timeline:doFocus())
+    :Then(contents:doFocus())
+    -- Pause the viewer...
+    :Then(fcp.viewer:doPause())
     :Then(function()
+        -- Save the current skimming state...
+        local skimming = fcp:isSkimmingEnabled()
+
+        -- Disable skimming if required
+        if requireSkimmingDisabled() then
+            fcp:isSkimmingEnabled(false)
+        end
+
         -- Next, get the current active playhead position...
-        local activePosition = timeline:activePlayhead():position()
+        local activePosition = contents:activePlayhead():position()
         if not activePosition then
             return Throw(i18n("doEditNewTitle_noplayhead_error"))
         end
@@ -117,6 +106,11 @@ function mod._doEditNewTitle(doConnectNewTitle)
         :Then(doConnectNewTitle)
         -- Select the top clip above the current playhead...
         :Then(function()
+            -- Reset skimming to original state...
+            if requireSkimmingDisabled() then
+                fcp:isSkimmingEnabled(skimming)
+            end
+
             -- Get the clips above the active position
             local clipsUI = contents:positionClipsUI(activePosition, true)
             if not clipsUI or #clipsUI == 0 then
@@ -124,10 +118,7 @@ function mod._doEditNewTitle(doConnectNewTitle)
             end
 
             -- Select the top clip (should be the new title)
-            local topClipUI = axutils.childFromTop(clipsUI, 1)
-            if not topClipUI then
-                return Throw("Could not find top clip.")
-            end
+            local topClipUI = clipsUI[1]
 
             -- calculate the center of the top clip
             local frame = geometry.rect(topClipUI.AXFrame)
@@ -143,7 +134,7 @@ function mod._doEditNewTitle(doConnectNewTitle)
         playErrorSound()
         log.ef("Error editing new title: %s", err)
     end)
-    :Label("editnewtitle._doEditNewTitle")
+    :Label("finalcutpro.timeline.editnewtitle._doEditNewTitle")
 end
 
 -- create a new plugin
@@ -166,11 +157,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
 
+    -- Add new command for doing the edit new title
     fcpxCmds:add("cpEditNewTitle")
         :whenActivated(mod.doEditNewTitle())
         :subtitled(i18n("cpEditNewTitle_subtitle"))
 
-    -- Add new command for doing the edit new title
+    -- Add new command for doing the edit new lower thirds
     fcpxCmds:add("cpEditNewLowerThirds")
         :whenActivated(mod.doEditNewLowerThirds())
         :subtitled(i18n("cpEditNewLowerThirds_subtitle"))
