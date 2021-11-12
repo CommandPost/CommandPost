@@ -26,6 +26,44 @@ local mod = {}
 -- How long we should defer all the update functions.
 local DEFER_VALUE = 0.01
 
+-- makeContrastWheelHandler() -> function
+-- Function
+-- Creates a 'handler' for contrast wheel control.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeContrastWheelHandler()
+    local colorWheelContrastValue = 0
+    local colorWheels = fcp.inspector.color.colorWheels
+
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
+        if colorWheels:isShowing() then
+            colorWheels.shadows.brightness:shiftValue(colorWheelContrastValue*-1)
+            colorWheels.highlights.brightness:shiftValue(colorWheelContrastValue)
+            colorWheelContrastValue = 0
+        else
+            colorWheels:show()
+        end
+    end)
+
+    return function(data)
+        if data.operation == "+" then
+            local increment = data.params and data.params[1]
+            colorWheelContrastValue = colorWheelContrastValue + increment
+            updateUI()
+        elseif data.operation == "=" then
+            local value = data.params and data.params[1]
+            if value == 0 then
+                colorWheels.shadows.brightness:value(0)
+                colorWheels.highlights.brightness:value(0)
+            end
+        end
+    end
+end
+
 -- makeWheelHandler(puckFinderFn) -> function
 -- Function
 -- Creates a 'handler' for wheel controls, applying them to the puck returned by the `puckFinderFn`
@@ -431,6 +469,15 @@ local function _processMenuItems(items, path)
     end
 end
 
+-- plugins.core.monogram.manager._registerActions(manager) -> none
+-- Function
+-- A private function to register actions.
+--
+-- Parameters:
+--  * manager - The manager object.
+--
+-- Returns:
+--  * None
 function mod._registerActions(manager)
     if mod._registerActionsRun then
         return
@@ -504,6 +551,8 @@ function mod._registerActions(manager)
     registerAction("Color Wheels.Tint", makeSliderHandler(function() return fcp.inspector.color.colorWheels.tintSlider end))
     registerAction("Color Wheels.Hue", makeSliderHandler(function() return fcp.inspector.color.colorWheels.hueTextField end))
     registerAction("Color Wheels.Mix", makeSliderHandler(function() return fcp.inspector.color.colorWheels.mixSlider end))
+
+    registerAction("Color Wheels.Contrast", makeContrastWheelHandler())
 
     --------------------------------------------------------------------------------
     -- Color Board Controls:
