@@ -301,6 +301,31 @@ function mod.changeContext(context)
     end
 end
 
+--- plugins.core.monogram.manager.sign() -> none
+--- Function
+--- Signs all the Monogram Integrations.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.sign()
+    local basePath = config.basePath
+    local appPath = basePath .. "/../../monogramsign"
+    local secretPath = basePath .. "/../../command_post.key"
+    for pluginName, sourcePath in pairs(mod.plugins) do
+        local pluginPath = sourcePath .. pluginName .. ".palette"
+        local cmd = appPath .. [[ "]] .. pluginPath .. [[" -k "]] .. secretPath .. [["]]
+        local _, status = execute(cmd)
+        if not status then
+            log.ef("Failed to sign: %s", pluginName)
+        else
+            log.df("Successfully signed: %s", pluginName)
+        end
+    end
+end
+
 local plugin = {
     id          = "core.monogram.manager",
     group       = "core",
