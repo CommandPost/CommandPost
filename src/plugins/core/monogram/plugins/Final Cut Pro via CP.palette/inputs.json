@@ -4689,6 +4689,19 @@
         "stepMin": 1
     },
     {
+        "info": "Turn the dial to zoom in or out of the timeline. Press to 'Zoom to Fit'.",
+        "name": "Timeline.Zoom",
+        "step": 0.2,
+        "stepMin": 0.2,
+        "reset": 0
+    },
+    {
+        "info": "Turn the dial to change the clip height in the timeline.",
+        "name": "Timeline.Clip Height",
+        "step": 1,
+        "stepMin": 1
+    },
+    {
         "info": "Turn the selected color corrections and effects on or off",
         "name": "Command Set Shortcuts.Effects.Toggle Effects on/off"
     },

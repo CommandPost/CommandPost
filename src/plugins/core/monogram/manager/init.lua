@@ -324,6 +324,7 @@ function mod.sign()
             log.df("Successfully signed: %s", pluginName)
         end
     end
+    setupPlugins()
 end
 
 local plugin = {
