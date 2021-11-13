@@ -700,6 +700,11 @@ function mod._registerActions(manager)
     end
 
     --------------------------------------------------------------------------------
+    -- Audio Controls:
+    --------------------------------------------------------------------------------
+    registerAction("Audio Inspector.Volume", makeSliderHandler(function() return fcp.inspector.audio:volume() end))
+
+    --------------------------------------------------------------------------------
     -- Menu Items:
     --------------------------------------------------------------------------------
     registerAction("Menu Items.Final Cut Pro.About Final Cut Pro", makeMenuItemHandler(function() return "Final Cut Pro|||About Final Cut Pro" end))
