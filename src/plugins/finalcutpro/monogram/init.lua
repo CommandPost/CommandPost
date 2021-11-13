@@ -8,6 +8,7 @@ local log               = require "hs.logger".new "monogram"
 
 local fnutils           = require "hs.fnutils"
 local plist             = require "hs.plist"
+local timer             = require "hs.timer"
 
 local config            = require "cp.config"
 local deferred          = require "cp.deferred"
@@ -17,6 +18,7 @@ local i18n              = require "cp.i18n"
 local notifier          = require "cp.ui.notifier"
 
 local copy              = fnutils.copy
+local delayed           = timer.delayed
 local displayMessage    = dialog.displayMessage
 
 local mod = {}
@@ -203,6 +205,86 @@ local function makeMenuItemHandler(finderFn)
         local id = finderFn()
         local menuTable = id:split("|||")
         fcp:application():selectMenuItem(menuTable)
+    end
+end
+
+-- makeTimelineZoomHandler() -> function
+-- Function
+-- Creates a 'handler' for Timeline Zoom.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeTimelineZoomHandler()
+    local zoomShift = 0
+
+    local appearance = fcp.timeline.toolbar.appearance
+
+    local appearancePopUpCloser = delayed.new(1, function()
+        appearance:hide()
+    end)
+
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
+        if appearance:isShowing() then
+            appearance.zoomAmount:shiftValue(zoomShift)
+            zoomShift = 0
+            appearancePopUpCloser:start()
+        else
+            appearance:show()
+        end
+    end)
+
+    return function(data)
+        if data.operation == "+" then
+            local increment = data.params and data.params[1]
+            zoomShift = zoomShift - increment
+            updateUI()
+        elseif data.operation == "=" then
+            local value = data.params and data.params[1]
+            if value == 0 then
+                zoomShift = 0
+                fcp:application():selectMenuItem({"View", "Zoom to Fit"})
+            end
+        end
+    end
+end
+
+-- makeTimelineClipHeightHandler() -> function
+-- Function
+-- Creates a 'handler' Timeline Clip Height.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeTimelineClipHeightHandler()
+    local clipHeightShift = 0
+
+    local appearance = fcp.timeline.toolbar.appearance
+
+    local appearancePopUpCloser = delayed.new(1, function()
+        appearance:hide()
+    end)
+
+    local updateUI = deferred.new(DEFER_VALUE):action(function()
+        if appearance:isShowing() then
+            appearance.clipHeight:shiftValue(clipHeightShift)
+            clipHeightShift = 0
+            appearancePopUpCloser:start()
+        else
+            appearance:show()
+        end
+    end)
+
+    return function(data)
+        if data.operation == "+" then
+            local increment = data.params and data.params[1]
+            clipHeightShift = clipHeightShift - increment
+            updateUI()
+        end
     end
 end
 
@@ -526,6 +608,12 @@ function mod._registerActions(manager)
             end
         end
     end)
+
+    --------------------------------------------------------------------------------
+    -- Timeline:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Zoom", makeTimelineZoomHandler())
+    registerAction("Timeline.Clip Height", makeTimelineClipHeightHandler())
 
     --------------------------------------------------------------------------------
     -- Colour Wheel Controls:
