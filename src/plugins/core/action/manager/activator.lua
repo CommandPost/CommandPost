@@ -1740,7 +1740,7 @@ function activator:rightClickAction(index)
                 end
             end
 
-            sort(submenu, function(a, b) return a.title < b.title end)
+            sort(submenu, function(a, b) return string.lower(a.title) < string.lower(b.title) end)
 
             local allSubmenu = {
                 { title = i18n("consoleSectionsShowAll"), fn = function()
@@ -1770,7 +1770,7 @@ function activator:rightClickAction(index)
             }
         end
 
-        sort(groupItems, function(a, b) return a.title < b.title end)
+        sort(groupItems, function(a, b) return string.lower(a.title) < string.lower(b.title) end)
 
         local allItems = {
             { title = i18n("consoleSectionsShowAll"), fn = function()
