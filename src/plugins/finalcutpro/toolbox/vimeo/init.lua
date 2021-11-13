@@ -272,6 +272,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["core.toolbox.manager"]    = "manager",
+        ["core.commands.global"]    = "global",
     }
 }
 
@@ -332,6 +333,14 @@ function plugin.init(deps, env)
             onclick	    = sendVimeoCSVToFinalCutProX,
         }
     )
+
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    deps.global
+        :add("sendVimeoCsvToFinalCutPro")
+        :whenActivated(sendVimeoCSVToFinalCutProX)
+        :titled(i18n("sendVimeoCsvToFinalCutPro"))
 
     return mod
 end
