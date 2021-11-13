@@ -487,8 +487,8 @@ local function findSpec(id)
     return nil, "Unable to find a spec or test"
 end
 
-local SPEC_FILE = "(.*)_spec%.lua$"
-local TEST_FILE = "(.*)_test%.lua$"
+local SPEC_FILE = "(.+)_spec%.lua$"
+local TEST_FILE = "(.+)_test%.lua$"
 
 local function findSpecsInDirectory(path, result)
     path = fs.pathToAbsolute(path)
@@ -504,16 +504,16 @@ local function findSpecsInDirectory(path, result)
 
                 if mode == "file" then
                     if file:match(SPEC_FILE) then
-                        log.df("fSID: matched spec: %s", file)
+                        -- log.df("fSID: matched spec: %s", file)
                         matched = true
                         newSpec, err = execSpecFile(filePath)
                     elseif file:match(TEST_FILE) then
-                        log.df("fSID: matched test: %s", file)
+                        -- log.df("fSID: matched test: %s", file)
                         matched = true
                         newSpec, err = execTestFile(filePath)
                     end
                 elseif mode == "directory" then
-                    log.df("fSID: matched directory")
+                    -- log.df("fSID: matched directory")
                     ok, err = findSpecsInDirectory(filePath, result)
                     if not ok then
                         return false, err
