@@ -929,6 +929,88 @@ function plugin.init(deps, env)
         :image(razerIcon)
         :titled(i18n("toggleRazerSupport"))
 
+    local backlightModes = {
+        { value = "Off",              label = i18n("off") },
+        { value = "User Defined",     label = i18n("userDefined") },
+        { value = "Breathing",        label = i18n("breathing") },
+        { value = "Reactive",         label = i18n("reactive") },
+        { value = "Spectrum",         label = i18n("spectrum") },
+        { value = "Starlight",        label = i18n("starlight") },
+        { value = "Static",           label = i18n("static") },
+        { value = "Wave",             label = i18n("wave") },
+    }
+    for _, deviceName in pairs(mod.supportedDevices) do
+        --------------------------------------------------------------------------------
+        -- Backlight Modes:
+        --------------------------------------------------------------------------------
+        for _, v in pairs(backlightModes) do
+            global
+                :add(deviceName .. "Backlight" .. v.value)
+                :whenActivated(function()
+                    local backlightsMode = mod.backlightsMode()
+                    backlightsMode[deviceName] = v.value
+                    mod.backlightsMode(backlightsMode)
+                    mod.refresh(true)
+                end)
+                :groupedBy("commandPost")
+                :image(razerIcon)
+                :titled(deviceName .. " " .. i18n("backlightsMode") .. ": " .. v.label)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Brightness Set:
+        --------------------------------------------------------------------------------
+        for i=1, 100 do
+            global
+                :add(deviceName .. "Brightness" .. i)
+                :whenActivated(function()
+                    local backlightBrightness = mod.backlightBrightness()
+                    backlightBrightness[deviceName] = tostring(i)
+                    mod.backlightBrightness(backlightBrightness)
+                    mod.refresh(true)
+                end)
+                :groupedBy("commandPost")
+                :image(razerIcon)
+                :titled(deviceName .. " " .. i18n("backlightBrightness") .. ": " .. i)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Brightness Increase:
+        --------------------------------------------------------------------------------
+        global
+            :add(deviceName .. "BrightnessIncrease")
+            :whenActivated(function()
+                local backlightBrightness = mod.backlightBrightness()
+                local currentBrightness = tonumber(backlightBrightness[deviceName])
+                if currentBrightness < 100 then
+                    backlightBrightness[deviceName] = tostring(currentBrightness + 10)
+                end
+                mod.backlightBrightness(backlightBrightness)
+                mod.refresh(true)
+            end)
+            :groupedBy("commandPost")
+            :image(razerIcon)
+            :titled(deviceName .. " " .. i18n("backlightBrightness") .. " " .. i18n("increase"))
+
+        --------------------------------------------------------------------------------
+        -- Brightness Decrease:
+        --------------------------------------------------------------------------------
+        global
+            :add(deviceName .. "BrightnessDecrease")
+            :whenActivated(function()
+                local backlightBrightness = mod.backlightBrightness()
+                local currentBrightness = tonumber(backlightBrightness[deviceName])
+                if currentBrightness > 1 then
+                    backlightBrightness[deviceName] = tostring(currentBrightness - 10)
+                end
+                mod.backlightBrightness(backlightBrightness)
+                mod.refresh(true)
+            end)
+            :groupedBy("commandPost")
+            :image(razerIcon)
+            :titled(deviceName .. " " .. i18n("backlightBrightness") .. " " .. i18n("decrease"))
+    end
+
     --------------------------------------------------------------------------------
     -- Connect to the Razer:
     --------------------------------------------------------------------------------
