@@ -45,23 +45,27 @@ local require                                       = require
 
 -- local log                                           = require("hs.logger").new("AudioInspector")
 
-local axutils                                       = require("cp.ui.axutils")
-local prop                                          = require("cp.prop")
+local fn                                            = require "cp.fn"
+local ax                                            = require "cp.fn.ax"
 
-local Button                                        = require("cp.ui.Button")
-local Group                                         = require("cp.ui.Group")
-local PopUpButton                                   = require("cp.ui.PopUpButton")
-local RadioButton                                   = require("cp.ui.RadioButton")
-local SplitGroup                                    = require("cp.ui.SplitGroup")
+local axutils                                       = require "cp.ui.axutils"
 
-local BasePanel                                     = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                            = require("cp.apple.finalcutpro.inspector.InspectorProperty")
-local AudioConfiguration                            = require("cp.apple.finalcutpro.inspector.audio.AudioConfiguration")
+local Group                                         = require "cp.ui.Group"
+local ScrollArea                                    = require "cp.ui.ScrollArea"
+local SplitGroup                                    = require "cp.ui.SplitGroup"
+local Splitter                                      = require "cp.ui.Splitter"
+local TextArea                                      = require "cp.ui.TextArea"
 
-local childFromLeft, childFromRight                 = axutils.childFromLeft, axutils.childFromRight
-local withRole, childWithRole                       = axutils.withRole, axutils.childWithRole
-local hasProperties, simple                         = IP.hasProperties, IP.simple
-local section, slider, numberField, popUpButton     = IP.section, IP.slider, IP.numberField, IP.popUpButton
+local BasePanel                                     = require "cp.apple.finalcutpro.inspector.BasePanel"
+local AudioConfiguration                            = require "cp.apple.finalcutpro.inspector.audio.AudioConfiguration"
+local TopProperties                                 = require "cp.apple.finalcutpro.inspector.audio.TopProperties"
+local MainProperties                                = require "cp.apple.finalcutpro.inspector.audio.MainProperties"
+
+local childMatching                                 = axutils.childMatching
+
+local chain                                         = fn.chain
+local get                                           = fn.table.get
+local filter                                        = fn.value.filter
 
 local AudioInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 
@@ -75,10 +79,35 @@ local AudioInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.audio.
 --- Returns:
 ---  * `true` if it matches, `false` if not.
 function AudioInspector.static.matches(element)
-    local root = BasePanel.matches(element) and withRole(element, "AXGroup")
-    local split = root and #root == 1 and childWithRole(root, "AXSplitGroup")
+    local root = BasePanel.matches(element) and Group.matches(element) and element
+    local split = root and #root == 1 and childMatching(root, SplitGroup.matches)
     return split and #split > 5 or false
 end
+
+-- AudioInspector.static.matches2 = ax.matchesIf(
+--     chain(
+--         -- it a BasePanel that is also a Group...
+--         filter(BasePanel.matches, Group.matches),
+--         -- with exactly one child...
+--         ax.children, filter(fn.table.hasExactly(1)),
+--         -- which is a SplitGroup...
+--         get(1), filter(SplitGroup.matches),
+--         -- who has more than 5 children.
+--         ax.children, fn.table.hasAtLeast(5)
+--     )
+-- )
+
+-- AudioInspector.static.matches2 = ax.matchesIf(
+--     chain |
+--     -- it a BasePanel that is also a Group...
+--     filter(BasePanel.matches, Group.matches) >>
+--     -- with exactly one child...
+--     ax.children >> filter(fn.table.hasExactly(1)) >>
+--     -- which is a SplitGroup...
+--     get(1) >> filter(SplitGroup.matches) >>
+--     -- who has more than 5 children.
+--     ax.children >> fn.table.hasAtLeast(5)
+-- )
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector(parent) -> cp.apple.finalcutpro.audio.AudioInspector
 --- Constructor
@@ -94,105 +123,23 @@ function AudioInspector:initialize(parent)
 end
 
 function AudioInspector.lazy.value:content()
-    return SplitGroup(self, self.UI:mutate(function(original)
-        return axutils.cache(self, "_ui", function()
-            local ui = original()
-            if ui then
-                local splitGroup = ui[1]
-                return SplitGroup.matches(splitGroup) and splitGroup or nil
-            end
-            return nil
-        end, SplitGroup.matches)
-    end))
+    local ui = self.UI:mutate(ax.childMatching(SplitGroup.matches))
+    return SplitGroup(self, ui, {
+        TopProperties,
+        MainProperties,
+        Group,
+        Splitter,
+        TextArea,
+        ScrollArea
+    })
 end
 
 function AudioInspector.lazy.value:topProperties()
-    local topProps = Group(self, function()
-        return axutils.childFromTop(self.content:UI(), 1)
-    end)
-
-    prop.bind(topProps) {
-        contentUI = topProps.UI:mutate(function(original)
-            local ui = original()
-            if ui and ui[1] then
-                return ui[1]
-            end
-        end)
-    }
-
-    hasProperties(topProps, topProps.contentUI) {
-        volume              = slider "FFAudioVolumeToolName",
-    }
-
-    return topProps
+    return self.content.children[1]
 end
 
 function AudioInspector.lazy.value:mainProperties()
-    local mainProps = Group(self, function()
-        return axutils.childFromTop(self.content:UI(), 2)
-    end)
-
-    prop.bind(mainProps) {
-        contentUI = mainProps.UI:mutate(function(original)
-            local ui = original()
-            if ui and ui[1] and ui[1][1] then
-                return ui[1][1]
-            end
-        end)
-    }
-
-    hasProperties(mainProps, mainProps.contentUI) {
-        audioEnhancements       = section "FFAudioAnalysisLabel_EnhancementsBrick" {
-
-            equalization        = section "FFAudioAnalysisLabel_Equalization" {}
-                                  :extend(function(row)
-                                        row.mode = PopUpButton(row, function() return childFromLeft(row:children(), 1, PopUpButton.matches) end)
-                                        row.enhanced = Button(row, function() return childFromLeft(row:children(), 1, Button.matches) end)
-                                  end),
-
-            audioAnalysis       = section "FFAudioAnalysisLabel_AnalysisBrick" {
-
-                loudness        = section "FFAudioAnalysisLabel_Loudness" {
-                    amount      = numberField "FFAudioAnalysisLabel_LoudnessAmount",
-                    uniformity  = numberField "FFAudioAnalysisLabel_LoudnessUniformity",
-                },
-
-                noiseRemoval    = section "FFAudioAnalysisLabel_NoiseRemoval" {
-                    amount      = numberField "FFAudioAnalysisLabel_NoiseRemovalAmount",
-                },
-
-                humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
-                    frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)
-                                        row.fiftyHz     = RadioButton(row, function()
-                                            return childFromLeft(row:children(), 1, RadioButton.matches)
-                                        end)
-                                        row.sixtyHz     = RadioButton(row, function()
-                                            return childFromRight(row:children(), 1, RadioButton.matches)
-                                        end)
-                                  end),
-                }
-            }
-                                  :extend(function(row)
-                                        row.magic = Button(row, function() return childFromLeft(row:children(), 1, Button.matches) end)
-                                  end),
-        },
-
-        pan                     = section "FFAudioIntrinsicChannels_Pan" {
-            mode                = popUpButton "FFAudioIntrinsicChannels_PanMode",
-            amount              = slider "FFAudioIntrinsicChannels_PanAmount",
-            surroundPanner      = section "FFAudioIntrinsicChannels_PanSettings" {
-                --------------------------------------------------------------------------------
-                -- TODO: Add Surround Panner.
-                --
-                --/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFAudioSurroundPannerHUD.nib
-                --------------------------------------------------------------------------------
-            }
-
-        },
-
-        effects                 = section "FFInspectorBrickEffects" {},
-    }
-    return mainProps
+    return self.content.children[2]
 end
 
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.volume <cp.prop: PropertyRow>

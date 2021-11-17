@@ -18,7 +18,7 @@ local Group             = require "cp.ui.Group"
 local Image             = require "cp.ui.Image"
 local StaticText        = require "cp.ui.StaticText"
 
-local rightToLeft       = axutils.compareRightToLeft
+local rightToLeft       = axutils.compare.rightToLeft
 local cache             = axutils.cache
 local childFromBottom   = axutils.childFromBottom
 local childFromRight    = axutils.childFromRight

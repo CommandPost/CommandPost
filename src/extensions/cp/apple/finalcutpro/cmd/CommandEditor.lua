@@ -4,21 +4,51 @@
 
 local require                       = require
 
-local log                           = require("hs.logger").new("PrefsDlg")
+-- local log                           = require "hs.logger" .new "CmdEditor"
 
-local axutils                       = require("cp.ui.axutils")
-local Button                        = require("cp.ui.Button")
-local Dialog                        = require("cp.ui.Dialog")
-local just                          = require("cp.just")
+local just                          = require "cp.just"
 
-local strings                       = require("cp.apple.finalcutpro.strings")
+local axutils                       = require "cp.ui.axutils"
+local Button                        = require "cp.ui.Button"
+local CheckBox                      = require "cp.ui.CheckBox"
+local Dialog                        = require "cp.ui.Dialog"
+local Group                         = require "cp.ui.Group"
+local PopUpButton                   = require "cp.ui.PopUpButton"
+local TextField                     = require "cp.ui.TextField"
 
-local If                            = require("cp.rx.go.If")
-local Throw                         = require("cp.rx.go.Throw")
-local WaitUntil                     = require("cp.rx.go.WaitUntil")
+local CommandList                   = require "cp.apple.finalcutpro.cmd.CommandList"
 
+local strings                       = require "cp.apple.finalcutpro.strings"
+
+local If                            = require "cp.rx.go.If"
+local Throw                         = require "cp.rx.go.Throw"
+local WaitUntil                     = require "cp.rx.go.WaitUntil"
+
+local childWithRole                 = axutils.childWithRole
+local childrenWithRole              = axutils.childrenWithRole
+
+local topToBottom                   = axutils.compare.topToBottom
+local leftToRight                   = axutils.compare.leftToRight
+
+local fn                            = require "cp.fn"
+local ax                            = require "cp.fn.ax"
+local chain                         = fn.chain
+local ifilter, sort                 = fn.table.ifilter, fn.table.sort
+local axchildren                    = ax.children
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
+
+-- axgroups(value) -> table | nil
+-- Function
+-- Attempts to extract an `axuielement` from the `value` and return its children that match `Group`,
+-- sorted from top to bottom, then left to right.
+--
+-- Parameters:
+--  * value - The value to extract the axuielement from.
+--
+-- Returns:
+--  * The children of the axuielement that match `Group` or `nil`.
+local axgroups = chain(axchildren, ifilter(Group.matches), sort(topToBottom, leftToRight))
 
 -- _findWindowUI(windows) -> window | nil
 -- Function
@@ -48,8 +78,8 @@ end
 function CommandEditor.static.matches(element)
     if Dialog.matches(element) then
         return element:attributeValue("AXModal")
-           and axutils.childWithRole(element, "AXPopUpButton") ~= nil
-           and #axutils.childrenWithRole(element, "AXGroup") == 4
+           and childWithRole(element, "AXPopUpButton") ~= nil
+           and #childrenWithRole(element, "AXGroup") == 4
     end
     return false
 end
@@ -78,24 +108,6 @@ function CommandEditor:initialize(app)
     end)
 
     Dialog.initialize(self, app.app, UI)
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
---- Field
---- The "Save" [Button](cp.ui.Button.md).
-function CommandEditor.lazy.value:save()
-    return Button(self, self.UI:mutate(function(original)
-        return axutils.childFromRight(original(), 1, Button.matches)
-    end))
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor.close <cp.ui.Button>
---- Field
---- The "Close" [Button](cp.ui.Button.md).
-function CommandEditor.lazy.value:close()
-    return Button(self, self.UI:mutate(function(original)
-        return axutils.childFromRight(original(), 2, Button.matches)
-    end))
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:app() -> App
@@ -163,15 +175,12 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.cmd.CommandEditor` object for method chaining.
 function CommandEditor:hide()
-    local ui = self:UI()
-    if ui then
-        local closeBtn = axutils.childWith(ui, "AXSubrole", "AXCloseButton")
-        if closeBtn then
-            closeBtn:doAXPress()
-        end
-    end
+    self.close:press()
     return self
 end
+
+-- TODO: Fix this or delete it.
+CommandEditor.hide2 = chain(ax.uielement, ax.childWith("AXSubrole", "AXCloseButton"), ax.performAction("AXPress"))
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doShow() -> cp.rx.go.Statement <boolean>
 --- Method
@@ -195,7 +204,7 @@ function CommandEditor.lazy.method:doHide()
             local msg = strings:find("ConfirmSaveAlertTitle")
             if msg then
                 msg = msg:gsub("%?", "%%?"):gsub("%%@", ".*")
-                log.df("msg: %s", msg)
+                -- log.df("msg: %s", msg)
                 if alert:containsText(msg) then
                     -- Button 1 should be "Don't Save" or equivalent in current locale.
                     return alert:doPress(1)
@@ -219,7 +228,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
 function CommandEditor.lazy.method:doSave()
-    return self.save:doAXPress()
+    return self.save:doPress()
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doClose() -> cp.rx.go.Statement <boolean>
@@ -232,7 +241,126 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
 function CommandEditor.lazy.method:doClose()
-    return self.close:doAXPress()
+    return self.closeButton:doPress()
+end
+
+-- ==== Command Editor UI ====
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
+--- Field
+--- The "Save" [Button](cp.ui.Button.md).
+function CommandEditor.lazy.value:save()
+    return Button(self, self.UI:mutate(
+        ax.childMatching(Button.matches, 1, ax.bottomUp)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.closeButton <cp.ui.Button>
+--- Field
+--- The "Close" [Button](cp.ui.Button.md).
+function CommandEditor.lazy.value:closeButton()
+    return Button(self, self.UI:mutate(
+        ax.childMatching(Button.matches, 2, ax.bottomUp)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandSet <cp.ui.PopUpButton>
+--- Field
+--- The "Command Set" [PopUpButton](cp.ui.PopUpButton.md).
+function CommandEditor.lazy.value:commandSet()
+    return PopUpButton(self, self.UI:mutate(
+        ax.childMatching(PopUpButton.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.modifiers <cp.ui.Group>
+--- Field
+--- The [Group](cp.ui.Group.md) containing 'modifier' checkboxes (Cmd, Shift, etc).
+function CommandEditor.lazy.value:modifiers()
+    return Group(self, self.UI:mutate(
+        ax.childMatching(Group.matches, 1)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.command <cp.ui.CheckBox>
+--- Field
+--- The "Command" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:command()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 1)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.shift <cp.ui.CheckBox>
+--- Field
+--- The "Shift" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:shift()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 2)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.optionModifier <cp.ui.CheckBox>
+--- Field
+--- The "Option" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:option()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 3)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.controlModifier <cp.ui.CheckBox>
+--- Field
+--- The "Control" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:control()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 4)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.keyboardToggle <cp.ui.CheckBox>
+--- Field
+--- The "Keyboard Toggle" [CheckBox](cp.ui.CheckBox.md) (next to the Search field).
+function CommandEditor.lazy.value:keyboardToggle()
+    return CheckBox(self, self.UI:mutate(
+        ax.childMatching(CheckBox.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.search <cp.ui.TextField>
+--- Field
+--- The "Search" [TextField](cp.ui.TextField.md).
+function CommandEditor.lazy.value:search()
+    return TextField(self, self.UI:mutate(
+        ax.childMatching(TextField.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.keyboard <cp.ui.Group>
+--- Field
+--- The [Group](cp.ui.Group.md) containing the keyboard shortcuts. Does not seem to expose the actual key buttons.
+function CommandEditor.lazy.value:keyboard()
+    return Group(self, self.UI:mutate(
+        ax.childMatching(Group.matches, 2)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandList <cp.apple.finalcutpro.cmd.CommandList>
+--- Field
+--- The [CommandList](cp.apple.finalcutpro.cmd.CommandList.md).
+function CommandEditor.lazy.value:commandList()
+    return CommandList(self, self.UI:mutate(
+        ax.childMatching(Group.matches, 3)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.keyDetail <cp.appple.finalcutpro.cmd.KeyDetail>
+--- Field
+--- The [KeyDetail](cp.apple.finalcutpro.cmd.KeyDetail.md) section.
+function CommandEditor.lazy.value:keyDetail()
+    return Group(self, self.UI:mutate(
+        ax.childMatching(Group.matches, 4)
+    ))
 end
 
 return CommandEditor

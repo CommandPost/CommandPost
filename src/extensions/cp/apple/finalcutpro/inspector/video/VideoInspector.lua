@@ -60,7 +60,7 @@ local xy                        = IP.xy
 
 local childMatching             = axutils.childMatching
 local childWithRole             = axutils.childWithRole
-local compareTopToBottom        = axutils.compareTopToBottom
+local topToBottom               = axutils.compare.topToBottom
 local snapshot                  = axutils.snapshot
 local withRole                  = axutils.withRole
 local withValue                 = axutils.withValue
@@ -174,7 +174,7 @@ function VideoInspector:effectCheckBoxes()
     if contentUI then
         local effectsString = strings:find("FFInspectorBrickEffects")
         local compositingString = strings:find("FFHeliumBlendCompositingEffect")
-        local children = axutils.children(contentUI, compareTopToBottom)
+        local children = axutils.children(contentUI, topToBottom)
         local valid
         local checkBoxes = {}
         local topCheckBox

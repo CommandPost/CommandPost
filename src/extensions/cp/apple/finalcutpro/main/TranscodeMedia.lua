@@ -14,7 +14,7 @@ local cache                 = axutils.cache
 local childFromLeft         = axutils.childFromLeft
 local childFromTop          = axutils.childFromTop
 local childMatching         = axutils.childMatching
-local compareTopToBottom    = axutils.compareTopToBottom
+local topToBottom           = axutils.compare.topToBottom
 
 local TranscodeMedia = Sheet:subclass("cp.apple.finalcutpro.main.TranscodeMedia")
 
@@ -29,7 +29,7 @@ local TranscodeMedia = Sheet:subclass("cp.apple.finalcutpro.main.TranscodeMedia"
 --- * `true` if it matches the pattern for a `Viewer` `TranscodeMedia`.
 function TranscodeMedia.static.matches(element)
     if Sheet.matches(element) and #element == 5 then
-        local children = axutils.children(element, compareTopToBottom)
+        local children = axutils.children(element, topToBottom)
         return children ~= nil
             and StaticText.matches(children[1])
             and CheckBox.matches(children[2])

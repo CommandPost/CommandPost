@@ -349,7 +349,7 @@ function PropertyRow:children()
                 return childFrame ~= nil and labelFrame:intersect(childFrame).h > PropertyRow.intersectBuffer and child:attributeValue("AXRole") ~= "AXScrollBar"
             end)
             if children then
-                table.sort(children, axutils.compareLeftToRight)
+                table.sort(children, axutils.compare.leftToRight)
             end
             self._children = children
         end

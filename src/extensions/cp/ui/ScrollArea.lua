@@ -4,9 +4,12 @@
 
 local require       = require
 
-local axutils       = require("cp.ui.axutils")
-local Element       = require("cp.ui.Element")
-local ScrollBar     = require("cp.ui.ScrollBar")
+local fn            = require "cp.fn"
+local ax            = require "cp.fn.ax"
+
+local axutils       = require "cp.ui.axutils"
+local Element       = require "cp.ui.Element"
+local ScrollBar     = require "cp.ui.ScrollBar"
 
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
@@ -20,9 +23,7 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function ScrollArea.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollArea"
-end
+ScrollArea.static.matches = fn.all(Element.matches, ax.hasRole("AXScrollArea"))
 
 --- cp.ui.ScrollArea(parent, uiFinder) -> cp.ui.ScrollArea
 --- Constructor
@@ -42,36 +43,30 @@ end
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        if ui then
-            local role = ui:attributeValue("AXRole")
-            if role and role == "AXScrollArea" then
-                return ui:attributeValue("AXContents")[1]
-            end
-        end
-    end)
+    return self.UI:mutate(
+        fn.chain(fn.table.get("AXContents"), fn.table.first)
+    )
 end
 
 --- cp.ui.ScrollArea.verticalScrollBar <cp.ui.ScrollBar>
 --- Field
 --- The vertical [ScrollBar](cp.ui.ScrollBar.md).
 function ScrollArea.lazy.value:verticalScrollBar()
-    return ScrollBar(self, axutils.prop(self.UI, "AXVerticalScrollBar"))
+    return ScrollBar(self, ax.prop(self.UI, "AXVerticalScrollBar"))
 end
 
 --- cp.ui.ScrollArea.horizontalScrollBar <cp.ui.ScrollBar>
 --- Field
 --- The horizontal [ScrollBar](cp.ui.ScrollBar.md).
 function ScrollArea.lazy.value:horizontalScrollBar()
-    return ScrollBar(self, axutils.prop(self.UI, "AXHorizontalScrollBar"))
+    return ScrollBar(self, ax.prop(self.UI, "AXHorizontalScrollBar"))
 end
 
 --- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
 function ScrollArea.lazy.prop:selectedChildrenUI()
-    return axutils.prop(self.contentsUI, "AXSelectedChildren")
+    return ax.prop(self.contentsUI, "AXSelectedChildren")
 end
 
 -----------------------------------------------------------------------
