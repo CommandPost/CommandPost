@@ -10,6 +10,8 @@ local unpack                = table.unpack
 
 local fn                    = require "cp.fn"
 
+local private = fn._private
+
 -- local log                  = require "hs.logger" .new "fn_spec"
 
 local function incr(x) return x + 1 end
@@ -211,133 +213,6 @@ return describe "cp.fn" {
                 expect(calls):is(3)
             end),
         },
-
-        context "_chain2" {
-            it "calls the second function if the first function returns a value"
-            :doing(function()
-                local calls = 0
-                local function countCalls(value)
-                    calls = calls + 1
-                    return value
-                end
-
-                local zeroCount = fn.chain._chain2(zero, countCalls)
-
-                expect(zeroCount()):is(0)
-                expect(calls):is(1)
-            end),
-
-            it "does not call the second function if the first function returns nil"
-            :doing(function()
-                local calls = 0
-                local function countCalls(value)
-                    calls = calls + 1
-                    return value
-                end
-
-                local zeroCount = fn.chain._chain2(function() return nil end, countCalls)
-
-                expect(zeroCount()):is(nil)
-                expect(calls):is(0)
-            end),
-        },
-
-        context "_chainN" {
-            it "calls the last function if the first function returns a value"
-            :doing(function()
-                local calls = 0
-                local function countCalls(value)
-                    calls = calls + 1
-                    return value
-                end
-
-                local zeroCount = fn.chain._chainN(zero, countCalls)
-
-                expect(zeroCount()):is(0)
-                expect(calls):is(1)
-            end),
-
-            it "does not call the last function if the first function returns nil"
-            :doing(function()
-                local calls = 0
-                local function countCalls(value)
-                    calls = calls + 1
-                    return value
-                end
-
-                local chained = fn.chain._chainN(function() return nil end, countCalls)
-
-                expect(chained()):is(nil)
-                expect(calls):is(0)
-            end),
-
-            it "calls all three functions if all return a value"
-            :doing(function()
-                local calls = 0
-                local function countCalls(value)
-                    calls = calls + 1
-                    return value
-                end
-
-                local chained = fn.chain._chainN(countCalls, countCalls, countCalls)
-
-                expect(chained(1)):is(1)
-                expect(calls):is(3)
-            end),
-
-            it "stops after the second function if it returns nil"
-            :doing(function()
-                local calls = 0
-                local function countCalls(value)
-                    calls = calls + 1
-                    return value
-                end
-
-                local chained = fn.chain._chainN(
-                    countCalls,
-                    function()
-                        calls = calls+1
-                        return nil
-                    end,
-                    countCalls
-                )
-
-                expect(chained(1)):is(nil)
-                expect(calls):is(2)
-            end),
-        },
-
-        context("_callIfHasArgs") {
-            it "calls the function if any argument is not nil"
-            :doing(function()
-                local calls = 0
-                local function countCalls(...)
-                    calls = calls + 1
-                    return ...
-                end
-
-                local callIfHasArgs = fn.chain._callIfHasArgs
-
-                expect({callIfHasArgs(countCalls, 1, nil, nil)}):is({1})
-                expect(calls):is(1)
-                expect({callIfHasArgs(countCalls, nil, true, nil)}):is({nil, true, nil})
-                expect(calls):is(2)
-            end),
-
-            it "doesn't call the function if all argument values are nil"
-            :doing(function()
-                local calls = 0
-                local function countCalls(...)
-                    calls = calls + 1
-                    return ...
-                end
-
-                local callIfHasArgs = fn.chain._callIfHasArgs
-
-                expect({callIfHasArgs(countCalls, nil, nil, nil)}):is({})
-                expect(calls):is(0)
-            end),
-        }
     },
 
     context "compare" {
@@ -702,6 +577,135 @@ return describe "cp.fn" {
 
             expect(concatDoubleLenString("alpha", "beta")):is("18")
         end),
-    }
+    },
 
+    context "private" {
+
+        context "_chain2" {
+            it "calls the second function if the first function returns a value"
+            :doing(function()
+                local calls = 0
+                local function countCalls(value)
+                    calls = calls + 1
+                    return value
+                end
+
+                local zeroCount = private._chain2(zero, countCalls)
+
+                expect(zeroCount()):is(0)
+                expect(calls):is(1)
+            end),
+
+            it "does not call the second function if the first function returns nil"
+            :doing(function()
+                local calls = 0
+                local function countCalls(value)
+                    calls = calls + 1
+                    return value
+                end
+
+                local zeroCount = private._chain2(function() return nil end, countCalls)
+
+                expect(zeroCount()):is(nil)
+                expect(calls):is(0)
+            end),
+        },
+
+        context "_chainN" {
+            it "calls the last function if the first function returns a value"
+            :doing(function()
+                local calls = 0
+                local function countCalls(value)
+                    calls = calls + 1
+                    return value
+                end
+
+                local zeroCount = private._chainN(zero, countCalls)
+
+                expect(zeroCount()):is(0)
+                expect(calls):is(1)
+            end),
+
+            it "does not call the last function if the first function returns nil"
+            :doing(function()
+                local calls = 0
+                local function countCalls(value)
+                    calls = calls + 1
+                    return value
+                end
+
+                local chained = private._chainN(function() return nil end, countCalls)
+
+                expect(chained()):is(nil)
+                expect(calls):is(0)
+            end),
+
+            it "calls all three functions if all return a value"
+            :doing(function()
+                local calls = 0
+                local function countCalls(value)
+                    calls = calls + 1
+                    return value
+                end
+
+                local chained = private._chainN(countCalls, countCalls, countCalls)
+
+                expect(chained(1)):is(1)
+                expect(calls):is(3)
+            end),
+
+            it "stops after the second function if it returns nil"
+            :doing(function()
+                local calls = 0
+                local function countCalls(value)
+                    calls = calls + 1
+                    return value
+                end
+
+                local chained = private._chainN(
+                    countCalls,
+                    function()
+                        calls = calls+1
+                        return nil
+                    end,
+                    countCalls
+                )
+
+                expect(chained(1)):is(nil)
+                expect(calls):is(2)
+            end),
+        },
+
+        context("_callIfHasArgs") {
+            it "calls the function if any argument is not nil"
+            :doing(function()
+                local calls = 0
+                local function countCalls(...)
+                    calls = calls + 1
+                    return ...
+                end
+
+                local callIfHasArgs = private._callIfHasArgs
+
+                expect({callIfHasArgs(countCalls, 1, nil, nil)}):is({1})
+                expect(calls):is(1)
+                expect({callIfHasArgs(countCalls, nil, true, nil)}):is({nil, true, nil})
+                expect(calls):is(2)
+            end),
+
+            it "doesn't call the function if all argument values are nil"
+            :doing(function()
+                local calls = 0
+                local function countCalls(...)
+                    calls = calls + 1
+                    return ...
+                end
+
+                local callIfHasArgs = private._callIfHasArgs
+
+                expect({callIfHasArgs(countCalls, nil, nil, nil)}):is({})
+                expect(calls):is(0)
+            end),
+        }
+    }
 }

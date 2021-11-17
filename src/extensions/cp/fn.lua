@@ -44,17 +44,21 @@ setmetatable(mod, {
     end,
 })
 
+-- ============================================================================
+-- Functions
+-- ============================================================================
+
 --- cp.fn.all(fns | ...) -> function(...) -> any | nil
 --- Function
---- Returns a function that passes its arguments to all the functions in `fns` and
---- returns the last result, if all functions return a 'truthy' value.
+--- A combinator that returns a function that passes its arguments to all the functions in `fns` and
+--- returns the last result, if all functions return a `truthy` value.
 --- Otherwise, it returns `nil`.
 ---
 --- Parameters:
 ---  * fns | ... - A table or list of functions to call.
 ---
 --- Returns:
----  * A function that passes its arguments to all the functions in `fns` and returns the last result, if all functions return a 'truthy' value.
+---  * A function that passes its arguments to all the functions in `fns` and returns the last result, if all functions return a `truthy` value.
 function mod.all(...)
     local fns = packArgs(...)
     local fnCount = #fns
@@ -78,8 +82,8 @@ end
 
 --- cp.fn.any(fns | ...) -> function(...) -> any | nil
 --- Function
---- Returns a function that passes its arguments to all the functions in `fns` and returns the first `truthy` result,
---- or `nil` if all functions return a 'falsy' value.
+--- A combinator that returns a function that passes its arguments to all the functions in
+--- `fns` and returns the first `truthy` result, or `nil` if all functions return a `falsy` value.
 ---
 --- Parameters:
 ---  * fns | ... - A table or list of functions to call.
@@ -110,7 +114,7 @@ end
 
 --- cp.fn.none(fns | ...) -> function(...) -> any | nil
 --- Function
---- Returns a function that passes its arguments to all the functions in `fns` and
+--- A combinator that returns a function that passes its arguments to all the functions in `fns` and
 --- returns `true` if the first return value from each is `falsey`, otherwise it returns `false`.
 ---
 --- Parameters:
@@ -138,7 +142,8 @@ end
 
 --- cp.fn.fork(...) -> function(value) -> ...
 --- Function
---- Returns a function that returns the result of calling `...` with the functions passed in.
+--- A combinator that returns a function that returns the result of calling `...` with the functions passed in.
+--- This can be used to split an input into multiple outputs.
 ---
 --- Parameters:
 ---  * ... - A table or list of functions to call.
@@ -179,175 +184,9 @@ function mod.call(fn, ...)
     return fn(...)
 end
 
--- ========================================================================
--- chain
--- ========================================================================
-
--- _callIfHasArgs(fn, ...) -> ...
--- Function
--- Calls the function `fn` with the arguments `...` if the function has arguments.
--- If not, it returns `nil`.
---
--- Parameters:
---  * fn - The function to call.
---  * ... - The arguments to pass to the function.
---
--- Returns:
---  * The results of the function call, or nothing if the function has no arguments.
-local function _callIfHasArgs(fn, ...)
-    if hasNone(...) then return end
-    return fn(...)
-end
-
--- _chain2(a, b) -> function(...) -> any
--- Function
--- Returns a function that calls `a` with the arguments `...`. If `a` returns any values, it calls `b` with the results of `a`.
--- Otherwise, it does not call `b` and returns `nil`.
---
--- Parameters:
---  * a - The first function to call.
---  * b - The second function to call.
---
--- Returns:
---  * A function that chains `a` with `b`.
-local function _chain2(a, b)
-    return function(...)
-        return _callIfHasArgs(b, a(...))
-    end
-end
-
--- _chainN(...) -> function(...) -> any
--- Function
--- Returns a function which will chain each function in `...` together.
--- If any of the functions does not return any values, it will return `nil`
--- and not call any further functions in the chain.
---
--- Parameters:
---  * ... - A list of functions to call.
---
--- Returns:
---  * A function that chains each function in `...` together.
-local function _chainN(a, b, ...)
-    if not a then
-        -- return values unchanged
-        return function(...) return ... end
-    end
-    if not b then
-        return a
-    end
-    return _chainN(_chain2(a, b), ...)
-end
-
--- chain_link is the table returned when creating linked chains via the `|` and `>>` operators.
-local chain_link = {}
-
--- _getCallable(value) -> function
--- Function
--- Returns the function from the value.
--- If the value is a chain_link, it returns the function from the chain_link.
--- If the value is callable, return the value.
--- Otherwise, return `nil`.
---
--- Parameters:
---  * value - The value to get the function from.
---
--- Returns:
---  * The function from the value.
-local function _getCallable(value)
-    if isTable(value) and getmetatable(value) == chain_link then
-        return value.fn
-    elseif isCallable(value) then
-        return value
-    else
-        error("Expected a callable value but got " .. tostring(value), 3)
-    end
-end
-
--- new_chain_link(fn) -> table
--- Constructor
--- Creates a new table that represents a chain link.
---
--- Parameters:
---  * fn - The function to call.
---
--- Returns:
---  * A new table that represents a chain link.
-local function new_chain_link(fn)
-    return setmetatable({fn = fn}, chain_link)
-end
-
-local function next_chain_link(left, right)
-    left = _getCallable(left)
-    if not left then
-        error("Expected left side to be callable", 2)
-    end
-    right = _getCallable(right)
-    if not right then
-        error("Expected right side to be callable", 2)
-    end
-    return new_chain_link(_chain2(left, right))
-end
-
--- chain.link >> function(...) -> chain.link
--- Operator
--- Receives a function and returns a chain.link
-chain_link.__shr = next_chain_link
-
--- chain.link(...) -> any
--- Method
--- Returns the result of the chained functions.
---
--- Parameters:
---  * ... - The arguments for the chained functions.
---
--- Returns:
---  * The result of the chained functions.
-function chain_link:__call(...)
-    return self.fn(...)
-end
-
-local function chain_operator(_, right)
-    if not isCallable(right) then
-        error("Expected right side to be callable", 2)
-    end
-    return new_chain_link(right)
-end
-
--- internal table for the chain functions
-local chain = setmetatable({
-    _chain2 = _chain2,
-    _chainN = _chainN,
-    _callIfHasArgs = _callIfHasArgs,
-}, {
-    -- allows the table to be called like a function.
-    __call = function(_, ...)
-        return _chainN(...)
-    end,
-
-    -- allow using `//` to chain functions.
-    __idiv = chain_operator,
-})
-
---- cp.fn.chain(...) -> function(...) -> ...
---- Function
---- Chain a series of functions together, passing the results of each function on to the next one, returning the last result,
---- or returning `nil` immediately after all results of a function are `nil`.
----
---- Parameters:
----  * ... - A list of functions.
----
---- Returns:
----  * A function that takes any number of inputs and returns any number of inputs.
----
---- Notes:
----  * The difference between `chain` and `pipe` is that chain will fail early with a `nil` result, while `pipe` will pass the `nil` onto the next function.
----  * Alternately, you can create a chain using the `|` operator, followed by `>>` for each subsequent function. Eg: `chain | fn1 >> fn2 >> fn3`.
----  * If using the alternate syntax, you may have to put parentheses around the chain if mixing with other operators like `pipe` or `compose`.
-mod.chain = chain
-
 --- cp.fn.compare(...) -> function(...) -> boolean
 --- Function
---- Returns a function that checks each provided comparator in turn,
+--- A combinator that returns a function that checks each provided comparator in turn,
 --- returning `true` if the given comparator returns `true`, otherwise if the values are equal,
 --- checks the next comparator, and so on.
 ---
@@ -384,7 +223,8 @@ end
 
 --- cp.fn.compose(fns | ...) -> function(...) -> ...
 --- Function
---- Backwards composition of functions, returning a function that is the composition of a list of functions processed from last to first.
+--- A combinator that performs backwards composition of functions, returning a function that
+--- is the composition of a list of functions processed from last to first.
 ---
 --- Parameters:
 ---  * fns | ... - A table or a list of functions.
@@ -404,7 +244,7 @@ end
 
 --- cp.fn.constant(value) -> function(...) -> value
 --- Function
---- Returns a function that returns the value `value`.
+--- A combinator that returns a function that always returns the `value`.
 ---
 --- Parameters:
 ---  * value - The value to return.
@@ -461,7 +301,7 @@ end
 
 --- cp.fn.flip(fn) -> function(...) -> function(...) -> any
 --- Function
---- Flips the order of the next two arguments to a curried function.
+--- A cobinator that flips the order of the next two arguments to a curried function.
 ---
 --- Parameters:
 ---  * fn - The function to flip.
@@ -493,7 +333,7 @@ end
 
 --- cp.fn.over(setter, fn) -> function
 --- Function
---- Returns a function that applies the transform function to the `setter`.
+--- A combinator that returns a function that applies the transform function to the `setter`.
 ---
 --- Parameters:
 ---  * setter - An immutable setter function.
@@ -507,7 +347,7 @@ end
 
 --- cp.fn.pipe(fns | ...) -> function(...) -> ...
 --- Function
---- Pipe a series of functions together, passing the results of each function on to the next one.
+--- A combinator that pipes a series of functions together, passing the results of each function on to the next one.
 --- The returned function takes any number of inputs and may return any number of inputs,
 --- depending on the results of the final function.
 ---
@@ -530,7 +370,7 @@ function mod.pipe(...)
     end
 end
 
--- TODO: Figure out the common name for `prefix` in functional programming.
+-- TODO: Figure out the common name for `prefix` in functional programming. Similar to `with`.
 
 --- cp.fn.prefix(fn, ...) -> function(...) -> ...
 --- Function
@@ -643,9 +483,9 @@ function mod.uncurry(fn, argCount)
     return _uncurryWith(fn, argCount)
 end
 
---- cp.fn.with(value, fn) -> function
+--- cp.fn.with(value, fn) -> function(...) -> ...
 --- Function
---- Returns a function that will call the provided function with the provided value as the first argument.
+--- A combinator that returns a function that will call the provided function with the provided value as the first argument.
 ---
 --- Parameters:
 ---  * value - The value to pass to the function.
@@ -658,5 +498,166 @@ function mod.with(value, fn)
         return fn(value, ...)
     end
 end
+
+-- ============================================================================
+-- Operator Functions
+-- ============================================================================
+
+-- A key for retrieving the original function from wrapper tables.
+local FN = {}
+
+-- _callable(value) -> function
+-- Function
+-- Returns the function from the value.
+-- If the value is a chain_link, it returns the function from the chain_link.
+-- If the value is callable, return the value.
+-- Otherwise, return `nil`.
+--
+-- Parameters:
+--  * value - The value to get the function from.
+--
+-- Returns:
+--  * The function from the value.
+local function _callable(value)
+    if isTable(value) and value[FN] then
+        return value[FN]
+    elseif isCallable(value) then
+        return value
+    else
+        error("Expected a callable value but got " .. tostring(value), 3)
+    end
+end
+
+-- _callIfHasArgs(fn, ...) -> ...
+-- Function
+-- Calls the function `fn` with the arguments `...` if the function has arguments.
+-- If not, it returns `nil`.
+--
+-- Parameters:
+--  * fn - The function to call.
+--  * ... - The arguments to pass to the function.
+--
+-- Returns:
+--  * The results of the function call, or nothing if the function has no arguments.
+local function _callIfHasArgs(fn, ...)
+    if hasNone(...) then return end
+    return fn(...)
+end
+
+-- ============================================================================
+-- chain
+-- ============================================================================
+
+-- _chain2(a, b) -> function(...) -> any
+-- Function
+-- Returns a function that calls `a` with the arguments `...`. If `a` returns any values, it calls `b` with the results of `a`.
+-- Otherwise, it does not call `b` and returns `nil`.
+--
+-- Parameters:
+--  * a - The first function to call.
+--  * b - The second function to call.
+--
+-- Returns:
+--  * A function that chains `a` with `b`.
+local function _chain2(a, b)
+    return function(...)
+        return _callIfHasArgs(b, a(...))
+    end
+end
+
+-- _chainN(...) -> function(...) -> any
+-- Function
+-- Returns a function which will chain each function in `...` together.
+-- If any of the functions does not return any values, it will return `nil`
+-- and not call any further functions in the chain.
+--
+-- Parameters:
+--  * ... - A list of functions to call.
+--
+-- Returns:
+--  * A function that chains each function in `...` together.
+local function _chainN(a, b, ...)
+    if not a then
+        -- return values unchanged
+        return function(...) return ... end
+    end
+    if not b then
+        return a
+    end
+    return _chainN(_chain2(a, b), ...)
+end
+
+-- chain_link is the metatable for tables returned when creating linked chains via the `//` and `>>` operators.
+local chain_link = {}
+
+-- new_chain_link(fn) -> table
+-- Constructor
+-- Creates a new table that represents a chain link.
+--
+-- Parameters:
+--  * fn - The function to call.
+--
+-- Returns:
+--  * A new table that represents a chain link.
+local function new_chain_link(fn)
+    return setmetatable({[FN] = fn}, chain_link)
+end
+
+-- chain.link >> function(...) -> chain.link
+-- Operator
+-- Receives a function and returns a chain.link
+function chain_link.__shr(left, right)
+    left = _callable(left)
+    right = _callable(right)
+    return new_chain_link(_chain2(left, right))
+end
+
+-- chain.link(...) -> any
+-- Method
+-- Returns the result of the chained functions.
+--
+-- Parameters:
+--  * ... - The arguments for the chained functions.
+--
+-- Returns:
+--  * The result of the chained functions.
+function chain_link:__call(...)
+    return self[FN](...)
+end
+
+-- internal table for the chain functions
+local chain = setmetatable({}, {
+    -- allows the table to be called like a function.
+    __call = function(_, ...) return _chainN(...) end,
+
+    -- allow using `//` to chain functions.
+    __idiv = function(_, right)
+        return new_chain_link(_callable(right))
+    end
+})
+
+--- cp.fn.chain(...) -> function(...) -> ...
+--- Function
+--- Chain a series of functions together, passing the results of each function on to the next one, returning the last result,
+--- or returning `nil` immediately after all results of a function are `nil`.
+---
+--- Parameters:
+---  * ... - A list of functions.
+---
+--- Returns:
+---  * A function that takes any number of inputs and returns any number of inputs.
+---
+--- Notes:
+---  * The difference between `chain` and `pipe` is that chain will fail early with a `nil` result, while `pipe` will pass the `nil` onto the next function.
+---  * Alternately, you can create a chain using the `//` operator, followed by `>>` for each subsequent function. Eg: `chain // fn1 >> fn2 >> fn3`.
+---  * If using the alternate syntax, you may have to put parentheses around the chain if mixing with other operators like `pipe` or `compose`.
+mod.chain = chain
+
+-- private functions, for testing.
+mod._private = {
+    _chain2 = _chain2,
+    _chainN = _chainN,
+    _callIfHasArgs = _callIfHasArgs,
+}
 
 return mod

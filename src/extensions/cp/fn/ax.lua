@@ -117,16 +117,15 @@ mod.uielementList = uielementList
 ---   * If it is a `table` with a `children` function, it is called and the result is returned.
 ---   * If it is a `table` with a `children` field, the `children` field is returned.
 ---   * Otherwise, if it's any `table`, that table is returned.
-
 mod.children = fn.any(
     -- if it is a uielement that has `AXChildren` then use that
-    chain(uielement, get("AXChildren")),
+    chain // uielement >> get "AXChildren",
     -- if it's a resolvable uielementList, then use that
     uielementList,
     -- if it has a `children` method then call that
     fn.table.call "children",
     -- if it has a `children` field that is a table then return that
-    chain(get "children", fn.value.filter(is.table))
+    chain // get "children" >> fn.value.filter(is.table)
 )
 
 --- cp.fn.ax.childrenMatching(predicate[, comparator]) -> table of axuielement | nil
@@ -135,13 +134,13 @@ mod.children = fn.any(
 ---
 --- Parameters:
 ---  * predicate - The predicate to match.
----  * comparator - An optional comparator to use.
+---  * comparator - An optional comparator to use. Defaults to [topDown](#topDown).
 ---
 --- Returns:
 ---  * A table of `axuielement`s that match the given `predicate`.
 function mod.childrenMatching(predicate, comparator)
     comparator = comparator or mod.topDown
-    return pipe(mod.children, ifilter(predicate), sort(comparator))
+    return chain // mod.children >> ifilter(predicate) >> sort(comparator)
 end
 
 --- cp.fn.ax.childMatching(predicate[, index][, comparator]) -> function(uivalue) -> axuielement | nil
@@ -383,7 +382,7 @@ end
 function mod.prop(uiFinder, attributeName, settable)
     if prop.is(uiFinder) then
         return uiFinder:mutate(
-            chain(uielement, get(attributeName)),
+            chain // uielement >> get(attributeName),
             settable and function(newValue, original)
                 local ui = original()
                 return ui and ui:setAttributeValue(attributeName, newValue)
@@ -404,7 +403,7 @@ end
 ---  * A `function` which will return `true` if the `value` is a match.
 function mod.matchesIf(...)
     return pipe(
-        chain(uielement, fn.all(...)),
+        chain // uielement >> fn.all(...),
         isTruthy
     )
 end
