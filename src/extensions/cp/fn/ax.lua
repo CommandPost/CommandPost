@@ -8,19 +8,19 @@ local require               = require
 
 -- local log                   = require "hs.logger" .new "fnax"
 
-local fn                    = require "cp.fn"
-local is                    = require "cp.is"
-local prop                  = require "cp.prop"
+local is                            = require "cp.is"
+local fn                            = require "cp.fn"
+local prop                          = require "cp.prop"
 
-local isCallable            = is.callable
-local isUserdata            = is.userdata
-local isTable               = is.table
-local isTruthy              = is.truthy
-local constant              = fn.constant
-local chain, pipe           = fn.chain, fn.pipe
-local get, ifilter, map     = fn.table.get, fn.table.ifilter, fn.table.map
+local isCallable                    = is.callable
+local isUserdata                    = is.userdata
+local isTable                       = is.table
+local isTruthy                      = is.truthy
+local constant                      = fn.constant
+local chain, pipe                   = fn.chain, fn.pipe
+local get, ifilter, map, sort       = fn.table.get, fn.table.ifilter, fn.table.map, fn.table.sort
 
-local pack, unpack, sort    = table.pack, table.unpack, table.sort
+local pack, unpack                  = table.pack, table.unpack
 
 local mod = {}
 
@@ -114,7 +114,7 @@ local function isInvalid(value, verifyFn)
     return value == nil or not mod.isValid(value) or verifyFn and not verifyFn(value)
 end
 
---- cp.fn.ax.cache(source, key[, verifyFn]) -> function(finderFn) -> axuielement
+--- cp.fn.ax.cache(source, key[, verifyFn]) -> function(finderFn) -> function(...) -> axuielement
 --- Function
 --- A combinator which checks if the cached value at the `source[key]` is a valid axuielement. If not
 --- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
@@ -131,25 +131,37 @@ end
 ---
 --- Returns:
 ---  * The valid cached value.
+---
+--- Notes:
+---  * If the `verifyFn` is provided, it will be called to check that the cached
+---    value is still valid. It is passed a single parameter (the axuielement) and is expected
+---    to return `true` or `false`.
+---  * Example:
+---    ```lua
+---    ax.cache(self, "_ui", MyElement.matches)(
+---        fn.table.get(1) -- return the first child of the element.
+---    )
 function mod.cache(source, key, verifyFn)
     return function(finderFn)
-        local value
-        if source then
-            value = source[key]
-        end
-
-        if value == nil or isInvalid(value, verifyFn) then
-            value = finderFn()
-            if isInvalid(value, verifyFn) then
-                value = nil
+        return function(...)
+            local value
+            if source then
+                value = source[key]
             end
-        end
 
-        if source then
-            source[key] = value
-        end
+            if value == nil or isInvalid(value, verifyFn) then
+                value = finderFn(...)
+                if isInvalid(value, verifyFn) then
+                    value = nil
+                end
+            end
 
-        return value
+            if source then
+                source[key] = value
+            end
+
+            return value
+        end
     end
 end
 

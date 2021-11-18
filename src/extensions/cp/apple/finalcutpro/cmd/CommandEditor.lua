@@ -26,7 +26,7 @@ local WaitUntil                     = require "cp.rx.go.WaitUntil"
 local fn                            = require "cp.fn"
 local ax                            = require "cp.fn.ax"
 local chain                         = fn.chain
-local get, ifilter                  = fn.table.get, fn.table.ifilter
+local get                           = fn.table.get
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
 
@@ -45,9 +45,9 @@ CommandEditor.static.matches = ax.matchesIf(
     -- It's a modal
     get "AXModal",
     -- It has a PopUpButton
-    chain // ax.children >> ifilter(PopUpButton.matches) >> fn.table.hasAtLeast(1),
+    chain // ax.childrenMatching(PopUpButton.matches) >> fn.table.hasAtLeast(1),
     -- It has 4 Groups
-    chain // ax.children >> ifilter(Group.matches) >> fn.table.hasExactly(4)
+    chain // ax.childrenMatching(Group.matches), fn.table.hasExactly(4)
 )
 
 -- _findWindowUI(windows) -> window | nil
@@ -77,7 +77,9 @@ function CommandEditor:initialize(app)
 --- Field
 --- The `axuielement` for the window.
     local UI = app.windowsUI:mutate(
-        chain // ax.uielement >> _findWindowUI >> ax.cache(self, "_ui", CommandEditor.matches)
+        ax.cache(self, "_ui", CommandEditor.matches)(
+            chain // ax.children >> _findWindowUI
+        )
     )
 
     Dialog.initialize(self, app.app, UI)
