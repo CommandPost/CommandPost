@@ -36,8 +36,14 @@ return describe "cp.fn.value" {
             local map = value.map(function(v) return v + 1 end)
 
             expect(map(1)):is(2)
+        end),
+
+        it "ignores the transform function if the value is nil"
+        :doing(function()
+            local map = value.map(function(v) return v + 1 end)
+
             expect(map(nil)):is(nil)
-        end)
+        end),
     },
 
     context "matches" {
