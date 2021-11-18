@@ -13,7 +13,8 @@
 
 local require               = require
 
--- local log                   = require "hs.logger".new "cp.fn"
+local log                   = require "hs.logger".new "cp.fn"
+local inspect               = require "cp.dev" .inspect
 
 local fnutils               = require "hs.fnutils"
 local is                    = require "cp.is"
@@ -652,6 +653,55 @@ local chain = setmetatable({}, {
 ---  * Alternately, you can create a chain using the `//` operator, followed by `>>` for each subsequent function. Eg: `chain // fn1 >> fn2 >> fn3`.
 ---  * If using the alternate syntax, you may have to put parentheses around the chain if mixing with other operators like `pipe` or `compose`.
 mod.chain = chain
+
+--- cp.fn.debug(message, ...) -> function(...) -> ...
+--- Function
+--- Returns a function that will print the provided message to the console.
+--- Optional functions can be passed in, which will be provided the values passed to the returned function.
+--- If not provided, the values will be passed into the message for formatting directly.
+--- The returned function will always return the values passed in.
+---
+--- Parameters:
+---  * message - The message to print to the console.
+---  * ... - Optional functions to call with the values passed to the returned function.
+---
+--- Returns:
+---  * A function that will print the provided message to the console.
+---
+--- Notes:
+---  * This is useful for debugging, but is not recommended for production code.
+---  * For example, the following will return "b" and also print `"table: 0xXXXXXXXXX"` and `"b"` to the console:
+---    `fn.chain // fn.constant({"a", "b", "c"}) >> fn.debug("%d") >> fn.table.get(2) >> fn.debug("%d")`
+function mod.debug(message, ...)
+    local args = pack(...)
+    return function(...)
+        local values = pack(...)
+        -- if present, use the matching function to process each value
+        for i,arg in ipairs(args) do
+            values[i] = arg(values[i])
+        end
+        -- print the message
+        log.df(message, unpack(values))
+        -- return the values
+        return ...
+    end
+end
+
+-- cp.fn.inspect(options) -> function(value) -> string
+-- Function
+-- Returns a function that will inspect the value and return a string.
+--
+-- Parameters:
+--  * options - The options to use when inspecting the value.
+--
+-- Returns:
+--  * A function that will inspect the value and return a string.
+function mod.inspect(options)
+    options = options or {depth=2}
+    return function(value)
+        return inspect(value, options)
+    end
+end
 
 -- private functions, for testing.
 mod._private = {
