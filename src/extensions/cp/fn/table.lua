@@ -43,6 +43,22 @@ function mod.call(name, ...)
     end
 end
 
+--- cp.fn.table.copy(table) -> table
+--- Function
+--- Performs a shallow copy of the specified table using `pairs`.
+---
+--- Parameters:
+---  * table - The table to copy.
+---
+--- Returns:
+---  * A copy of the table.
+function mod.copy(table)
+    local result = {}
+    for k, v in pairs(table) do
+        result[k] = v
+    end
+    return result
+end
 
 --- cp.fn.table.first(table) -> any | nil
 --- Function
@@ -200,7 +216,7 @@ end
 
 --- cp.fn.table.sort(...) -> function(table) -> table
 --- Function
---- Returns a function that accepts a table and sorts it based on the `compareFn`.
+--- A combinator that returns a function that accepts a table and sorts it based on the `compareFn`.
 ---
 --- Parameters:
 ---  * ... - The list of compare functions to use, in order.
@@ -210,13 +226,15 @@ end
 ---
 --- Notes:
 ---  * The compare functions should take two arguments and return `true` if the first argument is less than the second.
----  * The returned function will mutate the table passed in, as well as returning it.
+---  * The returned result will be a shallow copy of the original in a new table. The original table will not be modified.
+---  * If no compare functions are provided, the table will be sorted "natural" sorting order (`a < b`).
 ---  * Example usage: `fn.table.sort(function(a, b) return a > b end)({1, 2, 3})`
 function mod.sort(...)
     local compareFn = cpfn.compare(...)
     return function(t)
-        table.sort(t, compareFn)
-        return t
+        local result = mod.copy(t)
+        table.sort(result, compareFn)
+        return result
     end
 end
 

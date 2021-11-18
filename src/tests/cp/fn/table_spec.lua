@@ -13,6 +13,42 @@ local function incr(x) return x + 1 end
 local function double(x) return x * 2 end
 
 return describe "cp.fn.table" {
+    context "call" {
+        it "should call a named property on a table, passing on the result"
+        :doing(function()
+            local t = {
+                x = 1
+            }
+            function t:add(y)
+                self.x = self.x + y
+            end
+
+            local callAdd2 = fntable.call("add", 2)
+
+            -- calling doesn't return anything
+            expect(callAdd2(t)):is(nil)
+            -- but the table is updated
+            expect(t.x):is(3)
+        end)
+    },
+
+    context "copy" {
+        it "should copy the table"
+        :doing(function()
+            local t = {1, 2, 3}
+            local result = fntable.copy(t)
+            expect(result):is(t)
+        end),
+
+        it "should not modify the original when modifying the copy"
+        :doing(function()
+            local t = {1, 2, 3}
+            local result = fntable.copy(t)
+            result[1] = 10
+            expect(t[1]):is(1)
+        end),
+    },
+
     context "filter" {
         it "can filter vowels from a list of characters"
         :doing(function()
@@ -207,6 +243,15 @@ return describe "cp.fn.table" {
                 {x = 2, y = 2},
                 {x = 3, y = 4},
             })
+        end),
+
+        it "should not modify the original unordered list after sorting"
+        :doing(function()
+            local t = {"c", "a", "b"}
+            local naturalSort = fntable.sort()
+
+            expect(naturalSort(t)):is({"a", "b", "c"})
+            expect(t):is({"c", "a", "b"})
         end),
     },
 
