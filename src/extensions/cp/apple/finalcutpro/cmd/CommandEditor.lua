@@ -270,7 +270,7 @@ function CommandEditor.lazy.value:shift()
     ))
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor.optionModifier <cp.ui.CheckBox>
+--- cp.apple.finalcutpro.cmd.CommandEditor.option <cp.ui.CheckBox>
 --- Field
 --- The "Option" [CheckBox](cp.ui.CheckBox.md).
 function CommandEditor.lazy.value:option()
@@ -279,7 +279,7 @@ function CommandEditor.lazy.value:option()
     ))
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor.controlModifier <cp.ui.CheckBox>
+--- cp.apple.finalcutpro.cmd.CommandEditor.control <cp.ui.CheckBox>
 --- Field
 --- The "Control" [CheckBox](cp.ui.CheckBox.md).
 function CommandEditor.lazy.value:control()
