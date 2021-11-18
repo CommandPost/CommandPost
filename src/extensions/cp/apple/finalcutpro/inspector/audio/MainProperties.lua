@@ -15,7 +15,6 @@ local RadioButton           = require "cp.ui.RadioButton"
 
 local axutils               = require "cp.ui.axutils"
 local childFromLeft         = axutils.childFromLeft
-local childFromRight        = axutils.childFromRight
 
 local IP                    = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 
@@ -53,11 +52,11 @@ function MainProperties:initialize(parent, uiFinder)
         audioEnhancements       = section "FFAudioAnalysisLabel_EnhancementsBrick" {
 
             equalization        = section "FFAudioAnalysisLabel_Equalization" {}
-                                  :extend(function(row)
-                                        local children = function() return row:children() end
-                                        row.mode = PopUpButton(row, chain(children, fn.table.firstMatching(PopUpButton.matches)))
-                                        row.enhanced = Button(row, chain(children, fn.table.firstMatching(Button.matches)))
-                                  end),
+                                    :extend(function(row)
+                                        local children = fn.with(row, row.children)
+                                        row.mode = PopUpButton(row, chain // children >> fn.table.firstMatching(PopUpButton.matches))
+                                        row.enhanced = Button(row, chain // children >> fn.table.firstMatching(Button.matches))
+                                    end),
 
             audioAnalysis       = section "FFAudioAnalysisLabel_AnalysisBrick" {
 
@@ -72,18 +71,15 @@ function MainProperties:initialize(parent, uiFinder)
 
                 humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
                     frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)
-                                        row.fiftyHz     = RadioButton(row, function()
-                                            return childFromLeft(row:children(), 1, RadioButton.matches)
-                                        end)
-                                        row.sixtyHz     = RadioButton(row, function()
-                                            return childFromRight(row:children(), 1, RadioButton.matches)
-                                        end)
-                                  end),
+                                        local radioButtons = chain // fn.with(row, row.children) >> fn.table.ifilter(RadioButton.matches)
+                                        row.fiftyHz = RadioButton(row, chain // radioButtons >> get(1))
+                                        row.sixtyHz = RadioButton(row, chain // radioButtons >> fn.table.sort(ax.rightToLeft) >> get(1))
+                                    end),
                 }
             }
-                                  :extend(function(row)
-                                        row.magic = Button(row, function() return childFromLeft(row:children(), 1, Button.matches) end)
-                                  end),
+            :extend(function(row)
+                row.magic = Button(row, function() return childFromLeft(row:children(), 1, Button.matches) end)
+            end),
         },
 
         pan                     = section "FFAudioIntrinsicChannels_Pan" {
@@ -107,7 +103,7 @@ end
 --- Field
 --- The `axuielement` object that represents the content of the MainProperties group.
 function MainProperties.lazy.prop:contentUI()
-    return self.UI:mutate(chain(ax.children, get(1), get(1)))
+    return self.UI:mutate(chain // ax.children >> get(1) >> get(1))
 end
 
 return MainProperties

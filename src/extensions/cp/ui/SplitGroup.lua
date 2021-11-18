@@ -51,7 +51,7 @@ end
 --- Field
 --- The list of `axuielementObject`s for the sections.
 function SplitGroup.lazy.prop:childrenUI()
-    return self.UI:mutate(chain(ax.children, sort(ax.topDown)))
+    return self.UI:mutate(ax.children)
 end
 
 --- cp.ui.SplitGroup.children <table: cp.ui.Element, read-only>
@@ -59,7 +59,7 @@ end
 --- All children of the Split Group, based on the `childInits` passed to the constructor.
 function SplitGroup.lazy.value:children()
     return fn.table.imap(function(init, index)
-        return init(self, self.childrenUI:mutate(chain(ax.children, get(index))))
+        return init(self, self.childrenUI:mutate(chain // ax.children  >> get(index)))
     end, self.childInits)
 end
 
@@ -73,11 +73,11 @@ end
 --- cp.ui.SplitGroup.splitters <table: cp.ui.Splitter, read-only>
 --- Field
 --- The `Splitters` of the `SplitGroup`. There will be one less splitter than there are sections.
-SplitGroup.lazy.value.splitters = chain(get "children", ifilter(Splitter.matches))
+SplitGroup.lazy.value.splitters = chain // get "children" >> ifilter(Splitter.matches)
 
 --- cp.ui.SplitGroup.sections <table: table of cp.ui.Element, read-only>
 --- Field
 --- The `Sections` of the `SplitGroup`. Each section will be a `table` of `cp.ui.Element`s.
-SplitGroup.lazy.value.sections = chain(get "children", fn.table.split(Splitter.matches))
+SplitGroup.lazy.value.sections = chain // get "children" >> fn.table.split(Splitter.matches)
 
 return SplitGroup

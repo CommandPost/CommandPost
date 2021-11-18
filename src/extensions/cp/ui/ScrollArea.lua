@@ -11,6 +11,8 @@ local axutils       = require "cp.ui.axutils"
 local Element       = require "cp.ui.Element"
 local ScrollBar     = require "cp.ui.ScrollBar"
 
+local chain         = fn.chain
+local get           = fn.table.get
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 
@@ -43,9 +45,7 @@ end
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
-    return self.UI:mutate(
-        fn.chain(fn.table.get("AXContents"), fn.table.first)
-    )
+    return self.UI:mutate(chain // get "AXContents" >> fn.table.first)
 end
 
 --- cp.ui.ScrollArea.verticalScrollBar <cp.ui.ScrollBar>

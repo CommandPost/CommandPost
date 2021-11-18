@@ -18,7 +18,6 @@ local isTable               = is.table
 local isTruthy              = is.truthy
 local constant              = fn.constant
 local chain, pipe           = fn.chain, fn.pipe
-local default               = fn.value.default
 local get, ifilter, map     = fn.table.get, fn.table.ifilter, fn.table.map
 
 local pack, unpack, sort    = table.pack, table.unpack, table.sort
@@ -100,6 +99,59 @@ end
 mod.isUIElement = isUIElement
 mod.uielement = uielement
 mod.uielementList = uielementList
+
+-- isInvalid(value[, verifyFn]) -> boolean
+-- Function
+-- Checks to see if an `axuielement` is invalid.
+--
+-- Parameters:
+--  * value     - an `axuielement` object.
+--  * verifyFn  - an optional function which will check the cached element to verify it is still valid.
+--
+-- Returns:
+--  * `true` if the `value` is invalid or not verified, otherwise `false`.
+local function isInvalid(value, verifyFn)
+    return value == nil or not mod.isValid(value) or verifyFn and not verifyFn(value)
+end
+
+--- cp.fn.ax.cache(source, key[, verifyFn]) -> function(finderFn) -> axuielement
+--- Function
+--- A combinator which checks if the cached value at the `source[key]` is a valid axuielement. If not
+--- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
+---
+--- If the optional `verifyFn` is provided, it will be called to check that the cached
+--- value is still valid. It is passed a single parameter (the axuielement) and is expected
+--- to return `true` or `false`.
+---
+--- Parameters:
+---  * source       - the table containing the cache
+---  * key          - the key the value is cached under
+---  * finderFn     - the function which will return the element if not found.
+---  * [verifyFn]   - an optional function which will check the cached element to verify it is still valid.
+---
+--- Returns:
+---  * The valid cached value.
+function mod.cache(source, key, verifyFn)
+    return function(finderFn)
+        local value
+        if source then
+            value = source[key]
+        end
+
+        if value == nil or isInvalid(value, verifyFn) then
+            value = finderFn()
+            if isInvalid(value, verifyFn) then
+                value = nil
+            end
+        end
+
+        if source then
+            source[key] = value
+        end
+
+        return value
+    end
+end
 
 --- cp.fn.ax.children(value) -> table | nil
 --- Function
@@ -241,6 +293,22 @@ end
 --- Returns:
 ---  * A function that accepts an `axuielement` [uivalue](#uielement) which in turn returns `true` if the `uivalue` has the given `AXRole`.
 mod.hasRole = fn.with("AXRole", mod.hasAttributeValue)
+
+--- cp.fn.ax.isValid(element) -> boolean
+--- Function
+--- Checks if the axuilelement is still valid - that is, still active in the UI.
+---
+--- Parameters:
+---  * element  - the axuielement
+---
+--- Returns:
+---  * `true` if the element is valid.
+function mod.isValid(element)
+    if element ~= nil and type(element) ~= "userdata" then
+        error(string.format("The element must be \"userdata\" but was %q.", type(element)))
+    end
+    return element ~= nil and element:isValid()
+end
 
 -- ========================================================
 -- Comparators

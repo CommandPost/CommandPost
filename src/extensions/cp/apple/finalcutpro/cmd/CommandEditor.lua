@@ -8,7 +8,6 @@ local require                       = require
 
 local just                          = require "cp.just"
 
-local axutils                       = require "cp.ui.axutils"
 local Button                        = require "cp.ui.Button"
 local CheckBox                      = require "cp.ui.CheckBox"
 local Dialog                        = require "cp.ui.Dialog"
@@ -24,47 +23,12 @@ local If                            = require "cp.rx.go.If"
 local Throw                         = require "cp.rx.go.Throw"
 local WaitUntil                     = require "cp.rx.go.WaitUntil"
 
-local childWithRole                 = axutils.childWithRole
-local childrenWithRole              = axutils.childrenWithRole
-
-local topToBottom                   = axutils.compare.topToBottom
-local leftToRight                   = axutils.compare.leftToRight
-
 local fn                            = require "cp.fn"
 local ax                            = require "cp.fn.ax"
 local chain                         = fn.chain
-local ifilter, sort                 = fn.table.ifilter, fn.table.sort
-local axchildren                    = ax.children
+local get, ifilter                  = fn.table.get, fn.table.ifilter
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
-
--- axgroups(value) -> table | nil
--- Function
--- Attempts to extract an `axuielement` from the `value` and return its children that match `Group`,
--- sorted from top to bottom, then left to right.
---
--- Parameters:
---  * value - The value to extract the axuielement from.
---
--- Returns:
---  * The children of the axuielement that match `Group` or `nil`.
-local axgroups = chain(axchildren, ifilter(Group.matches), sort(topToBottom, leftToRight))
-
--- _findWindowUI(windows) -> window | nil
--- Function
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-local function _findWindowUI(windows)
-    for _,window in ipairs(windows) do
-        if CommandEditor.matches(window) then return window end
-    end
-    return nil
-end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.matches(element) -> boolean
 --- Function
@@ -75,14 +39,27 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function CommandEditor.static.matches(element)
-    if Dialog.matches(element) then
-        return element:attributeValue("AXModal")
-           and childWithRole(element, "AXPopUpButton") ~= nil
-           and #childrenWithRole(element, "AXGroup") == 4
-    end
-    return false
-end
+CommandEditor.static.matches = ax.matchesIf(
+    -- It's a Dialog
+    Dialog.matches,
+    -- It's a modal
+    get "AXModal",
+    -- It has a PopUpButton
+    chain // ax.children >> ifilter(PopUpButton.matches) >> fn.table.hasAtLeast(1),
+    -- It has 4 Groups
+    chain // ax.children >> ifilter(Group.matches) >> fn.table.hasExactly(4)
+)
+
+-- _findWindowUI(windows) -> window | nil
+-- Function
+-- Gets the Window UI.
+--
+-- Parameters:
+--  * windows - Table of windows.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
+local _findWindowUI = fn.table.firstMatching(CommandEditor.matches)
 
 --- cp.apple.finalcutpro.cmd.CommandEditor(app) -> CommandEditor
 --- Constructor
@@ -99,13 +76,9 @@ function CommandEditor:initialize(app)
 --- cp.apple.finalcutpro.cmd.CommandEditor.UI <cp.prop: axuielement; read-only>
 --- Field
 --- The `axuielement` for the window.
-    local UI = app.windowsUI:mutate(function(original)
-        return axutils.cache(self, "_ui", function()
-            local windowsUI = original()
-            return windowsUI and _findWindowUI(windowsUI)
-        end,
-        CommandEditor.matches)
-    end)
+    local UI = app.windowsUI:mutate(
+        chain // ax.uielement >> _findWindowUI >> ax.cache(self, "_ui", CommandEditor.matches)
+    )
 
     Dialog.initialize(self, app.app, UI)
 end
@@ -178,9 +151,6 @@ function CommandEditor:hide()
     self.close:press()
     return self
 end
-
--- TODO: Fix this or delete it.
-CommandEditor.hide2 = chain(ax.uielement, ax.childWith("AXSubrole", "AXCloseButton"), ax.performAction("AXPress"))
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doShow() -> cp.rx.go.Statement <boolean>
 --- Method

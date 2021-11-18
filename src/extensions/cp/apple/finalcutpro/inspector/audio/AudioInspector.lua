@@ -84,30 +84,17 @@ function AudioInspector.static.matches(element)
     return split and #split > 5 or false
 end
 
--- AudioInspector.static.matches2 = ax.matchesIf(
---     chain(
---         -- it a BasePanel that is also a Group...
---         filter(BasePanel.matches, Group.matches),
---         -- with exactly one child...
---         ax.children, filter(fn.table.hasExactly(1)),
---         -- which is a SplitGroup...
---         get(1), filter(SplitGroup.matches),
---         -- who has more than 5 children.
---         ax.children, fn.table.hasAtLeast(5)
---     )
--- )
-
--- AudioInspector.static.matches2 = ax.matchesIf(
---     chain |
---     -- it a BasePanel that is also a Group...
---     filter(BasePanel.matches, Group.matches) >>
---     -- with exactly one child...
---     ax.children >> filter(fn.table.hasExactly(1)) >>
---     -- which is a SplitGroup...
---     get(1) >> filter(SplitGroup.matches) >>
---     -- who has more than 5 children.
---     ax.children >> fn.table.hasAtLeast(5)
--- )
+AudioInspector.static.matches2 = ax.matchesIf(
+    chain //
+    -- it a BasePanel that is also a Group...
+    filter(BasePanel.matches, Group.matches) >>
+    -- with exactly one child...
+    ax.children >> filter(fn.table.hasExactly(1)) >>
+    -- which is a SplitGroup...
+    get(1) >> filter(SplitGroup.matches) >>
+    -- who has more than 5 children.
+    ax.children >> fn.table.hasAtLeast(5)
+)
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector(parent) -> cp.apple.finalcutpro.audio.AudioInspector
 --- Constructor

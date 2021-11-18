@@ -50,7 +50,7 @@ end
 --- Field
 --- The `axuielement` object that represents the content of the TopProperties group.
 function TopProperties.lazy.prop:contentUI()
-    return self.UI:mutate(chain(ax.children, get(1)))
+    return self.UI:mutate(chain // ax.children >> get(1))
 end
 
 return TopProperties

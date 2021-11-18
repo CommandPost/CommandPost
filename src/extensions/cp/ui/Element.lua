@@ -12,14 +12,16 @@ local require           = require
 
 local axutils           = require "cp.ui.axutils"
 local go	            = require "cp.rx.go"
-local If                = require "cp.rx.go.If"
+local is                = require "cp.is"
 local lazy              = require "cp.lazy"
 local prop              = require "cp.prop"
 
 local class             = require "middleclass"
 
 local cache             = axutils.cache
-local Do, Given         = go.Do, go.Given
+local Do, Given, If     = go.Do, go.Given, go.If
+local isFunction        = is.fn
+local isCallable        = is.callable
 
 local Element = class("cp.ui.Element"):include(lazy)
 
@@ -33,7 +35,7 @@ local Element = class("cp.ui.Element"):include(lazy)
 --- Returns:
 ---  * `true` if the element is a valid instance of an `hs.axuielement`.
 function Element.static.matches(element)
-    return element ~= nil and type(element.isValid) == "function" and element:isValid()
+    return element ~= nil and isFunction(element.isValid) and element:isValid()
 end
 
 -- Defaults to describing the class by it's class name
@@ -58,7 +60,7 @@ function Element:initialize(parent, uiFinder)
     local UI
     if prop.is(uiFinder) then
         UI = uiFinder
-    elseif type(uiFinder) == "function" then
+    elseif isCallable(uiFinder) then
         UI = prop(function()
             return cache(self, "_ui", function()
                 local ui = uiFinder()
@@ -67,7 +69,7 @@ function Element:initialize(parent, uiFinder)
             self.class.matches)
         end)
     else
-        error "Expected either a cp.prop or function for uiFinder."
+        error "Expected either a cp.prop, function, or callable table for uiFinder."
     end
 
     self.UI = UI
