@@ -253,6 +253,42 @@ return describe "cp.fn" {
             expect(points[4]):is({ x = 2, y = 2 })
             expect(points[5]):is(nil)
         end),
+
+        it "should sort an unordered list of points by x, then y, then z, if a comparison is equal"
+        :doing(function()
+            local compare = fn.compare(function(a, b) return a.x < b.x end, function(a, b) return a.y < b.y end, function(a, b) return a.z < b.z end)
+
+            local points = {
+                { x = 1, y = 2, z = 3 },
+                { x = 2, y = 2, z = 3 },
+                { x = 2, y = 1, z = 3 },
+                { x = 1, y = 1, z = 3 },
+                { x = 1, y = 2, z = 2 },
+                { x = 2, y = 2, z = 2 },
+                { x = 2, y = 1, z = 2 },
+                { x = 1, y = 1, z = 2 },
+                { x = 1, y = 2, z = 1 },
+                { x = 2, y = 2, z = 1 },
+                { x = 2, y = 1, z = 1 },
+                { x = 1, y = 1, z = 1 },
+            }
+
+            table.sort(points, compare)
+
+            expect(points[1]):is({ x = 1, y = 1, z = 1 })
+            expect(points[2]):is({ x = 1, y = 1, z = 2 })
+            expect(points[3]):is({ x = 1, y = 1, z = 3 })
+            expect(points[4]):is({ x = 1, y = 2, z = 1 })
+            expect(points[5]):is({ x = 1, y = 2, z = 2 })
+            expect(points[6]):is({ x = 1, y = 2, z = 3 })
+            expect(points[7]):is({ x = 2, y = 1, z = 1 })
+            expect(points[8]):is({ x = 2, y = 1, z = 2 })
+            expect(points[9]):is({ x = 2, y = 1, z = 3 })
+            expect(points[10]):is({ x = 2, y = 2, z = 1 })
+            expect(points[11]):is({ x = 2, y = 2, z = 2 })
+            expect(points[12]):is({ x = 2, y = 2, z = 3 })
+            expect(points[13]):is(nil)
+        end),
     },
 
     context "compose" {

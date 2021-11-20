@@ -165,6 +165,33 @@ function mod.cache(source, key, verifyFn)
     end
 end
 
+--- cp.fn.ax.areAligned(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is aligned with element `b`.
+---
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
+---
+--- Returns:
+---  * `true` if `a` is aligned with `b`.
+---
+--- Notes:
+---  * Two elements are considered to be aligned if the interesection if their heights are at least 50% of the height of both elements.
+function mod.areAligned(a, b)
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    if aFrame ~= nil and bFrame ~= nil then
+        local aY, bY = aFrame.y, bFrame.y
+        local aHeight, bHeight = aFrame.h, bFrame.h
+        local aBottom, bBottom = aY + aHeight, bY + bHeight
+        local abIntersection = math.max(0, math.min(aBottom, bBottom) - math.max(aY, bY))
+        local aPercentage = abIntersection / aHeight
+        local bPercentage = abIntersection / bHeight
+        return aPercentage >= 0.5 and bPercentage >= 0.5
+    end
+    return false
+end
+
 --- cp.fn.ax.children(value) -> table | nil
 --- Function
 --- Returns the children of the given `value`.
@@ -386,9 +413,64 @@ function mod.bottomToTop(a, b)
     return (aFrame ~= nil and bFrame ~= nil and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
 end
 
+--- cp.fn.ax.topToBottomBaseAligned(a, b) -> boolean
+--- Function
+--- Returns `true` if the base of element `a` is above the base of element `b`, based on linear vertical alignment.
+--- May be used with `table.sort`.
+---
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
+---
+--- Returns:
+---  * `true` if `a` is above `b`.
+---
+--- Notes:
+---  * Two elements are considered to be aligned if the intersection of the height is at least 50% of the height of both elements.
+function mod.topToBottomBaseAligned(a, b)
+    if mod.areAligned(a, b) then
+        return false
+    end
+
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    local aBottom, bBottom = aFrame.y+ aFrame.h, bFrame.y + bFrame.h
+    return aBottom < bBottom
+end
+
+--- cp.fn.ax.narrowToWide(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is narrower than element `b`. May be used with `table.sort`.
+---
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
+---
+--- Returns:
+---  * `true` if `a` is narrower than `b`.
+function mod.narrowToWide(a, b)
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    return (aFrame ~= nil and bFrame ~= nil and aFrame.w < bFrame.w) or false
+end
+
+--- cp.fn.ax.shortToTall(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is shorter than element `b`. May be used with `table.sort`.
+---
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
+---
+--- Returns:
+---  * `true` if `a` is shorter than `b`.
+function mod.shortToTall(a, b)
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    return (aFrame ~= nil and bFrame ~= nil and aFrame.h < bFrame.h) or false
+end
+
 --- cp.fn.ax.topDown(a, b) -> boolean
 --- Function
---- Compares two `axuielement`s based on their top-to-bottom, left-to-right position.
+--- Compares two `axuielement` values, ordering them linearly, from top-to-bottom, left-to-right.
+--- See the Notes section for more information.
 ---
 --- Parameters:
 ---  * a - The first `axuielement` to compare.
@@ -396,11 +478,65 @@ end
 ---
 --- Returns:
 ---  * `true` if `a` is above or to the left of `b` in the UI, `false` otherwise.
-mod.topDown = fn.compare(mod.topToBottom, mod.leftToRight)
+---
+--- Notes:
+---  * 1. If both elements intersect vertically by more than 50% their heights, they are considered to be on the same line.
+---  * 2. If not on the same line, the element whose bottom edge is highest is before the other.
+---  * 3. If they are both still equal, the left-most element is before the other.
+---  * 4. If they are both still equal, the shortest element is before the other.
+---  * 5. If they are both still equal, the narrowest element is before the other.
+mod.topDown = fn.compare(mod.topToBottomBaseAligned, mod.leftToRight, mod.shortToTall, mod.narrowToWide)
+
+-- TODO: Delete if the above works
+-- function mod.topDown(a, b)
+--     -- get the frames for each element
+--     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+
+--     -- calculate the intersection of the frames
+--     local aRect = geometry(aFrame)
+--     local intersection = aRect:intersect(bFrame)
+
+--     -- are they on the same line?
+--     local aligned = intersection.h > aRect.h * 0.5 and intersection.h > bFrame.h * 0.5
+
+--     -- if not aligned, compare the bottom edges
+--     if not aligned then
+--         local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
+--         if aBottom < bBottom then
+--             return true
+--         elseif aBottom > bBottom then
+--             return false
+--         end
+--     end
+
+--     -- if they are on the same line, compare the left edges
+--     if aFrame.x < bFrame.x then
+--         return true
+--     elseif aFrame.x > bFrame.x then
+--         return false
+--     end
+
+--     -- if they are on the same line, compare the heights
+--     if aFrame.h < bFrame.h then
+--         return true
+--     elseif aFrame.h > bFrame.h then
+--         return false
+--     end
+
+--     -- if they are on the same line, compare the widths
+--     if aFrame.w < bFrame.w then
+--         return true
+--     elseif aFrame.w > bFrame.w then
+--         return false
+--     end
+
+--     -- otherwise, they are equal
+--     return false
+-- end
 
 --- cp.fn.ax.bottomUp(a, b) -> boolean
 --- Function
---- Compares two `axuielement`s based on their bottom-to-top, right-to-left position.
+--- The reverse of `topDown`, ordering from linearly from bottom-to-top, right-to-left
 ---
 --- Parameters:
 ---  * a - The first `axuielement` to compare.
@@ -408,7 +544,9 @@ mod.topDown = fn.compare(mod.topToBottom, mod.leftToRight)
 ---
 --- Returns:
 ---  * `true` if `a` is below or to the right of `b` in the UI, `false` otherwise.
-mod.bottomUp = fn.compare(mod.bottomToTop, mod.rightToLeft)
+function mod.bottomUp(a, b)
+    return not mod.topDown(a, b)
+end
 
 --- cp.fn.ax.init(elementType, ...) -> function(parent, uiFinder) -> cp.ui.Element
 --- Function
