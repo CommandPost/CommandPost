@@ -15,6 +15,7 @@ local Group                         = require "cp.ui.Group"
 local PopUpButton                   = require "cp.ui.PopUpButton"
 local TextField                     = require "cp.ui.TextField"
 
+local CommandDetail                 = require "cp.apple.finalcutpro.cmd.CommandDetail"
 local CommandList                   = require "cp.apple.finalcutpro.cmd.CommandList"
 local KeyDetail                     = require "cp.apple.finalcutpro.cmd.KeyDetail"
 
@@ -324,9 +325,20 @@ end
 --- cp.apple.finalcutpro.cmd.CommandEditor.keyDetail <cp.appple.finalcutpro.cmd.KeyDetail>
 --- Field
 --- The [KeyDetail](cp.apple.finalcutpro.cmd.KeyDetail.md) section.
+--- Either this or [commandDetail](#commandDetail) will be visible at any given time.
 function CommandEditor.lazy.value:keyDetail()
     return KeyDetail(self, self.UI:mutate(
         ax.childMatching(KeyDetail.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandDetail <cp.apple.finalcutpro.cmd.CommandDetail>
+--- Field
+--- The [CommandDetail](cp.apple.finalcutpro.cmd.CommandDetail.md) section.
+--- Either this or [keyDetail](#keyDetail) will be visible at any given time.
+function CommandEditor.lazy.value:commandDetail()
+    return CommandDetail(self, self.UI:mutate(
+        ax.childMatching(CommandDetail.matches)
     ))
 end
 
