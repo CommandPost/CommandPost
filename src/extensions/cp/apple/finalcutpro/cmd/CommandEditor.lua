@@ -16,6 +16,7 @@ local PopUpButton                   = require "cp.ui.PopUpButton"
 local TextField                     = require "cp.ui.TextField"
 
 local CommandList                   = require "cp.apple.finalcutpro.cmd.CommandList"
+local KeyDetail                     = require "cp.apple.finalcutpro.cmd.KeyDetail"
 
 local strings                       = require "cp.apple.finalcutpro.strings"
 
@@ -26,7 +27,7 @@ local WaitUntil                     = require "cp.rx.go.WaitUntil"
 local fn                            = require "cp.fn"
 local ax                            = require "cp.fn.ax"
 local chain                         = fn.chain
-local get                           = fn.table.get
+local get, sort                     = fn.table.get, fn.table.sort
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
 
@@ -42,24 +43,18 @@ local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
 CommandEditor.static.matches = ax.matchesIf(
     -- It's a Dialog
     Dialog.matches,
-    -- It's a modal
+    -- It's modal
     get "AXModal",
-    -- It has a PopUpButton
-    chain // ax.childrenMatching(PopUpButton.matches) >> fn.table.hasAtLeast(1),
-    -- It has 4 Groups
-    chain // ax.childrenMatching(Group.matches), fn.table.hasExactly(4)
+    -- It has the required children:
+    chain // ax.children >> sort(ax.topDown) >> fn.all(
+        -- The `commandSet` PopUpButton ...
+        chain // get(5) >> PopUpButton.matches,
+        -- The `keyboard` Group...
+        chain // get(9) >> Group.matches,
+        -- The `commandList`...
+        chain // get(10) >> CommandList.matches
+    )
 )
-
--- _findWindowUI(windows) -> window | nil
--- Function
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-local _findWindowUI = fn.table.firstMatching(CommandEditor.matches)
 
 --- cp.apple.finalcutpro.cmd.CommandEditor(app) -> CommandEditor
 --- Constructor
@@ -78,7 +73,7 @@ function CommandEditor:initialize(app)
 --- The `axuielement` for the window.
     local UI = app.windowsUI:mutate(
         ax.cache(self, "_ui", CommandEditor.matches)(
-            chain // ax.children >> _findWindowUI
+            chain // ax.children >> fn.table.firstMatching(CommandEditor.matches)
         )
     )
 
@@ -322,7 +317,7 @@ end
 --- The [CommandList](cp.apple.finalcutpro.cmd.CommandList.md).
 function CommandEditor.lazy.value:commandList()
     return CommandList(self, self.UI:mutate(
-        ax.childMatching(Group.matches, 3)
+        ax.childMatching(CommandList.matches)
     ))
 end
 
@@ -330,8 +325,8 @@ end
 --- Field
 --- The [KeyDetail](cp.apple.finalcutpro.cmd.KeyDetail.md) section.
 function CommandEditor.lazy.value:keyDetail()
-    return Group(self, self.UI:mutate(
-        ax.childMatching(Group.matches, 4)
+    return KeyDetail(self, self.UI:mutate(
+        ax.childMatching(KeyDetail.matches)
     ))
 end
 

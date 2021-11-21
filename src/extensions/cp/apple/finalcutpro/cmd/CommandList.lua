@@ -6,6 +6,7 @@ local require = require
 
 -- local log                   = require "hs.logger".new "CommandList"
 
+local fn                    = require "cp.fn"
 local ax                    = require "cp.fn.ax"
 local Group                 = require "cp.ui.Group"
 local ScrollArea            = require "cp.ui.ScrollArea"
@@ -27,6 +28,19 @@ local CommandList = Group:subclass("cp.apple.finalcutpro.cmd.CommandList")
 ---
 --- Returns:
 ---  * `true` if the element matches, `false` otherwise.
+CommandList.static.matches = ax.matchesIf(
+    -- It's a Group
+    Group.matches,
+    -- it has two children
+    fn.chain // ax.children >> fn.all(
+        fn.table.hasExactly(2),
+        -- one is a StaticText
+        ax.childMatching(StaticText.matches),
+        -- the other is a ScrollArea
+        ax.childMatching(ScrollArea.matches)
+    )
+)
+
 function CommandList.static.matches(element)
     if Group.matches(element) then
         local children = element.AXChildren

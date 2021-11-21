@@ -25,7 +25,7 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-ScrollArea.static.matches = fn.all(Element.matches, ax.hasRole("AXScrollArea"))
+ScrollArea.static.matches = fn.all(Element.matches, ax.hasRole "AXScrollArea")
 
 --- cp.ui.ScrollArea(parent, uiFinder) -> cp.ui.ScrollArea
 --- Constructor
