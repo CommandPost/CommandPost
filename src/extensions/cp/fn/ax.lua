@@ -246,29 +246,14 @@ end
 --- Returns:
 ---  * A function that will return the first child of the given `uivalue` that matches the given `predicate`.
 function mod.childMatching(predicate, index, comparator)
+    -- shift the comparator over if necessary
     if is.callable(index) then
         comparator, index = index, nil
     end
     index = index or 1
     comparator = comparator or mod.topDown
 
-    return function(uivalue)
-        local children = mod.children(uivalue)
-        if children then
-            if comparator then
-                table.sort(children, comparator)
-            end
-            local found = 0
-            for _, child in ipairs(children) do
-                if predicate(child) then
-                    found = found + 1
-                end
-                if found >= index then
-                    return child
-                end
-            end
-        end
-    end
+    return chain // mod.children >> ifilter(predicate) >> sort(comparator) >> get(index)
 end
 
 --- cp.fn.ax.childWith(attribute, value) -> function(uivalue) -> axuielement | nil

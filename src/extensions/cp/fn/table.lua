@@ -142,6 +142,31 @@ function mod.last(t)
     return t[#t]
 end
 
+--- cp.fn.table.matchesExactItems(...) -> function(table) -> boolean
+--- Function
+--- Returns a function that will return `true` if the table exactly the number of items that match
+--- the provided list of predicates.
+---
+--- Parameters:
+---  * ... - A list of predicates.
+---
+--- Returns:
+---  * A function that will return `true` if the table exactly the number of items that match the provided list of predicates.
+function mod.matchesExactItems(...)
+    local predicates = pack(...)
+    return function(value)
+        if #value ~= #predicates then
+            return false
+        end
+        for i, predicate in ipairs(predicates) do
+            if not predicate(value[i]) then
+                return false
+            end
+        end
+        return true
+    end
+end
+
 --- cp.fn.table.map(fn, t) -> table of any
 --- Function
 --- Maps a function over a table using `pairs`. The function is passed the current `value` and the `key`.
