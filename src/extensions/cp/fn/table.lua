@@ -6,7 +6,6 @@ local require           = require
 
 -- local log               = require "hs.logger".new "fntable"
 
-local fnutils           = require "hs.fnutils"
 local cpfn              = require "cp.fn"
 local cpfnargs          = require "cp.fn.args"
 local is                = require "cp.is"
