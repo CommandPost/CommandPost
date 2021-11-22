@@ -60,6 +60,29 @@ function mod.copy(table)
     return result
 end
 
+--- cp.fn.table.filter([predicate]) -> function(table) -> table
+--- Function
+--- Returns a function that filters a table using the given predicate.
+--- If the predicate is not provided, the original table will be returned unchanged.
+---
+--- Parameters:
+---  * predicate - A function that takes a value and returns true if the value should be included in the filtered table.
+---
+--- Returns:
+---  * A function that takes a table and returns a filtered table.
+function mod.filter(predicate)
+    return function(t)
+        if not predicate then return t end
+        local result = {}
+        for _,v in pairs(t) do
+            if predicate(v) then
+                insert(result, v)
+            end
+        end
+        return result
+    end
+end
+
 --- cp.fn.table.first(table) -> any | nil
 --- Function
 --- Returns the first value in the table.
@@ -104,6 +127,29 @@ end
 function mod.get(key)
     return function(t)
         return t[key]
+    end
+end
+
+--- cp.fn.ifilter([predicate]) -> function(table) -> table
+--- Function
+--- Returns a function that filters a table using the given predicate, in index order.
+--- If the predicate is not provided, the original table will be returned unchanged.
+---
+--- Parameters:
+---  * predicate - A function that takes a value and returns true if the value should be included in the filtered table.
+---
+--- Returns:
+---  * A function that takes a table and returns a filtered table.
+function mod.ifilter(predicate)
+    return function(t)
+        if not predicate then return t end
+        local results = {}
+        for _,v in ipairs(t) do
+            if predicate(v) then
+                insert(results, v)
+            end
+        end
+        return results
     end
 end
 
@@ -388,32 +434,6 @@ function mod.zipAll(...)
 
     return results
 end
-
--- ========================================================================
--- Composite Functions
--- ========================================================================
-
---- cp.fn.table.filter(predicate) -> function(table) -> table
---- Function
---- Returns a function that filters a table using the given predicate.
----
---- Parameters:
----  * predicate - A function that takes a value and returns true if the value should be included in the filtered table.
----
---- Returns:
----  * A function that takes a table and returns a filtered table.
-mod.filter = cpfn.flip(cpfn.curry(fnutils.filter, 2))
-
---- cp.fn.ifilter(predicate) -> function(table) -> table
---- Function
---- Returns a function that filters a table using the given predicate, in index order.
----
---- Parameters:
----  * predicate - A function that takes a value and returns true if the value should be included in the filtered table.
----
---- Returns:
----  * A function that takes a table and returns a filtered table.
-mod.ifilter = cpfn.flip(cpfn.curry(fnutils.ifilter, 2))
 
 -- ========================================================================
 -- Predicates

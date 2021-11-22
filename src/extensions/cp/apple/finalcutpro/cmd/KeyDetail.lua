@@ -12,6 +12,7 @@ local Group                 = require "cp.ui.Group"
 local Image                 = require "cp.ui.Image"
 local StaticText            = require "cp.ui.StaticText"
 local ScrollArea            = require "cp.ui.ScrollArea"
+local Table                 = require "cp.ui.Table"
 
 local chain                 = fn.chain
 local hasExactly            = fn.table.hasExactly
@@ -55,29 +56,37 @@ end
 
 --- cp.apple.finalcutpro.cmd.KeyDetail.label <cp.ui.StaticText>
 --- Field
---- The StaticText that displays the label.
+--- The `StaticText` that displays the label.
 function KeyDetail.lazy.value:label()
     return StaticText(self, self.contentGroupUI:mutate(
-        ax.childMatching(StaticText.matches, 1)
+        ax.childMatching(StaticText.matches)
     ))
 end
 
---- cp.apple.finalcutpro.cmd.KeyDetail.key <cp.ui.StaticText>
+--- cp.apple.finalcutpro.cmd.KeyDetail.key <cp.ui.Image>
 --- Field
---- The StaticText that displays the key.
+--- The `Image` that displays the key.
 function KeyDetail.lazy.value:key()
-    return StaticText(self, self.contentGroupUI:mutate(
-        ax.childMatching(Image.matches, 1)
+    return Image(self, self.contentGroupUI:mutate(
+        ax.childMatching(Image.matches)
     ))
 end
 
 --- cp.apple.finalcutpro.cmd.KeyDetail.detail <cp.ui.ScrollArea>
 --- Field
---- The ScrollArea that displays the detail.
+--- The `ScrollArea` that displays the detail.
 function KeyDetail.lazy.value:detail()
-    return ScrollArea(self, self.contentGroupUI:mutate(
-        ax.childMatching(ScrollArea.matches, 1)
-    ))
+    return ScrollArea(self,
+        self.contentGroupUI:mutate(ax.childMatching(ScrollArea.matches)),
+        Table
+    )
+end
+
+--- cp.apple.finalcutpro.cmd.KeyDetail.contents <cp.ui.Table>
+--- Field
+--- The `Table` that displays the contents.
+function KeyDetail.lazy.value:contents()
+    return self.detail.contents
 end
 
 return KeyDetail

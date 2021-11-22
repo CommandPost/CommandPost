@@ -2,17 +2,16 @@
 ---
 --- Scroll Area Module.
 
-local require       = require
+local require                           = require
 
-local fn            = require "cp.fn"
-local ax            = require "cp.fn.ax"
+local fn                                = require "cp.fn"
+local ax                                = require "cp.fn.ax"
 
-local axutils       = require "cp.ui.axutils"
-local Element       = require "cp.ui.Element"
-local ScrollBar     = require "cp.ui.ScrollBar"
+local Element                           = require "cp.ui.Element"
+local ScrollBar                         = require "cp.ui.ScrollBar"
 
-local chain         = fn.chain
-local get           = fn.table.get
+local chain                             = fn.chain
+local ifilter, get, imap, sort          = fn.table.ifilter, fn.table.get, fn.table.imap, fn.table.sort
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 
@@ -27,17 +26,19 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 ---  * `true` if matches otherwise `false`
 ScrollArea.static.matches = fn.all(Element.matches, ax.hasRole "AXScrollArea")
 
---- cp.ui.ScrollArea(parent, uiFinder) -> cp.ui.ScrollArea
+--- cp.ui.ScrollArea(parent, uiFinder[, contentsInit]) -> cp.ui.ScrollArea
 --- Constructor
 --- Creates a new `ScrollArea`.
 ---
 --- Parameters:
 ---  * parent       - The parent object.
 ---  * uiFinder     - A `function` or `cp.prop` which will return the `hs.axuielement` when available.
+---  * contentsInit - An optional function to initialise the `contentsUI`. Uses `cp.ui.Element` by default.
 ---
 --- Returns:
 ---  * The new `ScrollArea`.
-function ScrollArea:initialize(parent, uiFinder)
+function ScrollArea:initialize(parent, uiFinder, contentsInit)
+    self.contentsInit = contentsInit or Element
     Element.initialize(self, parent, uiFinder)
 end
 
@@ -45,7 +46,14 @@ end
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
-    return self.UI:mutate(chain // get "AXContents" >> fn.table.first)
+    return self.UI:mutate(chain // ax.uielement >> get "AXContents" >> fn.table.first)
+end
+
+--- cp.ui.ScrollArea.contents <cp.ui.Element>
+--- Field
+--- Returns the `Element` representing the `ScrollArea` Contents, or `nil` if not available.
+function ScrollArea.lazy.value:contents()
+    return self.contentsInit(self, self.contentsUI)
 end
 
 --- cp.ui.ScrollArea.verticalScrollBar <cp.ui.ScrollBar>
@@ -75,6 +83,26 @@ end
 --
 -----------------------------------------------------------------------
 
+local function compareChildren(a, b)
+    if a and b then -- Added in this to try and solve issue #950
+        local aFrame = a:attributeValue("AXFrame")
+        local bFrame = b:attributeValue("AXFrame")
+        if aFrame and bFrame then
+            if aFrame.y < bFrame.y then -- a is above b
+                return true
+            elseif aFrame.y == bFrame.y then
+                if aFrame.x < bFrame.x then -- a is left of b
+                    return true
+                elseif aFrame.x == bFrame.x
+                   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
+                    return true
+                end
+            end
+        end
+    end
+    return false -- b is first
+end
+
 --- cp.ui.ScrollArea:childrenUI(filterFn) -> hs.axuielement | nil
 --- Method
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
@@ -85,45 +113,16 @@ end
 --- Return:
 ---  * The `axuielement` or `nil`.
 function ScrollArea:childrenUI(filterFn)
-    local ui = self:contentsUI()
-    if ui then
-        local children
-        if filterFn then
-            children = axutils.childrenMatching(ui, filterFn)
-        else
-            children = ui:attributeValue("AXChildren")
-        end
-        if children then
-            table.sort(children,
-                function(a, b)
-                    if a and b then -- Added in this to try and solve issue #950
-                        local aFrame = a:attributeValue("AXFrame")
-                        local bFrame = b:attributeValue("AXFrame")
-                        if aFrame and bFrame then
-                            if aFrame.y < bFrame.y then -- a is above b
-                                return true
-                            elseif aFrame.y == bFrame.y then
-                                if aFrame.x < bFrame.x then -- a is left of b
-                                    return true
-                                elseif aFrame.x == bFrame.x
-                                   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
-                                    return true
-                                end
-                            end
-                        end
-                    end
-                    return false -- b is first
-                end
-            )
-            return children
-        end
-    end
-    return nil
+    return chain //
+        fn.constant(self.contentsUI) >>
+        ax.children >>
+        ifilter(filterFn) >>
+        sort(compareChildren)
 end
 
---- cp.ui.ScrollArea.viewFrame <cp.prop:hs.geometry.rect; read-only>
+--- cp.ui.ScrollArea.viewFrame <cp.prop:table; read-only>
 --- Field
---- A `cp.prop` reporting the Scroll Area frame as a hs.geometry.rect.
+--- A `cp.prop` reporting the Scroll Area frame as a table containing `{x, y, w, h}`.
 function ScrollArea.lazy.prop:viewFrame()
     return self.UI:mutate(function(original)
         local ui = original()
@@ -358,6 +357,8 @@ function ScrollArea:loadLayout(layout)
 
         self.verticalScrollBar:loadLayout(layout.verticalScrollBar)
         self.horizontalScrollBar:loadLayout(layout.horizontalScrollBar)
+
+        Element.loadLayout(layout)
     end
 end
 

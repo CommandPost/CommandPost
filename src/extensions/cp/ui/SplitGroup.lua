@@ -13,7 +13,8 @@ local Element               = require "cp.ui.Element"
 local Splitter              = require "cp.ui.Splitter"
 
 local chain                 = fn.chain
-local get, ifilter, sort    = fn.table.get, fn.table.ifilter, fn.table.sort
+local get, sort, split      = fn.table.get, fn.table.sort, fn.table.split
+local ifilter, imap         = fn.table.ifilter, fn.table.imap
 
 local SplitGroup = Element:subclass("cp.ui.SplitGroup")
 
@@ -62,7 +63,7 @@ end
 --- Is `nil` if no `childInits` were provided.
 function SplitGroup.lazy.value:children()
     if #self.childInits == 0 then return nil end
-    return fn.table.imap(function(init, index)
+    return imap(function(init, index)
         return init(self, self.childrenUI:mutate(chain // ax.children  >> get(index)))
     end, self.childInits)
 end
@@ -82,6 +83,6 @@ SplitGroup.lazy.value.splitters = chain // get "children" >> ifilter(Splitter.ma
 --- cp.ui.SplitGroup.sections <table: table of cp.ui.Element, read-only>
 --- Field
 --- The `Sections` of the `SplitGroup`. Each section will be a `table` of `cp.ui.Element`s.
-SplitGroup.lazy.value.sections = chain // get "children" >> fn.table.split(Splitter.matches)
+SplitGroup.lazy.value.sections = chain // get "children" >> split(Splitter.matches)
 
 return SplitGroup
