@@ -28,20 +28,22 @@ local SplitGroup = Element:subclass("cp.ui.SplitGroup")
 ---  * `true` if matches otherwise `false`
 SplitGroup.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXSplitGroup")
 
---- cp.ui.SplitGroup(parent, uiFinder[, childInits]) -> cp.ui.SplitGroup
+--- cp.ui.SplitGroup(parent, uiFinder, childInits) -> cp.ui.SplitGroup
 --- Constructor
---- Creates a new Split Group.
+--- Creates a new `SplitGroup`.
 ---
 --- Parameters:
 ---  * parent		- The parent object.
----  * uiFinder		- The `function` or `cp.prop` which returns an `hs.axuielement` for the Split Group, or `nil`.
+---  * uiFinder		- The `function` or `cp.prop` which returns an `hs.axuielement` for the `SplitGroup`, or `nil`.
 ---  * childInits   - A `table` of section-creating functions, in order, including the `Splitter`s.
 ---
 --- Returns:
 ---  * A new `SplitGroup` instance.
 ---
 --- Notes:
----  * Example: `SplitGroup(parent, uiFinder) { cp.fn.ax.init(ScrollArea, cp.ui.List), cp.fn.ax.init(ScrollArea, cp.ui.TextArea) }
+---  * Many `childInints` values can be the actual `Element` value (eg: `TextArea`), since they only require the `parent` and `uiFinder` parameters.
+---  * The [cp.fn.ax.init](cp.fn.ax.md#init) function can be useful for passing in `Element` types which require more than just the `parent` and `uiFinder` values.
+---  * Example: `SplitGroup(parent, uiFinder, { cp.fn.ax.init(ScrollArea, cp.ui.List), cp.fn.ax.init(ScrollArea, cp.ui.TextArea) })
 function SplitGroup:initialize(parent, uiFinder, childInits)
     self.childInits = childInits or {}
     Element.initialize(self, parent, uiFinder)
@@ -49,15 +51,17 @@ end
 
 --- cp.ui.SplitGroup.childrenUI <cp.prop: table of axuielementObject, read-only>
 --- Field
---- The list of `axuielementObject`s for the sections.
+--- The list of `axuielementObject`s for the sections, sorted in [top-down](cp.fn.ax.md#topDown) order.
 function SplitGroup.lazy.prop:childrenUI()
-    return self.UI:mutate(ax.children)
+    return self.UI:mutate(chain // ax.children >> sort(ax.topDown))
 end
 
 --- cp.ui.SplitGroup.children <table: cp.ui.Element, read-only>
 --- Field
 --- All children of the Split Group, based on the `childInits` passed to the constructor.
+--- Is `nil` if no `childInits` were provided.
 function SplitGroup.lazy.value:children()
+    if #self.childInits == 0 then return nil end
     return fn.table.imap(function(init, index)
         return init(self, self.childrenUI:mutate(chain // ax.children  >> get(index)))
     end, self.childInits)
