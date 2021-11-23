@@ -472,53 +472,6 @@ end
 ---  * 5. If they are both still equal, the narrowest element is before the other.
 mod.topDown = fn.compare(mod.topToBottomBaseAligned, mod.leftToRight, mod.shortToTall, mod.narrowToWide)
 
--- TODO: Delete if the above works
--- function mod.topDown(a, b)
---     -- get the frames for each element
---     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-
---     -- calculate the intersection of the frames
---     local aRect = geometry(aFrame)
---     local intersection = aRect:intersect(bFrame)
-
---     -- are they on the same line?
---     local aligned = intersection.h > aRect.h * 0.5 and intersection.h > bFrame.h * 0.5
-
---     -- if not aligned, compare the bottom edges
---     if not aligned then
---         local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
---         if aBottom < bBottom then
---             return true
---         elseif aBottom > bBottom then
---             return false
---         end
---     end
-
---     -- if they are on the same line, compare the left edges
---     if aFrame.x < bFrame.x then
---         return true
---     elseif aFrame.x > bFrame.x then
---         return false
---     end
-
---     -- if they are on the same line, compare the heights
---     if aFrame.h < bFrame.h then
---         return true
---     elseif aFrame.h > bFrame.h then
---         return false
---     end
-
---     -- if they are on the same line, compare the widths
---     if aFrame.w < bFrame.w then
---         return true
---     elseif aFrame.w > bFrame.w then
---         return false
---     end
-
---     -- otherwise, they are equal
---     return false
--- end
-
 --- cp.fn.ax.bottomUp(a, b) -> boolean
 --- Function
 --- The reverse of `topDown`, ordering from linearly from bottom-to-top, right-to-left
@@ -610,5 +563,20 @@ function mod.matchesIf(...)
         isTruthy
     )
 end
+
+-- ========================================================
+-- Combinator Functions - depend on other functions being defined first.
+-- ========================================================
+
+--- cp.fn.ax.childrenTopDown(value) -> table | nil
+--- Function
+--- Returns the children of the given `value` sorted in [topDown](#topDown) order.
+---
+--- Parameters:
+---  * value - The value to get the children from.
+---
+--- Returns:
+---  * The children of the given `value`, sorted [topDown](#topDown), or `nil`.
+mod.childrenTopDown = chain // mod.children >> sort(mod.topDown)
 
 return mod
