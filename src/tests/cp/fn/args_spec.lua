@@ -114,9 +114,9 @@ return describe "cp.fn.args" {
             expect(args.hasAny(1, 2, nil)):is(true)
         end),
 
-        it "returns false if no arguments are not nil"
+        it "returns true if no arguments are not nil"
         :doing(function()
-            expect(args.hasAny(1, 2, 3)):is(false)
+            expect(args.hasAny(1, 2, 3)):is(true)
         end),
 
         it "returns false if no arguments are passed in"

@@ -196,10 +196,14 @@ end
 ---
 --- Returns:
 ---  * A function that takes two inputs and `true` if the first input is less than the second input.
+---
+--- Notes:
+---  * The comparators are called in the order they are provided.
+---  * If no comparators are provided, this will return `nil`.
 function mod.compare(...)
     local comparators = packArgs(...)
     if #comparators == 0 then
-        return function(a, b) return a < b end
+        return
     elseif #comparators == 1 then
         return comparators[1]
     end
@@ -653,6 +657,10 @@ local chain = setmetatable({}, {
 ---  * Alternately, you can create a chain using the `//` operator, followed by `>>` for each subsequent function. Eg: `chain // fn1 >> fn2 >> fn3`.
 ---  * If using the alternate syntax, you may have to put parentheses around the chain if mixing with other operators like `pipe` or `compose`.
 mod.chain = chain
+
+-- ============================================================================
+-- Debugging
+-- ============================================================================
 
 --- cp.fn.debug(message, ...) -> function(...) -> ...
 --- Function

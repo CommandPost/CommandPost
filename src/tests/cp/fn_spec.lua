@@ -216,13 +216,10 @@ return describe "cp.fn" {
     },
 
     context "compare" {
-        it "should use natural sort order if not passed any comparators"
+        it "does not return a comparator if none are provided"
         :doing(function()
             local compare = fn.compare()
-
-            expect(compare("a", "b")):is(true)
-            expect(compare("b", "a")):is(false)
-            expect(compare("a", "a")):is(false)
+            expect(compare):is(nil)
         end),
 
         it "should use the first comparator if passed one"
