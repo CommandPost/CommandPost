@@ -4,15 +4,20 @@
 
 local require = require
 
--- local log                   = require "hs.logger".new "CommandList"
+-- local log                                   = require "hs.logger".new "CommandList"
 
-local fn                    = require "cp.fn"
-local ax                    = require "cp.fn.ax"
-local Group                 = require "cp.ui.Group"
-local ScrollArea            = require "cp.ui.ScrollArea"
-local SplitGroup            = require "cp.ui.SplitGroup"
-local Splitter              = require "cp.ui.Splitter"
-local StaticText            = require "cp.ui.StaticText"
+local fn                                    = require "cp.fn"
+local ax                                    = require "cp.fn.ax"
+local Group                                 = require "cp.ui.Group"
+local SplitGroup                            = require "cp.ui.SplitGroup"
+local Splitter                              = require "cp.ui.Splitter"
+local StaticText                            = require "cp.ui.StaticText"
+
+local CommandGroups                         = require "cp.apple.finalcutpro.cmd.CommandGroups"
+local CommandMap                            = require "cp.apple.finalcutpro.cmd.CommandMap"
+
+local chain                                 = fn.chain
+local matchesExactItems                     = fn.table.matchesExactItems
 
 local CommandList = Group:subclass("cp.apple.finalcutpro.cmd.CommandList")
 
@@ -31,25 +36,11 @@ local CommandList = Group:subclass("cp.apple.finalcutpro.cmd.CommandList")
 CommandList.static.matches = ax.matchesIf(
     -- It's a Group
     Group.matches,
-    -- it has two children
-    fn.chain // ax.children >> fn.all(
-        fn.table.hasExactly(2),
-        -- one is a StaticText
-        ax.childMatching(StaticText.matches),
-        -- the other is a ScrollArea
-        ax.childMatching(ScrollArea.matches)
+    -- it has a StaticText followed by a ScrollArea.
+    chain // ax.childrenTopDown >> matchesExactItems(
+        StaticText.matches, SplitGroup.matches
     )
 )
-
-function CommandList.static.matches(element)
-    if Group.matches(element) then
-        local children = element.AXChildren
-        return #children == 2
-        and StaticText.matches(children[1])
-        and SplitGroup.matches(children[2])
-    end
-    return false
-end
 
 --- cp.apple.finalcutpro.cmd.CommandList.label <cp.ui.StaticText>
 --- Field
@@ -60,15 +51,29 @@ function CommandList.lazy.value:label()
     ))
 end
 
---- cp.apple.finalcutpro.cmd.CommandList.commandsSplitGroup() -> cp.ui.SplitGroup
---- Field
---- The [SplitGroup](cp.ui.SplitGroup.md) containing the commands.
-function CommandList.lazy.value:commandsSplitGroup()
+-- cp.apple.finalcutpro.cmd.CommandList._commandsSplitGroup() -> cp.ui.SplitGroup
+-- Field
+-- The [SplitGroup](cp.ui.SplitGroup.md) containing the commands.
+function CommandList.lazy.value:_commandsSplitGroup()
     return SplitGroup(
         self,
         self.UI:mutate(ax.childMatching(SplitGroup.matches)),
-        { ScrollArea, Splitter, ScrollArea }
+        { CommandGroups, Splitter, CommandMap }
     )
+end
+
+--- cp.apple.finalcutpro.cmd.CommandList.groups <cp.apple.finalcutpro.cmd.CommandGroups>
+--- Field
+--- The [CommandGroups](cp.apple.finalcutpro.cmd.CommandGroups.md) for this CommandList.
+function CommandList.lazy.value:groups()
+    return self._commandsSplitGroup.sections[1]
+end
+
+--- cp.apple.finalcutpro.cmd.CommandList.commands <cp.apple.finalcutpro.cmd.CommandMap>
+--- Field
+--- The [CommandMap](cp.apple.finalcutpro.cmd.CommandMap.md) for this CommandList.
+function CommandList.lazy.value:commands()
+    return self._commandsSplitGroup.sections[2]
 end
 
 return CommandList

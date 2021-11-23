@@ -4,17 +4,17 @@
 
 local require = require
 
--- local log                   = require "hs.logger".new "CommandDetail"
+-- local log                                   = require "hs.logger".new "CommandDetail"
 
-local fn                    = require "cp.fn"
-local ax                    = require "cp.fn.ax"
-local Group                 = require "cp.ui.Group"
-local StaticText            = require "cp.ui.StaticText"
-local ScrollArea            = require "cp.ui.ScrollArea"
-local TextArea              = require "cp.ui.TextArea"
+local fn                                    = require "cp.fn"
+local ax                                    = require "cp.fn.ax"
+local Group                                 = require "cp.ui.Group"
+local StaticText                            = require "cp.ui.StaticText"
+local ScrollArea                            = require "cp.ui.ScrollArea"
+local TextArea                              = require "cp.ui.TextArea"
 
-local chain                 = fn.chain
-local hasExactly            = fn.table.hasExactly
+local chain                                 = fn.chain
+local matchesExactItems                     = fn.table.matchesExactItems
 
 local CommandDetail = Group:subclass("cp.apple.finalcutpro.cmd.CommandDetail")
 
@@ -30,18 +30,20 @@ local CommandDetail = Group:subclass("cp.apple.finalcutpro.cmd.CommandDetail")
 CommandDetail.static.matches = ax.matchesIf(
     -- It's a Group
     Group.matches,
-    -- ...with exactly one child...
-    hasExactly(1),
-    -- ...which is a Group...
-    chain // ax.childMatching(Group.matches) >>
-    -- ...and that group has exactly three children...
-        ax.children >> fn.table.sort(ax.topDown) >>
-        fn.table.matchesExactItems(
-            -- ... and the first is a StaticText...
-            StaticText.matches,
-            -- ... and the second is a ScrollArea...
-            ScrollArea.matches
+    -- ...with exactly one child
+    chain // ax.children >> matchesExactItems(
+        fn.all(
+            -- It's a Group
+            Group.matches,
+            -- ...containing exactly...
+            chain // ax.childrenTopDown >> matchesExactItems(
+                -- ... a StaticText...
+                StaticText.matches,
+                -- ... and a ScrollArea...
+                ScrollArea.matches
+            )
         )
+    )
 )
 
 -- cp.apple.finalcutpro.cmd.CommandDetail._contentGroupUI <cp.prop: axuielement>
@@ -56,7 +58,7 @@ end
 --- The StaticText that displays the label.
 function CommandDetail.lazy.value:label()
     return StaticText(self, self._contentGroupUI:mutate(
-        ax.childMatching(StaticText.matches, 1)
+        ax.childMatching(StaticText.matches)
     ))
 end
 
@@ -65,7 +67,7 @@ end
 --- The ScrollArea that displays the contained [TextArea].
 function CommandDetail.lazy.value:detail()
     return ScrollArea(self,
-        self._contentGroupUI:mutate(ax.childMatching(ScrollArea.matches, 1)),
+        self._contentGroupUI:mutate(ax.childMatching(ScrollArea.matches)),
         TextArea
     )
 end
