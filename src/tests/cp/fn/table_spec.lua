@@ -164,6 +164,25 @@ return describe "cp.fn.table" {
         end),
     },
 
+    context "matchesExactItems" {
+        it "returns true if the table only contains items matching the predicates, in order"
+        :doing(function()
+            local function check(value)
+                return function(item)
+                    return item == value
+                end
+            end
+            local result = fntable.matchesExactItems(
+                check(1), check(2), check(3)
+            )
+            expect(result({1, 2, 3})):is(true)
+            expect(result({1, 2, 3, 4})):is(false)
+            expect(result({1, 2})):is(false)
+            expect(result({"1", "2", "3"})):is(false)
+            expect(result({3, 1, 2})):is(false)
+        end),
+    },
+
     context "map" {
         it "can map over an unordered table"
         :doing(function()
