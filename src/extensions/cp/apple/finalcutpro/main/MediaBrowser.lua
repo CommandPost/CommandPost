@@ -10,7 +10,7 @@ local just								= require "cp.just"
 local axutils							= require "cp.ui.axutils"
 
 local Group                             = require "cp.ui.Group"
-local Table								= require "cp.ui.Table"
+local Table								= require "cp.ui.OldTable"
 local PopUpButton				        = require "cp.ui.PopUpButton"
 local ScrollArea                        = require "cp.ui.ScrollArea"
 local SplitGroup                        = require "cp.ui.SplitGroup"
@@ -136,7 +136,7 @@ end
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.MediaBrowser.sidebar <cp.ui.Table>
+--- cp.apple.finalcutpro.main.MediaBrowser.sidebar <cp.ui.OldTable>
 --- Field
 --- The Sidebar `Table`.
 function MediaBrowser.lazy.value:sidebar()

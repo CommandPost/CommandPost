@@ -20,7 +20,7 @@ local LibrariesSidebar          = require "cp.apple.finalcutpro.main.LibrariesSi
 local Button                    = require "cp.ui.Button"
 local PopUpButton               = require "cp.ui.PopUpButton"
 local SplitGroup                = require "cp.ui.SplitGroup"
-local Table                     = require "cp.ui.Table"
+local Table                     = require "cp.ui.OldTable"
 local TextField                 = require "cp.ui.TextField"
 
 local Do                        = go.Do

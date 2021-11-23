@@ -6,7 +6,7 @@ local go                    = require "cp.rx.go"
 
 local axutils               = require "cp.ui.axutils"
 local Button                = require "cp.ui.Button"
-local Table                 = require "cp.ui.Table"
+local Table                 = require "cp.ui.OldTable"
 
 local IndexSection          = require "cp.apple.finalcutpro.timeline.IndexSection"
 
@@ -26,9 +26,9 @@ function IndexCaptions.lazy.value:activate()
     return self.index.mode.captions
 end
 
---- cp.apple.finalcutpro.timeline.IndexCaptions.list <cp.ui.Table>
+--- cp.apple.finalcutpro.timeline.IndexCaptions.list <cp.ui.OldTable>
 --- Field
---- The list of captions as a [Table](cp.ui.Table.md).
+--- The list of captions as a [Table](cp.ui.OldTable.md).
 function IndexCaptions.lazy.value:list()
     return Table(self, self.UI:mutate(function(original)
         if self.activate:checked() then

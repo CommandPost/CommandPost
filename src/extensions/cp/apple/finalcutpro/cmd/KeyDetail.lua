@@ -12,7 +12,7 @@ local Group                 = require "cp.ui.Group"
 local Image                 = require "cp.ui.Image"
 local StaticText            = require "cp.ui.StaticText"
 local ScrollArea            = require "cp.ui.ScrollArea"
-local Table                 = require "cp.ui.Table"
+local Table                 = require "cp.ui.OldTable"
 
 local chain                 = fn.chain
 local hasExactly            = fn.table.hasExactly
@@ -82,7 +82,7 @@ function KeyDetail.lazy.value:detail()
     )
 end
 
---- cp.apple.finalcutpro.cmd.KeyDetail.contents <cp.ui.Table>
+--- cp.apple.finalcutpro.cmd.KeyDetail.contents <cp.ui.OldTable>
 --- Field
 --- The `Table` that displays the contents.
 function KeyDetail.lazy.value:contents()

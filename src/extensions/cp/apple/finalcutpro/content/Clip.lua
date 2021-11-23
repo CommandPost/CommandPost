@@ -7,7 +7,7 @@ local require           = require
 --local log               = require "hs.logger".new "Clip"
 
 local axutils           = require "cp.ui.axutils"
-local Table             = require "cp.ui.Table"
+local Table             = require "cp.ui.OldTable"
 
 local childWithRole     = axutils.childWithRole
 

@@ -19,6 +19,7 @@ local isTruthy                      = is.truthy
 local constant                      = fn.constant
 local chain, pipe                   = fn.chain, fn.pipe
 local get, ifilter, map, sort       = fn.table.get, fn.table.ifilter, fn.table.map, fn.table.sort
+local imap                          = fn.table.imap
 
 local pack, unpack                  = table.pack, table.unpack
 
@@ -518,6 +519,27 @@ function mod.init(elementType, ...)
         -- construct the Element
         return elementType(parent, uiFinder, unpack(mappedArgs))
     end
+end
+
+local callFirst = chain // fn.args.only(1) >> fn.call
+
+--- cp.fn.ax.initElements(parent, elementsUiFinder, elementInits) -> table of cp.ui.Element
+--- Function
+--- Creates a table of `cp.ui.Element`s of the given `elementInits` with the given `parent` and `uiFinder`.
+--- Any additional elements provided by `elementsUiFinder` which don't have a matching `elementInits` will be ignored.
+---
+--- Parameters:
+---  * parent - The parent `cp.ui.Element` to use for the created `cp.ui.Element`s.
+---  * elementsUiFinder - A `function` that will return a table of `axuielement`s to use as the elements for the created `cp.ui.Element`s.
+---  * elementInits - A table of `function`s that will create `cp.ui.Element`s.
+---
+--- Returns:
+---  * A table of `cp.ui.Element`s.
+function mod.initElements(parent, elementsUiFinder, elementInits)
+    if not elementInits or #elementInits == 0 then return nil end
+    return imap(function(init, index)
+        return init(parent, elementsUiFinder:mutate(callFirst >> get(index)))
+    end, elementInits)
 end
 
 --- cp.fn.ax.prop(uiFinder, attributeName[, settable]) -> cp.prop

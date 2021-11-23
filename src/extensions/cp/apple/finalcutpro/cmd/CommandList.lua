@@ -66,14 +66,21 @@ end
 --- Field
 --- The [CommandGroups](cp.apple.finalcutpro.cmd.CommandGroups.md) for this CommandList.
 function CommandList.lazy.value:groups()
-    return self._commandsSplitGroup.sections[1]
+    return self._commandsSplitGroup.children[1]
+end
+
+--- cp.apple.finalcutpro.cmd.CommandList.splitter <cp.ui.Splitter>
+--- Field
+--- The [Splitter](cp.ui.Splitter.md) for this CommandList.
+function CommandList.lazy.value:splitter()
+    return self._commandsSplitGroup.children[2]
 end
 
 --- cp.apple.finalcutpro.cmd.CommandList.commands <cp.apple.finalcutpro.cmd.CommandMap>
 --- Field
 --- The [CommandMap](cp.apple.finalcutpro.cmd.CommandMap.md) for this CommandList.
 function CommandList.lazy.value:commands()
-    return self._commandsSplitGroup.sections[2]
+    return self._commandsSplitGroup.children[3]
 end
 
 return CommandList

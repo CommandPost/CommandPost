@@ -2,7 +2,7 @@
 ---
 --- Represents an `AXCell` `axuielement`.
 
-local axutils	                    = require "cp.ui.axutils"
+local ax	                        = require "cp.fn.ax"
 local Element	                    = require "cp.ui.Element"
 
 local Cell = Element:subclass("cp.ui.Cell")
@@ -16,43 +16,64 @@ local Cell = Element:subclass("cp.ui.Cell")
 ---
 --- Returns:
 ---  * A boolean
-function Cell.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXCell"
+Cell.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXCell")
+
+--- cp.ui.Cell(parent, uiFinder[, childInits]) -> Cell
+--- Constructor
+--- Creates a new `Cell` instance.
+---
+--- Parameters:
+---  * parent - The parent `Element`.
+---  * uiFinder - A `cp.prop` or `axuielement` that will be used to find this `Cell`'s `axuielement`.
+---  * childInits - A table of child `Element` constructors to initialize.
+---
+--- Returns:
+---  * A new `Cell` instance.
+function Cell:initialize(parent, uiFinder, childInits)
+    self.childInits = childInits
+    Element.initialize(self, parent, uiFinder)
 end
 
 --- cp.ui.Cell.columnIndexRange <cp.prop: table; read-only>
 --- Field
 --- Returns a table of `{len,loc}`, which indicates if the cell covers multiple columns.
 function Cell.lazy.prop:columnIndexRange()
-    return axutils.prop(self.UI, "AXColumnIndexRange")
+    return ax.prop(self.UI, "AXColumnIndexRange")
 end
 
 --- cp.ui.Cell.rowIndexRange <cp.prop: table; read-only>
 --- Field
 --- Returns a table of `{len,loc}`, which indicates if the cell covers multiple rows.
 function Cell.lazy.prop:rowIndexRange()
-    return axutils.prop(self.UI, "AXRowIndexRange")
+    return ax.prop(self.UI, "AXRowIndexRange")
 end
 
 --- cp.ui.Cell.selected <cp.prop: table>
 --- Field
 --- Indicates if the cell is currently selected.
 function Cell.lazy.prop:selected()
-    return axutils.prop(self.UI, "AXSelected")
+    return ax.prop(self.UI, "AXSelected")
 end
 
 --- cp.ui.Cell.childrenUI <cp.prop: table of axuielement; read-only>
 --- Field
 --- The list of `axuielement`s which are children of this `Cell`.
 function Cell.lazy.prop:childrenUI()
-    return axutils.prop(self.UI, "AXChildren")
+    return ax.prop(self.UI, "AXChildren")
+end
+
+--- cp.ui.Cell.children <table of cp.ui.Element; live?; read-only>
+--- Field
+--- The list of `Element`s which are children of this `Cell`, if the `childInits` were provided to the constructor.
+function Cell.lazy.value:children()
+    return ax.initElements(self, self.childrenUI, self.childInits)
 end
 
 --- cp.ui.Cell.value <cp.prop: anything>
 --- Field
 --- The cell value.
 function Cell.lazy.prop:value()
-    return axutils.prop(self.UI, "AXValue", true)
+    return ax.prop(self.UI, "AXValue", true)
 end
 
 --- cp.ui.Cell.value <cp.prop: string>

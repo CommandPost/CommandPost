@@ -62,10 +62,7 @@ end
 --- All children of the Split Group, based on the `childInits` passed to the constructor.
 --- Is `nil` if no `childInits` were provided.
 function SplitGroup.lazy.value:children()
-    if #self.childInits == 0 then return nil end
-    return imap(function(init, index)
-        return init(self, self.childrenUI:mutate(chain // ax.children  >> get(index)))
-    end, self.childInits)
+    return ax.initElements(self, self.childrenUI, self.childInits)
 end
 
 --- cp.ui.SplitGroup.splittersUI <cp.prop: table of axuielementObject, read-only>
