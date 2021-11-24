@@ -393,7 +393,7 @@ Queue.mt = {
         return stateless_iter, self, nil
       end,
 
-    __tostring = function() return "Queue" end,
+    __tostring = function() return "cp.collect.Queue" end,
 
     __gc = function(self)
         local data = getdata(self)

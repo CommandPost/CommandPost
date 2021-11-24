@@ -110,6 +110,10 @@ function List.mt:size(newSize)
     return self.n
 end
 
+function List.mt.__tostring()
+    return "cp.collect.List"
+end
+
 setmetatable(List, {
     __call = function(_, ...)
         return List.of(...)
