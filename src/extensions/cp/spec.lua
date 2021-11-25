@@ -159,7 +159,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger" .new "spec"
+-- local log                   = require "hs.logger" .new "spec"
 local inspect               = require "hs.inspect"
 
 local fs                    = require "hs.fs"
