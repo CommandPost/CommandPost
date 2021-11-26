@@ -10,6 +10,8 @@ local cpfn              = require "cp.fn"
 local cpfnargs          = require "cp.fn.args"
 local is                = require "cp.is"
 
+local LazyList          = require "cp.collect.LazyList"
+
 local packArgs          = cpfnargs.pack
 local unpackArgs        = cpfnargs.unpack
 
@@ -167,10 +169,13 @@ end
 ---  * If the values are a table, the results will be a table. Otherwise, the results will be a vararg list.
 function mod.imap(fn, ...)
     local args, packed = packArgs(...)
-    local results = {}
-    for i,arg in ipairs(args) do
-        results[i] = fn(arg, i)
-    end
+    local results = LazyList(
+        function() return #args end,
+        function(i)
+            local value = args[i]
+            return fn(value, i)
+        end
+    )
     return unpackArgs(results, packed)
 end
 

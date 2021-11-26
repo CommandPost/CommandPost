@@ -115,6 +115,47 @@ local function isInvalid(value, verifyFn)
     return value == nil or not mod.isValid(value) or verifyFn and not verifyFn(value)
 end
 
+--- cp.fn.ax.attribute(name) -> function(uivalue) -> any | nil
+--- Function
+--- Returns a function which will return the `AX` value of the given `name` from the given `value`.
+---
+--- Parameters:
+---  * name - The name of the attribute to get. Eg. `"AXValue"`.
+---
+--- Returns:
+---  * A function which will return the `AX` value of the given `name` from the given `uivalue`.
+---  * This is safe to use as a [cp.prop:mutate](cp.prop.md#mutate) getter, since it will resolve the `original` value before getting the named attribute.
+function mod.attribute(name)
+    return function(uivalue)
+        local element = uielement(uivalue)
+        if element then
+            return element:attributeValue(name)
+        end
+    end
+end
+
+--- cp.fn.ax.setAttribute(name) -> function(newValue, uivalue) -> nil
+--- Function
+--- Returns a function which will set the `AX` value of `uivalue` (if present) the given `name` from the given `value`.
+--- If the `uivalue` is not present, it will not attempt to set the new value.
+---
+--- Parameters:
+---  * name - The name of the attribute to set. Eg. `"AXValue"`.
+---
+--- Returns:
+---  * A function which will set the `AX` value of the given `name` from the given `uivalue`.
+---  * The `newValue` will be passed to the `setAttributeValue` method of the `uivalue`.
+---  * The `uivalue` will attempt to be resolved via [uielement](#uielement).
+---  * This is safe to use as a [cp.prop:mutate](cp.prop.md#mutate) setter, since it will take the `newValue` and `uivalue` in the correct order and resolve the `uivalue`.
+function mod.setAttribute(name)
+    return function(newValue, uivalue)
+        local ui = uielement(uivalue)
+        if ui then
+            ui:setAttributeValue(name, newValue)
+        end
+    end
+end
+
 --- cp.fn.ax.cache(source, key[, verifyFn]) -> function(finderFn) -> function(...) -> axuielement
 --- Function
 --- A combinator which checks if the cached value at the `source[key]` is a valid axuielement. If not
@@ -521,8 +562,6 @@ function mod.init(elementType, ...)
     end
 end
 
-local callFirst = chain // fn.args.only(1) >> fn.call
-
 --- cp.fn.ax.initElements(parent, elementsUiFinder, elementInits) -> table of cp.ui.Element
 --- Function
 --- Creates a table of `cp.ui.Element`s of the given `elementInits` with the given `parent` and `uiFinder`.
@@ -538,7 +577,7 @@ local callFirst = chain // fn.args.only(1) >> fn.call
 function mod.initElements(parent, elementsUiFinder, elementInits)
     if not elementInits or #elementInits == 0 then return nil end
     return imap(function(init, index)
-        return init(parent, elementsUiFinder:mutate(callFirst >> get(index)))
+        return init(parent, elementsUiFinder:mutate(mod.attribute(index)))
     end, elementInits)
 end
 
@@ -560,11 +599,8 @@ end
 function mod.prop(uiFinder, attributeName, settable)
     if prop.is(uiFinder) then
         return uiFinder:mutate(
-            chain // uielement >> get(attributeName),
-            settable and function(newValue, original)
-                local ui = original()
-                return ui and ui:setAttributeValue(attributeName, newValue)
-            end
+            mod.attribute(attributeName),
+            settable and mod.setAttribute(attributeName)
         )
     end
 end
