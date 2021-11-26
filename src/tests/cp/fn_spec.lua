@@ -94,11 +94,11 @@ return describe "cp.fn" {
             expect(result):is(0)
         end),
 
-        it "should call a function with one argument"
+        it "should call a function, ignoring any extra arguments"
         :doing(function()
-            local result = fn.call(incr, 1)
-            expect(result):is(2)
-            expect(result):is(2)
+            local result = fn.call(zero, 1)
+            expect(result):is(0)
+            expect(result):is(0)
         end),
     },
 

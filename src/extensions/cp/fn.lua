@@ -171,9 +171,9 @@ function mod.fork(...)
     end
 end
 
---- cp.fn.call(fn, ...) -> ...
+--- cp.fn.call(fn) -> ...
 --- Function
---- Calls the function `fn` with the arguments `...`.
+--- Calls the function `fn` with no arguments, returning the result.
 ---
 --- Parameters:
 ---  * fn - The function to call.
@@ -181,8 +181,8 @@ end
 ---
 --- Returns:
 ---  * The results of the function call.
-function mod.call(fn, ...)
-    return fn(...)
+function mod.call(fn)
+    return fn()
 end
 
 --- cp.fn.compare(...) -> function(...) -> boolean
