@@ -11,7 +11,7 @@ local Element                           = require "cp.ui.Element"
 local ScrollBar                         = require "cp.ui.ScrollBar"
 
 local chain                             = fn.chain
-local ifilter, get, sort          = fn.table.ifilter, fn.table.get, fn.table.sort
+local ifilter, sort                     = fn.table.ifilter, fn.table.sort
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 
@@ -46,12 +46,12 @@ end
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
-    return self.UI:mutate(chain // ax.uielement >> get "AXContents" >> fn.table.first)
+    return self.UI:mutate(chain // ax.attribute "AXContents" >> fn.table.first)
 end
 
 --- cp.ui.ScrollArea.contents <cp.ui.Element>
 --- Field
---- Returns the `Element` representing the `ScrollArea` Contents, or `nil` if not available.
+--- Returns the `Element` representing the `ScrollArea` Contents.
 function ScrollArea.lazy.value:contents()
     return self.contentsInit(self, self.contentsUI)
 end
@@ -157,7 +157,7 @@ function ScrollArea:showChild(childUI)
     local ui = self:UI()
     if ui and childUI then
         local vFrame = self:viewFrame()
-        local childFrame = childUI:attributeValue("AXFrame")
+        local childFrame = childUI.AXFrame
 
         local top = vFrame.y
         local bottom = vFrame.y + vFrame.h
@@ -167,7 +167,7 @@ function ScrollArea:showChild(childUI)
 
         if childTop < top or childBottom > bottom then
             -- we need to scroll
-            local oFrame = self:contentsUI():attributeValue("AXFrame")
+            local oFrame = self:contentsUI().AXFrame
             local scrollHeight = oFrame.h - vFrame.h
 
             local vValue

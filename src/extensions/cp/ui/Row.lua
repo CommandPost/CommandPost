@@ -2,8 +2,8 @@
 ---
 --- Represents an `AXRow` `axuielement`.
 
-local axutils   = require "cp.ui.axutils"
-local Element	= require "cp.ui.Element"
+local ax                        = require "cp.fn.ax"
+local Element	                = require "cp.ui.Element"
 
 local Row = Element:subclass("cp.ui.Row")
 
@@ -16,9 +16,7 @@ local Row = Element:subclass("cp.ui.Row")
 ---
 --- Returns:
 ---  * `true` if it matches, otherwise `false`.
-function Row.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXRow"
-end
+Row.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXRow")
 
 --- cp.ui.Row(parent, uiFinder) -> cp.ui.Row
 --- Constructor
@@ -35,14 +33,14 @@ end
 --- Field
 --- Indicates if the `Row` is disclosing other `Rows`.
 function Row.lazy.prop:disclosing()
-    return axutils.prop(self.UI, "AXDisclosing", true)
+    return ax.prop(self.UI, "AXDisclosing", true)
 end
 
 --- cp.ui.Row.disclosureLevel <cp.prop: number; read-only>
 --- Field
 --- The depth of disclosure. `0` is the top level.
 function Row.lazy.prop:disclosureLevel()
-    return axutils.prop(self.UI, "AXDisclosureLevel")
+    return ax.prop(self.UI, "AXDisclosureLevel")
 end
 
 --- cp.ui.Row:disclosedByRow() -> cp.ui.Row
@@ -55,7 +53,7 @@ end
 --- Returns:
 ---  * A `cp.ui.Row` object
 function Row.lazy.prop:disclosedByRow()
-    return axutils.prop(self.UI, "AXDisclosedByRow"):mutate(function(original)
+    return ax.prop(self.UI, "AXDisclosedByRow"):mutate(function(original)
         return self:parent():fetchRow(original())
     end)
 end
@@ -84,14 +82,14 @@ end
 --- Field
 --- Indicates if the row is currently selected. May be set.
 function Row.lazy.prop:selected()
-    return axutils.prop(self.UI, "AXSelected", true)
+    return ax.prop(self.UI, "AXSelected", true)
 end
 
 --- cp.ui.Row.index <cp.prop: number; read-only>
 --- Field
 --- The numeric index of this row in the overall container, with `0` being the first item.
 function Row.lazy.prop:index()
-    return axutils.prop(self.UI, "AXIndex")
+    return ax.prop(self.UI, "AXIndex")
 end
 
 -- cp.ui.Row:__eq(other) -> boolean

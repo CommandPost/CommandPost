@@ -5,6 +5,8 @@
 local ax	                        = require "cp.fn.ax"
 local Element	                    = require "cp.ui.Element"
 
+local pack                          = table.pack
+
 local Cell = Element:subclass("cp.ui.Cell")
 
 --- cp.ui.Cell.matches(element) ->  boolean
@@ -17,6 +19,22 @@ local Cell = Element:subclass("cp.ui.Cell")
 --- Returns:
 ---  * A boolean
 Cell.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXCell")
+
+--- cp.ui.Cell.with(...) -> function(parent, uiFinder) -> Cell
+--- Function
+--- A combinator function that returns a `Cell` constructor function that accepts the `parent` and `uiFinder`.
+---
+--- Parameters:
+---  * ... - One or more arguments to pass to the constructor.
+---
+--- Returns:
+---  * A function that will return a new `Cell` instance.
+function Cell.static.with(...)
+    local childInits = pack(...)
+    return function(parent, uiFinder)
+        return Cell(parent, uiFinder, childInits)
+    end
+end
 
 --- cp.ui.Cell(parent, uiFinder[, childInits]) -> Cell
 --- Constructor

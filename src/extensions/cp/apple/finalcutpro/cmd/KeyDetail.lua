@@ -8,11 +8,13 @@ local require = require
 
 local fn                    = require "cp.fn"
 local ax                    = require "cp.fn.ax"
+local Cell                  = require "cp.ui.Cell"
 local Group                 = require "cp.ui.Group"
 local Image                 = require "cp.ui.Image"
 local StaticText            = require "cp.ui.StaticText"
 local ScrollArea            = require "cp.ui.ScrollArea"
-local Table                 = require "cp.ui.OldTable"
+local Table                 = require "cp.ui.Table"
+local TextField             = require "cp.ui.TextField"
 
 local chain                 = fn.chain
 local hasExactly            = fn.table.hasExactly
@@ -78,7 +80,7 @@ end
 function KeyDetail.lazy.value:detail()
     return ScrollArea(self,
         self.contentGroupUI:mutate(ax.childMatching(ScrollArea.matches)),
-        Table
+        Table.withRowsOf(Cell.with(TextField), Cell.with(TextField))
     )
 end
 
