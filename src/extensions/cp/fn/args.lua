@@ -2,25 +2,32 @@
 ---
 --- Functions for working with function arguments.
 
-local pack, unpack = table.pack, table.unpack
+local pack, unpack, insert      = table.pack, table.unpack, table.insert
 
 local mod = {}
 
---- cp.fn.args.only(index) -> function(...) -> any
+--- cp.fn.args.only(index, ...) -> function(...) -> any
 --- Function
 --- Returns a function that only returns the argument at the specified index.
 ---
 --- Parameters:
 ---  * index - The index of the argument to return.
+---  * ... - The other indexes to include as well.
 ---
 --- Returns:
----  * A function that returns the argument at the specified index.
-function mod.only(index)
+---  * A function that returns the arguments at the specified indecies.
+function mod.only(index, ...)
+    local indexes = pack(index, ...)
     return function(...)
-        local value = select(index, ...)
-        return value
+        local args = {}
+        for _, i in ipairs(indexes) do
+            local value = select(i, ...)
+            insert(args, value)
+        end
+        return unpack(args)
     end
 end
+
 
 --- cp.fn.args.from(index) -> function(...) -> ...
 --- Function

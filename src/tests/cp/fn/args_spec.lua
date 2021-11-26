@@ -18,6 +18,16 @@ return describe "cp.fn.args" {
             expect({second(1, 2, 3)}):is({2})
             expect({third(1, 2, 3)}):is({3})
         end),
+
+        it "should return multiple specified arguments"
+        :doing(function()
+            local firstAndThird = args.only(1, 3)
+
+            expect({firstAndThird(1, 2, 3)}):is({1, 3})
+            expect({firstAndThird(1, 2, 3, 4)}):is({1, 3})
+            expect({firstAndThird(1, 2)}):is({1})
+            expect({firstAndThird()}):is({})
+        end)
     },
 
     context "from" {
