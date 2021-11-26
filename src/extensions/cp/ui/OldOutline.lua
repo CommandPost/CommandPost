@@ -1,4 +1,4 @@
---- === cp.ui.Outline ===
+--- === cp.ui.OldOutline ===
 ---
 --- Represents an `AXOutline` `axuielement`.
 
@@ -17,7 +17,7 @@ local insert	                = table.insert
 local ifilter	                = funtils.ifilter
 
 
-local Outline = Element:subclass("cp.ui.Outline")
+local Outline = Element:subclass("cp.ui.OldOutline")
 
 -- _cleanCache()
 -- Local Function
@@ -86,7 +86,7 @@ local function _fetchElements(cache, uis, parent, createFn)
     end
 end
 
---- cp.ui.Outline.matches(element) -> boolean
+--- cp.ui.OldOutline.matches(element) -> boolean
 --- Function
 --- Checks if the `element` is an `Outline`.
 ---
@@ -99,7 +99,7 @@ function Outline.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXOutline"
 end
 
---- cp.ui.Outline(parent, uiFinder) -> cp.ui.Outline
+--- cp.ui.OldOutline(parent, uiFinder) -> cp.ui.OldOutline
 --- Constructor
 --- Creates a new `Outline` with the specified `parent` and `uiFinder`.
 ---
@@ -115,7 +115,7 @@ function Outline:initialize(parent, uiFinder)
     self._columnCache = {}
 end
 
---- cp.ui.Outline:childrenUI() -> table
+--- cp.ui.OldOutline:childrenUI() -> table
 --- Method
 --- Provides a `table` containing the `axuielement`s which are children of the outline.
 ---
@@ -128,7 +128,7 @@ function Outline:childrenUI()
     return valueOf(self:UI(), "AXChildren")
 end
 
---- cp.ui.Outline:columnsUI() -> table
+--- cp.ui.OldOutline:columnsUI() -> table
 --- Method
 --- Provides a `table` containing the `axuielement`s which are columns of the outline.
 ---
@@ -141,7 +141,7 @@ function Outline:columnsUI()
     return valueOf(self:UI(), "AXColumns")
 end
 
---- cp.ui.Outline:createColumn(columnUI) -> cp.ui.Column
+--- cp.ui.OldOutline:createColumn(columnUI) -> cp.ui.Column
 --- Method
 --- Attempts to create a new [Column](cp.ui.Column.md) with the provided `columnUI` `axuielement`.
 --- If there is a problem, an `error` is thrown.
@@ -160,7 +160,7 @@ function Outline:createColumn(columnUI)
     return Column(self, prop.THIS(columnUI))
 end
 
---- cp.ui.Outline:columns() -> table of cp.ui.Columns
+--- cp.ui.OldOutline:columns() -> table of cp.ui.Columns
 --- Method
 --- Returns the list of [Column](cp.ui.Column.md)s in this `Outline`.
 ---
@@ -173,7 +173,7 @@ function Outline:columns()
     return self:fetchColumns(self:columnsUI())
 end
 
---- cp.ui.Outline:fetchColumn(columnUI) -> cp.ui.Column or nil
+--- cp.ui.OldOutline:fetchColumn(columnUI) -> cp.ui.Column or nil
 --- Method
 --- Returns the [Column](cp.ui.Column.md) that represents the provided `columnUI`, if it is actually present
 --- in the `Outline`.
@@ -187,7 +187,7 @@ function Outline:fetchColumn(columnUI)
     return _fetchElement(self._columnCache, columnUI, self, self.createColumn)
 end
 
---- cp.ui.Outline:fetchColumn(columnsUI) -> table of cp.ui.Columns
+--- cp.ui.OldOutline:fetchColumn(columnsUI) -> table of cp.ui.Columns
 --- Method
 --- Returns a `table` of the same length as `columnsUI`.
 --- If provided items in the table are not valid columns in this table, then `nil` will be put in the matching index.
@@ -202,7 +202,7 @@ function Outline:fetchColumns(columnsUI)
     return _fetchElements(self._columnCache, columnsUI, self, self.createColumn)
 end
 
---- cp.ui.Outline:rowsUI() -> table of axuielement
+--- cp.ui.OldOutline:rowsUI() -> table of axuielement
 --- Method
 --- Provides a `table` containing the `axuielement`s which are rows in the outline.
 ---
@@ -215,7 +215,7 @@ function Outline:rowsUI()
     return valueOf(self:UI(), "AXRows")
 end
 
---- cp.ui.Outline:createRow(rowUI) -> cp.ui.Row
+--- cp.ui.OldOutline:createRow(rowUI) -> cp.ui.Row
 --- Method
 --- Attempts to create a new [Row](cp.ui.Row.md) with the provided `rowUI` `axuielement`.
 --- If there is a problem, an `error` is thrown.
@@ -233,7 +233,7 @@ function Outline:createRow(rowUI)
     return Row(self, prop.THIS(rowUI))
 end
 
---- cp.ui.Outline:rows() -> table of cp.ui.Row or nil
+--- cp.ui.OldOutline:rows() -> table of cp.ui.Row or nil
 --- Method
 --- Provides a `table` with the list of `cp.ui.Row` elements for the rows.
 ---
@@ -246,7 +246,7 @@ function Outline:rows()
     return self:fetchRows(self:rowsUI())
 end
 
---- cp.ui.Outline:fetchRow(rowUI) -> cp.ui.Row or nil
+--- cp.ui.OldOutline:fetchRow(rowUI) -> cp.ui.Row or nil
 --- Method
 --- Returns the [Row](cp.ui.Row.md) that represents the provided `rowUI`, if it is actually present
 --- in the `Outline`.
@@ -260,7 +260,7 @@ function Outline:fetchRow(rowUI)
     return _fetchElement(self._rowCache, rowUI, self, self.createRow)
 end
 
---- cp.ui.Outline:fetchRows(rowsUI) -> table of cp.ui.Rows
+--- cp.ui.OldOutline:fetchRows(rowsUI) -> table of cp.ui.Rows
 --- Method
 --- Returns a `table` of the same length as `rowsUI`.
 --- If provided items in the table are not valid rows in this table, then `nil` will be put in the matching index.
@@ -275,7 +275,7 @@ function Outline:fetchRows(rowsUI)
     return _fetchElements(self._rowCache, rowsUI, self, self.createRow)
 end
 
---- cp.ui.Outline:filterRows(matcherFn) -> table of cp.ui.Rows or nil
+--- cp.ui.OldOutline:filterRows(matcherFn) -> table of cp.ui.Rows or nil
 --- Method
 --- Returns a table only containing [Row](cp.ui.Row.md)s which pass the predicate `matcherFn`.
 --- The function is passed the row and returns a boolean.
