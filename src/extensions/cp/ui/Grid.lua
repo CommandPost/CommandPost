@@ -1,6 +1,6 @@
 --- === cp.ui.Grid ===
 ---
---- Abstract base class for `AX` elements which form a grid, such as [Table2](cp.ui.OldTable2.md) and [Outline](cp.ui.Outline.md).
+--- Abstract base class for `AX` elements which form a grid, such as [Table](cp.ui.OldTable.md) and [Outline](cp.ui.Outline.md).
 
 -- local log                       = require "hs.logger" .new "Grid"
 
