@@ -5,7 +5,6 @@
 local axutils	                = require "cp.ui.axutils"
 local Element	                = require "cp.ui.Element"
 
-
 local Column = Element:subclass("cp.ui.Column")
 
 --- cp.ui.Column.matches(element) -> boolean
@@ -35,9 +34,9 @@ function Column.lazy.prop:selected()
     return axutils.prop(self.UI, "AXSelected", true)
 end
 
---- cp.ui.Column:rows() -> table of cp.ui.Row or nil
+--- cp.ui.Column:rows() -> table of cp.ui.OldRow or nil
 --- Method
---- Returns a `table` of [Row](cp.ui.Row.md)s contained in the Column.
+--- Returns a `table` of [Row](cp.ui.OldRow.md)s contained in the Column.
 ---
 --- Parameters:
 ---  * None
@@ -52,9 +51,9 @@ function Column:rows()
     end
 end
 
---- cp.ui.Column:visibleRows() -> table of cp.ui.Rows or nil
+--- cp.ui.Column:visibleRows() -> table of cp.ui.OldRows or nil
 --- Method
---- Returns a `table` of [Row](cp.ui.Row.md)s which are currently visible on screen.
+--- Returns a `table` of [Row](cp.ui.OldRow.md)s which are currently visible on screen.
 ---
 --- Parameters:
 ---  * None

@@ -11,7 +11,7 @@ local LazyList                              = require "cp.collect.LazyList"
 local fn                                    = require "cp.fn"
 local ax                                    = require "cp.fn.ax"
 local prop                                  = require "cp.prop"
-local Column                                = require "cp.ui.Column"
+-- local Column                                = require "cp.ui.Column"
 local Element                               = require "cp.ui.Element"
 local Row                                   = require "cp.ui.Row"
 
@@ -68,7 +68,7 @@ function Table:initialize(parent, uiFinder, factory)
 
     self._headerType = Element
     self._rowType = Row
-    self._columnType = Column
+    -- self._columnType = Column
 end
 
 --- cp.ui.Table:headerType(elementType) -> cp.ui.Table
@@ -156,14 +156,14 @@ function Table.lazy.prop:columnsUI()
     return ax.prop(self.UI, "AXColumns")
 end
 
---- cp.ui.Table.selectedColumnsUI <cp.prop: table of cp.ui.Column; live?; read-only>
+--- cp.ui.Table.selectedColumnsUI <cp.prop: table of axuielement; live?; read-only>
 --- Field
 --- The list of `Column`s which are selected in this `Table`.
 function Table.lazy.prop:selectedColumnsUI()
     return ax.prop(self.UI, "AXSelectedColumns")
 end
 
---- cp.ui.Table.visibleColumnsUI <cp.prop: table of cp.ui.Column; live?; read-only>
+--- cp.ui.Table.visibleColumnsUI <cp.prop: table of axuielement; live?; read-only>
 --- Field
 --- The list of `Column`s which are visible in this `Table`.
 function Table.lazy.prop:visibleColumnsUI()
