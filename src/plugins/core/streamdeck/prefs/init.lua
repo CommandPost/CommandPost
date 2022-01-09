@@ -97,6 +97,11 @@ mod.lastDevice = config.prop("streamDeck.preferences.lastDevice", "Original")
 --- Last Unit used in the Preferences Panel.
 mod.lastUnit = config.prop("streamDeck.preferences.lastUnit", "1")
 
+--- plugins.core.streamdeck.prefs.lastUnit <cp.prop: string>
+--- Field
+--- Last Unit used in the Preferences Panel.
+mod.lastButton = config.prop("streamDeck.preferences.lastButton", "1")
+
 --- plugins.core.touchbar.prefs.scrollBarPosition <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
@@ -157,6 +162,8 @@ local function generateContent()
     end
 
     local context = {
+        id                      = "streamDeckPanelCallback",
+
         builtInApps             = builtInApps,
         userApps                = userApps,
 
@@ -185,13 +192,24 @@ end
 -- Returns:
 --  * None
 local function updateUI(params)
-    local device = params["device"]
-    local unit = params["unit"]
-    local app = params["application"]
-    local bank = params["bank"]
+    local device    = params["device"] or mod.lastDevice()
+    local unit      = params["unit"] or mod.lastUnit()
+    local app       = params["application"] or mod.lastApplication()
+    local bank      = params["bank"] or mod.lastBank()
+    local button    = params["button"] or mod.lastButton()
+
+    log.df("----------------------")
+    log.df("device: %s", device)
+    log.df("unit: %s", unit)
+    log.df("application: %s", app)
+    log.df("bank: %s (%s)", bank, type(bank))
+    log.df("button: %s (%s)", button, type(button))
 
     local injectScript = mod._manager.injectScript
 
+    --------------------------------------------------------------------------------
+    -- Update the UI Dropdowns:
+    --------------------------------------------------------------------------------
     local script = [[
         changeValueByID("device", "]] .. device .. [[");
         changeValueByID("unit", "]] .. unit .. [[");
@@ -200,30 +218,20 @@ local function updateUI(params)
     ]]
 
     --------------------------------------------------------------------------------
-    -- Show the appropriate amount of rows:
+    -- Show the correct UI:
     --------------------------------------------------------------------------------
-    local numberOfButtons = mod._sd.numberOfButtons[device]
-    for i=1, 32 do
-        if i > numberOfButtons then
-            script = script .. [[
-                document.getElementById("row_]] .. tostring(i) .. [[").style.display = "none";
-            ]] .. "\n"
-        else
-            script = script .. [[
-                document.getElementById("row_]] .. tostring(i) .. [[").style.display = "table";
-            ]] .. "\n"
-        end
+    script = script .. [[
+        document.getElementById("streamdeckOriginalUI").style.display = "]] .. (device == "Original" and "Block" or "None") .. [[";
+        document.getElementById("streamdeckMiniUI").style.display = "]] .. (device == "Mini" and "Block" or "None") .. [[";
+        document.getElementById("streamdeckXLUI").style.display = "]] .. (device == "XL" and "Block" or "None") .. [[";
+    ]] .. "\n"
 
-        if i == numberOfButtons then
-            script = script .. [[
-                document.getElementById("down_]] .. tostring(i) .. [[").style.display = "none";
-            ]] .. "\n"
-        else
-            script = script .. [[
-                document.getElementById("down_]] .. tostring(i) .. [[").style.display = "inline-block";
-            ]] .. "\n"
-        end
-    end
+    --------------------------------------------------------------------------------
+    -- Update the UI label:
+    --------------------------------------------------------------------------------
+    script = script .. [[
+        document.getElementById("label").innerHTML = "]] .. button .. [[";
+    ]] .. "\n"
 
     local items = mod.items()
     local appData = items[device] and items[device][unit] and items[device][unit][app]
@@ -258,10 +266,36 @@ local function updateUI(params)
     local bankData = appData and appData[bank]
 
     --------------------------------------------------------------------------------
-    -- Update all Action Titles, Labels & Icons:
+    -- Update the button images for all the buttons:
     --------------------------------------------------------------------------------
+    local numberOfButtons = mod._sd.numberOfButtons[device]
+
+    log.df("numberOfButtons: %s", numberOfButtons)
+
     for i=1, numberOfButtons do
         local buttonData = bankData and bankData[tostring(i)]
+        if buttonData and buttonData.icon and buttonData.icon ~= "" then
+            log.df("update button: %s, device: %s, data: %s", i, device, buttonData.icon)
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
+            ]] .. "\n"
+        else
+            log.df("resetting image: %s", i)
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "";
+            ]] .. "\n"
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Update the fields for the currently selected button:
+    --------------------------------------------------------------------------------
+    local buttonData = bankData and bankData[button]
+    if buttonData then
+        log.df("We have stuff to populate!")
+    end
+
+        --[==[
         if buttonData and buttonData.actionTitle and buttonData.actionTitle ~= "" then
             script = script .. [[
                 document.getElementById("action_]] .. tostring(i) .. [[").value = `]] .. escapeTilda(buttonData.actionTitle) .. [[`;
@@ -293,7 +327,7 @@ local function updateUI(params)
                 document.getElementById("dropzone]] .. i .. [[").className = "dropzone";
             ]] .. "\n"
         end
-    end
+        --]==]
 
     --------------------------------------------------------------------------------
     -- Update Bank Label:
@@ -308,15 +342,6 @@ local function updateUI(params)
             document.getElementById("bankLabel").value = "";
         ]] .. "\n"
     end
-
-    --------------------------------------------------------------------------------
-    -- Update Scroll Bar Position:
-    --------------------------------------------------------------------------------
-    local scrollBarPositions = mod.scrollBarPosition()
-    local scrollBarPosition = scrollBarPositions and scrollBarPositions[device] and scrollBarPositions[device][unit] and scrollBarPositions[device][unit][app] and scrollBarPositions[device][unit][app][bank] or 0
-    script = script .. [[
-        document.getElementById("scrollArea").scrollTop = ]] .. scrollBarPosition .. [[;
-    ]]
 
     --------------------------------------------------------------------------------
     -- Inject Script:
@@ -1400,7 +1425,7 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 890,
+        height          = 910,
     })
         :addContent(1, html.style ([[
                 .enableStreamDeck {

@@ -1,3 +1,16 @@
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 21px;
+	height: 21px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
 .bottomButton {
 	background-color: #4a4a4a;
 	color: #bfbfbc;
@@ -233,10 +246,10 @@
   border-radius: 5px;
   color: white;
   font: bold 12px/50px arial;
-  height: 50px;
-  margin: 7.5px auto;
+  height: 90px;
+  /* margin: 7.5px auto; */
   text-align: center;
-  width: 50px;
+  width: 90px;
 }
 
 .dropzone.hover {
@@ -258,10 +271,11 @@
 }
 
 .dropzone img {
-  border-radius: 2.5px;
-  vertical-align: middle;
-  max-width: 95%;
-  max-height: 95%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: 0 auto;
+  height: 90px;
 }
 
 .dropzone [type="file"] {
@@ -272,4 +286,158 @@
   right: 0;
   bottom: 0;
   left: 0;
+}
+
+.touchButtonDropZone {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  margin: 0;
+  font-size: 0;
+  border-image-width: 0;
+}
+
+.touchButtonDropZone::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+/* NEW STUFF */
+
+.loupedeck {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.loupedeck td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.loupedeck thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.loupedeck thead tr, .loupedeck tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.loupedeck thead tr {
+	width: calc( 100% - 8px);
+}
+
+.loupedeck tbody {
+	display:block;
+	/* height: 65px; */
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.loupedeckActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 186px;
+}
+
+.loupedeckActionButton {
+	padding: 5px 5px !important;
+}
+
+/* ICON DROP ZONE: */
+
+.dropzone {
+  position: relative;
+  border: 2.5px dotted #FFF;
+  border-radius: 5px;
+  color: white;
+  font: bold 12px/50px arial;
+  height: 90px;
+  /* margin: 7.5px auto; */
+  text-align: center;
+  width: 90px;
+}
+
+.dropzone.hover {
+  border: 2.5px solid #5760e7;
+  color: #5760e7;
+}
+
+.dropzone.dropped {
+  background: #222;
+  border: 2.5px solid #444;
+}
+
+.dropzone div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropzone img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: 0 auto;
+  height: 90px;
+}
+
+.dropzone [type="file"] {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.touchButtonDropZone {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  margin: 0;
+  font-size: 0;
+  border-image-width: 0;
+}
+
+.touchButtonDropZone::-webkit-file-upload-button {
+  visibility: hidden;
 }
