@@ -7,7 +7,6 @@ local require           = require
 --local log               = require "hs.logger".new "mouse"
 
 local eventtap          = require "hs.eventtap"
-local event             = require "hs.eventtap.event"
 local mouse             = require "hs.mouse"
 local image             = require "hs.image"
 
@@ -15,6 +14,7 @@ local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local just              = require "cp.just"
 
+local event             = eventtap.event
 local imageFromPath     = image.imageFromPath
 
 local mod = {}
