@@ -9,19 +9,26 @@
 #
 
 export SCRIPT_HOME ; SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")"
-export HAMMERSPOON_HOME ; HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")"
+export COMMANDPOST_HOME ; COMMANDPOST_HOME="$(greadlink -f "${SCRIPT_HOME}/../")"
 
 #
 # Get the CommandPost version from the current GitHub Tag:
 #
 
-export VERSION ; VERSION=$(cd "${HAMMERSPOON_HOME}/../CommandPost-App/" || fail "Unable to enter ${HAMMERSPOON_HOME}/../CommandPost-App/" ; git describe --abbrev=0)
+export VERSION ; VERSION=$(cd "${COMMANDPOST_HOME}/../CommandPost-App/" || fail "Unable to enter ${COMMANDPOST_HOME}/../CommandPost-App/" ; git describe --abbrev=0)
+
+#
+# These variables are used within the CommandPost-App Build Script:
+#
+
+export SENTRY_ORG=commandpost
+export SENTRY_PROJECT=commandpost
 
 #
 # Setup Token Paths:
 #
 
-export TOKENPATH; TOKENPATH="${HAMMERSPOON_HOME}/.."
+export TOKENPATH; TOKENPATH="${COMMANDPOST_HOME}/.."
 export NOTARIZATION_TOKEN_FILE="${TOKENPATH}/token-notarization"
 
 #
@@ -36,13 +43,6 @@ function assert_notarization_token() {
 }
 
 assert_notarization_token && source "${NOTARIZATION_TOKEN_FILE}"
-
-#
-# These variables are used within the CommandPost-App Build Script:
-#
-
-export SENTRY_ORG=commandpost
-export SENTRY_PROJECT=commandpost
 
 #
 # Build Uninstall Script:
@@ -83,7 +83,7 @@ function build_dmgcanvas() {
 
 function assert_notarization_acceptance() {
     echo "Ensuring Notarization acceptance..."
-    if ! xcrun stapler validate "${HAMMERSPOON_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" ; then
+    if ! xcrun stapler validate "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" ; then
         fail "Notarization rejection"
         exit 1
     fi
@@ -91,7 +91,7 @@ function assert_notarization_acceptance() {
 
 function upload_to_notary_service() {
     echo "Uploading to Apple Notarization Service..."
-    pushd "${HAMMERSPOON_HOME}" >/dev/null
+    pushd "${COMMANDPOST_HOME}" >/dev/null
     mkdir -p "../archive/${VERSION}"
     local OUTPUT=""
     OUTPUT=$(xcrun altool --notarize-app \
@@ -172,8 +172,8 @@ function check_notarization_status() {
 
 function staple_notarization() {
     echo "Stapling notarization to app bundle..."
-    pushd "${HAMMERSPOON_HOME}/../CommandPost-App/build" >/dev/null
-    xcrun stapler staple "${HAMMERSPOON_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
+    pushd "${COMMANDPOST_HOME}/../CommandPost-App/build" >/dev/null
+    xcrun stapler staple "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
     popd >/dev/null
 }
 
