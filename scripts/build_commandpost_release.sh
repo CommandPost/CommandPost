@@ -13,6 +13,7 @@ set -o pipefail
 
 export SENTRY_ORG=commandpost
 export SENTRY_PROJECT=commandpost
+export SENTRY_LOG_LEVEL=debug
 
 export SCRIPT_HOME ; SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")"
 export COMMANDPOST_HOME ; COMMANDPOST_HOME="$(greadlink -f "${SCRIPT_HOME}/../")"
@@ -83,6 +84,27 @@ function generate_appcast() {
 }
 
 #
+# Finalise Sentry:
+#
+
+function finalise_sentry() {
+
+    echo "  * Updating Sentry release..."
+    
+    export TOKENPATH ; TOKENPATH="$(greadlink -f "${COMMANDPOST_HOME}/..")"
+    export SENTRY_TOKEN_AUTH_FILE="${TOKENPATH}/token-sentry-auth"    
+        
+	echo "  * Importing Sentry token from: ${TOKENPATH}/token-sentry-auth"
+	# shellcheck disable=SC1090
+	source "${SENTRY_TOKEN_AUTH_FILE}"
+        
+    export SENTRY_AUTH_TOKEN
+    "${COMMANDPOST_HOME}/../CommandPost-App/scripts/sentry-cli" releases set-commits --auto "${VERSION}" 2>&1 | tee "${COMMANDPOST_HOME}/../CommandPost-App/build/sentry-release.log"
+    "${COMMANDPOST_HOME}/../CommandPost-App/scripts/sentry-cli" releases finalize "${VERSION}" 2>&1 | tee -a "${COMMANDPOST_HOME}/../CommandPost-App/build/sentry-release.log"
+    
+}
+
+#
 # Build CommandPost-App:
 #
 
@@ -112,3 +134,6 @@ echo " * Notorizing DMG..."
 
 echo " * Generating new AppCast..."
 generate_appcast
+
+echo " * Finalise Sentry..."
+finalise_sentry
