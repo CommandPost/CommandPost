@@ -137,3 +137,5 @@ generate_appcast
 
 echo " * Finalise Sentry..."
 finalise_sentry
+
+echo " * CommandPost has been successfully built!"
