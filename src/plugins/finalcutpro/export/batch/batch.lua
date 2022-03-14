@@ -299,7 +299,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
 			-- Set Custom Export Path:
 			--------------------------------------------------------------------------------
 			fcp.preferences:set("FFShareLastCurrentDirectory", pathToAbsolute(exportPath))
-        
+
             --------------------------------------------------------------------------------
             -- Trigger Export:
             --------------------------------------------------------------------------------
@@ -333,7 +333,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                     displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
                     return false
                 end
-                            
+
                 --------------------------------------------------------------------------------
                 -- Make sure we don't already have a clip with the same name in the batch:
                 --------------------------------------------------------------------------------
@@ -511,8 +511,8 @@ end
 --- Returns:
 ---  * None
 function mod.changeExportDestinationFolder()
-    Do(function()    
-    	local path = mod.getDestinationFolder()    
+    Do(function()
+    	local path = mod.getDestinationFolder()
         local result = displayChooseFolder(i18n("selectDestinationFolder"), path)
         if result ~= false then
             config.set("batchExportDestinationFolder", result)
@@ -770,11 +770,11 @@ function mod.performBatchExport()
     --------------------------------------------------------------------------------
     local originalSuspendBackgroundRenders = fcp.preferences:get("FFSuspendBGOpsDuringPlay", true)
     fcp.preferences:set("FFSuspendBGOpsDuringPlay", true)
-    
+
     --------------------------------------------------------------------------------
-    -- Save the original last share directory to restore later:    
-    --------------------------------------------------------------------------------    
-    local originalLastShareDirectory = fcp.preferences:get("FFShareLastCurrentDirectory")                   
+    -- Save the original last share directory to restore later:
+    --------------------------------------------------------------------------------
+    local originalLastShareDirectory = fcp.preferences:get("FFShareLastCurrentDirectory")
 
     --------------------------------------------------------------------------------
     -- Export the clips:
@@ -794,14 +794,14 @@ function mod.performBatchExport()
     -- Restore FFSuspendBGOpsDuringPlay preference:
     --------------------------------------------------------------------------------
     fcp.preferences:set("FFSuspendBGOpsDuringPlay", originalSuspendBackgroundRenders)
-        
+
 	--------------------------------------------------------------------------------
 	-- Restore FFShareLastCurrentDirectory preference:
 	--------------------------------------------------------------------------------
-	if doesDirectoryExist(originalLastShareDirectory) then	
+	if doesDirectoryExist(originalLastShareDirectory) then
 		fcp.preferences:set("FFShareLastCurrentDirectory", originalLastShareDirectory)
 	end
-    
+
 end
 
 -- nextID() -> number
