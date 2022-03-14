@@ -295,10 +295,10 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 return false
             end
         else
-			--------------------------------------------------------------------------------
-			-- Set Custom Export Path:
-			--------------------------------------------------------------------------------
-			fcp.preferences:set("FFShareLastCurrentDirectory", pathToAbsolute(exportPath))
+            --------------------------------------------------------------------------------
+            -- Set Custom Export Path:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFShareLastCurrentDirectory", pathToAbsolute(exportPath))
 
             --------------------------------------------------------------------------------
             -- Trigger Export:
@@ -512,7 +512,7 @@ end
 ---  * None
 function mod.changeExportDestinationFolder()
     Do(function()
-    	local path = mod.getDestinationFolder()
+        local path = mod.getDestinationFolder()
         local result = displayChooseFolder(i18n("selectDestinationFolder"), path)
         if result ~= false then
             config.set("batchExportDestinationFolder", result)
@@ -795,12 +795,12 @@ function mod.performBatchExport()
     --------------------------------------------------------------------------------
     fcp.preferences:set("FFSuspendBGOpsDuringPlay", originalSuspendBackgroundRenders)
 
-	--------------------------------------------------------------------------------
-	-- Restore FFShareLastCurrentDirectory preference:
-	--------------------------------------------------------------------------------
-	if doesDirectoryExist(originalLastShareDirectory) then
-		fcp.preferences:set("FFShareLastCurrentDirectory", originalLastShareDirectory)
-	end
+    --------------------------------------------------------------------------------
+    -- Restore FFShareLastCurrentDirectory preference:
+    --------------------------------------------------------------------------------
+    if doesDirectoryExist(originalLastShareDirectory) then
+        fcp.preferences:set("FFShareLastCurrentDirectory", originalLastShareDirectory)
+    end
 
 end
 
