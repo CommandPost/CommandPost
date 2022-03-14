@@ -668,7 +668,7 @@ function app.lazy.prop:currentLocale()
             local output, status = hs.execute("defaults read NSGlobalDomain AppleLanguages")
             if status then
                 local appleLanguages = tools.lines(output)
-                if next(appleLanguages) ~= nil then
+                if appleLanguages and next(appleLanguages) ~= nil then
                     if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
                         for i=2, #appleLanguages - 1 do
                             local line = appleLanguages[i]
