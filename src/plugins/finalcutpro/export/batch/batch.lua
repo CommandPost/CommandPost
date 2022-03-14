@@ -776,6 +776,12 @@ function mod.performBatchExport()
     --------------------------------------------------------------------------------
     local originalLastShareDirectory = fcp.preferences:get("FFShareLastCurrentDirectory")
 
+	--------------------------------------------------------------------------------
+	-- Save skimming state, then disable skimming:
+	--------------------------------------------------------------------------------
+	local originalDisableSkimming = fcp.preferences:get("FFDisableSkimming")
+	fcp.preferences:set("FFDisableSkimming", true)
+
     --------------------------------------------------------------------------------
     -- Export the clips:
     --------------------------------------------------------------------------------
@@ -794,6 +800,11 @@ function mod.performBatchExport()
     -- Restore FFSuspendBGOpsDuringPlay preference:
     --------------------------------------------------------------------------------
     fcp.preferences:set("FFSuspendBGOpsDuringPlay", originalSuspendBackgroundRenders)
+
+    --------------------------------------------------------------------------------
+    -- Restore Skimming State:
+    --------------------------------------------------------------------------------
+	fcp.preferences:set("FFDisableSkimming", originalDisableSkimming)
 
     --------------------------------------------------------------------------------
     -- Restore FFShareLastCurrentDirectory preference:
