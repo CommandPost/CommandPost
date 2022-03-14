@@ -13,12 +13,12 @@ local i18n              = require "cp.i18n"
 
 local enabled = config.prop("caffeinate.enabled", false):watch(function(value)
     if value then
-    	--log.df("Caffinate Enabled!")
+        --log.df("Caffinate Enabled!")
         caffeinate.set("displayIdle", true)
         caffeinate.set("systemIdle", true)
         caffeinate.set("system", true)
     else
-    	--log.df("Caffinate Disabled!")
+        --log.df("Caffinate Disabled!")
         caffeinate.set("displayIdle", false)
         caffeinate.set("systemIdle", false)
         caffeinate.set("system", false)
@@ -26,9 +26,9 @@ local enabled = config.prop("caffeinate.enabled", false):watch(function(value)
 end)
 
 local plugin = {
-    id				= "core.tools.caffeinate",
-    group			= "core",
-    dependencies	= {
+    id              = "core.tools.caffeinate",
+    group           = "core",
+    dependencies    = {
         ["core.menu.manager"] = "menu",
         ["core.commands.global"] = "global",
     }
@@ -36,10 +36,10 @@ local plugin = {
 
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Add menu items:
-	--------------------------------------------------------------------------------
-	local menu = deps.menu
+    --------------------------------------------------------------------------------
+    -- Add menu items:
+    --------------------------------------------------------------------------------
+    local menu = deps.menu
     menu.tools
         :addItem(1, function()
             return {
@@ -51,28 +51,28 @@ function plugin.init(deps)
             }
         end)
 
-	--------------------------------------------------------------------------------
-	-- Add actions:
-	--------------------------------------------------------------------------------
-	local global = deps.global
+    --------------------------------------------------------------------------------
+    -- Add actions:
+    --------------------------------------------------------------------------------
+    local global = deps.global
     global
         :add("enablePreventMacFromSleeping")
         :whenActivated(function() enabled:value(true) end)
-		:titled(i18n("enable") .. " " .. i18n("preventMacFromSleeping"))
+        :titled(i18n("enable") .. " " .. i18n("preventMacFromSleeping"))
 
     global
         :add("disablePreventMacFromSleeping")
         :whenActivated(function() enabled:value(false) end)
-		:titled(i18n("disable") .. " " .. i18n("preventMacFromSleeping"))
+        :titled(i18n("disable") .. " " .. i18n("preventMacFromSleeping"))
 
     global
         :add("togglePreventMacFromSleeping")
         :whenActivated(function() enabled:toggle() end)
-		:titled(i18n("toggle") .. " " .. i18n("preventMacFromSleeping"))
+        :titled(i18n("toggle") .. " " .. i18n("preventMacFromSleeping"))
 
-	--------------------------------------------------------------------------------
-	-- Force an update:
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Force an update:
+    --------------------------------------------------------------------------------
     enabled:update()
 
 end
