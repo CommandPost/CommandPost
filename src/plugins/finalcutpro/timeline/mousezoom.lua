@@ -91,73 +91,73 @@ mod.invert = config.prop("mouseZoom.invert", false)
 mod.sensitivity = config.prop("mouseZoom.sensitivity", "default")
 
 local zoomInFn = {
-	["default"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:increment()
-	end,
-	["fast"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:shiftValue(-1)
-	end,
-	["medium"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:shiftValue(-0.5)
-	end,
-	["slow"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:shiftValue(-0.1)
-	end,
-	["relative"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		local shiftAmount = -0.5
-		if zoomAmount:value() >= 7 then
-			shiftAmount = -0.1
-		end
-		zoomAmount:shiftValue(shiftAmount)
-	end,
+    ["default"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:increment()
+    end,
+    ["fast"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(-1)
+    end,
+    ["medium"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(-0.5)
+    end,
+    ["slow"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(-0.1)
+    end,
+    ["relative"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        local shiftAmount = -0.5
+        if zoomAmount:value() >= 7 then
+            shiftAmount = -0.1
+        end
+        zoomAmount:shiftValue(shiftAmount)
+    end,
 }
 
 local zoomOutFn = {
-	["default"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:decrement()
-	end,
-	["fast"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:shiftValue(1)
-	end,
-	["medium"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:shiftValue(0.5)
-	end,
-	["slow"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		zoomAmount:shiftValue(0.1)
-	end,
-	["relative"] = function()
-		local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
-		local shiftAmount = 0.5
-		if zoomAmount:value() >= 7 then
-			shiftAmount = 0.1
-		end
-		zoomAmount:shiftValue(shiftAmount)
-	end,
+    ["default"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:decrement()
+    end,
+    ["fast"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(1)
+    end,
+    ["medium"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(0.5)
+    end,
+    ["slow"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(0.1)
+    end,
+    ["relative"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        local shiftAmount = 0.5
+        if zoomAmount:value() >= 7 then
+            shiftAmount = 0.1
+        end
+        zoomAmount:shiftValue(shiftAmount)
+    end,
 }
 
 -- zoomIn() -> none
 -- Function
 -- Zooms in to the FCPX Timeline.
 local function zoomIn()
-	local sensitivity = mod.sensitivity()
-	zoomInFn[sensitivity]()
+    local sensitivity = mod.sensitivity()
+    zoomInFn[sensitivity]()
 end
 
 -- zoomOut() -> none
 -- Function
 -- Zooms out of the the FCPX Timeline.
 local function zoomOut()
-	local sensitivity = mod.sensitivity()
-	zoomOutFn[sensitivity]()
+    local sensitivity = mod.sensitivity()
+    zoomOutFn[sensitivity]()
 end
 
 --- plugins.finalcutpro.timeline.mousezoom.stop() -> none
@@ -499,16 +499,16 @@ function mod.start()
             --log.df("Global Preferences Updated. Refreshing scroll direction cache.")
             mod.scrollDirection = mouse.scrollDirection()
 
-			--------------------------------------------------------------------------------
-			-- Invert if necessary:
-			--------------------------------------------------------------------------------
-			if mod.invert() then
-				if mod.scrollDirection == "normal" then
-					mod.scrollDirection = "natural"
-				else
-					mod.scrollDirection = "normal"
-				end
-			end
+            --------------------------------------------------------------------------------
+            -- Invert if necessary:
+            --------------------------------------------------------------------------------
+            if mod.invert() then
+                if mod.scrollDirection == "normal" then
+                    mod.scrollDirection = "natural"
+                else
+                    mod.scrollDirection = "normal"
+                end
+            end
         end
     end):start()
 
@@ -647,11 +647,11 @@ function plugin.init(deps)
     -- Invert if necessary:
     --------------------------------------------------------------------------------
     if mod.invert() then
-    	if mod.scrollDirection == "normal" then
-    		mod.scrollDirection = "natural"
-    	else
-	    	mod.scrollDirection = "normal"
-	    end
+        if mod.scrollDirection == "normal" then
+            mod.scrollDirection = "natural"
+        else
+            mod.scrollDirection = "normal"
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -672,44 +672,44 @@ function plugin.init(deps)
                 checked = mod.enabled,
             })
             :addContent(1.4, [[
-				<style>
-					#mouseZoomModifierKey {
-						 margin-left: 5px;
-						 width: 100px;
-					}
+                <style>
+                    #mouseZoomModifierKey {
+                         margin-left: 5px;
+                         width: 100px;
+                    }
 
-					#mouseZoomSensitivity {
-						margin-left: 18px;
-						width: 100px;
-					}
+                    #mouseZoomSensitivity {
+                        margin-left: 18px;
+                        width: 100px;
+                    }
 
-					.mouseZoomInvertCheckbox {
-						padding-top: 3px;
-					}
+                    .mouseZoomInvertCheckbox {
+                        padding-top: 3px;
+                    }
 
-					.column {
-					  float: left;
-					  width: 50%;
-					  vertical-align: middle;
-					  height: 27px;
-					}
+                    .column {
+                      float: left;
+                      width: 50%;
+                      vertical-align: middle;
+                      height: 27px;
+                    }
 
-					/* Clear floats after the columns */
-					.row:after {
-					  content: "";
-					  display: table;
-					  clear: both;
-					}
-				</style>
+                    /* Clear floats after the columns */
+                    .row:after {
+                      content: "";
+                      display: table;
+                      clear: both;
+                    }
+                </style>
                 <div style="padding-left: 19px">
-					<div class="row">
-					  <div class="column">
+                    <div class="row">
+                      <div class="column">
             ]], false)
             :addSelect(1.5,
             {
-                label		= i18n("modifierKey"),
-                value		= mod.customModifier,
-                options		= {
+                label       = i18n("modifierKey"),
+                value       = mod.customModifier,
+                options     = {
                     {
                         label = "command ⌘",
                         value = "cmd",
@@ -735,51 +735,51 @@ function plugin.init(deps)
                         value = "fn",
                     },
                 },
-                required	= true,
-                onchange	= function(_, params) mod.customModifier(params.value) end,
-                id 			= "mouseZoomModifierKey",
+                required    = true,
+                onchange    = function(_, params) mod.customModifier(params.value) end,
+                id          = "mouseZoomModifierKey",
             })
             :addContent(1.6, [[
-						</div>
-					  	<div class="column">
+                        </div>
+                        <div class="column">
             ]], false)
             :addCheckbox(1.7,
             {
                 label = i18n("invert"),
                 onchange = function(_, params)
-                	mod.invert(params.checked)
+                    mod.invert(params.checked)
 
-					--------------------------------------------------------------------------------
-					-- Cache Scroll Direction:
-					--------------------------------------------------------------------------------
-					mod.scrollDirection = mouse.scrollDirection()
+                    --------------------------------------------------------------------------------
+                    -- Cache Scroll Direction:
+                    --------------------------------------------------------------------------------
+                    mod.scrollDirection = mouse.scrollDirection()
 
-					--------------------------------------------------------------------------------
-					-- Invert if necessary:
-					--------------------------------------------------------------------------------
-					if mod.invert() then
-						if mod.scrollDirection == "normal" then
-							mod.scrollDirection = "natural"
-						else
-							mod.scrollDirection = "normal"
-						end
-					end
+                    --------------------------------------------------------------------------------
+                    -- Invert if necessary:
+                    --------------------------------------------------------------------------------
+                    if mod.invert() then
+                        if mod.scrollDirection == "normal" then
+                            mod.scrollDirection = "natural"
+                        else
+                            mod.scrollDirection = "normal"
+                        end
+                    end
                 end,
                 checked = mod.invert,
                 class = "uiItem mouseZoomInvertCheckbox"
             })
             :addContent(1.8, [[
-            		</div>
-				</div>
+                    </div>
+                </div>
             </div>]], false)
             :addContent(1.9, [[
                 <div style="padding-left: 19px">
             ]], false)
             :addSelect(2,
             {
-                label		= i18n("sensitivity"),
-                value		= mod.sensitivity,
-                options		= {
+                label       = i18n("sensitivity"),
+                value       = mod.sensitivity,
+                options     = {
                     {
                         label = i18n("default"),
                         value = "default",
@@ -801,9 +801,9 @@ function plugin.init(deps)
                         value = "relative",
                     },
                 },
-                required	= true,
-                onchange	= function(_, params) mod.sensitivity(params.value) end,
-                id 			= "mouseZoomSensitivity",
+                required    = true,
+                onchange    = function(_, params) mod.sensitivity(params.value) end,
+                id          = "mouseZoomSensitivity",
             })
             :addContent(2.1, [[</div>]], false)
     end
