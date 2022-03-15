@@ -30,8 +30,8 @@ local mod = {}
 
 -- VIMEO_CSV_HEADER -> table
 -- Constant
--- A table of the header items in a Vimeo CSV.
-local VIMEO_CSV_HEADER = {"Video Version","#","Timecode","Username","Note","Reply","Date Added","Resolved"}
+-- A table of the header items in a Vimeo CSV. If there's multiple variations for a header, use '|' as a separator.
+local VIMEO_CSV_HEADER = {"Video Version","#","Timecode","Username|Name","Note","Reply","Date Added","Resolved"}
 
 -- desktopPath -> string
 -- Constant
@@ -96,10 +96,30 @@ local function sendVimeoCSVToFinalCutProX()
     local valid = true
     for line in data:lines() do
         for _, v in pairs(VIMEO_CSV_HEADER) do
-            if not line[v] then
-                valid = false
-                break
-            end
+        	if v:find("|") then
+        		--------------------------------------------------------------------------------
+        		-- There's multiple options for the header (separated by '|' in the table):
+        		--------------------------------------------------------------------------------
+        		local options = v:split("|")
+        		local foundOption = false
+        		for _, option in pairs(options) do
+        			if line[option] then
+        				foundOption = true
+        			end
+        		end
+        		if not foundOption then
+					valid = false
+					break
+        		end
+        	else
+        		--------------------------------------------------------------------------------
+        		-- There's only one option for the header:
+        		--------------------------------------------------------------------------------
+				if not line[v] then
+					valid = false
+					break
+				end
+			end
         end
         if not valid then
             break
@@ -163,7 +183,7 @@ local function sendVimeoCSVToFinalCutProX()
             -- Include the username:
             --------------------------------------------------------------------------------
             if mod.includeUsername() then
-                local username = line["Username"]
+                local username = line["Username"] or line["Name"]
                 if username and username ~= "" then
                     note = "[" .. username .. "]: " .. note
                 end
