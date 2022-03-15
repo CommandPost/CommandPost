@@ -6,7 +6,7 @@
 
 local require = require
 
-local log               = require("hs.logger").new("mousezoom")
+--local log               = require("hs.logger").new("mousezoom")
 
 local eventtap          = require "hs.eventtap"
 local mouse             = require "hs.mouse"
