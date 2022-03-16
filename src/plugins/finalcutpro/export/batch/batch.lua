@@ -579,7 +579,7 @@ function mod.getDestinationFolder()
     return exportPath and pathToAbsolute(exportPath)
 end
 
---- plugins.finalcutpro.export.batch.getDestinationFolder() -> string | nil
+--- plugins.finalcutpro.export.batch.getDestinationPreset() -> string | nil
 --- Function
 --- Gets the destination preset.
 ---
@@ -601,6 +601,32 @@ function mod.getDestinationPreset()
     if destinationPreset == i18n("sendToCompressor") then
         if not compressor:isInstalled() then
             --log.df("Apple Compressor could not be detected.")
+            destinationPreset = nil
+            config.set("batchExportDestinationPreset", nil)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure the Destination Preset actually exists in the menubar:
+    --------------------------------------------------------------------------------
+    if destinationPreset and destinationPreset ~= i18n("sendToCompressor") then
+        local doesExistInMenu = fcp.menu:findMenuUI({"File", "Share", function(menuItem)
+            local title = menuItem and menuItem:attributeValue("AXTitle")
+
+            --------------------------------------------------------------------------------
+            -- Remove the (default)…:
+            --------------------------------------------------------------------------------
+            if title and title:sub(-13) == " (default)…" then
+                title = title:sub(1, -14)
+            end
+            --------------------------------------------------------------------------------
+            -- Remove the …:
+            --------------------------------------------------------------------------------
+            title = tools.replace(title, "…", "")
+
+            return title == destinationPreset
+        end})
+        if not doesExistInMenu then
             destinationPreset = nil
             config.set("batchExportDestinationPreset", nil)
         end
