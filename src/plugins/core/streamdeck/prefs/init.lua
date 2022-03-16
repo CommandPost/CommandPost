@@ -730,9 +730,6 @@ local function streamDeckPanelCallback(id, params)
                             }
                             local newImage = a:imageFromCanvas()
 
-                            a:delete()
-                            a = nil -- luacheck: ignore
-
                             local encodedIcon = newImage:encodeAsURLString()
 
                             local items = mod.items()
@@ -762,9 +759,6 @@ local function streamDeckPanelCallback(id, params)
                           frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
                         }
                         local newImage = a:imageFromCanvas()
-
-                        a:delete()
-                        a = nil -- luacheck: ignore
 
                         local encodedIcon = newImage:encodeAsURLString()
                         if encodedIcon then

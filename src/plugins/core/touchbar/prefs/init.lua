@@ -271,9 +271,6 @@ local function touchBarPanelCallback(id, params)
                             }
                             local newImage = a:imageFromCanvas()
 
-                            a:delete()
-                            a = nil -- luacheck: ignore
-
                             local encodedIcon = newImage:encodeAsURLString()
 
                             mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
