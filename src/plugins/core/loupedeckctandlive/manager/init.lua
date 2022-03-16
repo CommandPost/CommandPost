@@ -789,11 +789,13 @@ function mod.new(deviceType)
             -- Add User Added Applications from Loupedeck Preferences:
             local items = o.items()
 
-            for bundleID, v in pairs(items) do
-                if not applications[bundleID] and v.displayName then
-                    applications[bundleID] = {
-                        displayName = v.displayName
-                    }
+            for _, unitObj in pairs(items) do
+                for bundleID, v in pairs(unitObj) do
+                    if not applications[bundleID] and v.displayName then
+                        applications[bundleID] = {
+                            displayName = v.displayName
+                        }
+                    end
                 end
             end
 
