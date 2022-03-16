@@ -713,9 +713,6 @@ function mod.mt:generateKnobImages(app, bank, bid)
 
                         local fixedImage = v:imageFromCanvas()
 
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
                         return fixedImage:encodeAsURLString(true)
                     end
                 end
@@ -816,9 +813,6 @@ function mod.mt:generateKnobImages(app, bank, bid)
         end
 
         local knobImage = v:imageFromCanvas()
-
-        v:delete()
-        v = nil -- luacheck: ignore
 
         encodedKnobIcon = knobImage:encodeAsURLString(true)
     else
@@ -975,9 +969,6 @@ function mod.mt:updateUI(params)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             currentEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
                     end
@@ -1079,9 +1070,6 @@ function mod.mt:updateUI(params)
                             }
 
                             local fixedImage = v:imageFromCanvas()
-
-                            v:delete()
-                            v = nil -- luacheck: ignore
 
                             newEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
@@ -1212,9 +1200,6 @@ function mod.mt:processEncodedIcon(icon, controlType)
 
     local fixedImage = v:imageFromCanvas()
 
-    v:delete()
-    v = nil -- luacheck: ignore
-
     return fixedImage:encodeAsURLString(true)
 end
 
@@ -1272,9 +1257,6 @@ function mod.mt:buildIconFromLabel(params)
     }
 
     local img = v:imageFromCanvas()
-
-    v:delete()
-    v = nil -- luacheck: ignore
 
     return img:encodeAsURLString(true)
 end

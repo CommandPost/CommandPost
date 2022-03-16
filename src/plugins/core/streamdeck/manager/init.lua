@@ -262,9 +262,6 @@ function mod.update()
                         }
                         local textIcon = c:imageFromCanvas()
 
-                        c:delete()
-                        c = nil -- luacheck: ignore
-
                         device:setButtonImage(buttonID, textIcon)
                         success = true
                     end

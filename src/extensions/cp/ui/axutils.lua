@@ -778,9 +778,6 @@ function axutils.snapshot(element, filename, elementFrame)
 
             local elementSnap = c:imageFromCanvas()
 
-            c:delete()
-            c = nil -- luacheck: ignore
-
             if filename then
                 elementSnap:saveToFile(filename)
             end

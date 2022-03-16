@@ -1203,9 +1203,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             encodedIcon = fixedImage:encodeAsURLString(true)
                             containsIconSnippets = true
                         end
@@ -1294,9 +1291,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
                         }
 
                         local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
 
                         encodedIcon = fixedImage:encodeAsURLString(true)
                         containsIconSnippets = true
@@ -1396,9 +1390,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             encodedIcon = fixedImage:encodeAsURLString(true)
                             containsIconSnippets = true
                         end
@@ -1448,8 +1439,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
                     local encoded = fixedImage:encodeAsURLString(true)
                     decodedImage = imageFromURL(encoded)
 
-                    v:delete()
-                    v = nil -- luacheck: ignore
                 end
                 if decodedImage then
                     device:updateKnobImage(i, decodedImage)
