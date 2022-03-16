@@ -9,6 +9,7 @@ local axutils							= require "cp.ui.axutils"
 local Button                            = require "cp.ui.Button"
 local CheckBox                          = require "cp.ui.CheckBox"
 local Group                             = require "cp.ui.Group"
+local MenuButton                        = require "cp.ui.MenuButton"
 local RadioButton						= require "cp.ui.RadioButton"
 local RadioGroup                        = require "cp.ui.RadioGroup"
 local StaticText                        = require "cp.ui.StaticText"
@@ -215,13 +216,13 @@ function Toolbar.lazy.value:browser()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.title <cp.ui.StaticText>
+--- cp.apple.finalcutpro.timeline.Toolbar.title <cp.ui.MenuButton>
 --- Field
---- The title [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
+--- The title [MenuButton](cp.ui.MenuButton.md) from the Timeline Titlebar.
 function Toolbar.lazy.value:title()
-    return StaticText(self, self.UI:mutate(function(original)
+    return MenuButton(self, self.UI:mutate(function(original)
         return cache(self, "_titleUI", function()
-            return childFromLeft(original(), 1, StaticText.matches)
+            return childFromLeft(original(), 1, MenuButton.matches)
         end)
     end))
 end
