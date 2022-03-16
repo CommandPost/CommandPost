@@ -2565,6 +2565,16 @@ function mod.mt:panelCallback(id, params)
                 disabled = true,
             })
 
+            table.insert(menu, {
+                title = i18n("unlistedAndIgnoredApplications"),
+                fn = function() copyApplication("All Applications") end
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
             for i, v in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
                 table.insert(menu, {
                     title = v,
