@@ -7,7 +7,17 @@
 			{% if not debugMode then %}
 				// Disable Right Clicking:
 				document.addEventListener("contextmenu", function(e){
-					e.preventDefault();
+				    // ...except on text boxes and the Snippets Scripting Textbox:
+					if (e.target.type != "text"
+					&& e.target.role != "textbox"
+					&& e.target.className != "CodeMirror-scroll"
+					&& e.target.className != "cm-string"
+					&& e.target.className != "cm-comment"
+					&& e.target.className != "cm-keyword"
+					&& e.target.className != "CodeMirror-line"
+					&& e.target.className != "cm-builtin") {
+    					e.preventDefault();
+					}
 				}, false);
 			{% end %}
 
