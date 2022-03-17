@@ -40,10 +40,15 @@ local fileExtension = ".cpTourBox"
 -- Default Filename for Loupedeck CT Settings
 local defaultFilename = "Default" .. fileExtension
 
--- DEVICE_ID -> string
+-- PRODUCT_ID -> string
 -- Constant
--- The device ID of the TourBox.
-local DEVICE_ID = "SLAB_USBtoUART"
+-- The product ID of the original TourBox.
+local PRODUCT_ID = 60000
+
+-- VENDOR_ID -> string
+-- Constant
+-- The vendor ID of the original TourBox.
+local VENDOR_ID = 4292
 
 -- TOURBOX_CONSOLE_BUNDLE_ID -> string
 -- Constant
@@ -403,22 +408,40 @@ local function tourBoxCallback(obj, messageType, message, messageHexString)
     end
 end
 
---- plugins.core.tourbox.manager.connectToTourBox() -> none
+--- plugins.core.tourbox.manager.connectToTourBox([portName]) -> none
 --- Function
 --- Attempts to establish the TourBox serial connection.
 ---
 --- Parameters:
----  * None
+---  * portName - The optional port name of the device.
 ---
 --- Returns:
 ---  * None
-function mod.connectToTourBox()
+function mod.connectToTourBox(portName)
+    if not portName then
+        --------------------------------------------------------------------------------
+        -- If no portName is specified, lets try find one, by filtering the
+        -- vendor ID and product ID:
+        --------------------------------------------------------------------------------
+        local availablePortDetails = serial.availablePortDetails()
+        local availablePortNames = serial.availablePortNames()
+        for _, currentPortName in pairs(availablePortNames) do
+            local portDetails = availablePortDetails[currentPortName]
+            if portDetails and portDetails.idVendor and portDetails.idVendor == VENDOR_ID and portDetails.idProduct == PRODUCT_ID then
+                portName = currentPortName
+                break
+            end
+        end
+    end
+
     if not mod.tourBox then
-        local tourBox = serial.newFromName(DEVICE_ID)
-        if tourBox then
-            mod.resetTimers()
-            tourBox:baudRate(115200):parity("none"):callback(tourBoxCallback):open()
-            mod.tourBox = tourBox
+        if portName then
+            local tourBox = serial.newFromName(portName)
+            if tourBox then
+                mod.resetTimers()
+                tourBox:baudRate(115200):parity("none"):callback(tourBoxCallback):open()
+                mod.tourBox = tourBox
+            end
         end
     else
         mod.resetTimers()
@@ -437,9 +460,11 @@ end
 --  * None
 local function deviceCallback(callbackType, devices)
     if callbackType == "connected" then
-        for _, deviceName in pairs(devices) do
-            if deviceName == DEVICE_ID then
-                mod.connectToTourBox()
+        for _, portName in pairs(devices) do
+            local availablePortDetails = serial.availablePortDetails()
+            local portDetails = availablePortDetails[portName]
+            if portDetails and portDetails.idVendor and portDetails.idVendor == VENDOR_ID and portDetails.idProduct == PRODUCT_ID then
+                mod.connectToTourBox(portName)
             end
         end
     end
