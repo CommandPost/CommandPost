@@ -6,6 +6,9 @@ local require = require
 
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
+
+local playErrorSound        = tools.playErrorSound
 
 local plugin = {
     id              = "finalcutpro.inspector.audio",
@@ -74,7 +77,41 @@ function plugin.init(deps)
                 volume:show()
                 volume:value(tostring(i))
             end)
-            :titled(i18n("setVolumeTo") .. " " .. tostring(i))
+            :titled(i18n("setVolumeTo") .. " " .. tostring(i) .. " dB")
+            :subtitled(i18n("controlsTheVolumeInTheFinalCutProAudioInspector"))
+    end
+
+    local increments = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3, 3.5}
+    for _, increment in pairs(increments) do
+        cmds
+            :add("increaseVolumeBy" .. " " .. increment)
+            :whenActivated(function()
+                local volume = audio:volume()
+                volume:show()
+                local currentValue = volume:value()
+                if currentValue then
+                    volume:value(currentValue + increment)
+                else
+                     playErrorSound()
+                end
+            end)
+            :titled(i18n("increaseVolumeBy") .. " " .. increment .. " dB")
+            :subtitled(i18n("controlsTheVolumeInTheFinalCutProAudioInspector"))
+
+        cmds
+            :add("decreaseVolumeBy" .. " " .. increment)
+            :whenActivated(function()
+                local volume = audio:volume()
+                volume:show()
+                local currentValue = volume:value()
+                if currentValue then
+                    volume:value(currentValue - increment)
+                else
+                     playErrorSound()
+                end
+            end)
+            :titled(i18n("decreaseVolumeBy") .. " " .. increment .. " dB")
+            :subtitled(i18n("controlsTheVolumeInTheFinalCutProAudioInspector"))
     end
 
 end
