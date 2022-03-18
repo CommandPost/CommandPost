@@ -308,7 +308,6 @@
     "compressor": "Compressor",
     "compressor_application_manager_label": "Application Manager",
     "compressor_feedback_bugreport_label": "Help & Support: Report Bug to Apple",
-    "compressor_watchfolders_panels_media_label": "Watch Folders: Compressor",
     "compressorError": "Something went wrong when sending to Compressor.",
     "console": "Console",
     "consoleSections": "Sections",
