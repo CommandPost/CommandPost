@@ -4,9 +4,13 @@
 
 local require = require
 
+--local log                   = require "hs.logger".new "audio"
+
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 local tools                 = require "cp.tools"
+
+local Do                    = require "cp.rx.go.Do"
 
 local playErrorSound        = tools.playErrorSound
 
@@ -112,6 +116,32 @@ function plugin.init(deps)
             end)
             :titled(i18n("decreaseVolumeBy") .. " " .. increment .. " dB")
             :subtitled(i18n("controlsTheVolumeInTheFinalCutProAudioInspector"))
+    end
+
+    --------------------------------------------------------------------------------
+    -- Pan Modes:
+    --------------------------------------------------------------------------------
+    local panModes = fcp.inspector.audio.PAN_MODES
+    for _, panMode in pairs(panModes) do
+        if panMode.flexoID then
+            cmds
+                :add("setPanModeTo" .. " " .. panMode.flexoID)
+                :whenActivated(function()
+                    --------------------------------------------------------------------------------
+                    -- NOTE: In FCPX 10.6.1 the AXValue for the PopUpButton is always "None",
+                    --       so we give `doSelectValue` a dummy value to compare against, forcing
+                    --       it to always show the popup.
+                    --------------------------------------------------------------------------------
+                    local overrideValue = panMode.flexoID == "None" and "override"
+                    local param = fcp.inspector.audio:pan():mode()
+                    Do(param:doShow())
+                        :Then(param:doSelectValue(panMode.flexoID, overrideValue))
+                        :Label("plugins.finalcutpro.tangent.common.popupParameter")
+                        :Now()
+                end)
+                :titled(i18n("setPanModeTo") .. " " .. i18n(panMode.i18n))
+                :subtitled(i18n("setsThePanModeInTheFinalCutProAudioInspector"))
+        end
     end
 
 end

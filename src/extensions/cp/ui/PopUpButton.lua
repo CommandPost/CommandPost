@@ -149,19 +149,24 @@ function PopUpButton:doSelectItem(index)
     :Label("cp.ui.PopUpMenu:doSelectItem(index)")
 end
 
---- cp.ui.PopUpButton:doSelectValue(value) -> cp.rx.go.Statement
+--- cp.ui.PopUpButton:doSelectValue(value, [overrideValue]) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will select an item on the `PopUpButton` by value.
 ---
 --- Parameters:
 ---  * value - The value of the item to match.
+---  * overrideValue - This optional value overides the above value for the initial compare as a workaround for PopUp that have titles that don't update correctly.
 ---
 --- Returns:
 ---  * the `Statement`.
-function PopUpButton:doSelectValue(value)
+function PopUpButton:doSelectValue(value, overrideValue)
+    if type(overrideValue) == "nil" then
+        overrideValue = value
+    end
+
     return If(self.UI)
     :Then(
-        If(self.value):Is(value):Then(true)
+        If(self.value):Is(overrideValue):Then(true)
         :Otherwise(
             If(self.menuUI):Is(nil):Then(self:doPress())
             :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
