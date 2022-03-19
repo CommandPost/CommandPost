@@ -271,9 +271,6 @@ local function touchBarPanelCallback(id, params)
                             }
                             local newImage = a:imageFromCanvas()
 
-                            a:delete()
-                            a = nil -- luacheck: ignore
-
                             local encodedIcon = newImage:encodeAsURLString()
 
                             mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
@@ -597,7 +594,7 @@ function mod.init(deps, env)
         label           = i18n("touchbarPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("/images/touchbar.icns")),
         tooltip         = i18n("touchbarPanelTooltip"),
-        height          = 750,
+        height          = 755,
     })
         --------------------------------------------------------------------------------
         -- Virtual Touch Bar

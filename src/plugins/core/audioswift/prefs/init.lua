@@ -38,7 +38,7 @@ function plugin.init(deps, env)
         label           = i18n("audioSwift"),
         image           = imageFromPath(env:pathToAbsolute("/images/AudioSwift.icns")),
         tooltip         = i18n("audioSwift"),
-        height          = 265,
+        height          = 270,
     })
         :addHeading(1, i18n("audioSwift"))
 

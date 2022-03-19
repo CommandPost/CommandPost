@@ -341,9 +341,10 @@ function mod.new()
     --------------------------------------------------------------------------------
     if not mod._toolbar then
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+            :toolbarStyle("preference")
+            :sizeMode("small")
             :canCustomize(true)
             :autosaves(true)
-            :sizeMode("small")
             :setCallback(function(_, _, id)
                 doAfter(0, function()
                     mod.refresh(id)
@@ -518,28 +519,17 @@ function mod.selectPanel(id)
             end
 
             --------------------------------------------------------------------------------
-            -- Offset macOS Big Sur:
-            --------------------------------------------------------------------------------
-            local offset = 0
-            local macOSVersion = tools.macOSVersion()
-            if semver(macOSVersion) >= semver("10.16") then
-                offset = -20
-            end
-
-            --------------------------------------------------------------------------------
             -- Make sure the panel isn't bigger than the screen:
             --------------------------------------------------------------------------------
-            local heightWithOffset = height + offset
-
             local currentScreen = mouse.getCurrentScreen()
             local currentFrame = currentScreen and currentScreen:frame()
             local currentHeight = currentFrame and currentFrame.h
 
-            if heightWithOffset > currentHeight then
-                heightWithOffset = currentHeight - 10
+            if height > currentHeight then
+                height = currentHeight - 10
             end
 
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = heightWithOffset})
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height})
         end
 
     end

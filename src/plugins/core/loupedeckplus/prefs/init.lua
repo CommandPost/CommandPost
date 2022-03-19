@@ -710,6 +710,16 @@ local function loupedeckPlusPanelCallback(id, params)
                 disabled = true,
             })
 
+            table.insert(menu, {
+                title = i18n("unlistedAndIgnoredApplications"),
+                fn = function() copyApplication("All Applications") end
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
             for i, v in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
                 table.insert(menu, {
                     title = v,
@@ -869,7 +879,7 @@ function plugin.init(deps, env)
         label           = i18n("loupedeckPlus"),
         image           = icon,
         tooltip         = i18n("loupedeckPlus"),
-        height          = 950,
+        height          = 960,
     })
         :addHeading(6, i18n("loupedeckPlus"))
         :addCheckbox(7,

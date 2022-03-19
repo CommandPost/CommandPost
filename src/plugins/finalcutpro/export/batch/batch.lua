@@ -296,6 +296,11 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             end
         else
             --------------------------------------------------------------------------------
+            -- Set Custom Export Path:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFShareLastCurrentDirectory", pathToAbsolute(exportPath))
+
+            --------------------------------------------------------------------------------
             -- Trigger Export:
             --------------------------------------------------------------------------------
             local exportDialog = fcp.exportDialog
@@ -327,58 +332,6 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 if not doUntil(function() return saveSheet:isShowing() end, 5) then
                     displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
                     return false
-                end
-
-                --------------------------------------------------------------------------------
-                -- Set Custom Export Path (or Default to Desktop) on the first clip if
-                -- necessary by checking the Preferences file first:
-                --------------------------------------------------------------------------------
-                if firstTime then
-                    local NSNavLastRootDirectory = fcp.preferences.NSNavLastRootDirectory
-                    if not NSNavLastRootDirectory or (pathToAbsolute(NSNavLastRootDirectory) ~= pathToAbsolute(exportPath)) then
-                        --------------------------------------------------------------------------------
-                        -- NOTE: We shouldn't have to do this. We should just be able to press
-                        --       the shortcut key using `hs.eventtap` and it should just work, but
-                        --       alas, for some weird reason it doesn't. It also takes several goes
-                        --       before the shortcut key is triggered. Why? I have no idea.
-                        --------------------------------------------------------------------------------
-                        local prompt = saveSheet.goToPrompt
-                        if not doUntil(function()
-                            saveSheet:UI():performAction("AXRaise")
-                            applescript([[tell application "System Events" to keystroke "g" using {shift down, command down}]])
-                            return prompt:isShowing()
-                        end, 5) then
-                            displayErrorMessage("Failed to open the 'Go to the folder' prompt." .. errorFunction)
-                            return false
-                        end
-
-                        --------------------------------------------------------------------------------
-                        -- Set the path value:
-                        --------------------------------------------------------------------------------
-                        prompt:value(exportPath)
-
-                        --------------------------------------------------------------------------------
-                        -- Make sure the value is actually set:
-                        --------------------------------------------------------------------------------
-                        if not doUntil(function() return prompt:value() == exportPath end, 5) then
-                            displayErrorMessage("Failed to set the 'Go to the folder' path." .. errorFunction)
-                            return false
-                        end
-
-                        --------------------------------------------------------------------------------
-                        -- Press Go:
-                        --------------------------------------------------------------------------------
-                        prompt:go()
-
-                        --------------------------------------------------------------------------------
-                        -- Wait until the 'Go to the folder' prompt is closed:
-                        --------------------------------------------------------------------------------
-                        if not doUntil(function() return not prompt:isShowing() end, 5) then
-                            displayErrorMessage("Failed to close the 'Go to the folder' prompt." .. errorFunction)
-                            return false
-                        end
-                    end
-                    firstTime = false
                 end
 
                 --------------------------------------------------------------------------------
@@ -559,7 +512,8 @@ end
 ---  * None
 function mod.changeExportDestinationFolder()
     Do(function()
-        local result = displayChooseFolder(i18n("selectDestinationFolder"))
+        local path = mod.getDestinationFolder()
+        local result = displayChooseFolder(i18n("selectDestinationFolder"), path)
         if result ~= false then
             config.set("batchExportDestinationFolder", result)
 
@@ -611,21 +565,21 @@ end
 ---  * The destination folder path as a string.
 function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
-    local NSNavLastRootDirectory = fcp.preferences.NSNavLastRootDirectory
+    local FFShareLastCurrentDirectory = fcp.preferences.FFShareLastCurrentDirectory
     local exportPath = os.getenv("HOME") .. "/Desktop"
     if batchExportDestinationFolder ~= nil then
          if doesDirectoryExist(batchExportDestinationFolder) then
             exportPath = batchExportDestinationFolder
          end
     else
-        if doesDirectoryExist(NSNavLastRootDirectory) then
-            exportPath = NSNavLastRootDirectory
+        if doesDirectoryExist(FFShareLastCurrentDirectory) then
+            exportPath = FFShareLastCurrentDirectory
         end
     end
     return exportPath and pathToAbsolute(exportPath)
 end
 
---- plugins.finalcutpro.export.batch.getDestinationFolder() -> string | nil
+--- plugins.finalcutpro.export.batch.getDestinationPreset() -> string | nil
 --- Function
 --- Gets the destination preset.
 ---
@@ -647,6 +601,32 @@ function mod.getDestinationPreset()
     if destinationPreset == i18n("sendToCompressor") then
         if not compressor:isInstalled() then
             --log.df("Apple Compressor could not be detected.")
+            destinationPreset = nil
+            config.set("batchExportDestinationPreset", nil)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure the Destination Preset actually exists in the menubar:
+    --------------------------------------------------------------------------------
+    if destinationPreset and destinationPreset ~= i18n("sendToCompressor") then
+        local doesExistInMenu = fcp.menu:findMenuUI({"File", "Share", function(menuItem)
+            local title = menuItem and menuItem:attributeValue("AXTitle")
+
+            --------------------------------------------------------------------------------
+            -- Remove the (default)…:
+            --------------------------------------------------------------------------------
+            if title and title:sub(-13) == " (default)…" then
+                title = title:sub(1, -14)
+            end
+            --------------------------------------------------------------------------------
+            -- Remove the …:
+            --------------------------------------------------------------------------------
+            title = tools.replace(title, "…", "")
+
+            return title == destinationPreset
+        end})
+        if not doesExistInMenu then
             destinationPreset = nil
             config.set("batchExportDestinationPreset", nil)
         end
@@ -818,6 +798,17 @@ function mod.performBatchExport()
     fcp.preferences:set("FFSuspendBGOpsDuringPlay", true)
 
     --------------------------------------------------------------------------------
+    -- Save the original last share directory to restore later:
+    --------------------------------------------------------------------------------
+    local originalLastShareDirectory = fcp.preferences:get("FFShareLastCurrentDirectory")
+
+	--------------------------------------------------------------------------------
+	-- Save skimming state, then disable skimming:
+	--------------------------------------------------------------------------------
+	local originalDisableSkimming = fcp.preferences:get("FFDisableSkimming")
+	fcp.preferences:set("FFDisableSkimming", true)
+
+    --------------------------------------------------------------------------------
     -- Export the clips:
     --------------------------------------------------------------------------------
     if mod.batchExportTimelineClips(mod._clips, sendToCompressor) then
@@ -835,6 +826,19 @@ function mod.performBatchExport()
     -- Restore FFSuspendBGOpsDuringPlay preference:
     --------------------------------------------------------------------------------
     fcp.preferences:set("FFSuspendBGOpsDuringPlay", originalSuspendBackgroundRenders)
+
+    --------------------------------------------------------------------------------
+    -- Restore Skimming State:
+    --------------------------------------------------------------------------------
+	fcp.preferences:set("FFDisableSkimming", originalDisableSkimming)
+
+    --------------------------------------------------------------------------------
+    -- Restore FFShareLastCurrentDirectory preference:
+    --------------------------------------------------------------------------------
+    if doesDirectoryExist(originalLastShareDirectory) then
+        fcp.preferences:set("FFShareLastCurrentDirectory", originalLastShareDirectory)
+    end
+
 end
 
 -- nextID() -> number

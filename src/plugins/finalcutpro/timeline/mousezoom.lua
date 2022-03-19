@@ -6,6 +6,8 @@
 
 local require = require
 
+--local log               = require("hs.logger").new("mousezoom")
+
 local eventtap          = require "hs.eventtap"
 local mouse             = require "hs.mouse"
 local pathwatcher       = require "hs.pathwatcher"
@@ -77,6 +79,86 @@ mod.enabled = config.prop("enablemousezoom", false):watch(mod.update)
 --- Variable
 --- Custom Modifier as string.
 mod.customModifier = config.prop("mouseZoomCustomModifier", "alt")
+
+--- plugins.finalcutpro.timeline.mousezoom.customModifier <cp.prop: boolean>
+--- Variable
+--- Should Mouse Zoom be inverted?
+mod.invert = config.prop("mouseZoom.invert", false)
+
+--- plugins.finalcutpro.timeline.mousezoom.sensitivity <cp.prop: string>
+--- Variable
+--- Sensitivity Level
+mod.sensitivity = config.prop("mouseZoom.sensitivity", "default")
+
+local zoomInFn = {
+    ["default"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:increment()
+    end,
+    ["fast"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(-1)
+    end,
+    ["medium"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(-0.5)
+    end,
+    ["slow"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(-0.1)
+    end,
+    ["relative"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        local shiftAmount = -0.5
+        if zoomAmount:value() >= 7 then
+            shiftAmount = -0.1
+        end
+        zoomAmount:shiftValue(shiftAmount)
+    end,
+}
+
+local zoomOutFn = {
+    ["default"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:decrement()
+    end,
+    ["fast"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(1)
+    end,
+    ["medium"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(0.5)
+    end,
+    ["slow"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        zoomAmount:shiftValue(0.1)
+    end,
+    ["relative"] = function()
+        local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
+        local shiftAmount = 0.5
+        if zoomAmount:value() >= 7 then
+            shiftAmount = 0.1
+        end
+        zoomAmount:shiftValue(shiftAmount)
+    end,
+}
+
+-- zoomIn() -> none
+-- Function
+-- Zooms in to the FCPX Timeline.
+local function zoomIn()
+    local sensitivity = mod.sensitivity()
+    zoomInFn[sensitivity]()
+end
+
+-- zoomOut() -> none
+-- Function
+-- Zooms out of the the FCPX Timeline.
+local function zoomOut()
+    local sensitivity = mod.sensitivity()
+    zoomOutFn[sensitivity]()
+end
 
 --- plugins.finalcutpro.timeline.mousezoom.stop() -> none
 --- Function
@@ -416,6 +498,17 @@ function mod.start()
             --------------------------------------------------------------------------------
             --log.df("Global Preferences Updated. Refreshing scroll direction cache.")
             mod.scrollDirection = mouse.scrollDirection()
+
+            --------------------------------------------------------------------------------
+            -- Invert if necessary:
+            --------------------------------------------------------------------------------
+            if mod.invert() then
+                if mod.scrollDirection == "normal" then
+                    mod.scrollDirection = "natural"
+                else
+                    mod.scrollDirection = "normal"
+                end
+            end
         end
     end):start()
 
@@ -487,18 +580,17 @@ function mod.start()
                 --------------------------------------------------------------------------------
                 local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
                 if fcp.timeline:isShowing() then
-                    local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
                     if mod.scrollDirection == "normal" then
                         if direction >= 1 then
-                            zoomAmount:increment()
+                            zoomIn()
                         else
-                            zoomAmount:decrement()
+                            zoomOut()
                         end
                     else
                         if direction >= 1 then
-                            zoomAmount:decrement()
+                            zoomOut()
                         else
-                            zoomAmount:increment()
+                            zoomIn()
                         end
                     end
                     return true
@@ -547,34 +639,20 @@ function plugin.init(deps)
     if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
-    -- Version Check:
-    --------------------------------------------------------------------------------
-    local osVersion = tools.macOSVersion()
-    if semver(osVersion) <= semver("10.12") then
-        --------------------------------------------------------------------------------
-        -- Setup Menubar Preferences Panel:
-        --------------------------------------------------------------------------------
-        if deps.prefs.panel then
-            deps.prefs.panel
-                --------------------------------------------------------------------------------
-                -- Add Preferences Checkbox:
-                --------------------------------------------------------------------------------
-                :addCheckbox(101,
-                {
-                    label = i18n("allowZoomingWithOptionKey") .. " (requires macOS 10.12 or greater)",
-                    onchange = function() end,
-                    checked = false,
-                    disabled = true,
-                }
-            )
-        end
-        return false
-    end
-
-    --------------------------------------------------------------------------------
     -- Cache Scroll Direction:
     --------------------------------------------------------------------------------
     mod.scrollDirection = mouse.scrollDirection()
+
+    --------------------------------------------------------------------------------
+    -- Invert if necessary:
+    --------------------------------------------------------------------------------
+    if mod.invert() then
+        if mod.scrollDirection == "normal" then
+            mod.scrollDirection = "natural"
+        else
+            mod.scrollDirection = "normal"
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Update:
@@ -594,13 +672,44 @@ function plugin.init(deps)
                 checked = mod.enabled,
             })
             :addContent(1.4, [[
+                <style>
+                    #mouseZoomModifierKey {
+                         margin-left: 5px;
+                         width: 100px;
+                    }
+
+                    #mouseZoomSensitivity {
+                        margin-left: 18px;
+                        width: 100px;
+                    }
+
+                    .mouseZoomInvertCheckbox {
+                        padding-top: 3px;
+                    }
+
+                    .column {
+                      float: left;
+                      width: 50%;
+                      vertical-align: middle;
+                      height: 27px;
+                    }
+
+                    /* Clear floats after the columns */
+                    .row:after {
+                      content: "";
+                      display: table;
+                      clear: both;
+                    }
+                </style>
                 <div style="padding-left: 19px">
+                    <div class="row">
+                      <div class="column">
             ]], false)
             :addSelect(1.5,
             {
-                label		= i18n("modifierKey"),
-                value		= mod.customModifier,
-                options		= {
+                label       = i18n("modifierKey"),
+                value       = mod.customModifier,
+                options     = {
                     {
                         label = "command ⌘",
                         value = "cmd",
@@ -626,10 +735,77 @@ function plugin.init(deps)
                         value = "fn",
                     },
                 },
-                required	= true,
-                onchange	= function(_, params) mod.customModifier(params.value) end,
+                required    = true,
+                onchange    = function(_, params) mod.customModifier(params.value) end,
+                id          = "mouseZoomModifierKey",
             })
-            :addContent(1.6, "</div>", false)
+            :addContent(1.6, [[
+                        </div>
+                        <div class="column">
+            ]], false)
+            :addCheckbox(1.7,
+            {
+                label = i18n("invert"),
+                onchange = function(_, params)
+                    mod.invert(params.checked)
+
+                    --------------------------------------------------------------------------------
+                    -- Cache Scroll Direction:
+                    --------------------------------------------------------------------------------
+                    mod.scrollDirection = mouse.scrollDirection()
+
+                    --------------------------------------------------------------------------------
+                    -- Invert if necessary:
+                    --------------------------------------------------------------------------------
+                    if mod.invert() then
+                        if mod.scrollDirection == "normal" then
+                            mod.scrollDirection = "natural"
+                        else
+                            mod.scrollDirection = "normal"
+                        end
+                    end
+                end,
+                checked = mod.invert,
+                class = "uiItem mouseZoomInvertCheckbox"
+            })
+            :addContent(1.8, [[
+                    </div>
+                </div>
+            </div>]], false)
+            :addContent(1.9, [[
+                <div style="padding-left: 19px">
+            ]], false)
+            :addSelect(2,
+            {
+                label       = i18n("sensitivity"),
+                value       = mod.sensitivity,
+                options     = {
+                    {
+                        label = i18n("default"),
+                        value = "default",
+                    },
+                    {
+                        label = i18n("fast"),
+                        value = "fast",
+                    },
+                    {
+                        label = i18n("medium"),
+                        value = "medium",
+                    },
+                    {
+                        label = i18n("slow"),
+                        value = "slow",
+                    },
+                    {
+                        label = i18n("relative"),
+                        value = "relative",
+                    },
+                },
+                required    = true,
+                onchange    = function(_, params) mod.sensitivity(params.value) end,
+                id          = "mouseZoomSensitivity",
+            })
+            :addContent(2.1, [[</div>]], false)
     end
 
     return mod

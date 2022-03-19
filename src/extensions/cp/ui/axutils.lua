@@ -742,18 +742,23 @@ function axutils.snapshot(element, filename, elementFrame)
         local window = element:attributeValue("AXWindow")
         if window then
             local hsWindow = window:asHSWindow()
-            local windowSnap = hsWindow:snapshot()
 
+            local windowSnap = hsWindow and hsWindow:snapshot()
             if not windowSnap then
                 log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured, so aborting.")
                 return
             end
 
-            local windowFrame = window:attributeValue("AXFrame")
-            local shotSize = windowSnap:size()
+            local windowFrame = window and window:attributeValue("AXFrame")
+            if not windowFrame then
+                log.ef("[cp.ui.axutils.snapshot] Failed to get the window frame, so aborting.")
+                return
+            end
 
-            local ratio = shotSize.h/windowFrame.h
-            elementFrame = elementFrame or element:attributeValue("AXFrame")
+            local shotSize = windowSnap and windowSnap:size()
+
+            local ratio = shotSize and windowFrame and shotSize.h / windowFrame.h
+            elementFrame = elementFrame or (element and element:attributeValue("AXFrame"))
 
             local imageFrame = {
                 x = (windowFrame.x-elementFrame.x)*ratio,
@@ -772,9 +777,6 @@ function axutils.snapshot(element, filename, elementFrame)
             }
 
             local elementSnap = c:imageFromCanvas()
-
-            c:delete()
-            c = nil -- luacheck: ignore
 
             if filename then
                 elementSnap:saveToFile(filename)

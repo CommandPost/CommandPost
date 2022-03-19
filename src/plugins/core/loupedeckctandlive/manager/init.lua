@@ -789,11 +789,13 @@ function mod.new(deviceType)
             -- Add User Added Applications from Loupedeck Preferences:
             local items = o.items()
 
-            for bundleID, v in pairs(items) do
-                if not applications[bundleID] and v.displayName then
-                    applications[bundleID] = {
-                        displayName = v.displayName
-                    }
+            for _, unitObj in pairs(items) do
+                for bundleID, v in pairs(unitObj) do
+                    if not applications[bundleID] and v.displayName then
+                        applications[bundleID] = {
+                            displayName = v.displayName
+                        }
+                    end
                 end
             end
 
@@ -1201,9 +1203,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             encodedIcon = fixedImage:encodeAsURLString(true)
                             containsIconSnippets = true
                         end
@@ -1292,9 +1291,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
                         }
 
                         local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
 
                         encodedIcon = fixedImage:encodeAsURLString(true)
                         containsIconSnippets = true
@@ -1394,9 +1390,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             encodedIcon = fixedImage:encodeAsURLString(true)
                             containsIconSnippets = true
                         end
@@ -1446,8 +1439,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
                     local encoded = fixedImage:encodeAsURLString(true)
                     decodedImage = imageFromURL(encoded)
 
-                    v:delete()
-                    v = nil -- luacheck: ignore
                 end
                 if decodedImage then
                     device:updateKnobImage(i, decodedImage)

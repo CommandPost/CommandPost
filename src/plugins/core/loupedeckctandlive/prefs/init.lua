@@ -133,7 +133,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1120
+        o.height            = 1140
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -144,7 +144,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1120
+        o.height            = 1140
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -713,9 +713,6 @@ function mod.mt:generateKnobImages(app, bank, bid)
 
                         local fixedImage = v:imageFromCanvas()
 
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
                         return fixedImage:encodeAsURLString(true)
                     end
                 end
@@ -816,9 +813,6 @@ function mod.mt:generateKnobImages(app, bank, bid)
         end
 
         local knobImage = v:imageFromCanvas()
-
-        v:delete()
-        v = nil -- luacheck: ignore
 
         encodedKnobIcon = knobImage:encodeAsURLString(true)
     else
@@ -975,9 +969,6 @@ function mod.mt:updateUI(params)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             currentEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
                     end
@@ -1079,9 +1070,6 @@ function mod.mt:updateUI(params)
                             }
 
                             local fixedImage = v:imageFromCanvas()
-
-                            v:delete()
-                            v = nil -- luacheck: ignore
 
                             newEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
@@ -1212,9 +1200,6 @@ function mod.mt:processEncodedIcon(icon, controlType)
 
     local fixedImage = v:imageFromCanvas()
 
-    v:delete()
-    v = nil -- luacheck: ignore
-
     return fixedImage:encodeAsURLString(true)
 end
 
@@ -1272,9 +1257,6 @@ function mod.mt:buildIconFromLabel(params)
     }
 
     local img = v:imageFromCanvas()
-
-    v:delete()
-    v = nil -- luacheck: ignore
 
     return img:encodeAsURLString(true)
 end
@@ -2558,6 +2540,16 @@ function mod.mt:panelCallback(id, params)
             table.insert(menu, {
                 title = string.upper(i18n("copyActiveApplicationTo")) .. ":",
                 disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = i18n("unlistedAndIgnoredApplications"),
+                fn = function() copyApplication("All Applications") end
             })
 
             table.insert(menu, {
