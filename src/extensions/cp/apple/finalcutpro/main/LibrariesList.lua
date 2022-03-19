@@ -202,7 +202,11 @@ end
 -- Returns:
 --  * A table of `Clip` objects.
 function LibrariesList:_uiToClips(clipsUI)
-    local columnIndex = self.contents:findColumnIndex("filmlist name col")
+    --------------------------------------------------------------------------------
+    -- NOTE: At some point the column with "filmlist name col" disappeared, probably
+    --       when custom columns were added so we now just return 1.
+    --------------------------------------------------------------------------------
+    local columnIndex = self.contents:findColumnIndex("filmlist name col") or 1
     local options = {columnIndex = columnIndex}
     return map(clipsUI, function(clipUI)
         return Clip.new(clipUI, options)
