@@ -303,6 +303,7 @@ function mod.new()
     --------------------------------------------------------------------------------
     if not mod._toolbar then
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+            :toolbarStyle("preference")
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)

@@ -1394,7 +1394,7 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 890,
+        height          = 905,
     })
         :addContent(1, html.style ([[
                 .enableStreamDeck {

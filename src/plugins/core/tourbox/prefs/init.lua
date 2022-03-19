@@ -952,7 +952,7 @@ function plugin.init(deps, env)
         label           = i18n("tourBox"),
         image           = imageFromPath(env:pathToAbsolute("/images/TourBox.icns")),
         tooltip         = i18n("tourBox"),
-        height          = 1070,
+        height          = 1085,
     })
         :addContent(1, html.style ([[
                 .displayMessageWhenChangingBanks {

@@ -207,7 +207,7 @@ function plugin.init(deps, env)
         label           = i18n("monogram"),
         image           = imageFromPath(env:pathToAbsolute("/images/Monogram.icns")),
         tooltip         = i18n("monogram"),
-        height          = 800,
+        height          = 810,
     })
         :addContent(1, html.style ([[
                 .buttonOne {
