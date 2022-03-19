@@ -133,7 +133,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1120
+        o.height            = 1140
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -144,7 +144,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1120
+        o.height            = 1140
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return

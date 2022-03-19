@@ -594,7 +594,7 @@ function mod.init(deps, env)
         label           = i18n("touchbarPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("/images/touchbar.icns")),
         tooltip         = i18n("touchbarPanelTooltip"),
-        height          = 750,
+        height          = 755,
     })
         --------------------------------------------------------------------------------
         -- Virtual Touch Bar

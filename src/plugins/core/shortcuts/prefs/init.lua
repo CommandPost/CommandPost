@@ -585,7 +585,7 @@ function mod.init(deps, env)
         label           = i18n("keyboard"),
         image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
         tooltip         = i18n("keyboard"),
-        height          = 750,
+        height          = 755,
     })
     mod._panel
         :addContent(10, generateContent, false)

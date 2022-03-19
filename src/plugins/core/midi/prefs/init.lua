@@ -1395,7 +1395,7 @@ function plugin.init(deps, env)
         label           = i18n("midi"),
         image           = imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
         tooltip         = i18n("midi"),
-        height          = 820,
+        height          = 835,
         closeFn         = destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------

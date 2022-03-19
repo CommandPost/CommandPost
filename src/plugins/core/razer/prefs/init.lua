@@ -1247,7 +1247,7 @@ function plugin.init(deps, env)
         label           = i18n("razer"),
         image           = imageFromPath(env:pathToAbsolute("/images/razerIcon.png")),
         tooltip         = i18n("razerDevices"),
-        height          = 1150,
+        height          = 1170,
     })
         :addContent(1, html.style ([[
                 .displayMessageWhenChangingBanks {

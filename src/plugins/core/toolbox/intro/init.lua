@@ -102,7 +102,7 @@ function plugin.init(deps, env)
         label           = i18n("intro"),
         image           = image.imageFromName("NSInfo"),
         tooltip         = i18n("intro"),
-        height          = 250,
+        height          = 260,
     })
     :addContent(1, generateContent, false)
 

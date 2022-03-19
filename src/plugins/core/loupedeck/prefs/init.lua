@@ -878,7 +878,7 @@ function plugin.init(deps, env)
         label           = i18n("loupedeck"),
         image           = icon,
         tooltip         = i18n("loupedeck"),
-        height          = 910,
+        height          = 920,
     })
         :addHeading(6, i18n("loupedeck"))
         :addCheckbox(7,
