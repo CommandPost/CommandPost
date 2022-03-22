@@ -61,9 +61,24 @@ function generate_appcast() {
   rm -f "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
 
   echo "  * Generating New AppCast..."
-  export SPARKLE_DSA_SIGNATURE
 
-  SPARKLE_DSA_SIGNATURE="$(${COMMANDPOST_HOME}/../CommandPost/scripts/inc/sign_update "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "${COMMANDPOST_HOME}/../dsa_priv.pem")"
+  #
+  # Generate DSA Signature (legacy for Sparkle 1.0):
+  #
+
+  export SPARKLE_DSA_SIGNATURE
+  SPARKLE_DSA_SIGNATURE="$(${COMMANDPOST_HOME}/../CommandPost/scripts/inc/sparkle1/sign_update "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "${COMMANDPOST_HOME}/../dsa_priv.pem")"
+
+  #
+  # Generate EdDSA Signature (for Sparkle 2.0):
+  #
+
+  export SPARKLE_ED_SIGNATURE
+  SPARKLE_ED_SIGNATURE="$(${COMMANDPOST_HOME}/../CommandPost/scripts/inc/sparkle2/sign_update "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg")"
+
+  #
+  # Get Build Number from plist:
+  #
 
   local BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Hammerspoon/CommandPost-Info.plist)
 
@@ -77,9 +92,10 @@ function generate_appcast() {
 				sparkle:version=\"${BUILD_NUMBER}\"
                 sparkle:shortVersionString=\"${VERSION}\"
 				sparkle:dsaSignature=\"${SPARKLE_DSA_SIGNATURE}\"
+				${SPARKLE_ED_SIGNATURE}
 				type=\"application/octet-stream\"
 			/>
-			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
+			<sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
 		</item>" >> "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
 }
 
@@ -90,18 +106,18 @@ function generate_appcast() {
 function finalise_sentry() {
 
     echo "  * Updating Sentry release..."
-    
+
     export TOKENPATH ; TOKENPATH="$(greadlink -f "${COMMANDPOST_HOME}/..")"
-    export SENTRY_TOKEN_AUTH_FILE="${TOKENPATH}/token-sentry-auth"    
-        
+    export SENTRY_TOKEN_AUTH_FILE="${TOKENPATH}/token-sentry-auth"
+
 	echo "  * Importing Sentry token from: ${TOKENPATH}/token-sentry-auth"
 	# shellcheck disable=SC1090
 	source "${SENTRY_TOKEN_AUTH_FILE}"
-        
+
     export SENTRY_AUTH_TOKEN
     "${COMMANDPOST_HOME}/../CommandPost-App/scripts/sentry-cli" releases set-commits --auto "${VERSION}" 2>&1 | tee "${COMMANDPOST_HOME}/../CommandPost-App/build/sentry-release.log"
     "${COMMANDPOST_HOME}/../CommandPost-App/scripts/sentry-cli" releases finalize "${VERSION}" 2>&1 | tee -a "${COMMANDPOST_HOME}/../CommandPost-App/build/sentry-release.log"
-    
+
 }
 
 #
