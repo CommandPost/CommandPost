@@ -40,6 +40,21 @@ local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
 
+-- DEFAULT_FONT_COLOR -> string
+-- Constant
+-- The default font color value.
+local DEFAULT_FONT_COLOR = "FFFFFF"
+
+-- DEFAULT_FONT_SIZE -> string
+-- Constant
+-- The default font size value.
+local DEFAULT_FONT_SIZE = "15"
+
+-- DEFAULT_FONT -> string
+-- Constant
+-- The default font value.
+local DEFAULT_FONT = ".AppleSystemUIFont"
+
 -- KEY_CREATOR_URL -> string
 -- Constant
 -- URL to Key Creator Website
@@ -198,12 +213,14 @@ local function updateUI(params)
     local bank      = params["bank"] or mod.lastBank()
     local button    = params["button"] or mod.lastButton()
 
+    --[[
     log.df("----------------------")
     log.df("device: %s", device)
     log.df("unit: %s", unit)
     log.df("application: %s", app)
     log.df("bank: %s (%s)", bank, type(bank))
     log.df("button: %s (%s)", button, type(button))
+    --]]
 
     local injectScript = mod._manager.injectScript
 
@@ -221,9 +238,9 @@ local function updateUI(params)
     -- Show the correct UI:
     --------------------------------------------------------------------------------
     script = script .. [[
-        document.getElementById("streamdeckOriginalUI").style.display = "]] .. (device == "Original" and "Block" or "None") .. [[";
-        document.getElementById("streamdeckMiniUI").style.display = "]] .. (device == "Mini" and "Block" or "None") .. [[";
-        document.getElementById("streamdeckXLUI").style.display = "]] .. (device == "XL" and "Block" or "None") .. [[";
+        document.getElementById("streamdeckOriginalUI").style.display = "]] .. (device == "Original" and "inline-table" or "None") .. [[";
+        document.getElementById("streamdeckMiniUI").style.display = "]] .. (device == "Mini" and "inline-table" or "None") .. [[";
+        document.getElementById("streamdeckXLUI").style.display = "]] .. (device == "XL" and "inline-table" or "None") .. [[";
     ]] .. "\n"
 
     --------------------------------------------------------------------------------
@@ -270,17 +287,17 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     local numberOfButtons = mod._sd.numberOfButtons[device]
 
-    log.df("numberOfButtons: %s", numberOfButtons)
+    --log.df("numberOfButtons: %s", numberOfButtons)
 
     for i=1, numberOfButtons do
         local buttonData = bankData and bankData[tostring(i)]
         if buttonData and buttonData.icon and buttonData.icon ~= "" then
-            log.df("update button: %s, device: %s, data: %s", i, device, buttonData.icon)
+            --log.df("update button: %s, device: %s, data: %s", i, device, buttonData.icon)
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
             ]] .. "\n"
         else
-            log.df("resetting image: %s", i)
+            --log.df("resetting image: %s", i)
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "";
             ]] .. "\n"
@@ -292,7 +309,23 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     local buttonData = bankData and bankData[button]
     if buttonData then
-        log.df("We have stuff to populate!")
+        --log.df("We have stuff to populate!")
+
+        --log.df("buttonData: %s", hs.inspect(buttonData))
+
+        --log.df("buttonData.icon: %s", buttonData.icon)
+
+        script = script .. [[
+            changeValueByID('press_action', `]] .. escapeTilda(buttonData.actionTitle) .. [[`);
+            changeValueByID('release_action', `]] .. escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle) .. [[`);
+            changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(buttonData.repeatPressActionUntilReleased or false) .. [[);
+            changeValueByID('iconLabel', `]] .. escapeTilda(buttonData.iconLabel) .. [[`);
+            changeValueByID('snippet_action', `]] .. escapeTilda(buttonData.snippetAction and buttonData.snippetAction.actionTitle) .. [[`);
+            changeValueByID('fontSize', ']] .. (buttonData.fontSize or DEFAULT_FONT_SIZE) .. [[');
+            changeFontColor(']] .. (buttonData.fontColor or DEFAULT_FONT_COLOR) .. [[');
+            setIcon("]] .. (buttonData.icon or "") .. [[");
+        ]]
+
     end
 
         --[==[
@@ -1419,7 +1452,7 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 910,
+        height          = 950,
     })
         :addContent(1, html.style ([[
                 .enableStreamDeck {

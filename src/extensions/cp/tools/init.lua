@@ -107,7 +107,7 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
---- cp.tools.escapeTilda(input) -> none
+--- cp.tools.escapeTilda(input) -> string
 --- Method
 --- Escapes a tilda.
 ---
@@ -115,9 +115,9 @@ end
 ---  * input - The string you want to escape.
 ---
 --- Returns:
----  * A new string
+---  * A new string or "" if no input is supplied.
 function tools.escapeTilda(i)
-    return string.gsub(i, "`", [[\`]])
+    return i and string.gsub(i, "`", [[\`]]) or ""
 end
 
 --- cp.tools.keyStroke(modifiers, character, app) -> none

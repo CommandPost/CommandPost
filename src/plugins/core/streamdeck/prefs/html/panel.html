@@ -1,6 +1,25 @@
 <script>{(js/jscolor.js)}</script>
 <style>{(css/streamdeck.css)}</style>
 <script>
+
+	function setIcon(encodedIcon) {
+		if (encodedIcon != "") {
+			document.getElementById("iconDropZonePreview").innerHTML = "<img src='" + encodedIcon + "'>";
+    		document.getElementById("iconDropZone").className = "dropzone dropped";
+    	} else {
+			document.getElementById("iconDropZonePreview").innerHTML = "<p style=\"padding-top: 13px;\">icon</p>";
+			document.getElementById("iconDropZone").className = "dropzone";
+    	}
+	}
+
+	function changeFontColor(value) {
+		document.getElementById('fontColor').jscolor.fromString(value);
+	}
+
+	function changeImage(id, data) {
+		document.getElementById(id).getElementsByTagName('img')[0].src = data;
+	}
+
 	function updateUI() {
 		try {
 			var result = {
@@ -489,7 +508,7 @@
 <table>
 	<thead>
 		<tr>
-			<th width="447px" style="text-align: center";>
+			<th width="458px" style="text-align: center";>
 				<style>
 					#streamdeckOriginalUI {
 						display: inline-table;
