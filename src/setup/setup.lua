@@ -21,6 +21,7 @@ local cpaths = {
   frameworkspath .. "/?.dylib",
   --userruntime .. "/lib/?.dylib",
   --userruntime .. "/lib/?.so",
+  modpath . ."/?.so",
 }
 
 package.path = table.concat(paths, ";")
