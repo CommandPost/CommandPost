@@ -10,10 +10,7 @@
 					type: "updateAction",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
-					selectedControl: document.getElementById("selectedControl").value,
-					id: document.getElementById("id").value,
 					buttonType: buttonType,
-					controlType: document.getElementById("controlType").value,
 				},
 			}
 			postMessage(result);
@@ -30,10 +27,7 @@
 					type: "clearAction",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
-					selectedControl: document.getElementById("selectedControl").value,
 					buttonType: buttonType,
-					controlType: document.getElementById("controlType").value,
-					id: document.getElementById("id").value,
 				},
 			}
 			postMessage(result);
@@ -50,9 +44,6 @@
 					type: "editSnippet",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
-					selectedControl: document.getElementById("selectedControl").value,
-					controlType: document.getElementById("controlType").value,
-					id: document.getElementById("id").value,
 					actionType: actionType,
 				},
 			}
@@ -127,26 +118,6 @@
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					bankLabel: document.getElementById("bankLabel").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function changeLabel(button, label) {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "changeLabel",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-					button: button,
-					label: label,
 				},
 			}
 			postMessage(result);
@@ -273,7 +244,7 @@
 	}
 
 	function drag(ev) {
-		ev.dataTransfer.setData("text", ev.target.parentElement.getAttribute("controlType") + ev.target.parentElement.getAttribute("controlID"));
+		ev.dataTransfer.setData("text", ev.target.parentElement.getAttribute("button"));
 	}
 
 	function drop(ev, controlType, id) {

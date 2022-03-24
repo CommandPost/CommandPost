@@ -90,12 +90,27 @@ mod.backgroundColour = config.prop("streamDeck.preferences.backgroundColour", "#
 --- plugins.core.streamdeck.prefs.resizeImagesOnImport <cp.prop: string>
 --- Field
 --- Resize Icons on Import Preference.
-mod.resizeImagesOnImport = config.prop("streamDeck..preferences.resizeImagesOnImport", "100%")
+mod.resizeImagesOnImport = config.prop("streamDeck.preferences.resizeImagesOnImport", "100%")
+
+--- plugins.core.streamdeck.prefs.snippetsRefreshFrequency <cp.prop: string>
+--- Field
+--- How often snippets are refreshed.
+mod.snippetsRefreshFrequency = config.prop("streamDeck.preferences.snippetsRefreshFrequency", "1")
 
 --- plugins.core.streamdeck.prefs.lastIconPath <cp.prop: string>
 --- Field
 --- Last icon path.
 mod.lastIconPath = config.prop("streamDeck.preferences.lastIconPath", mod.defaultIconPath)
+
+--- plugins.core.streamdeck.prefs.iconHistory <cp.prop: table>
+--- Field
+--- Icon History
+mod.iconHistory = json.prop(config.cachePath, "Stream Deck", "Icon History.cpCache", {})
+
+--- plugins.core.streamdeck.prefs.pasteboard <cp.prop: table>
+--- Field
+--- Pasteboard
+mod.pasteboard = json.prop(config.cachePath, "Stream Deck", "Pasteboard.cpCache", {})
 
 --- plugins.core.streamdeck.prefs.lastExportPath <cp.prop: string>
 --- Field
@@ -683,7 +698,7 @@ local function streamDeckPanelCallback(id, params)
                 -- If it's a press action, and no icon label already exists:
                 --------------------------------------------------------------------------------
                 if buttonType == "pressAction" then
-                    local items = self.items()
+                    local items = mod.items()
                     local lastDevice = mod.lastDevice()
                     local lastUnit = mod.lastUnit()
 
@@ -1176,6 +1191,62 @@ local function streamDeckPanelCallback(id, params)
                     updateUI(params)
                 end
             end, i18n("streamDeckResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+        elseif callbackType == "showContextMenu" then
+            --------------------------------------------------------------------------------
+            -- Show Context Menu:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+
+            local items = mod.items()
+            local lastDevice = mod.lastDevice()
+
+            local pasteboard = mod.pasteboard()
+
+            local pasteboardContents = pasteboard[controlType]
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("copy"),
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Copy:
+                    --------------------------------------------------------------------------------
+                    if items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] then
+                        pasteboard[controlType] = copy(items[lastDevice][app][bank][controlType][bid])
+                        self.pasteboard(pasteboard)
+                    end
+                end
+            })
+
+            table.insert(menu, {
+                title = i18n("paste"),
+                disabled = not pasteboardContents,
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Paste:
+                    --------------------------------------------------------------------------------
+                    if not items[lastDevice][app] then items[lastDevice][app] = {} end
+                    if not items[lastDevice][app][bank] then items[lastDevice][app][bank] = {} end
+                    if not items[lastDevice][app][bank][controlType] then items[lastDevice][app][bank][controlType] = {} end
+
+                    items[lastDevice][app][bank][controlType][bid] = copy(pasteboardContents)
+
+                    self.items(items)
+
+                    self:updateUI()
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware:
+                    --------------------------------------------------------------------------------
+                    self:refreshDevice()
+                end
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "copyDevice" then
             --------------------------------------------------------------------------------
             -- Copy Device:
@@ -1597,16 +1668,23 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 950,
+        height          = 1015,
     })
-        :addContent(1, html.style ([[
-                .enableStreamDeck {
-                    padding-bottom:10px;
+        :addHeading(1, i18n("streamDeck"))
+        :addContent(2, [[
+            <style>
+                .menubarRow {
+                    display: flex;
                 }
 
-            ]], true))
-        :addHeading(6, i18n("streamDeck"))
-        :addCheckbox(7,
+                .menubarColumn {
+                    flex: 50%;
+                }
+            </style>
+            <div class="menubarRow">
+                <div class="menubarColumn">
+        ]], false)
+        :addCheckbox(3,
             {
                 class       = "enableStreamDeck",
                 label       = i18n("enableStreamDeck"),
@@ -1621,8 +1699,135 @@ function plugin.init(deps, env)
                 end,
             }
         )
-        :addParagraph(8, html.span {class="tip"} (html(i18n("streamDeckAppTip"), false) ) .. "\n\n")
-        :addContent(10, generateContent, false)
+        :addCheckbox(4,
+            {
+                label       = i18n("automaticallySwitchApplications"),
+                checked     = mod.automaticallySwitchApplications,
+                onchange    = function(_, params)
+                    mod.automaticallySwitchApplications(params.checked)
+                end,
+            }
+        )
+        :addCheckbox(5,
+            {
+                label       = i18n("automaticallyApplyIconFromAction"),
+                checked     = mod.automaticallyApplyIconFromAction,
+                onchange    = function(_, params)
+                    mod.automaticallyApplyIconFromAction(params.checked)
+                end,
+            }
+        )
+        :addContent(6, [[
+                </div>
+                <div class="menubarColumn">
+                <style>
+                    .screensBacklightLevel select {
+                        width: 100px;
+                    }
+                    .resizeImagesOnImport select {
+                        width: 100px;
+                    }
+
+                    .snippetsRefreshFrequency select {
+                        width: 100px;
+                    }
+
+                    .restrictRightTopSectionSize label {
+                        width: 223px;
+                        overflow:hidden;
+                        display:inline-block;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    .imageBackgroundColourOnImport input {
+                        -webkit-appearance: none;
+                        text-shadow:0 1px 0 rgba(0,0,0,0.4);
+                        background-color: rgba(65,65,65,1);
+                        color: #bfbfbc;
+                        text-decoration: none;
+                        padding: 2px 18px 2px 5px;
+                        border:0.5px solid black;
+                        display: inline-block;
+                        border-radius: 3px;
+                        border-radius: 0px;
+                        cursor: default;
+                        font-family: -apple-system;
+                        font-size: 13px;
+                        width: 76px;
+                    }
+                </style>
+        ]], false)
+        :addSelect(7,
+            {
+                label       =   i18n("snippetsRefreshFrequency"),
+                value       =   mod.snippetsRefreshFrequency,
+                class       =   "snippetsRefreshFrequency restrictRightTopSectionSize",
+                options     =   function()
+                                    local options = {}
+                                    for i=1, 10 do
+                                        table.insert(options, {
+                                            value = tostring(i),
+                                            label = tostring(i) .. (i == 1 and " second" or " seconds")
+                                        })
+                                    end
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    mod.snippetsRefreshFrequency(params.value)
+                                    --[[
+                                    if o.device.refreshTimer then
+                                        o.device.refreshTimer:stop()
+                                        o.device.refreshTimer = nil
+                                        o.device:refresh(tonumber(o.lastDevice()))
+                                    end
+                                    --]]
+                                end,
+            }
+        )
+        :addSelect(8,
+            {
+                label       =   i18n("resizeImagesOnImport"),
+                class       =   "resizeImagesOnImport restrictRightTopSectionSize",
+                value       =   mod.resizeImagesOnImport,
+                options     =   function()
+                                    local options = {
+                                        { value = "100%",   label = "100%" },
+                                        { value = "95%",    label = "95%" },
+                                        { value = "90%",    label = "90%" },
+                                        { value = "85%",    label = "85%" },
+                                        { value = "80%",    label = "80%" },
+                                        { value = "75%",    label = "75%" },
+                                        { value = "70%",    label = "70%" },
+                                        { value = "65%",    label = "65%" },
+                                        { value = "60%",    label = "60%" },
+                                        { value = "55%",    label = "55%" },
+                                        { value = "50%",    label = "50%" },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    mod.resizeImagesOnImport(params.value)
+                                end,
+            }
+        )
+        :addTextbox(9,
+            {
+                label       =   i18n("imageBackgroundColourOnImport") .. ":",
+                value       =   function() return mod.backgroundColour() end,
+                class       =   "restrictRightTopSectionSize imageBackgroundColourOnImport jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                onchange    =   function(_, params) mod.backgroundColour(params.value) end,
+            }
+        )
+        :addContent(10, [[
+                </div>
+            </div>
+            <br />
+        ]], false)
+        :addParagraph(11, html.span {class="tip"} (html(i18n("streamDeckAppTip"), false) ) .. "\n\n")
+        :addContent(12, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
