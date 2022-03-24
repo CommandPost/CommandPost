@@ -2,6 +2,66 @@
 <style>{(css/streamdeck.css)}</style>
 <script>
 
+	function selectButton(buttonType) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateAction",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					id: document.getElementById("id").value,
+					buttonType: buttonType,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clearButton(buttonType) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "clearAction",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					buttonType: buttonType,
+					controlType: document.getElementById("controlType").value,
+					id: document.getElementById("id").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function editSnippet(actionType) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "editSnippet",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					controlType: document.getElementById("controlType").value,
+					id: document.getElementById("id").value,
+					actionType: actionType,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function setIcon(encodedIcon) {
 		if (encodedIcon != "") {
 			document.getElementById("iconDropZonePreview").innerHTML = "<img src='" + encodedIcon + "'>";
@@ -111,28 +171,6 @@
 			postMessage(result);
 		} catch(err) {
 			alertErrorMessage(err);
-		}
-	}
-
-	function changeScrollAreaPosition() {
-		var element = document.getElementById("scrollArea")
-		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
-			try {
-				var result = {
-					id: "{{ id }}",
-					params: {
-						type: "changeScrollAreaPosition",
-						device: document.getElementById("device").value,
-						unit: document.getElementById("unit").value,
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						position: element.scrollTop,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
 		}
 	}
 

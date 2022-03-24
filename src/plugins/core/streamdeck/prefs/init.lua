@@ -77,6 +77,21 @@ local iconPath = config.assetsPath .. "/icons/"
 --- Default Path where built-in icons are stored
 mod.defaultIconPath = iconPath .. "Stream Deck/"
 
+--- plugins.core.streamdeck.prefs.automaticallyApplyIconFromAction <cp.prop: boolean>
+--- Field
+--- Automatically Apply Icon from Action
+mod.automaticallyApplyIconFromAction = config.prop("streamDeck.preferences.automaticallyApplyIconFromAction", true)
+
+--- plugins.core.streamdeck.prefs.backgroundColour <cp.prop: string>
+--- Field
+--- Background Colour.
+mod.backgroundColour = config.prop("streamDeck.preferences.backgroundColour", "#000000")
+
+--- plugins.core.streamdeck.prefs.resizeImagesOnImport <cp.prop: string>
+--- Field
+--- Resize Icons on Import Preference.
+mod.resizeImagesOnImport = config.prop("streamDeck..preferences.resizeImagesOnImport", "100%")
+
 --- plugins.core.streamdeck.prefs.lastIconPath <cp.prop: string>
 --- Field
 --- Last icon path.
@@ -116,11 +131,6 @@ mod.lastUnit = config.prop("streamDeck.preferences.lastUnit", "1")
 --- Field
 --- Last Unit used in the Preferences Panel.
 mod.lastButton = config.prop("streamDeck.preferences.lastButton", "1")
-
---- plugins.core.touchbar.prefs.scrollBarPosition <cp.prop: string>
---- Field
---- Last group used in the Preferences Drop Down.
-mod.scrollBarPosition = config.prop("streamDeck.preferences.scrollBarPosition", {})
 
 -- renderPanel(context) -> none
 -- Function
@@ -387,6 +397,145 @@ local function updateUI(params)
     mod._sd.update()
 end
 
+--- plugins.core.streamdeck.prefs.setItem(app, bank, button, key, value) -> none
+--- Method
+--- Update the Loupedeck CT layout file.
+---
+--- Parameters:
+---  * app - The application bundle ID as a string
+---  * bank - The bank ID as a string
+---  * button - The button ID as a string
+---  * key - The key as a string
+---  * value - The value
+---
+--- Returns:
+---  * None
+function mod.setItem(app, bank, button, key, value)
+    local items = mod.items()
+
+    local lastDevice = mod.lastDevice()
+    local lastUnit = mod.lastUnit()
+
+    if type(items[lastDevice]) ~= "table" then items[lastDevice] = {} end
+    if type(items[lastDevice][lastUnit]) ~= "table" then items[lastDevice][lastUnit] = {} end
+
+    if type(items[lastDevice][lastUnit][app]) ~= "table" then items[lastDevice][lastUnit][app] = {} end
+    if type(items[lastDevice][lastUnit][app][bank]) ~= "table" then items[lastDevice][lastUnit][app][bank] = {} end
+    if type(items[lastDevice][lastUnit][app][bank][button]) ~= "table" then items[lastDevice][app][bank][button] = {} end
+
+    if type(value) == "table" then value = copy(value) end
+
+    items[lastDevice][lastUnit][app][bank][button][key] = value
+
+    mod.items(items)
+end
+
+--- plugins.core.streamdeck.prefs.buildIconFromLabel(params) -> string
+--- Function
+--- Creates a new icon image from a string.
+---
+--- Parameters:
+---  * params - A table of parameters.
+---
+--- Returns:
+---  * A new encoded icon as URL string.
+function mod.buildIconFromLabel(params)
+    local app = params["application"]
+    local bank = params["bank"]
+    local button = params["button"] or mod.lastButton()
+
+    local items = mod.items()
+    local lastDevice = mod.lastDevice()
+    local lastUnit = mod.lastUnit()
+
+    local currentDevice = items[lastDevice]
+
+    local currentUnit = currentDevice and currentDevice[lastUnit]
+
+    local selectedApp = currentUnit[app]
+
+    local selectedBank = selectedApp and selectedApp[bank]
+
+    local selectedButton = selectedBank and selectedBank[button]
+
+    local fontColor = selectedButton and selectedButton.fontColor and "#" .. selectedButton.fontColor or "#" .. DEFAULT_FONT_COLOR
+    local fontSize = selectedButton and selectedButton.fontSize or DEFAULT_FONT_SIZE
+    local font = selectedButton and selectedButton.font or DEFAULT_FONT
+    local value = selectedButton and selectedButton.iconLabel or ""
+
+    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
+    v[1] = {
+        --------------------------------------------------------------------------------
+        -- Force Black background:
+        --------------------------------------------------------------------------------
+        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+        type = "rectangle",
+    }
+
+    v[2] = {
+        frame = { h = 100, w = 100, x = 0, y = 0 },
+        text = value,
+        textAlignment = "left",
+        textColor = { hex = fontColor },
+        textSize = tonumber(fontSize),
+        textFont = font,
+        type = "text",
+    }
+
+    local img = v:imageFromCanvas()
+
+    return img:encodeAsURLString(true)
+end
+
+--- plugins.core.streamdeck.prefs.processEncodedIcon(icon, controlType) -> string
+--- Function
+--- Processes an encoded icon.
+---
+--- Parameters:
+---  * icon - The encoded icon as URL string or a hs.image object.
+---  * controlType - The control type as string.
+---
+--- Returns:
+---  * A new encoded icon as URL string.
+function mod.processEncodedIcon(icon)
+
+    local newImage
+    if type(icon) == "userdata" then
+        newImage = icon
+    else
+        newImage = imageFromURL(icon)
+    end
+
+    local backgroundColour = mod.backgroundColour()
+    local resizeImagesOnImport = mod.resizeImagesOnImport()
+    local offset = tostring( (100 - tonumber(resizeImagesOnImport:sub(1, -2))) /2 ) .. "%"
+
+    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
+
+    --------------------------------------------------------------------------------
+    -- Background:
+    --------------------------------------------------------------------------------
+    v[1] = {
+        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+        fillColor = { alpha = 1, hex = backgroundColour },
+        type = "rectangle",
+    }
+
+    --------------------------------------------------------------------------------
+    -- Icon - Scaled as per preferences:
+    --------------------------------------------------------------------------------
+    v[2] = {
+      type="image",
+      image = newImage,
+      frame = { x = offset, y = offset, h = resizeImagesOnImport, w = resizeImagesOnImport },
+    }
+
+    local fixedImage = v:imageFromCanvas()
+
+    return fixedImage:encodeAsURLString(true)
+end
+
 -- streamDeckPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
@@ -406,6 +555,220 @@ local function streamDeckPanelCallback(id, params)
             -- Bad Icon File Extension:
             --------------------------------------------------------------------------------
             webviewAlert(mod._manager.getWebview(), function() end, i18n("badStreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+        elseif callbackType == "updateAction" then
+            --------------------------------------------------------------------------------
+            -- Setup Activators:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+
+            local button = mod.lastButton()
+
+            local buttonType = params["buttonType"]
+
+            local activatorID = (buttonType == "snippetAction" and "snippet") or app
+
+            if not mod.activator then
+                mod.activator = {}
+            end
+
+            if activatorID == "snippet" and not mod.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Snippet Activator:
+                --------------------------------------------------------------------------------
+                mod.activator["snippet"] = mod._actionmanager.getActivator("streamdeck_preferences_snippet")
+
+                --------------------------------------------------------------------------------
+                -- Only allow the Snippets action group:
+                --------------------------------------------------------------------------------
+                mod.activator["snippet"]:allowHandlers("global_snippets")
+            elseif not mod.activator[activatorID] then
+                --------------------------------------------------------------------------------
+                -- Create a new Action Activator:
+                --------------------------------------------------------------------------------
+                local handlerIds = mod._actionmanager.handlerIds()
+
+                --------------------------------------------------------------------------------
+                -- Determine if there's a legacy group ID and display name:
+                --------------------------------------------------------------------------------
+                local displayName
+                local legacyGroupID
+                local registeredApps = mod._appmanager.getApplications()
+                for bundleID, v in pairs(registeredApps) do
+                    if activatorID == bundleID or activatorID == v.legacyGroupID then
+                        legacyGroupID = v.legacyGroupID or bundleID
+                        displayName = v.displayName
+                        break
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Create new Activator:
+                --------------------------------------------------------------------------------
+                mod.activator[activatorID] = mod._actionmanager.getActivator("streamdeck_preferences_" .. activatorID)
+
+                --------------------------------------------------------------------------------
+                -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
+                --------------------------------------------------------------------------------
+                local allowedHandlers = {}
+                for _,v in pairs(handlerIds) do
+                    local handlerTable = split(v, "_")
+                    local partB = handlerTable[2]
+                    if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
+                        table.insert(allowedHandlers, v)
+                    end
+                end
+                local unpack = table.unpack
+                mod.activator[activatorID]:allowHandlers(unpack(allowedHandlers))
+
+                --------------------------------------------------------------------------------
+                -- Gather Toolbar Icons for Search Console:
+                --------------------------------------------------------------------------------
+                local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+                local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(activatorID) or {}
+                local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+                mod.activator[activatorID]:toolbarIcons(searchConsoleToolbar)
+
+                --------------------------------------------------------------------------------
+                -- Only enable handlers for the current app:
+                --------------------------------------------------------------------------------
+                local enabledHandlerID = legacyGroupID or activatorID
+                if enabledHandlerID and enabledHandlerID == "All Applications" then
+                    enabledHandlerID = "global"
+                end
+                mod.activator[activatorID]:enableHandlers(enabledHandlerID)
+
+                --------------------------------------------------------------------------------
+                -- Add a specific toolbar icon for the current application:
+                --------------------------------------------------------------------------------
+                if enabledHandlerID and enabledHandlerID ~= "global" then
+                    local icon = imageFromAppBundle(activatorID)
+                    mod.activator[activatorID]:setBundleID(enabledHandlerID, icon, displayName)
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Setup Activator Callback:
+            --------------------------------------------------------------------------------
+            mod.activator[activatorID]:onActivate(function(handler, action, text)
+                --------------------------------------------------------------------------------
+                -- Process Stylised Text:
+                --------------------------------------------------------------------------------
+                if text and type(text) == "userdata" then
+                    text = text:convert("text")
+                end
+                local actionTitle = text
+                local handlerID = handler:id()
+
+                --------------------------------------------------------------------------------
+                -- Update the preferences file:
+                --------------------------------------------------------------------------------
+                if buttonType == "pressAction" then
+                    --------------------------------------------------------------------------------
+                    -- We just do this in the "root" of the button table for legacy reasons:
+                    --------------------------------------------------------------------------------
+                    mod.setItem(app, bank, button, "actionTitle", actionTitle)
+                    mod.setItem(app, bank, button, "handlerID", handlerID)
+                    mod.setItem(app, bank, button, "action", action)
+                else
+                    local result = {
+                        ["actionTitle"] = actionTitle,
+                        ["handlerID"] = handlerID,
+                        ["action"] = action,
+                    }
+                    mod.setItem(app, bank, button, buttonType, result)
+                end
+
+                --------------------------------------------------------------------------------
+                -- If it's a press action, and no icon label already exists:
+                --------------------------------------------------------------------------------
+                if buttonType == "pressAction" then
+                    local items = self.items()
+                    local lastDevice = mod.lastDevice()
+                    local lastUnit = mod.lastUnit()
+
+                    local iconLabel = items and items[lastDevice]
+                                            and items[lastDevice][lastUnit]
+                                            and items[lastDevice][lastUnit][app]
+                                            and items[lastDevice][lastUnit][app][bank]
+                                            and items[lastDevice][lastUnit][app][bank][button]
+                                            and items[lastDevice][lastUnit][app][bank][button]["iconLabel"]
+
+                    if (iconLabel and iconLabel == "") or not iconLabel then
+                        --------------------------------------------------------------------------------
+                        -- Automatically add an icon label based on the action title:
+                        --------------------------------------------------------------------------------
+                        mod.setItem(app, bank, button, "iconLabel", actionTitle)
+
+                        --------------------------------------------------------------------------------
+                        -- Generate encoded icon label:
+                        --------------------------------------------------------------------------------
+                        local encodedImg = mod.buildIconFromLabel(params) or ""
+                        self:setItem(app, bank, button, "encodedIconLabel", encodedImg)
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- If the action contains an image, apply it to the Touch Button (except
+                -- if it's a Snippet Action or if "Automatically Apply Icon From Action" is
+                -- disabled):
+                --------------------------------------------------------------------------------
+                if buttonType ~= "snippetAction" and mod.automaticallyApplyIconFromAction() then
+                    local choices = handler.choices():getChoices()
+                    local preSuppliedImage
+                    for _, v in pairs(choices) do
+                        if tableMatch(v.params, action) then
+                            if v.image then
+                                preSuppliedImage = v.image
+                            end
+                            break
+                        end
+                    end
+                    if preSuppliedImage then
+                        --------------------------------------------------------------------------------
+                        -- Write to file:
+                        --------------------------------------------------------------------------------
+                        local encodedIcon = mod.processEncodedIcon(preSuppliedImage)
+                        mod.setItem(app, bank, button, "encodedIcon", encodedIcon)
+                    end
+                end
+
+
+                --------------------------------------------------------------------------------
+                -- Change the control and update the UI:
+                --------------------------------------------------------------------------------
+                updateUI()
+
+            end)
+
+            --------------------------------------------------------------------------------
+            -- Set the Query String to the currently selected action:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+            local lastDevice = mod.lastDevice()
+
+            local currentButton = items and items[lastDevice]
+                                        and items[lastDevice][lastDevice]
+                                        and items[lastDevice][lastDevice][app]
+                                        and items[lastDevice][lastDevice][app][bank]
+                                        and items[lastDevice][lastDevice][app][bank][button]
+
+            local currentActionTitle
+
+            if buttonType == "pressAction" then
+                currentActionTitle = currentButton and currentButton.actionTitle
+            else
+                currentActionTitle = currentButton and currentButton[buttonType] and currentButton[buttonType].actionTitle
+            end
+
+            if currentActionTitle and currentActionTitle ~= "" then
+                mod.activator[activatorID]:lastQueryValue(currentActionTitle)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Show Activator:
+            --------------------------------------------------------------------------------
+            mod.activator[activatorID]:show()
         elseif callbackType == "changeDeviceUnitApplicationBank" then
             --------------------------------------------------------------------------------
             -- Change Device/Unit/Application/Bank:
@@ -500,25 +863,6 @@ local function streamDeckPanelCallback(id, params)
             -- Update UI:
             --------------------------------------------------------------------------------
             updateUI(params)
-        elseif callbackType == "changeScrollAreaPosition" then
-            --------------------------------------------------------------------------------
-            -- Change Scroll Area Position:
-            --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
-            local app = params["application"]
-            local bank = params["bank"]
-            local position = params["position"]
-
-            local scrollBarPositions = mod.scrollBarPosition()
-
-            if not scrollBarPositions[device] then scrollBarPositions[device] = {} end
-            if not scrollBarPositions[device][unit] then scrollBarPositions[device][unit] = {} end
-            if not scrollBarPositions[device][unit][app] then scrollBarPositions[device][unit][app] = {} end
-
-            scrollBarPositions[device][unit][app][bank] = tonumber(position)
-
-            mod.scrollBarPosition(scrollBarPositions)
         elseif callbackType == "changeBankLabel" then
             --------------------------------------------------------------------------------
             -- Change Bank Label:
@@ -539,206 +883,7 @@ local function streamDeckPanelCallback(id, params)
             items[device][unit][app][bank].bankLabel = bankLabel
 
             mod.items(items)
-        elseif callbackType == "up" then
-            --------------------------------------------------------------------------------
-            -- Move Up:
-            --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
-            local app = params["application"]
-            local bank = params["bank"]
-            local button = params["button"]
 
-            local nextButton = tostring(tonumber(button) - 1)
-
-            local items = mod.items()
-
-            if not items[device] then items[device] = {} end
-            if not items[device][unit] then items[device][unit] = {} end
-            if not items[device][unit][app] then items[device][unit][app] = {} end
-            if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-
-            if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
-            if not items[device][unit][app][bank][nextButton] then items[device][unit][app][bank][nextButton] = {} end
-
-            local a = items[device] and items[device][unit] and items[device][unit][app] and items[device][unit][app][bank] and items[device][unit][app][bank][button] and copy(items[device][unit][app][bank][button])
-            local b = items[device] and items[device][unit] and items[device][unit][app] and items[device][unit][app][bank] and items[device][unit][app][bank][nextButton] and copy(items[device][unit][app][bank][nextButton])
-
-            items[device][unit][app][bank][button] = b
-            items[device][unit][app][bank][nextButton] = a
-
-            mod.items(items)
-
-            updateUI(params)
-        elseif callbackType == "down" then
-            --------------------------------------------------------------------------------
-            -- Move Down:
-            --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
-            local app = params["application"]
-            local bank = params["bank"]
-            local button = params["button"]
-
-            local nextButton = tostring(tonumber(button) + 1)
-
-            local items = mod.items()
-
-            if not items[device] then items[device] = {} end
-            if not items[device][unit] then items[device][unit] = {} end
-            if not items[device][unit][app] then items[device][unit][app] = {} end
-            if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-
-            if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
-            if not items[device][unit][app][bank][nextButton] then items[device][unit][app][bank][nextButton] = {} end
-
-            local a = items[device] and items[device][unit] and items[device][unit][app] and items[device][unit][app][bank] and items[device][unit][app][bank][button] and copy(items[device][unit][app][bank][button])
-            local b = items[device] and items[device][unit] and items[device][unit][app] and items[device][unit][app][bank] and items[device][unit][app][bank][nextButton] and copy(items[device][unit][app][bank][nextButton])
-
-            items[device][unit][app][bank][button] = b
-            items[device][unit][app][bank][nextButton] = a
-
-            mod.items(items)
-
-            updateUI(params)
-        elseif callbackType == "select" then
-            --------------------------------------------------------------------------------
-            -- Setup Activators:
-            --------------------------------------------------------------------------------
-            local activatorID = params["application"]
-
-            if not mod.activator then
-                mod.activator = {}
-            end
-
-            if not mod.activator[activatorID] then
-                --------------------------------------------------------------------------------
-                -- Create a new Action Activator:
-                --------------------------------------------------------------------------------
-                local handlerIds = mod._actionmanager.handlerIds()
-
-                --------------------------------------------------------------------------------
-                -- Determine if there's a legacy group ID and display name:
-                --------------------------------------------------------------------------------
-                local displayName
-                local legacyGroupID
-                local registeredApps = mod._appmanager.getApplications()
-                for bundleID, v in pairs(registeredApps) do
-                    if activatorID == bundleID or activatorID == v.legacyGroupID then
-                        legacyGroupID = v.legacyGroupID or bundleID
-                        displayName = v.displayName
-                        break
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- Create new Activator:
-                --------------------------------------------------------------------------------
-                mod.activator[activatorID] = mod._actionmanager.getActivator("tourBoxPreferences" .. activatorID)
-
-                --------------------------------------------------------------------------------
-                -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
-                --------------------------------------------------------------------------------
-                local allowedHandlers = {}
-                for _,v in pairs(handlerIds) do
-                    local handlerTable = split(v, "_")
-                    local partB = handlerTable[2]
-                    if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
-                        table.insert(allowedHandlers, v)
-                    end
-                end
-                local unpack = table.unpack
-                mod.activator[activatorID]:allowHandlers(unpack(allowedHandlers))
-
-                --------------------------------------------------------------------------------
-                -- Gather Toolbar Icons for Search Console:
-                --------------------------------------------------------------------------------
-                local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
-                local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(activatorID) or {}
-                local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-                mod.activator[activatorID]:toolbarIcons(searchConsoleToolbar)
-
-                --------------------------------------------------------------------------------
-                -- Only enable handlers for the current app:
-                --------------------------------------------------------------------------------
-                local enabledHandlerID = legacyGroupID or activatorID
-                if enabledHandlerID and enabledHandlerID == "All Applications" then
-                    enabledHandlerID = "global"
-                end
-                mod.activator[activatorID]:enableHandlers(enabledHandlerID)
-
-                --------------------------------------------------------------------------------
-                -- Add a specific toolbar icon for the current application:
-                --------------------------------------------------------------------------------
-                if enabledHandlerID and enabledHandlerID ~= "global" then
-                    local icon = imageFromAppBundle(activatorID)
-                    mod.activator[activatorID]:setBundleID(enabledHandlerID, icon, displayName)
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Setup Activator Callback:
-            --------------------------------------------------------------------------------
-            mod.activator[activatorID]:onActivate(function(handler, action, text)
-                --------------------------------------------------------------------------------
-                -- Process Stylised Text:
-                --------------------------------------------------------------------------------
-                if text and type(text) == "userdata" then
-                    text = text:convert("text")
-                end
-                local actionTitle = text
-                local handlerID = handler:id()
-
-                --------------------------------------------------------------------------------
-                -- Update the preferences file:
-                --------------------------------------------------------------------------------
-                local device = params["device"]
-                local unit = params["unit"]
-                local app = params["application"]
-                local bank = params["bank"]
-                local button = params["button"]
-
-                local items = mod.items()
-
-                if not items[device] then items[device] = {} end
-                if not items[device][unit] then items[device][unit] = {} end
-                if not items[device][unit][app] then items[device][unit][app] = {} end
-                if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-                if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
-
-                items[device][unit][app][bank][button].actionTitle = actionTitle
-                items[device][unit][app][bank][button].label = actionTitle
-                items[device][unit][app][bank][button].handlerID = handlerID
-                items[device][unit][app][bank][button].action = action
-
-                mod.items(items)
-
-                updateUI(params)
-            end)
-
-            --------------------------------------------------------------------------------
-            -- Show Activator:
-            --------------------------------------------------------------------------------
-            mod.activator[activatorID]:show()
-        elseif callbackType == "clear" then
-            --------------------------------------------------------------------------------
-            -- Clear:
-            --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
-            local app = params["application"]
-            local bank = params["bank"]
-            local button = params["button"]
-
-            local items = mod.items()
-
-            if items[device] and items[device][unit] and items[device][unit][app] and items[device][unit][app][bank] and items[device][unit][app][bank][button] then
-                items[device][unit][app][bank][button] = {}
-            end
-
-            mod.items(items)
-
-            updateUI(params)
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Clicked:
