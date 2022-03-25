@@ -127,6 +127,12 @@ function finalise_sentry() {
 echo " * Quitting any active CommandPost instances..."
 killall CommandPost || true
 
+echo " * Removing old release..."
+rm -rf "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}"
+
+echo " * Removing old archive..."
+rm -rf "${COMMANDPOST_HOME}/../archive/${VERSION}"
+
 echo " * Moving to CommandPost-App Directory..."
 cd "${COMMANDPOST_HOME}/../CommandPost-App/"
 
