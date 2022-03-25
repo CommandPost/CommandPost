@@ -83,6 +83,7 @@
 
 .scActionButton {
 	padding: 5px 5px !important;
+	vertical-align: middle !important;
 }
 
 .shortcuts tbody {
