@@ -14,6 +14,7 @@ function plugin.init(deps)
     deps.manager.registerApplication({
         bundleID = "com.ecamm.EcammLive",
         displayName = "Ecamm Live",
+        legacyGroupID = "ecammlive",
     })
 end
 

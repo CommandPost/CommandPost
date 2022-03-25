@@ -1,4 +1,4 @@
---- === plugins.finalcutpro.actions.custom ===
+--- === plugins.core.actions.custom ===
 ---
 --- Creates a bunch of commands that can be used to assign actions to.
 --- This allows you to assign any action to a shortcut key in CommandPost.
@@ -10,13 +10,10 @@ local log                   = require "hs.logger".new "customAction"
 local config                = require "cp.config"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
-local image                 = require "hs.image"
 local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
 
-local mergeTable            = tools.mergeTable
 local split                 = tools.split
-local imageFromAppBundle    = image.imageFromAppBundle
 
 local mod                   = {}
 
@@ -25,19 +22,19 @@ local mod                   = {}
 -- The maximum number of shortcuts
 local MAXIMUM = 50
 
---- plugins.finalcutpro.actions.custom.shortcuts <cp.prop: table>
+--- plugins.core.actions.custom.shortcuts <cp.prop: table>
 --- Variable
 --- Table of shortcuts.
 mod.customActions = prop(
     function()
-        return config.get(fcp:currentLocale().code .. ".actions.custom", {})
+        return config.get("core.actions.custom", {})
     end,
     function(value)
-        config.set(fcp:currentLocale().code .. ".actions.custom", value)
+        config.set("core.actions.custom", value)
     end
 ):cached()
 
---- plugins.finalcutpro.actions.custom.apply(id) -> none
+--- plugins.core.actions.custom.apply(id) -> none
 --- Function
 --- Applies a shortcut.
 ---
@@ -63,7 +60,7 @@ function mod.apply(id)
     end
 end
 
---- plugins.finalcutpro.actions.custom.assign(id, handlerId) -> none
+--- plugins.core.actions.custom.assign(id, handlerId) -> none
 --- Function
 --- Assigns an Action to a Shortcut via a Console.
 ---
@@ -77,7 +74,7 @@ function mod.assign(id, completionFn)
     --------------------------------------------------------------------------------
     -- Set up an Activator:
     --------------------------------------------------------------------------------
-    local activator = mod._actionmanager.getActivator("finalcutpro.actions.custom")
+    local activator = mod._actionmanager.getActivator("core.actions.custom")
         :onActivate(function(handler, action, text)
             if action ~= nil then
                 --------------------------------------------------------------------------------
@@ -131,20 +128,12 @@ function mod.assign(id, completionFn)
     -- Gather Toolbar Icons for Search Console:
     --------------------------------------------------------------------------------
     local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
-    local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(fcp:bundleID())
-    local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-    activator:toolbarIcons(searchConsoleToolbar)
+    activator:toolbarIcons(defaultSearchConsoleToolbar)
 
     --------------------------------------------------------------------------------
     -- Only enable handlers for Final Cut Pro:
     --------------------------------------------------------------------------------
-    activator:enableHandlers("fcpx")
-
-    --------------------------------------------------------------------------------
-    -- Add Final Cut Pro Icon:
-    --------------------------------------------------------------------------------
-    local icon = imageFromAppBundle(fcp:bundleID())
-    activator:setBundleID("fcpx", icon, "Final Cut Pro")
+    activator:enableHandlers("global")
 
     --------------------------------------------------------------------------------
     -- Show the activator:
@@ -153,10 +142,10 @@ function mod.assign(id, completionFn)
 end
 
 local plugin = {
-    id = "finalcutpro.actions.custom",
-    group = "finalcutpro",
+    id = "core.actions.custom",
+    group = "core",
     dependencies = {
-        ["finalcutpro.commands"]                        = "fcpxCmds",
+        ["core.commands.global"]                        = "globalCmds",
         ["core.action.manager"]                         = "actionmanager",
         ["core.application.manager"]                    = "appmanager",
     }
@@ -177,9 +166,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup the plugin commands:
     --------------------------------------------------------------------------------
-    local fcpxCmds = deps.fcpxCmds
+    local globalCmds = deps.globalCmds
     for i = 1, MAXIMUM do
-        fcpxCmds:add("cpCustomAction" .. tostring(i))
+        globalCmds:add("cpGlobalCustomAction" .. tostring(i))
             :groupedBy("action")
             :whenPressed(function() mod.apply(i) end)
             :titled(i18n("action") .. " " .. string.format("%02d", i))
