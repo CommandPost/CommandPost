@@ -290,13 +290,6 @@ local function shortcutsPanelCallback(_, params)
     local modifiers = tools.split(params.modifiers, ":")
 
     --------------------------------------------------------------------------------
-    -- Allow for no modifiers:
-    --------------------------------------------------------------------------------
-    if params.modifiers == "no" then
-        modifers = {}
-    end
-
-    --------------------------------------------------------------------------------
     -- Setup Controller:
     --------------------------------------------------------------------------------
     local group = commands.group(params.group)

@@ -15,7 +15,6 @@ local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
 
 local mergeTable            = tools.mergeTable
-local removeFromTable       = tools.removeFromTable
 local split                 = tools.split
 local imageFromAppBundle    = image.imageFromAppBundle
 
