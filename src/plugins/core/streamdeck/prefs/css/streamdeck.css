@@ -308,7 +308,7 @@ input[type="color"]::-webkit-color-swatch {
 
 /* NEW STUFF */
 
-.loupedeck {
+.streamDeck {
 	margin-top: 10px;
 	table-layout: fixed;
 	width: 100%;
@@ -319,29 +319,29 @@ input[type="color"]::-webkit-color-swatch {
 	text-align: left;
 }
 
-.loupedeck td {
+.streamDeck td {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.loupedeck thead {
+.streamDeck thead {
 	font-weight: bold;
 	font-size: 12px;
 	width: 100%;
 }
 
-.loupedeck thead tr, .loupedeck tbody tr {
+.streamDeck thead tr, .streamDeck tbody tr {
 	display: table;
 	table-layout: fixed;
 	width: 100%;
 }
 
-.loupedeck thead tr {
+.streamDeck thead tr {
 	width: calc( 100% - 8px);
 }
 
-.loupedeck tbody {
+.streamDeck tbody {
 	display:block;
 	/* height: 65px; */
 	font-weight: normal;
@@ -352,7 +352,7 @@ input[type="color"]::-webkit-color-swatch {
 	overflow-y: scroll;
 }
 
-.loupedeckActionTextbox {
+.streamDeckActionTextbox {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -370,7 +370,7 @@ input[type="color"]::-webkit-color-swatch {
 	width: 186px;
 }
 
-.loupedeckActionButton {
+.streamDeckActionButton {
 	padding: 5px 5px !important;
 }
 

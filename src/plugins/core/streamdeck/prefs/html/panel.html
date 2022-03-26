@@ -791,8 +791,8 @@
 				<p style="text-align: left; padding-left:20px; font-size:16px; margin: 0px;">
 					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
 				</p>
-				<div id="loupedeckGroupControls" class="uiItem">
-					<table class="loupedeck" style="height: 450px;">
+				<div id="streamDeckGroupControls" class="uiItem">
+					<table class="streamDeck" style="height: 450px;">
 
 						<!-- PRESS & RELEASE ACTION: -->
 						<tr>
@@ -800,12 +800,12 @@
 							<th width="229px">{{ i18n("releaseAction") }}:</th>
 						</tr>
 						<tr>
-							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px"><input type="text" id="release_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="press_action" class="streamDeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="release_action" class="streamDeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr>
-							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
-							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="press_actionButton" href="#" class="button streamDeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button streamDeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button streamDeckActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="release_actionButton" href="#" class="button streamDeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button streamDeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button streamDeckActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- PRESS REPEAT: -->
@@ -840,8 +840,8 @@
 								</div>
 							</td>
 							<td width="229px" style="vertical-align: top;" id="iconLabelB">
-								<textarea id="iconLabel" class="loupedeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea><br />
-								<a href="#" style="display: inline !important" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
+								<textarea id="iconLabel" class="streamDeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea><br />
+								<a href="#" style="display: inline !important" class="button streamDeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
 								<select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
 									{%
 									for i=1, 200 do
@@ -850,12 +850,12 @@
 									{%
 									end
 									%}
-								</select><input style="width: 53px;" id="fontColor" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
+								</select><input style="width: 53px;" id="fontColor" class="streamDeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
 							</td>
 						</tr>
 						<tr id="iconC">
 							<th width="229px" id="buttonResolution">
-								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
+								<a href="#" class="button streamDeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button streamDeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
 						</tr>
 
@@ -871,10 +871,10 @@
 							<th width="229px">{{ i18n("useSnippetToGenerateIcon") }}:</th>
 						</tr>
 						<tr>
-							<td width="229px"><input type="text" id="snippet_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="snippet_action" class="streamDeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr>
-							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button loupedeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button loupedeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
+							<td width="229px"><a href="#" class="button streamDeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button streamDeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button streamDeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button streamDeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
 						</tr>
 
 						<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->
