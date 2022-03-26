@@ -2,12 +2,174 @@
 <style>{(css/streamdeck.css)}</style>
 <script>
 
+	function examples() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "examples",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyControlToAllBanks() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "copyControlToAllBanks",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetControl() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "resetControl",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function selectFont() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "selectFont",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateFontSize() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateFontSize",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("fontSize").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateFontColor() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateFontColor",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById('fontColor').jscolor.toString(),
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateIconLabel() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateIconLabel",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById('iconLabel').value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function iconHistory() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "iconHistory",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clearIcon() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "clearIcon",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function selectButton(buttonType) {
 		try {
 			var result = {
 				id: "{{ id }}",
 				params: {
 					type: "updateAction",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					buttonType: buttonType,
@@ -25,6 +187,8 @@
 				id: "{{ id }}",
 				params: {
 					type: "clearAction",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					buttonType: buttonType,
@@ -42,6 +206,8 @@
 				id: "{{ id }}",
 				params: {
 					type: "editSnippet",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					actionType: actionType,
@@ -61,6 +227,80 @@
 			document.getElementById("iconDropZonePreview").innerHTML = "<p style=\"padding-top: 13px;\">icon</p>";
 			document.getElementById("iconDropZone").className = "dropzone";
     	}
+	}
+
+	function pressIconDropZone() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "iconClicked",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeIconDropZone(element) {
+		var file = element.files[0];
+
+		element.classList.remove("hover");
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "{{ id }}",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		element.classList.add("dropped");
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+			document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "{{ id }}",
+					params: {
+						type: "updateIcon",
+                        device: document.getElementById("device").value,
+                        unit: document.getElementById("unit").value,
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						icon: data,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+			// Reset the drop zone:
+			element.value = "";
+
+		};
 	}
 
 	function changeFontColor(value) {
@@ -227,8 +467,7 @@
 					type: "showContextMenu",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
-					controlType: ev.srcElement.parentElement.getAttribute("controlType"),
-					id: ev.srcElement.parentElement.getAttribute("controlID"),
+					button: ev.srcElement.getAttribute("button"),
 				},
 			}
 			postMessage(result);
@@ -244,15 +483,14 @@
 	}
 
 	function drag(ev) {
-		ev.dataTransfer.setData("text", ev.target.parentElement.getAttribute("button"));
+		ev.dataTransfer.setData("button", ev.target.getAttribute("button"));
 	}
 
-	function drop(ev, controlType, id) {
+	function drop(ev) {
 
 		ev.preventDefault();
 
-		var controlType = ev.toElement.parentElement.getAttribute("controlType");
-		var id = ev.toElement.parentElement.getAttribute("controlID");
+		var button = ev.toElement.getAttribute("button");
 
 		var dt = ev.dataTransfer
 	    var files = dt.files
@@ -266,69 +504,18 @@
 				reader.onload = function(e) {
 					var data = e.target.result;
 
-					var callbackType
-					if (controlType == "knob") {
-						callbackType = "updateKnobIcon";
-					}
-					if (controlType == "touchButton") {
-						callbackType = "updateButtonIcon";
-					}
-					if (controlType == "sideScreen") {
-						callbackType = "updateSideScreenIcon";
-					}
-					if (controlType == "wheelScreen") {
-						callbackType = "updateWheelIcon";
-					}
-
-					// If this button is currently selected, change that too:
-					if (controlType == "knob") {
-						if (document.getElementById("controlType").value == "knob" && document.getElementById("id").value == id) {
-							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-							document.getElementById("iconDropZone").className = "dropzone dropped";
-						}
-					}
-
-					if (controlType == "touchButton") {
-						// Change button icon:
-						ev.toElement.parentElement.getElementsByTagName("img")[0].src = data;
-
-						// If this button is currently selected, change that too:
-						if (document.getElementById("controlType").value == "touchButton" && document.getElementById("id").value == id) {
-							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-							document.getElementById("iconDropZone").className = "dropzone dropped";
-						}
-					}
-
-					if (controlType == "sideScreen") {
-						// If this button is currently selected, change that too:
-						if (document.getElementById("controlType").value == "sideScreen" && document.getElementById("id").value == id) {
-							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-							document.getElementById("iconDropZone").className = "dropzone dropped";
-						}
-					}
-
-					if (controlType == "wheelScreen") {
-						// Change wheel icon:
-						ev.toElement.parentElement.getElementsByTagName("img")[0].src = data;
-
-						// If this button is currently selected, change that too:
-						if (document.getElementById("controlType").value == "wheelScreen" && document.getElementById("id").value == id) {
-							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-							document.getElementById("iconDropZone").className = "dropzone dropped";
-						}
-					}
-
 					// Icon Callback:
 					try {
 						var result = {
 							id: "{{ id }}",
 							params: {
-								type: callbackType,
+								type: "updateIcon",
+                                device: document.getElementById("device").value,
+                                unit: document.getElementById("unit").value,
 								application: document.getElementById("application").value,
 								bank: document.getElementById("bank").value,
-								id: id,
+								button: button,
 								icon: data,
-								controlType: controlType,
 							},
 						}
 						postMessage(result);
@@ -361,10 +548,12 @@
 					id: "{{ id }}",
 					params: {
 						type: "dropAndDrop",
+                        device: document.getElementById("device").value,
+                        unit: document.getElementById("unit").value,
 						application: document.getElementById("application").value,
 						bank: document.getElementById("bank").value,
-						source: ev.dataTransfer.getData("text"),
-						destination: controlType + id,
+						source: ev.dataTransfer.getData("button"),
+						destination: button,
 					},
 				}
 				postMessage(result);
@@ -518,68 +707,6 @@
 	<thead>
 		<tr>
 			<th width="458px" style="text-align: center";>
-				<style>
-					#streamdeckOriginalUI {
-						display: inline-table;
-						background-color: black;
-					}
-
-					#streamdeckMiniUI {
-						display: inline-table;
-						background-color: black;
-					}
-
-					#streamdeckXLUI {
-						display: inline-table;
-						background-color: black;
-					}
-
-					#streamdeckOriginalUI td {
-						width: 40px;
-						height: 40px;
-						min-width: 40px;
-						border-radius: 10px;
-						border: 2px #aaa solid;
-						background: #222;
-						overflow: none;
-						text-align: center;
-						color: #fff;
-						cursor: pointer;
-						pointer-events: auto;
-						background-size:contain;
-					}
-
-					#streamdeckMiniUI td {
-						width: 40px;
-						height: 40px;
-						min-width: 40px;
-						border-radius: 10px;
-						border: 2px #aaa solid;
-						background: #222;
-						overflow: none;
-						text-align: center;
-						color: #fff;
-						cursor: pointer;
-						pointer-events: auto;
-						background-size:contain;
-					}
-
-					#streamdeckXLUI td {
-						width: 40px;
-						height: 40px;
-						min-width: 40px;
-						border-radius: 10px;
-						border: 2px #aaa solid;
-						background: #222;
-						overflow: none;
-						text-align: center;
-						color: #fff;
-						cursor: pointer;
-						pointer-events: auto;
-						background-size:contain;
-					}
-				</style>
-
 				<table cellspacing="10" id="streamdeckOriginalUI">
 					<tr>
 						<td device="Original" button="1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
@@ -714,7 +841,7 @@
 							</td>
 							<td width="229px" style="vertical-align: top;" id="iconLabelB">
 								<textarea id="iconLabel" class="loupedeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea><br />
-								<a href="#" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
+								<a href="#" style="display: inline !important" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
 								<select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
 									{%
 									for i=1, 200 do

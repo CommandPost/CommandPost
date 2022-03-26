@@ -126,49 +126,67 @@ end
 --- Returns:
 ---  * None
 function mod.buttonCallback(object, buttonID, pressed)
-    if pressed then
-        local serialNumber = object:serialNumber()
-        local deviceType = mod.getDeviceType(object)
-        local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
-        local frontmostApplication = application.frontmostApplication()
-        local bundleID = frontmostApplication:bundleID()
+    local serialNumber = object:serialNumber()
+    local deviceType = mod.getDeviceType(object)
+    local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
-        local activeBanks = mod.activeBanks()
-        local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
+    local frontmostApplication = application.frontmostApplication()
+    local bundleID = frontmostApplication:bundleID()
 
-        --------------------------------------------------------------------------------
-        -- Get layout from preferences file:
-        --------------------------------------------------------------------------------
-        local items = mod.items()
-        local deviceData = items[deviceType] and items[deviceType][deviceID]
+    local activeBanks = mod.activeBanks()
+    local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
 
-        --------------------------------------------------------------------------------
-        -- Revert to "All Applications" if no settings for frontmost app exist:
-        --------------------------------------------------------------------------------
-        if deviceData and not deviceData[bundleID] then
-            bundleID = "All Applications"
-        end
+    --------------------------------------------------------------------------------
+    -- Get layout from preferences file:
+    --------------------------------------------------------------------------------
+    local items = mod.items()
+    local deviceData = items[deviceType] and items[deviceType][deviceID]
 
-        --------------------------------------------------------------------------------
-        -- Ignore if ignored:
-        --------------------------------------------------------------------------------
-        local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
-        if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
-            bundleID = "All Applications"
-        end
+    --------------------------------------------------------------------------------
+    -- Revert to "All Applications" if no settings for frontmost app exist:
+    --------------------------------------------------------------------------------
+    if deviceData and not deviceData[bundleID] then
+        bundleID = "All Applications"
+    end
 
-        buttonID = tostring(buttonID)
+    --------------------------------------------------------------------------------
+    -- Ignore if ignored:
+    --------------------------------------------------------------------------------
+    local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
+    if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
+        bundleID = "All Applications"
+    end
 
-        if items[deviceType] and items[deviceType][deviceID] and items[deviceType][deviceID][bundleID] and items[deviceType][deviceID][bundleID][bankID] and items[deviceType][deviceID][bundleID][bankID][buttonID] then
-            local handlerID = items[deviceType][deviceID][bundleID][bankID][buttonID]["handlerID"]
-            local action = items[deviceType][deviceID][bundleID][bankID][buttonID]["action"]
+    buttonID = tostring(buttonID)
+
+    local theDevice = items[deviceType]
+    local theUnit = theDevice and theDevice[deviceID]
+    local theApp = theUnit and theUnit[bundleID]
+    local theBank = theApp and theApp[bankID]
+    local theButton = theBank and theBank[buttonID]
+
+    if theButton then
+        if pressed then
+            local handlerID = theButton.handlerID
+            local action = theButton.action
             if handlerID and action then
                 local handler = mod._actionmanager.getHandler(handlerID)
                 handler:execute(action)
             end
+        else
+            local releaseAction = theButton.releaseAction
+            if releaseAction then
+                local handlerID = releaseAction.handlerID
+                local action = releaseAction.action
+                if handlerID and action then
+                    local handler = mod._actionmanager.getHandler(handlerID)
+                    handler:execute(action)
+                end
+            end
         end
     end
+
 end
 
 --- plugins.core.streamdeck.manager.update() -> none
@@ -235,6 +253,7 @@ function mod.update()
                 if buttonData then
                     local label = buttonData["label"]
                     local icon = buttonData["icon"]
+
                     if icon then
                         --------------------------------------------------------------------------------
                         -- Draw an icon:
@@ -242,6 +261,18 @@ function mod.update()
                         icon = imageFromURL(icon)
                         device:setButtonImage(buttonID, icon)
                         success = true
+                    elseif buttonData.encodedIconLabel then
+                        --------------------------------------------------------------------------------
+                        -- Draw an icon:
+                        --------------------------------------------------------------------------------
+                        local encodedIconLabel = imageFromURL(buttonData.encodedIconLabel)
+                        if encodedIconLabel then
+                            device:setButtonImage(buttonID, encodedIconLabel)
+                            success = true
+                        end
+
+                    -- NOTE: the below is legacy:
+                    --[[
                     elseif label then
                         --------------------------------------------------------------------------------
                         -- Draw a label:
@@ -264,6 +295,7 @@ function mod.update()
 
                         device:setButtonImage(buttonID, textIcon)
                         success = true
+                    --]]
                     end
                 end
                 if not success then

@@ -11,11 +11,14 @@ local inspect                   = require "hs.inspect"
 
 local application               = require "hs.application"
 local canvas                    = require "hs.canvas"
+local chooser                   = require "hs.chooser"
 local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
+local styledtext                = require "hs.styledtext"
+local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local html                      = require "cp.web.html"
@@ -25,20 +28,30 @@ local tools                     = require "cp.tools"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
+local delayed                   = timer.delayed
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
+local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
+local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableContains             = tools.tableContains
+local tableMatch                = tools.tableMatch
+local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
+
+-- ICON_LABEL_UPDATE_DELAY -> string
+-- Constant
+-- How long to delay updating the icon label.
+local ICON_LABEL_UPDATE_DELAY = 0.5
 
 -- DEFAULT_FONT_COLOR -> string
 -- Constant
@@ -64,6 +77,16 @@ local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
 -- Constant
 -- URL to SideshowFX Website
 local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Stream+Deck"
+
+-- SNIPPET_HELP_URL -> string
+-- Constant
+-- URL to Snippet Support Site
+local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
+
+-- delayedFn -> hs.timer
+-- Variable
+-- A delayed timer used for the Icon Label updater.
+local delayedFn
 
 --- plugins.core.streamdeck.prefs.supportedExtensions -> string
 --- Variable
@@ -232,12 +255,24 @@ end
 -- Returns:
 --  * None
 local function updateUI(params)
-    local device    = params["device"] or mod.lastDevice()
-    local unit      = params["unit"] or mod.lastUnit()
-    local app       = params["application"] or mod.lastApplication()
-    local bank      = params["bank"] or mod.lastBank()
-    local button    = params["button"] or mod.lastButton()
 
+    --------------------------------------------------------------------------------
+    -- Get parameters from table or from saved data:
+    --------------------------------------------------------------------------------
+    local device    = params and params["device"] or mod.lastDevice()
+    local unit      = params and params["unit"] or mod.lastUnit()
+    local app       = params and params["application"] or mod.lastApplication()
+    local bank      = params and params["bank"] or mod.lastBank()
+    local button    = params and params["button"] or mod.lastButton()
+
+    --------------------------------------------------------------------------------
+    -- Update the last button:
+    --------------------------------------------------------------------------------
+    mod.lastButton(button)
+
+    --------------------------------------------------------------------------------
+    -- Debugging:
+    --------------------------------------------------------------------------------
     --[[
     log.df("----------------------")
     log.df("device: %s", device)
@@ -247,11 +282,11 @@ local function updateUI(params)
     log.df("button: %s (%s)", button, type(button))
     --]]
 
-    local injectScript = mod._manager.injectScript
-
     --------------------------------------------------------------------------------
     -- Update the UI Dropdowns:
     --------------------------------------------------------------------------------
+    local injectScript = mod._manager.injectScript
+
     local script = [[
         changeValueByID("device", "]] .. device .. [[");
         changeValueByID("unit", "]] .. unit .. [[");
@@ -321,6 +356,10 @@ local function updateUI(params)
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
             ]] .. "\n"
+        elseif buttonData and buttonData.encodedIconLabel and buttonData.encodedIconLabel ~= "" then
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.encodedIconLabel .. [[')";
+            ]] .. "\n"
         else
             --log.df("resetting image: %s", i)
             script = script .. [[
@@ -332,74 +371,52 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     -- Update the fields for the currently selected button:
     --------------------------------------------------------------------------------
+    local pressAction = ""
+    local releaseAction = ""
+    local repeatPressActionUntilReleased = false
+    local iconLabel = ""
+    local snippetAction = ""
+    local fontSize = DEFAULT_FONT_SIZE
+    local fontColor = DEFAULT_FONT_COLOR
+    local icon = ""
+
     local buttonData = bankData and bankData[button]
     if buttonData then
         --log.df("We have stuff to populate!")
-
         --log.df("buttonData: %s", hs.inspect(buttonData))
-
         --log.df("buttonData.icon: %s", buttonData.icon)
 
-        script = script .. [[
-            changeValueByID('press_action', `]] .. escapeTilda(buttonData.actionTitle) .. [[`);
-            changeValueByID('release_action', `]] .. escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle) .. [[`);
-            changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(buttonData.repeatPressActionUntilReleased or false) .. [[);
-            changeValueByID('iconLabel', `]] .. escapeTilda(buttonData.iconLabel) .. [[`);
-            changeValueByID('snippet_action', `]] .. escapeTilda(buttonData.snippetAction and buttonData.snippetAction.actionTitle) .. [[`);
-            changeValueByID('fontSize', ']] .. (buttonData.fontSize or DEFAULT_FONT_SIZE) .. [[');
-            changeFontColor(']] .. (buttonData.fontColor or DEFAULT_FONT_COLOR) .. [[');
-            setIcon("]] .. (buttonData.icon or "") .. [[");
-        ]]
-
+        pressAction                         = escapeTilda(buttonData.actionTitle)
+        releaseAction                       = escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle)
+        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or false
+        iconLabel                           = escapeTilda(buttonData.label)
+        snippetAction                       = escapeTilda(buttonData.snippetAction and buttonData.snippetAction.actionTitle)
+        fontSize                            = buttonData.fontSize or DEFAULT_FONT_SIZE
+        fontColor                           = buttonData.fontColor or DEFAULT_FONT_COLOR
+        icon                                = buttonData.icon or ""
     end
 
-        --[==[
-        if buttonData and buttonData.actionTitle and buttonData.actionTitle ~= "" then
-            script = script .. [[
-                document.getElementById("action_]] .. tostring(i) .. [[").value = `]] .. escapeTilda(buttonData.actionTitle) .. [[`;
-            ]] .. "\n"
-        else
-            script = script .. [[
-                document.getElementById("action_]] .. tostring(i) .. [[").value = "]] .. i18n("none") .. [[";
-            ]] .. "\n"
-        end
+    script = script .. [[
+        setIcon("]] .. icon .. [[");
 
-        if buttonData and buttonData.label and buttonData.label ~= "" then
-            script = script .. [[
-                document.getElementById("label_]] .. tostring(i) .. [[").value = "]] .. buttonData.label .. [[";
-            ]] .. "\n"
-        else
-            script = script .. [[
-                document.getElementById("label_]] .. tostring(i) .. [[").value = "";
-            ]] .. "\n"
-        end
+        changeValueByID('press_action', `]] .. pressAction .. [[`);
+        changeValueByID('release_action', `]] .. releaseAction .. [[`);
+        changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
+        changeValueByID('snippet_action', `]] .. snippetAction .. [[`);
+        changeValueByID('fontSize', ']] .. fontSize .. [[');
 
-        if buttonData and buttonData.icon and buttonData.icon ~= "" then
-            script = script .. [[
-                document.getElementById("dropzone]] .. i .. [[_preview").innerHTML = "<img src=']] .. buttonData.icon .. [['>";
-                document.getElementById("dropzone]] .. i .. [[").className = "dropzone dropped";
-            ]] .. "\n"
-        else
-            script = script .. [[
-                document.getElementById("dropzone]] .. i .. [[_preview").innerHTML = "icon";
-                document.getElementById("dropzone]] .. i .. [[").className = "dropzone";
-            ]] .. "\n"
-        end
-        --]==]
+        changeFontColor(']] .. fontColor .. [[');
+
+        changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleased or false) .. [[);
+    ]]
 
     --------------------------------------------------------------------------------
     -- Update Bank Label:
     --------------------------------------------------------------------------------
     local bankLabel = bankData and bankData.bankLabel
-    if bankLabel and bankLabel ~= "" then
-        script = script .. [[
-            document.getElementById("bankLabel").value = `]] .. escapeTilda(bankLabel) .. [[`;
-        ]] .. "\n"
-    else
-        script = script .. [[
-            document.getElementById("bankLabel").value = "";
-        ]] .. "\n"
-    end
+    script = script .. [[
+        document.getElementById("bankLabel").value = `]] .. escapeTilda(bankLabel) .. [[`;
+    ]] .. "\n"
 
     --------------------------------------------------------------------------------
     -- Inject Script:
@@ -412,16 +429,16 @@ local function updateUI(params)
     mod._sd.update()
 end
 
---- plugins.core.streamdeck.prefs.setItem(app, bank, button, key, value) -> none
+--- plugins.core.streamdeck.prefs.setItem(app, bank, button, key, [value]) -> none
 --- Method
---- Update the Loupedeck CT layout file.
+--- Update the Stream Deck layout file.
 ---
 --- Parameters:
 ---  * app - The application bundle ID as a string
 ---  * bank - The bank ID as a string
 ---  * button - The button ID as a string
----  * key - The key as a string
----  * value - The value
+---  * key - The key as a string or a table if replacing the entire button contents
+---  * value - The optional value
 ---
 --- Returns:
 ---  * None
@@ -431,16 +448,34 @@ function mod.setItem(app, bank, button, key, value)
     local lastDevice = mod.lastDevice()
     local lastUnit = mod.lastUnit()
 
-    if type(items[lastDevice]) ~= "table" then items[lastDevice] = {} end
-    if type(items[lastDevice][lastUnit]) ~= "table" then items[lastDevice][lastUnit] = {} end
+    if not button then
+        button = mod.lastButton()
+    end
 
-    if type(items[lastDevice][lastUnit][app]) ~= "table" then items[lastDevice][lastUnit][app] = {} end
-    if type(items[lastDevice][lastUnit][app][bank]) ~= "table" then items[lastDevice][lastUnit][app][bank] = {} end
-    if type(items[lastDevice][lastUnit][app][bank][button]) ~= "table" then items[lastDevice][app][bank][button] = {} end
+    if not app or not bank or not button or not key then
+        log.ef("[plugins.core.streamdeck.prefs.setItem] Something has gone terribly wrong. Aborting!")
+        log.ef("device: %s", lastDevice)
+        log.ef("unit: %s", lastUnit)
+        log.ef("app: %s", app)
+        log.ef("bank: %s", bank)
+        log.ef("button: %s", button)
+        log.ef("key: %s", key)
+        return
+    end
 
-    if type(value) == "table" then value = copy(value) end
+    if type(items[lastDevice]) ~= "table" then                                  items[lastDevice] = {} end
+    if type(items[lastDevice][lastUnit]) ~= "table" then                        items[lastDevice][lastUnit] = {} end
+    if type(items[lastDevice][lastUnit][app]) ~= "table" then                   items[lastDevice][lastUnit][app] = {} end
+    if type(items[lastDevice][lastUnit][app][bank]) ~= "table" then             items[lastDevice][lastUnit][app][bank] = {} end
+    if type(items[lastDevice][lastUnit][app][bank][button]) ~= "table" then     items[lastDevice][lastUnit][app][bank][button] = {} end
 
-    items[lastDevice][lastUnit][app][bank][button][key] = value
+    if type(value) ~= "nil" then
+        if type(value) == "table" then value = copy(value) end
+        items[lastDevice][lastUnit][app][bank][button][key] = value
+    else
+        if type(key) == "table" then key = copy(key) end
+        items[lastDevice][lastUnit][app][bank][button] = key
+    end
 
     mod.items(items)
 end
@@ -476,7 +511,7 @@ function mod.buildIconFromLabel(params)
     local fontColor = selectedButton and selectedButton.fontColor and "#" .. selectedButton.fontColor or "#" .. DEFAULT_FONT_COLOR
     local fontSize = selectedButton and selectedButton.fontSize or DEFAULT_FONT_SIZE
     local font = selectedButton and selectedButton.font or DEFAULT_FONT
-    local value = selectedButton and selectedButton.iconLabel or ""
+    local value = selectedButton and selectedButton.label or ""
 
     local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
     v[1] = {
@@ -707,19 +742,19 @@ local function streamDeckPanelCallback(id, params)
                                             and items[lastDevice][lastUnit][app]
                                             and items[lastDevice][lastUnit][app][bank]
                                             and items[lastDevice][lastUnit][app][bank][button]
-                                            and items[lastDevice][lastUnit][app][bank][button]["iconLabel"]
+                                            and items[lastDevice][lastUnit][app][bank][button]["label"]
 
                     if (iconLabel and iconLabel == "") or not iconLabel then
                         --------------------------------------------------------------------------------
                         -- Automatically add an icon label based on the action title:
                         --------------------------------------------------------------------------------
-                        mod.setItem(app, bank, button, "iconLabel", actionTitle)
+                        mod.setItem(app, bank, button, "label", actionTitle)
 
                         --------------------------------------------------------------------------------
                         -- Generate encoded icon label:
                         --------------------------------------------------------------------------------
                         local encodedImg = mod.buildIconFromLabel(params) or ""
-                        self:setItem(app, bank, button, "encodedIconLabel", encodedImg)
+                        mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
                     end
                 end
 
@@ -784,6 +819,97 @@ local function streamDeckPanelCallback(id, params)
             -- Show Activator:
             --------------------------------------------------------------------------------
             mod.activator[activatorID]:show()
+        elseif callbackType == "clearAction" then
+            --------------------------------------------------------------------------------
+            -- Clear an action:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local buttonType = params["buttonType"]
+
+            local button = mod.lastButton()
+
+            if buttonType == "pressAction" then
+                --------------------------------------------------------------------------------
+                -- We just do this in the "root" of the button table for legacy reasons:
+                --------------------------------------------------------------------------------
+                mod.setItem(app, bank, button, "actionTitle", nil)
+                mod.setItem(app, bank, button, "handlerID", nil)
+                mod.setItem(app, bank, button, "action", nil)
+            else
+                mod.setItem(app, bank, button, buttonType, nil)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI()
+        elseif callbackType == "editSnippet" then
+            --------------------------------------------------------------------------------
+            -- Edit Snippet:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local actionType = params["actionType"]
+
+            local button = mod.lastButton()
+
+            local items = mod.items()
+            local lastDevice = mod.lastDevice()
+            local lastUnit = mod.lastUnit()
+
+
+            local theDevice = items[lastDevice]
+            local theUnit = theDevice and theDevice[lastUnit]
+            local theApp = theUnit and theUnit[app]
+            local theBank = theApp and theApp[bank]
+            local theButton = theBank and theBank[button]
+            local theAction = theButton and theButton[actionType]
+
+            local snippetID = theAction and theAction.action and theAction.action.id
+
+            if snippetID then
+                local snippets = copy(mod._scriptingPreferences.snippets())
+
+                if not snippets[snippetID] then
+                    --------------------------------------------------------------------------------
+                    -- This Snippet doesn't exist in the Snippets Preferences, so it must have
+                    -- been deleted or imported through one of the Control Surface panels.
+                    -- It will be reimported into the Snippets Preferences.
+                    --------------------------------------------------------------------------------
+                    snippets[snippetID] = {
+                        ["code"] = theAction.action.code
+                    }
+                end
+
+                --------------------------------------------------------------------------------
+                -- Change the selected Snippet:
+                --------------------------------------------------------------------------------
+                for label, _ in pairs(snippets) do
+                    if label == snippetID then
+                        snippets[label].selected = true
+                    else
+                        snippets[label].selected = false
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Write Preferences to disk:
+                --------------------------------------------------------------------------------
+                mod._scriptingPreferences.snippets(snippets)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Open the Scripting Preferences Panel:
+            --------------------------------------------------------------------------------
+            mod._scriptingPreferences._manager.lastTab("scripting")
+            mod._scriptingPreferences._manager.selectPanel("scripting")
+            mod._scriptingPreferences._manager.show()
+        elseif callbackType == "examples" then
+            --------------------------------------------------------------------------------
+            -- Examples Button:
+            --------------------------------------------------------------------------------
+            execute('open "' .. SNIPPET_HELP_URL .. '"')
         elseif callbackType == "changeDeviceUnitApplicationBank" then
             --------------------------------------------------------------------------------
             -- Change Device/Unit/Application/Bank:
@@ -901,16 +1027,10 @@ local function streamDeckPanelCallback(id, params)
 
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
-            -- Icon Clicked:
+            -- Icon Drop Zone Clicked:
             --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
-            local app = params["application"]
-            local bank = params["bank"]
-            local button = params["button"]
-
             if not doesDirectoryExist(mod.lastIconPath()) then
-                mod.lastIconPath(mod.defaultIconPath())
+                mod.lastIconPath(mod.defaultIconPath)
             end
 
             local result = chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.lastIconPath(), true, false, false, mod.supportedExtensions, true)
@@ -923,80 +1043,39 @@ local function streamDeckPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 mod.lastIconPath(removeFilenameFromPath(path))
 
-                local icon = imageFromPath(path)
+                local appInfo = infoForBundlePath(path)
+                local bundleID = appInfo and appInfo.CFBundleIdentifier
+                local icon = imageFromPath(path) or imageFromAppBundle(bundleID)
                 if icon then
-                    local genericPath = iconPath .. "Generic/Ionicons"
-                    local touchBarPath = iconPath .. "Touch Bar"
-                    if string.sub(path, 1, string.len(genericPath)) == genericPath or string.sub(path, 1, string.len(touchBarPath)) == touchBarPath then
+                    local encodedIcon = mod.processEncodedIcon(icon)
+                    if encodedIcon then
                         --------------------------------------------------------------------------------
-                        -- One of our pre-supplied images:
+                        -- Save Icon to file:
                         --------------------------------------------------------------------------------
-                        local originalImage = imageFromPath(path):template(false)
-                        if originalImage then
+                        local app = params["application"]
+                        local bank = params["bank"]
 
-                            local a = canvas.new{x = 0, y = 0, w = 50, h = 50 }
-                            a[1] = {
-                              type="image",
-                              image = originalImage,
-                              frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
-                            }
-                            a[2] = {
-                              type = "rectangle",
-                              action = "fill",
-                              fillColor = { white = 1 },
-                              compositeRule = "sourceAtop",
-                            }
-                            local newImage = a:imageFromCanvas()
+                        local button = mod.lastButton()
 
-                            local encodedIcon = newImage:encodeAsURLString()
+                        mod.setItem(app, bank, button, "icon", encodedIcon)
 
-                            local items = mod.items()
-
-                            if not items[device] then items[device] = {} end
-                            if not items[device][unit] then items[device][unit] = {} end
-                            if not items[device][unit][app] then items[device][unit][app] = {} end
-                            if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-                            if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
-
-                            items[device][unit][app][bank][button].icon = encodedIcon
-
-                            mod.items(items)
-
-                            updateUI(params)
-                        else
-                            failed = true
+                        --------------------------------------------------------------------------------
+                        -- Write to history:
+                        --------------------------------------------------------------------------------
+                        local iconHistory = mod.iconHistory()
+                        while (#(iconHistory) >= 5) do
+                            table.remove(iconHistory,1)
                         end
+                        local filename = getFilenameFromPath(path, true)
+                        table.insert(iconHistory, {filename, encodedIcon})
+                        mod.iconHistory(iconHistory)
+
+                        --------------------------------------------------------------------------------
+                        -- Update the UI:
+                        --------------------------------------------------------------------------------
+                        updateUI()
                     else
-                        --------------------------------------------------------------------------------
-                        -- An image from outside the pre-supplied image path:
-                        --------------------------------------------------------------------------------
-                        local a = canvas.new{x = 0, y = 0, w = 50, h = 50 }
-                        a[1] = {
-                          type="image",
-                          image = icon,
-                          frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
-                        }
-                        local newImage = a:imageFromCanvas()
-
-                        local encodedIcon = newImage:encodeAsURLString()
-                        if encodedIcon then
-
-                            local items = mod.items()
-
-                            if not items[device] then items[device] = {} end
-                            if not items[device][unit] then items[device][unit] = {} end
-                            if not items[device][unit][app] then items[device][unit][app] = {} end
-                            if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-                            if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
-
-                            items[device][unit][app][bank][button].icon = encodedIcon
-
-                            mod.items(items)
-
-                            updateUI(params)
-                        else
-                            failed = true
-                        end
+                        failed = true
                     end
                 else
                     failed = true
@@ -1004,48 +1083,115 @@ local function streamDeckPanelCallback(id, params)
                 if failed then
                     webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
                 end
-            else
-                --------------------------------------------------------------------------------
-                -- Clear Icon:
-                --------------------------------------------------------------------------------
-                local items = mod.items()
-
-                if not items[device] then items[device] = {} end
-                if not items[device][unit] then items[device][unit] = {} end
-                if not items[device][unit][app] then items[device][unit][app] = {} end
-                if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-                if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
-
-                items[device][unit][app][bank][button].icon = nil
-
-                mod.items(items)
-
-                updateUI(params)
             end
+
         elseif callbackType == "updateIcon" then
             --------------------------------------------------------------------------------
-            -- Update Icon:
+            -- Update Icon (by drag and drop):
             --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
             local app = params["application"]
             local bank = params["bank"]
-            local button = params["button"]
+            local button = params["button"] or mod.lastButton()
             local icon = params["icon"]
 
+            mod.setItem(app, bank, button, "icon", icon)
+
+            updateUI()
+        elseif callbackType == "dropAndDrop" then
+            --------------------------------------------------------------------------------
+            -- Drag & Drop:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+
+            local source = params["source"]
+            local destination = params["destination"]
+
+            --------------------------------------------------------------------------------
+            -- Swap controls:
+            --------------------------------------------------------------------------------
             local items = mod.items()
+            local lastDevice = mod.lastDevice()
+            local lastUnit = mod.lastUnit()
 
-            if not items[device] then items[device] = {} end
-            if not items[device][unit] then items[device][unit] = {} end
-            if not items[device][unit][app] then items[device][unit][app] = {} end
-            if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
-            if not items[device][unit][app][bank][button] then items[device][unit][app][bank][button] = {} end
 
-            items[device][unit][app][bank][button].icon = icon
+            if not items[lastDevice] then                               items[lastDevice] = {} end
+            if not items[lastDevice][lastUnit] then                     items[lastDevice][lastUnit] = {} end
+            if not items[lastDevice][lastUnit][app] then                items[lastDevice][lastUnit][app] = {} end
+            if not items[lastDevice][lastUnit][app][bank] then          items[lastDevice][lastUnit][app][bank] = {} end
+
+            local destinationData = items[lastDevice][lastUnit][app][bank][destination] or {}
+            local sourceData = items[lastDevice][lastUnit][app][bank][source] or {}
+
+            local a = copy(destinationData)
+            local b = copy(sourceData)
+
+            items[lastDevice][lastUnit][app][bank][source] = a
+            items[lastDevice][lastUnit][app][bank][destination] = b
 
             mod.items(items)
 
-            updateUI(params)
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI()
+
+        elseif callbackType == "iconHistory" then
+            --------------------------------------------------------------------------------
+            -- Icon History:
+            --------------------------------------------------------------------------------
+            local menu = {}
+            local iconHistory = mod.iconHistory()
+
+            if #iconHistory > 0 then
+                for i=#iconHistory, 1, -1 do
+                    local item = iconHistory[i]
+                    table.insert(menu,
+                        {
+                            title = item[1],
+                            fn = function()
+                                local app = params["application"]
+                                local bank = params["bank"]
+                                local button = mod.lastButton()
+
+                                local encodedIcon = mod.processEncodedIcon(item[2])
+                                mod.setItem(app, bank, button, "icon", encodedIcon)
+
+                                --------------------------------------------------------------------------------
+                                -- Update the UI:
+                                --------------------------------------------------------------------------------
+                                updateUI()
+                            end,
+                        })
+                end
+            end
+
+            if next(menu) == nil then
+                table.insert(menu,
+                    {
+                        title = "Empty",
+                        disabled = true,
+                    })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
+
+        elseif callbackType == "clearIcon" then
+            --------------------------------------------------------------------------------
+            -- Clear Icon:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local button = mod.lastButton()
+
+            mod.setItem(app, bank, button, "icon", nil)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI()
         elseif callbackType == "changeLabel" then
             --------------------------------------------------------------------------------
             -- Change Label:
@@ -1195,58 +1341,207 @@ local function streamDeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Show Context Menu:
             --------------------------------------------------------------------------------
+            local items = mod.items()
+
             local app = params["application"]
             local bank = params["bank"]
+            local button = params["button"]
 
-            local items = mod.items()
             local lastDevice = mod.lastDevice()
+            local lastUnit = mod.lastUnit()
 
             local pasteboard = mod.pasteboard()
 
-            local pasteboardContents = pasteboard[controlType]
-
             local menu = {}
+
+            local theDevice = items[lastDevice]
+            local theUnit = theDevice and theDevice[lastUnit]
+            local theApp = theUnit and theUnit[app]
+            local theBank = theApp and theApp[bank]
+            local theButton = theBank and theBank[button]
+
+            log.df("lastDevice: %s", lastDevice)
+            log.df("lastUnit: %s", lastUnit)
+            log.df("app: %s", app)
+            log.df("bank: %s", bank)
+            log.df("button: %s", button)
+            log.df("theButton: %s", theButton)
 
             table.insert(menu, {
                 title = i18n("copy"),
+                disabled = not theButton,
                 fn = function()
                     --------------------------------------------------------------------------------
                     -- Copy:
                     --------------------------------------------------------------------------------
-                    if items[lastDevice] and items[lastDevice][app] and items[lastDevice][app][bank] and items[lastDevice][app][bank][controlType] and items[lastDevice][app][bank][controlType][bid] then
-                        pasteboard[controlType] = copy(items[lastDevice][app][bank][controlType][bid])
-                        self.pasteboard(pasteboard)
-                    end
+                    pasteboard = copy(theButton)
+                    mod.pasteboard(pasteboard)
                 end
             })
 
             table.insert(menu, {
                 title = i18n("paste"),
-                disabled = not pasteboardContents,
+                disabled = not pasteboard,
                 fn = function()
                     --------------------------------------------------------------------------------
                     -- Paste:
                     --------------------------------------------------------------------------------
-                    if not items[lastDevice][app] then items[lastDevice][app] = {} end
-                    if not items[lastDevice][app][bank] then items[lastDevice][app][bank] = {} end
-                    if not items[lastDevice][app][bank][controlType] then items[lastDevice][app][bank][controlType] = {} end
-
-                    items[lastDevice][app][bank][controlType][bid] = copy(pasteboardContents)
-
-                    self.items(items)
-
-                    self:updateUI()
-
-                    --------------------------------------------------------------------------------
-                    -- Refresh the hardware:
-                    --------------------------------------------------------------------------------
-                    self:refreshDevice()
+                    mod.setItem(app, bank, button, copy(pasteboard))
+                    updateUI()
                 end
             })
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.absolutePosition(), true)
+        elseif callbackType == "updateIconLabel" then
+            --------------------------------------------------------------------------------
+            -- Delay screen and UI updates to avoid lag when the user's typing:
+            --------------------------------------------------------------------------------
+            delayedFn = function()
+                --------------------------------------------------------------------------------
+                -- Write to file:
+                --------------------------------------------------------------------------------
+                local device = params["device"]
+                local unit = params["unit"]
+                local app = params["application"]
+                local bank = params["bank"]
+                local value = params["value"]
+
+                local button = mod.lastButton()
+
+                mod.setItem(app, bank, button, "label", value)
+
+                --------------------------------------------------------------------------------
+                -- Generate encoded icon label:
+                --------------------------------------------------------------------------------
+                local encodedImg = ""
+                if value and trim(value) ~= "" then
+                    encodedImg = mod.buildIconFromLabel(params)
+                end
+
+                mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
+
+                updateUI()
+            end
+
+            if not mod.iconLabelDelayed then
+                mod.iconLabelDelayed = delayed.new(ICON_LABEL_UPDATE_DELAY, function() delayedFn() end)
+            end
+
+            mod.iconLabelDelayed:start()
+        elseif callbackType == "updateFontSize" then
+            --------------------------------------------------------------------------------
+            -- Update Font Size:
+            --------------------------------------------------------------------------------
+            local device = params["device"]
+            local unit = params["unit"]
+            local app = params["application"]
+            local bank = params["bank"]
+            local value = params["value"]
+
+            local button = mod.lastButton()
+
+            mod.setItem(app, bank, button, "fontSize", value)
+
+            --------------------------------------------------------------------------------
+            -- Update encoded icon label:
+            --------------------------------------------------------------------------------
+            local encodedImg = ""
+            if value and trim(value) ~= "" then
+                encodedImg = mod.buildIconFromLabel(params)
+            end
+
+            mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            updateUI()
+        elseif callbackType == "updateFontColor" then
+            --------------------------------------------------------------------------------
+            -- Update Font Color:
+            --------------------------------------------------------------------------------
+            local device = params["device"]
+            local unit = params["unit"]
+            local app = params["application"]
+            local bank = params["bank"]
+            local value = params["value"]
+
+            local button = mod.lastButton()
+
+            mod.setItem(app, bank, button, "fontColor", value)
+
+            --------------------------------------------------------------------------------
+            -- Update encoded icon label:
+            --------------------------------------------------------------------------------
+            local encodedImg = ""
+            if value and trim(value) ~= "" then
+                encodedImg = mod.buildIconFromLabel(params)
+            end
+
+            mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            updateUI()
+        elseif callbackType == "selectFont" then
+            --------------------------------------------------------------------------------
+            -- Select a font:
+            --------------------------------------------------------------------------------
+            if not mod.fontChooser then
+                local completionFn = function(result)
+                    if result then
+                        local value = result.id
+
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local app = params["application"]
+                        local bank = params["bank"]
+                        local button = mod.lastButton()
+
+                        mod.setItem(app, bank, button, "font", value)
+
+                        --------------------------------------------------------------------------------
+                        -- Update encoded icon label:
+                        --------------------------------------------------------------------------------
+                        local encodedImg = ""
+                        if value and trim(value) ~= "" then
+                            encodedImg = mod.buildIconFromLabel(params)
+                        end
+
+                        mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        updateUI()
+                    end
+                end
+
+                local fontNames = styledtext.fontNames()
+
+                local choices = {}
+                for _, v in pairs(fontNames) do
+                    if string.sub(v, 1, 1) ~= "." then
+                        local fontName = styledtext.new(v, {
+                            font = { name = v, size = 18 },
+                            color = { white = 1, alpha = 1 },
+                        })
+                        table.insert(choices, {
+                            ["text"] = fontName,
+                            ["id"] = v,
+                        })
+                    end
+                end
+
+                mod.fontChooser = chooser.new(completionFn)
+                    :bgDark(true)
+                    :choices(choices)
+            end
+
+            mod.fontChooser:show()
         elseif callbackType == "copyDevice" then
             --------------------------------------------------------------------------------
             -- Copy Device:
@@ -1620,6 +1915,45 @@ local function streamDeckPanelCallback(id, params)
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.absolutePosition(), true)
+        elseif callbackType == "resetControl" then
+            --------------------------------------------------------------------------------
+            -- Reset Control:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local button = mod.lastButton()
+            mod.setItem(app, bank, button, {})
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI()
+        elseif callbackType == "copyControlToAllBanks" then
+            --------------------------------------------------------------------------------
+            -- Copy Control to All Banks:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+
+            local lastDevice = mod.lastDevice()
+            local lastUnit = mod.lastUnit()
+
+            local app = params["application"]
+            local bank = params["bank"]
+
+            local lastButton = mod.lastButton()
+
+            local theDevice = items[lastDevice]
+            local theUnit = theDevice and theDevice[lastUnit]
+            local theApp = theUnit and theUnit[app]
+            local theBank = theApp and theApp[bank]
+            local theButton = theBank and theBank[lastButton] or {}
+
+            if theButton then
+                local data = copy(theButton)
+                for b=1, mod.numberOfBanks do
+                    mod.setItem(app, tostring(b), button, data)
+                end
+            end
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -1635,10 +1969,11 @@ local plugin = {
     id              = "core.streamdeck.prefs",
     group           = "core",
     dependencies    = {
-        ["core.controlsurfaces.manager"]    = "manager",
-        ["core.streamdeck.manager"]         = "sd",
-        ["core.action.manager"]             = "actionmanager",
-        ["core.application.manager"]        = "appmanager",
+        ["core.controlsurfaces.manager"]        = "manager",
+        ["core.streamdeck.manager"]             = "sd",
+        ["core.action.manager"]                 = "actionmanager",
+        ["core.application.manager"]            = "appmanager",
+        ["core.preferences.panels.scripting"]   = "scriptingPreferences",
     }
 }
 
@@ -1646,18 +1981,20 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
-    mod._appmanager     = deps.appmanager
-    mod._sd             = deps.sd
-    mod._manager        = deps.manager
-    mod._webviewLabel   = deps.manager.getLabel()
-    mod._actionmanager  = deps.actionmanager
-    mod._env            = env
+    mod._appmanager             = deps.appmanager
+    mod._sd                     = deps.sd
+    mod._manager                = deps.manager
+    mod._webviewLabel           = deps.manager.getLabel()
+    mod._actionmanager          = deps.actionmanager
+    mod._env                    = env
 
-    mod.items           = deps.sd.items
-    mod.enabled         = deps.sd.enabled
+    mod.items                   = deps.sd.items
+    mod.enabled                 = deps.sd.enabled
 
-    mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
-    mod.numberOfDevices = deps.manager.NUMBER_OF_DEVICES
+    mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
+    mod.numberOfDevices         = deps.manager.NUMBER_OF_DEVICES
+
+    mod._scriptingPreferences   = deps.scriptingPreferences
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -1668,7 +2005,7 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 1015,
+        height          = 1000,
     })
         :addHeading(1, i18n("streamDeck"))
         :addContent(2, [[

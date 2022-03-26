@@ -441,3 +441,65 @@ input[type="color"]::-webkit-color-swatch {
 .touchButtonDropZone::-webkit-file-upload-button {
   visibility: hidden;
 }
+
+/* User Interfaces */
+
+#streamdeckOriginalUI {
+    display: inline-table;
+    background-color: black;
+}
+
+#streamdeckMiniUI {
+    display: inline-table;
+    background-color: black;
+}
+
+#streamdeckXLUI {
+    display: inline-table;
+    background-color: black;
+}
+
+#streamdeckOriginalUI td {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 2px #aaa solid;
+    background: #222;
+    overflow: none;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    background-size:contain;
+}
+
+#streamdeckMiniUI td {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 2px #aaa solid;
+    background: #222;
+    overflow: none;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    background-size:contain;
+}
+
+#streamdeckXLUI td {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 2px #aaa solid;
+    background: #222;
+    overflow: none;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    background-size:contain;
+}
