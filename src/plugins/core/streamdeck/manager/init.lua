@@ -48,7 +48,7 @@ mod.lastBank = config.prop("streamDeck.preferences.lastBank", "1")
 --- A table containing `hs.timer` objects.
 mod.repeatTimers = {}
 
---- plugins.core.streamdeck.prefs.snippetsRefreshFrequency <cp.prop: boolean>
+--- plugins.core.streamdeck.prefs.previewSelectedApplicationAndBankOnHardware <cp.prop: boolean>
 --- Field
 --- Should we preview the selected application and bank on hardware?
 mod.previewSelectedApplicationAndBankOnHardware = config.prop("streamDeck.preferences.previewSelectedApplicationAndBankOnHardware", false)
