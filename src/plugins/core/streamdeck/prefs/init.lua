@@ -37,7 +37,6 @@ local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
-local isImage                   = tools.isImage
 local mergeTable                = tools.mergeTable
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
@@ -1404,8 +1403,6 @@ local function streamDeckPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Write to file:
                 --------------------------------------------------------------------------------
-                local device = params["device"]
-                local unit = params["unit"]
                 local app = params["application"]
                 local bank = params["bank"]
                 local value = params["value"]
@@ -1436,8 +1433,6 @@ local function streamDeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Update Font Size:
             --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
             local app = params["application"]
             local bank = params["bank"]
             local value = params["value"]
@@ -1464,8 +1459,6 @@ local function streamDeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Update Font Color:
             --------------------------------------------------------------------------------
-            local device = params["device"]
-            local unit = params["unit"]
             local app = params["application"]
             local bank = params["bank"]
             local value = params["value"]
@@ -1497,8 +1490,6 @@ local function streamDeckPanelCallback(id, params)
                     if result then
                         local value = result.id
 
-                        local device = params["device"]
-                        local unit = params["unit"]
                         local app = params["application"]
                         local bank = params["bank"]
                         local button = mod.lastButton()

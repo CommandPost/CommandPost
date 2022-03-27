@@ -617,11 +617,23 @@ function mod.stop()
     --------------------------------------------------------------------------------
     -- Stop any stray repeat timers:
     --------------------------------------------------------------------------------
-    for _, repeatTimer in ipairs(mod.repeatTimers) do
-        repeatTimer:stop()
-        repeatTimer = nil
+    for id, _ in ipairs(mod.repeatTimers) do
+        mod.repeatTimer[id]:stop()
+        mod.repeatTimer[id] = nil
     end
     mod.repeatTimers = {}
+
+    --------------------------------------------------------------------------------
+    -- Black out all the icons:
+    --------------------------------------------------------------------------------
+    for deviceType, devices in pairs(mod.devices) do
+        for _, device in pairs(devices) do
+            local buttonCount = mod.numberOfButtons[deviceType]
+            for buttonID=1, buttonCount do
+                device:setButtonImage(buttonID, blackIcon)
+            end
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Kill any devices:
