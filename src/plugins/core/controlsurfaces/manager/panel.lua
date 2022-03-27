@@ -1,6 +1,6 @@
---- === plugins.core.preferences.manager.panel ===
+--- === plugins.core.controlsurfaces.manager.panel ===
 ---
---- CommandPost Preferences Panel.
+--- CommandPost Control Surfaces Panel.
 
 local require = require
 
@@ -13,14 +13,16 @@ local uuid    = host.uuid
 
 local panel = {}
 
---- plugins.core.preferences.manager.panel.new(priority, id) -> cp.core.preferences.manager.panel
+--- plugins.core.controlsurfaces.manager.panel.new(params, manager) -> cp.core.controlsurfaces.manager.panel
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
 --- Parameters:
---- * priority  - Defines the order in which the panel appears.
---- * id        - The unique ID for the panel.
---- * webview   - The webview the panel is attached to.
+---  * params - A table of parameters
+---  * manager - The manager
+---
+--- Returns:
+---  * The new object.
 function panel.new(params, manager)
     local o = {
         id          =   params.id,
@@ -30,6 +32,8 @@ function panel.new(params, manager)
         tooltip     =   params.tooltip,
         height      =   params.height,
         closeFn     =   params.closeFn,
+        group       =   params.group,
+        groupMaster =   params.groupMaster,
         manager     =   manager,
         _handlers   =   {},
         _uiItems    =   {},
@@ -39,7 +43,7 @@ function panel.new(params, manager)
     return o
 end
 
---- plugins.core.preferences.manager.panel:getToolbarItem() -> table
+--- plugins.core.controlsurfaces.manager.panel:getToolbarItem() -> table
 --- Method
 --- Gets the Tool Bar as a table
 ---
@@ -102,7 +106,7 @@ local function getClass(params)
     return class
 end
 
---- plugins.core.preferences.manager.panel:addContent(priority, content[, escaped]) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addContent(priority, content[, escaped]) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
@@ -125,7 +129,7 @@ function panel:addContent(priority, content, escaped)
     return self
 end
 
---- plugins.core.preferences.manager.panel:addHandler(event, id, handlerFn, keys) -> none
+--- plugins.core.controlsurfaces.manager.panel:addHandler(event, id, handlerFn, keys) -> none
 --- Method
 --- Gets a handler from an Handler ID
 ---
@@ -178,7 +182,7 @@ function panel:addHandler(event, id, handlerFn, keys)
     self.manager.addHandler(id, handlerFn)
 end
 
---- plugins.core.preferences.manager.panel:addParagraph(content[, escaped[, class]]) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addParagraph(content[, escaped[, class]]) -> panel
 --- Method
 --- Adds a Paragraph to the panel
 ---
@@ -193,7 +197,7 @@ function panel:addParagraph(priority, content, escaped, class)
     return self:addContent(priority, html.p { class=getClass({class=class}) } (content, escaped))
 end
 
---- plugins.core.preferences.manager.panel:addCheckbox(priority, params) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addCheckbox(priority, params) -> panel
 --- Method
 --- Adds a checkbox to the panel with the specified `priority` and `params`.
 ---
@@ -231,7 +235,7 @@ function panel:addCheckbox(priority, params)
 
 end
 
---- plugins.core.preferences.manager.panel:addHeading(text) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addHeading(text) -> panel
 --- Method
 --- Adds a heading to the panel
 ---
@@ -244,7 +248,7 @@ function panel:addHeading(priority, text, level)
     return self:addContent(priority, ui.heading({text=text, level=level, class="uiItem"}))
 end
 
---- plugins.core.preferences.manager.panel:addTextbox(params) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addTextbox(params) -> panel
 --- Method
 --- Adds a text-box to the panel
 ---
@@ -271,7 +275,7 @@ function panel:addTextbox(priority, params)
     return self:addContent(priority, content)
 end
 
---- plugins.core.preferences.manager.panel:addPassword(params) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addPassword(params) -> panel
 --- Method
 --- Adds a password text-box to the panel.
 ---
@@ -298,7 +302,7 @@ function panel:addPassword(priority, params)
     return self:addContent(priority, content)
 end
 
---- plugins.core.preferences.manager.panel:addButton(params) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addButton(params) -> panel
 --- Method
 --- Adds a button to the panel.
 ---
@@ -327,7 +331,7 @@ function panel:addButton(priority, params)
     return self:addContent( priority, content )
 end
 
---- plugins.core.preferences.manager.panel:addSelect(params) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addSelect(params) -> panel
 --- Method
 --- Adds a select to the panel.
 ---
