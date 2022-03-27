@@ -588,7 +588,7 @@ end
 ---  * None
 function mod.hide()
     if mod._canvas then
-        mod._canvas:delete()
+        mod._canvas:hide()
         mod._canvas = nil
     end
 end
