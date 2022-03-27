@@ -874,6 +874,7 @@ function plugin.init(deps, env)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
+        group           = "loupedeck",
         priority        = 2033,
         id              = "loupedeckplus",
         label           = i18n("loupedeckPlus"),

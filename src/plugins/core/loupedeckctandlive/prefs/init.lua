@@ -255,6 +255,7 @@ function mod.new(deviceType)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     o.panel             =  mod._manager.addPanel({
+        group           = "loupedeck",
         priority        = o.priority,
         id              = o.id,
         label           = o.label,
