@@ -4,29 +4,69 @@
 
 local require = require
 
-local log                   = require "hs.logger".new "streamDeck"
+local log                       = require "hs.logger".new "streamDeck"
 
-local application           = require "hs.application"
-local appWatcher            = require "hs.application.watcher"
-local canvas                = require "hs.canvas"
-local fnutils               = require "hs.fnutils"
-local image                 = require "hs.image"
-local streamdeck            = require "hs.streamdeck"
+local application               = require "hs.application"
+local appWatcher                = require "hs.application.watcher"
+local canvas                    = require "hs.canvas"
+local eventtap                  = require "hs.eventtap"
+local fnutils                   = require "hs.fnutils"
+local image                     = require "hs.image"
+local streamdeck                = require "hs.streamdeck"
+local timer                     = require "hs.timer"
 
-local dialog                = require "cp.dialog"
-local i18n                  = require "cp.i18n"
-local tools                 = require "cp.tools"
+local config                    = require "cp.config"
+local dialog                    = require "cp.dialog"
+local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
+local tools                     = require "cp.tools"
 
-local config                = require "cp.config"
-local json                  = require "cp.json"
-
-local displayNotification   = dialog.displayNotification
-local doesFileExist         = tools.doesFileExist
-local imageFromPath         = image.imageFromPath
-local imageFromURL          = image.imageFromURL
-local spairs                = tools.spairs
+local displayNotification       = dialog.displayNotification
+local doesFileExist             = tools.doesFileExist
+local doEvery                   = timer.doEvery
+local imageFromPath             = image.imageFromPath
+local imageFromURL              = image.imageFromURL
+local isImage                   = tools.isImage
+local keyRepeatInterval         = eventtap.keyRepeatInterval
+local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
+local spairs                    = tools.spairs
 
 local mod = {}
+
+--- plugins.core.streamdeck.manager.lastApplication <cp.prop: string>
+--- Field
+--- Last Application used in the Preferences Panel.
+mod.lastApplication = config.prop("streamDeck.preferences.lastApplication", "All Applications")
+
+--- plugins.core.streamdeck.manager.lastApplication <cp.prop: string>
+--- Field
+--- Last Bank used in the Preferences Panel.
+mod.lastBank = config.prop("streamDeck.preferences.lastBank", "1")
+
+--- plugins.core.streamdeck.manager.repeatTimers -> table
+--- Variable
+--- A table containing `hs.timer` objects.
+mod.repeatTimers = {}
+
+--- plugins.core.streamdeck.prefs.snippetsRefreshFrequency <cp.prop: boolean>
+--- Field
+--- Should we preview the selected application and bank on hardware?
+mod.previewSelectedApplicationAndBankOnHardware = config.prop("streamDeck.preferences.previewSelectedApplicationAndBankOnHardware", false)
+
+--- plugins.core.streamdeck.prefs.snippetsRefreshFrequency <cp.prop: string>
+--- Field
+--- How often snippets are refreshed.
+mod.snippetsRefreshFrequency = config.prop("streamDeck.preferences.snippetsRefreshFrequency", "1")
+
+--- plugins.core.streamdeck.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- Field
+--- Enable or disable the automatic switching of applications.
+mod.automaticallySwitchApplications = config.prop("streamDeck.automaticallySwitchApplications", false)
+
+--- plugins.core.streamdeck.manager.lastBundleID <cp.prop: string>
+--- Field
+--- The last Bundle ID.
+mod.lastBundleID = config.prop("streamDeck.lastBundleID", "All Applications")
 
 -- defaultLayoutPath -> string
 -- Variable
@@ -74,6 +114,15 @@ mod.numberOfButtons = {
     ["XL"] = 32,
 }
 
+-- plugins.core.streamdeck.manager.imageSize -> table
+-- Variable
+-- Table of Stream Deck Screen Sizes:
+mod.imageSize = {
+    ["Mini"] = 80,
+    ["Original"] = 72,
+    ["XL"] = 96,
+}
+
 -- imageHolder -> hs.canvas
 -- Constant
 -- Canvas used to store the blackIcon.
@@ -88,6 +137,78 @@ imageHolder[1] = {
 -- Constant
 -- A black icon
 local blackIcon = imageHolder:imageFromCanvas()
+
+--- plugins.core.streamdeck.manager.getSnippetImage(device, buttonData) -> string
+--- Function
+--- Generates the Preference Panel HTML Content.
+---
+--- Parameters:
+---  * device - The device name as a string.
+---  * buttonData - A table of button data.
+---
+--- Returns:
+---  * An encoded image as a string
+function mod.getSnippetImage(device, buttonData)
+    --------------------------------------------------------------------------------
+    -- Handle Snippets:
+    --------------------------------------------------------------------------------
+    local widthAndHeight = mod.imageSize[device]
+    local currentEncodedIcon
+    local currentSnippet = buttonData and buttonData.snippetAction
+    if currentSnippet and currentSnippet.action then
+        local code = currentSnippet.action.code
+        if code then
+            --------------------------------------------------------------------------------
+            -- Load Snippet from Snippet Preferences if it exists:
+            --------------------------------------------------------------------------------
+            local snippetID = currentSnippet.action.id
+            local snippets = mod._scriptingPreferences.snippets()
+            if snippets[snippetID] then
+                code = snippets[snippetID].code
+            end
+
+            local successful, result = pcall(load(code))
+            if successful and isImage(result) then
+                local size = result:size()
+                if size.w == widthAndHeight and size.h == widthAndHeight then
+                    --------------------------------------------------------------------------------
+                    -- The generated image is already the correct size:
+                    --------------------------------------------------------------------------------
+                    currentEncodedIcon = result:encodeAsURLString(true)
+                else
+                    --------------------------------------------------------------------------------
+                    -- The generated image is not 90x90 so process:
+                    --------------------------------------------------------------------------------
+                    local v = canvas.new{x = 0, y = 0, w = widthAndHeight, h = widthAndHeight }
+
+                    --------------------------------------------------------------------------------
+                    -- Black Background:
+                    --------------------------------------------------------------------------------
+                    v[1] = {
+                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                        fillColor = { alpha = 1, hex = "#000000" },
+                        type = "rectangle",
+                    }
+
+                    --------------------------------------------------------------------------------
+                    -- Icon - Scaled to fit:
+                    --------------------------------------------------------------------------------
+                    v[2] = {
+                      type="image",
+                      image = result,
+                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                    }
+
+                    local fixedImage = v:imageFromCanvas()
+
+                    currentEncodedIcon = fixedImage:encodeAsURLString(true)
+                end
+            end
+        end
+    end
+
+    return currentEncodedIcon
+end
 
 --- plugins.core.streamdeck.manager.getDeviceType(object) -> string
 --- Function
@@ -126,50 +247,117 @@ end
 --- Returns:
 ---  * None
 function mod.buttonCallback(object, buttonID, pressed)
-    if pressed then
-        local serialNumber = object:serialNumber()
-        local deviceType = mod.getDeviceType(object)
-        local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
-        local frontmostApplication = application.frontmostApplication()
-        local bundleID = frontmostApplication:bundleID()
+    local serialNumber = object:serialNumber()
+    local deviceType = mod.getDeviceType(object)
+    local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
-        local activeBanks = mod.activeBanks()
-        local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
+    local frontmostApplication = application.frontmostApplication()
+    local bundleID = frontmostApplication:bundleID()
 
-        --------------------------------------------------------------------------------
-        -- Get layout from preferences file:
-        --------------------------------------------------------------------------------
-        local items = mod.items()
-        local deviceData = items[deviceType] and items[deviceType][deviceID]
+    local activeBanks = mod.activeBanks()
+    local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
 
-        --------------------------------------------------------------------------------
-        -- Revert to "All Applications" if no settings for frontmost app exist:
-        --------------------------------------------------------------------------------
-        if deviceData and not deviceData[bundleID] then
-            bundleID = "All Applications"
-        end
+    --------------------------------------------------------------------------------
+    -- Get layout from preferences file:
+    --------------------------------------------------------------------------------
+    local items = mod.items()
+    local deviceData = items[deviceType] and items[deviceType][deviceID]
 
-        --------------------------------------------------------------------------------
-        -- Ignore if ignored:
-        --------------------------------------------------------------------------------
-        local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
-        if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
-            bundleID = "All Applications"
-        end
+    --------------------------------------------------------------------------------
+    -- Revert to "All Applications" if no settings for frontmost app exist:
+    --------------------------------------------------------------------------------
+    if deviceData and not deviceData[bundleID] then
+        bundleID = "All Applications"
+    end
 
-        buttonID = tostring(buttonID)
+    --------------------------------------------------------------------------------
+    -- Ignore if ignored:
+    --------------------------------------------------------------------------------
+    local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
+    if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
+        bundleID = "All Applications"
+    end
 
-        if items[deviceType] and items[deviceType][deviceID] and items[deviceType][deviceID][bundleID] and items[deviceType][deviceID][bundleID][bankID] and items[deviceType][deviceID][bundleID][bankID][buttonID] then
-            local handlerID = items[deviceType][deviceID][bundleID][bankID][buttonID]["handlerID"]
-            local action = items[deviceType][deviceID][bundleID][bankID][buttonID]["action"]
+    --------------------------------------------------------------------------------
+    -- If not Automatically Switching Applications:
+    --------------------------------------------------------------------------------
+    if not mod.automaticallySwitchApplications() then
+        bundleID = mod.lastBundleID()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Preview Selected Application & Bank on Hardware:
+    --------------------------------------------------------------------------------
+    if mod.previewSelectedApplicationAndBankOnHardware() then
+        bundleID = mod.lastApplication()
+        bankID = mod.lastBank()
+    end
+
+    buttonID = tostring(buttonID)
+
+    local theDevice = items[deviceType]
+    local theUnit = theDevice and theDevice[deviceID]
+    local theApp = theUnit and theUnit[bundleID]
+    local theBank = theApp and theApp[bankID]
+    local theButton = theBank and theBank[buttonID]
+
+    if theButton then
+        local repeatPressActionUntilReleased = theButton.repeatPressActionUntilReleased
+        local repeatID = deviceType .. deviceID .. buttonID
+
+        if pressed then
+            local handlerID = theButton.handlerID
+            local action = theButton.action
             if handlerID and action then
+                --------------------------------------------------------------------------------
+                -- Trigger the press action:
+                --------------------------------------------------------------------------------
                 local handler = mod._actionmanager.getHandler(handlerID)
                 handler:execute(action)
+
+                --------------------------------------------------------------------------------
+                -- Repeat if necessary:
+                --------------------------------------------------------------------------------
+                if repeatPressActionUntilReleased then
+                    mod.repeatTimers[repeatID] = doEvery(keyRepeatInterval(), function()
+                        handler:execute(action)
+                    end)
+                end
+
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- Stop repeating if necessary:
+            --------------------------------------------------------------------------------
+            if repeatPressActionUntilReleased then
+                if mod.repeatTimers[repeatID] then
+                    mod.repeatTimers[repeatID]:stop()
+                    mod.repeatTimers[repeatID] = nil
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Trigger the release action:
+            --------------------------------------------------------------------------------
+            local releaseAction = theButton.releaseAction
+            if releaseAction then
+                local handlerID = releaseAction.handlerID
+                local action = releaseAction.action
+                if handlerID and action then
+                    local handler = mod._actionmanager.getHandler(handlerID)
+                    handler:execute(action)
+                end
             end
         end
     end
+
 end
+
+--- plugins.core.streamdeck.manager.imageCache() -> none
+--- Variable
+--- A cache of images used on the Stream Deck.
+mod.imageCache = {}
 
 --- plugins.core.streamdeck.manager.update() -> none
 --- Function
@@ -181,6 +369,9 @@ end
 --- Returns:
 ---  * None
 function mod.update()
+
+    local containsIconSnippets = false
+
     for deviceType, devices in pairs(mod.devices) do
         for _, device in pairs(devices) do
             --------------------------------------------------------------------------------
@@ -216,10 +407,25 @@ function mod.update()
             end
 
             --------------------------------------------------------------------------------
+            -- If not Automatically Switching Applications:
+            --------------------------------------------------------------------------------
+            if not mod.automaticallySwitchApplications() then
+                bundleID = mod.lastBundleID()
+            end
+
+            --------------------------------------------------------------------------------
             -- Determine bankID:
             --------------------------------------------------------------------------------
             local activeBanks = mod.activeBanks()
             local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
+
+            --------------------------------------------------------------------------------
+            -- Preview Selected Application & Bank on Hardware:
+            --------------------------------------------------------------------------------
+            if mod.previewSelectedApplicationAndBankOnHardware() then
+                bundleID = mod.lastApplication()
+                bankID = mod.lastBank()
+            end
 
             --------------------------------------------------------------------------------
             -- Get bank data:
@@ -232,28 +438,56 @@ function mod.update()
             for buttonID=1, buttonCount do
                 local success = false
                 local buttonData = bankData and bankData[tostring(buttonID)]
+
+                local imageToUse
+
                 if buttonData then
-                    local label = buttonData["label"]
-                    local icon = buttonData["icon"]
-                    if icon then
+                    local label                 = buttonData.label
+                    local icon                  = buttonData.icon
+                    local encodedIconLabel      = buttonData.encodedIconLabel
+
+                    local snippetImage = mod.getSnippetImage(deviceType, buttonData)
+                    if snippetImage then
+                        --------------------------------------------------------------------------------
+                        -- Generate an icon from a Snippet:
+                        --------------------------------------------------------------------------------
+                        local theImage = imageFromURL(snippetImage)
+                        if theImage then
+                            imageToUse = theImage
+                            success = true
+                            containsIconSnippets = true
+                        end
+                    elseif icon then
                         --------------------------------------------------------------------------------
                         -- Draw an icon:
                         --------------------------------------------------------------------------------
-                        icon = imageFromURL(icon)
-                        device:setButtonImage(buttonID, icon)
-                        success = true
+                        local theImage = imageFromURL(icon)
+                        if theImage then
+                            imageToUse = theImage
+                            success = true
+                        end
+                    elseif buttonData.encodedIconLabel then
+                        --------------------------------------------------------------------------------
+                        -- Draw an image from an icon label:
+                        --------------------------------------------------------------------------------
+                        local theImage = imageFromURL(encodedIconLabel)
+                        if theImage then
+                            imageToUse = theImage
+                            success = true
+                        end
                     elseif label then
                         --------------------------------------------------------------------------------
-                        -- Draw a label:
+                        -- Draw a label (only here for legacy reasons):
                         --------------------------------------------------------------------------------
-                        local c = canvas.new{x = 0, y = 0, h = 100, w = 100}
+                        local widthAndHeight = mod.imageSize[device]
+                        local c = canvas.new{x = 0, y = 0, h = widthAndHeight, w = widthAndHeight}
                         c[1] = {
-                            frame = { h = 100, w = 100, x = 0, y = 0 },
+                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
                             fillColor = { hex = "#000000"  },
                             type = "rectangle",
                         }
                         c[2] = {
-                            frame = { h = 100, w = 100, x = 0, y = 0 },
+                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
                             text = label,
                             textAlignment = "left",
                             textColor = { white = 1.0 },
@@ -262,7 +496,7 @@ function mod.update()
                         }
                         local textIcon = c:imageFromCanvas()
 
-                        device:setButtonImage(buttonID, textIcon)
+                        imageToUse = textIcon
                         success = true
                     end
                 end
@@ -270,9 +504,36 @@ function mod.update()
                     --------------------------------------------------------------------------------
                     -- Default to black if no label or icon supplied:
                     --------------------------------------------------------------------------------
-                    device:setButtonImage(buttonID, blackIcon)
+                    imageToUse = blackIcon
+                end
+
+                --------------------------------------------------------------------------------
+                -- Only update the image on the hardware if necessary:
+                --------------------------------------------------------------------------------
+                local cacheID = deviceType .. deviceID .. buttonID
+                if imageToUse ~= mod.imageCache[cacheID] then
+                    device:setButtonImage(buttonID, imageToUse)
+                    mod.imageCache[cacheID] = imageToUse
                 end
             end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Enable or disable the refresh timer:
+    --------------------------------------------------------------------------------
+    if containsIconSnippets then
+        if not mod.refreshTimer then
+            local snippetsRefreshFrequency = tonumber(mod.snippetsRefreshFrequency())
+            mod.refreshTimer = timer.new(snippetsRefreshFrequency, function()
+                mod.update()
+            end)
+        end
+        mod.refreshTimer:start()
+    else
+        if mod.refreshTimer then
+            mod.refreshTimer:stop()
+            mod.refreshTimer = nil
         end
     end
 end
@@ -354,6 +615,27 @@ end
 ---  * None
 function mod.stop()
     --------------------------------------------------------------------------------
+    -- Stop any stray repeat timers:
+    --------------------------------------------------------------------------------
+    for id, _ in ipairs(mod.repeatTimers) do
+        mod.repeatTimer[id]:stop()
+        mod.repeatTimer[id] = nil
+    end
+    mod.repeatTimers = {}
+
+    --------------------------------------------------------------------------------
+    -- Black out all the icons:
+    --------------------------------------------------------------------------------
+    for deviceType, devices in pairs(mod.devices) do
+        for _, device in pairs(devices) do
+            local buttonCount = mod.numberOfButtons[deviceType]
+            for buttonID=1, buttonCount do
+                device:setButtonImage(buttonID, blackIcon)
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
     -- Kill any devices:
     --------------------------------------------------------------------------------
     for deviceType, devices in pairs(mod.devices) do
@@ -369,6 +651,11 @@ function mod.stop()
         mod._appWatcher:stop()
         mod._appWatcher = nil
     end
+
+    --------------------------------------------------------------------------------
+    -- Empty the cache:
+    --------------------------------------------------------------------------------
+    mod.imageCache = {}
 end
 
 --- plugins.core.streamdeck.manager.enabled <cp.prop: boolean>
@@ -387,10 +674,11 @@ local plugin = {
     group       = "core",
     required    = true,
     dependencies    = {
-        ["core.action.manager"]             = "actionmanager",
-        ["core.commands.global"]            = "global",
-        ["core.application.manager"]        = "appmanager",
-        ["core.controlsurfaces.manager"]    = "csman",
+        ["core.action.manager"]                 = "actionmanager",
+        ["core.commands.global"]                = "global",
+        ["core.application.manager"]            = "appmanager",
+        ["core.controlsurfaces.manager"]        = "csman",
+        ["core.preferences.panels.scripting"]   = "scriptingPreferences",
     }
 }
 
@@ -434,7 +722,11 @@ function plugin.init(deps, env)
 
     local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/streamdeck.icns"))
 
-    mod._actionmanager = deps.actionmanager
+    --------------------------------------------------------------------------------
+    -- Shared dependancies:
+    --------------------------------------------------------------------------------
+    mod._actionmanager          = deps.actionmanager
+    mod._scriptingPreferences   = deps.scriptingPreferences
 
     --------------------------------------------------------------------------------
     -- Setup action:
@@ -577,6 +869,70 @@ function plugin.init(deps, env)
             end
         end)
         :onActionId(function(action) return "streamDeckBank" .. action.id end)
+
+    --------------------------------------------------------------------------------
+    -- Actions to Manually Change Application:
+    --------------------------------------------------------------------------------
+    local applicationmanager = deps.appmanager
+    actionmanager.addHandler("global_streamdeckapplications", "global")
+        :onChoices(function(choices)
+            local applications = applicationmanager.getApplications()
+
+            applications["All Applications"] = {
+                displayName = "All Applications",
+            }
+
+            -- Add User Added Applications from Loupedeck Preferences:
+            local items = mod.items()
+
+            for _, unitObj in pairs(items) do
+                for bundleID, v in pairs(unitObj) do
+                    if not applications[bundleID] and v.displayName then
+                        applications[bundleID] = {
+                            displayName = v.displayName
+                        }
+                    end
+                end
+            end
+
+            for bundleID, item in pairs(applications) do
+                choices
+                    :add(i18n("switchStreamDeckTo") .. " " .. item.displayName)
+                    :subText("")
+                    :params({
+                        bundleID = bundleID,
+                    })
+                    :id("global_streamdeckapplications_switch_" .. bundleID)
+
+                if bundleID ~= "All Applications" then
+                    choices
+                        :add(i18n("switchStreamDeckTo") .. " " .. item.displayName .. " " .. i18n("andLaunch"))
+                        :subText("")
+                        :params({
+                            bundleID = bundleID,
+                            launch = true,
+                        })
+                        :id("global_streamdeckapplications_launch_" .. bundleID)
+                end
+            end
+        end)
+        :onExecute(function(action)
+            local bundleID = action.bundleID
+            mod.lastBundleID(bundleID)
+
+            --------------------------------------------------------------------------------
+            -- Refresh all devices:
+            --------------------------------------------------------------------------------
+            mod.update()
+
+            if action.launch then
+                launchOrFocusByBundleID(bundleID)
+            end
+        end)
+        :onActionId(function(params)
+            return "global_streamdeckapplications_" .. params.bundleID
+        end)
+        :cached(false)
 
     return mod
 end
