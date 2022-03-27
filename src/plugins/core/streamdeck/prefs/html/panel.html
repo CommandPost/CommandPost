@@ -2,6 +2,25 @@
 <style>{(css/streamdeck.css)}</style>
 <script>
 
+	function changeRepeatPressActionUntilReleased() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeRepeatPressActionUntilReleased",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("repeatPressActionUntilReleased").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function examples() {
 		try {
 			var result = {
@@ -609,14 +628,13 @@
 
 <hr />
 
-<table style="text-align: left; vertical-align: text-bottom; padding-top: 10px;">
+<table style="text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px;">
 	<tr>
-		<th style="width: 10px;"></th>
-		<th style="width: 80px;">
+		<th style="width: 67px;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("device") }}: </span>
 		</th>
-		<th style="width: 150px;">
-			<select id="device" style="width: 150px;" onchange="changeDeviceUnitApplicationBank()">
+		<th style="width: 250px;">
+			<select id="device" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
 				<option value="Original" {{ lastDevice == "Original" and "selected" or ""}}>Stream Deck</option>
 				<option value="XL" {{ lastDevice == "XL" and "selected" or ""}}>Stream Deck XL</option>
 				<option value="Mini" {{ lastDevice == "Mini" and "selected" or ""}}>Stream Deck Mini</option>
@@ -625,7 +643,7 @@
 	</tr>
 </table>
 
-<table style="width: 1000px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px">
+<table style="width: 1000px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px;">
 	<tr>
 		<th style=text-align: left;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("unit") }}: </span>
@@ -815,8 +833,6 @@
 								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
 							</td>
 						</tr>
-
-
 
 						<!-- SPACER: -->
 						<tr>

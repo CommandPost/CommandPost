@@ -37,6 +37,7 @@ local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
+local isImage                   = tools.isImage
 local mergeTable                = tools.mergeTable
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
@@ -115,11 +116,6 @@ mod.backgroundColour = config.prop("streamDeck.preferences.backgroundColour", "#
 --- Resize Icons on Import Preference.
 mod.resizeImagesOnImport = config.prop("streamDeck.preferences.resizeImagesOnImport", "100%")
 
---- plugins.core.streamdeck.prefs.snippetsRefreshFrequency <cp.prop: string>
---- Field
---- How often snippets are refreshed.
-mod.snippetsRefreshFrequency = config.prop("streamDeck.preferences.snippetsRefreshFrequency", "1")
-
 --- plugins.core.streamdeck.prefs.lastIconPath <cp.prop: string>
 --- Field
 --- Last icon path.
@@ -144,16 +140,6 @@ mod.lastExportPath = config.prop("streamDeck.preferences.lastExportPath", os.get
 --- Field
 --- Last Import path.
 mod.lastImportPath = config.prop("streamDeck.preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
-
---- plugins.core.streamdeck.prefs.lastApplication <cp.prop: string>
---- Field
---- Last Application used in the Preferences Panel.
-mod.lastApplication = config.prop("streamDeck.preferences.lastApplication", "All Applications")
-
---- plugins.core.streamdeck.prefs.lastApplication <cp.prop: string>
---- Field
---- Last Bank used in the Preferences Panel.
-mod.lastBank = config.prop("streamDeck.preferences.lastBank", "1")
 
 --- plugins.core.streamdeck.prefs.lastDevice <cp.prop: string>
 --- Field
@@ -255,7 +241,6 @@ end
 -- Returns:
 --  * None
 local function updateUI(params)
-
     --------------------------------------------------------------------------------
     -- Get parameters from table or from saved data:
     --------------------------------------------------------------------------------
@@ -269,18 +254,6 @@ local function updateUI(params)
     -- Update the last button:
     --------------------------------------------------------------------------------
     mod.lastButton(button)
-
-    --------------------------------------------------------------------------------
-    -- Debugging:
-    --------------------------------------------------------------------------------
-    --[[
-    log.df("----------------------")
-    log.df("device: %s", device)
-    log.df("unit: %s", unit)
-    log.df("application: %s", app)
-    log.df("bank: %s (%s)", bank, type(bank))
-    log.df("button: %s (%s)", button, type(button))
-    --]]
 
     --------------------------------------------------------------------------------
     -- Update the UI Dropdowns:
@@ -347,21 +320,34 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     local numberOfButtons = mod._sd.numberOfButtons[device]
 
-    --log.df("numberOfButtons: %s", numberOfButtons)
-
     for i=1, numberOfButtons do
         local buttonData = bankData and bankData[tostring(i)]
-        if buttonData and buttonData.icon and buttonData.icon ~= "" then
-            --log.df("update button: %s, device: %s, data: %s", i, device, buttonData.icon)
+        local snippetImage = mod._sd.getSnippetImage(device, buttonData)
+        if snippetImage then
+            --------------------------------------------------------------------------------
+            -- It's an image from a Snippet:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. snippetImage .. [[')";
+            ]] .. "\n"
+        elseif buttonData and buttonData.icon and buttonData.icon ~= "" then
+            --------------------------------------------------------------------------------
+            -- It's an image from a supplied icon:
+            --------------------------------------------------------------------------------
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
             ]] .. "\n"
         elseif buttonData and buttonData.encodedIconLabel and buttonData.encodedIconLabel ~= "" then
+            --------------------------------------------------------------------------------
+            -- It's an image from an icon label:
+            --------------------------------------------------------------------------------
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.encodedIconLabel .. [[')";
             ]] .. "\n"
         else
-            --log.df("resetting image: %s", i)
+            --------------------------------------------------------------------------------
+            -- There's no icon for this button:
+            --------------------------------------------------------------------------------
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "";
             ]] .. "\n"
@@ -382,10 +368,6 @@ local function updateUI(params)
 
     local buttonData = bankData and bankData[button]
     if buttonData then
-        --log.df("We have stuff to populate!")
-        --log.df("buttonData: %s", hs.inspect(buttonData))
-        --log.df("buttonData.icon: %s", buttonData.icon)
-
         pressAction                         = escapeTilda(buttonData.actionTitle)
         releaseAction                       = escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle)
         repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or false
@@ -779,10 +761,9 @@ local function streamDeckPanelCallback(id, params)
                         -- Write to file:
                         --------------------------------------------------------------------------------
                         local encodedIcon = mod.processEncodedIcon(preSuppliedImage)
-                        mod.setItem(app, bank, button, "encodedIcon", encodedIcon)
+                        mod.setItem(app, bank, button, "icon", encodedIcon)
                     end
                 end
-
 
                 --------------------------------------------------------------------------------
                 -- Change the control and update the UI:
@@ -910,6 +891,18 @@ local function streamDeckPanelCallback(id, params)
             -- Examples Button:
             --------------------------------------------------------------------------------
             execute('open "' .. SNIPPET_HELP_URL .. '"')
+        elseif callbackType == "changeRepeatPressActionUntilReleased" then
+            --------------------------------------------------------------------------------
+            -- Update "Repeat Press Action Until Released":
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local button = params["button"] or mod.lastButton()
+            local value = params["value"]
+
+            mod.setItem(app, bank, button, "repeatPressActionUntilReleased", value)
+
+            updateUI()
         elseif callbackType == "changeDeviceUnitApplicationBank" then
             --------------------------------------------------------------------------------
             -- Change Device/Unit/Application/Bank:
@@ -1360,16 +1353,25 @@ local function streamDeckPanelCallback(id, params)
             local theBank = theApp and theApp[bank]
             local theButton = theBank and theBank[button]
 
-            log.df("lastDevice: %s", lastDevice)
-            log.df("lastUnit: %s", lastUnit)
-            log.df("app: %s", app)
-            log.df("bank: %s", bank)
-            log.df("button: %s", button)
-            log.df("theButton: %s", theButton)
+            local isButtonEmpty = next(theButton or {}) == nil
+
+            table.insert(menu, {
+                title = i18n("cut"),
+                disabled = isButtonEmpty,
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Cut:
+                    --------------------------------------------------------------------------------
+                    pasteboard = copy(theButton)
+                    mod.pasteboard(pasteboard)
+                    mod.setItem(app, bank, button, {})
+                    updateUI()
+                end
+            })
 
             table.insert(menu, {
                 title = i18n("copy"),
-                disabled = not theButton,
+                disabled = isButtonEmpty,
                 fn = function()
                     --------------------------------------------------------------------------------
                     -- Copy:
@@ -1951,7 +1953,7 @@ local function streamDeckPanelCallback(id, params)
             if theButton then
                 local data = copy(theButton)
                 for b=1, mod.numberOfBanks do
-                    mod.setItem(app, tostring(b), button, data)
+                    mod.setItem(app, tostring(b), lastButton, data)
                 end
             end
         else
@@ -1988,13 +1990,15 @@ function plugin.init(deps, env)
     mod._actionmanager          = deps.actionmanager
     mod._env                    = env
 
-    mod.items                   = deps.sd.items
-    mod.enabled                 = deps.sd.enabled
+    mod._scriptingPreferences   = deps.scriptingPreferences
 
     mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
     mod.numberOfDevices         = deps.manager.NUMBER_OF_DEVICES
 
-    mod._scriptingPreferences   = deps.scriptingPreferences
+    mod.items                   = deps.sd.items
+    mod.enabled                 = deps.sd.enabled
+    mod.lastApplication         = deps.sd.lastApplication
+    mod.lastBank                = deps.sd.lastBank
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -2039,9 +2043,10 @@ function plugin.init(deps, env)
         :addCheckbox(4,
             {
                 label       = i18n("automaticallySwitchApplications"),
-                checked     = mod.automaticallySwitchApplications,
+                checked     = mod._sd.automaticallySwitchApplications,
                 onchange    = function(_, params)
-                    mod.automaticallySwitchApplications(params.checked)
+                    mod._sd.automaticallySwitchApplications(params.checked)
+                    updateUI()
                 end,
             }
         )
@@ -2051,6 +2056,16 @@ function plugin.init(deps, env)
                 checked     = mod.automaticallyApplyIconFromAction,
                 onchange    = function(_, params)
                     mod.automaticallyApplyIconFromAction(params.checked)
+                end,
+            }
+        )
+        :addCheckbox(5.1,
+            {
+                label       = i18n("previewSelectedApplicationAndBankOnHardware"),
+                checked     = mod._sd.previewSelectedApplicationAndBankOnHardware,
+                onchange    = function(_, params)
+                    mod._sd.previewSelectedApplicationAndBankOnHardware(params.checked)
+                    updateUI()
                 end,
             }
         )
@@ -2098,7 +2113,7 @@ function plugin.init(deps, env)
         :addSelect(7,
             {
                 label       =   i18n("snippetsRefreshFrequency"),
-                value       =   mod.snippetsRefreshFrequency,
+                value       =   mod._sd.snippetsRefreshFrequency,
                 class       =   "snippetsRefreshFrequency restrictRightTopSectionSize",
                 options     =   function()
                                     local options = {}
@@ -2112,14 +2127,12 @@ function plugin.init(deps, env)
                                 end,
                 required    =   true,
                 onchange    =   function(_, params)
-                                    mod.snippetsRefreshFrequency(params.value)
-                                    --[[
-                                    if o.device.refreshTimer then
-                                        o.device.refreshTimer:stop()
-                                        o.device.refreshTimer = nil
-                                        o.device:refresh(tonumber(o.lastDevice()))
+                                    mod._sd.snippetsRefreshFrequency(params.value)
+                                    if mod._sd.refreshTimer then
+                                        mod._sd.refreshTimer:stop()
+                                        mod._sd.refreshTimer = nil
+                                        mod._sd.update()
                                     end
-                                    --]]
                                 end,
             }
         )
