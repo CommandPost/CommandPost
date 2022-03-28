@@ -475,60 +475,6 @@ local function speedEditorPanelCallback(id, params)
                 end
 
                 --------------------------------------------------------------------------------
-                -- If it's a press action, and no icon label already exists:
-                --------------------------------------------------------------------------------
-                if buttonType == "pressAction" then
-                    local items = mod.items()
-                    local lastDevice = mod.lastDevice()
-                    local lastUnit = mod.lastUnit()
-
-                    local iconLabel = items and items[lastDevice]
-                                            and items[lastDevice][lastUnit]
-                                            and items[lastDevice][lastUnit][app]
-                                            and items[lastDevice][lastUnit][app][bank]
-                                            and items[lastDevice][lastUnit][app][bank][button]
-                                            and items[lastDevice][lastUnit][app][bank][button]["label"]
-
-                    if (iconLabel and iconLabel == "") or not iconLabel then
-                        --------------------------------------------------------------------------------
-                        -- Automatically add an icon label based on the action title:
-                        --------------------------------------------------------------------------------
-                        mod.setItem(app, bank, button, "label", actionTitle)
-
-                        --------------------------------------------------------------------------------
-                        -- Generate encoded icon label:
-                        --------------------------------------------------------------------------------
-                        local encodedImg = mod.buildIconFromLabel(params) or ""
-                        mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- If the action contains an image, apply it to the Touch Button (except
-                -- if it's a Snippet Action or if "Automatically Apply Icon From Action" is
-                -- disabled):
-                --------------------------------------------------------------------------------
-                if buttonType ~= "snippetAction" and mod.automaticallyApplyIconFromAction() then
-                    local choices = handler.choices():getChoices()
-                    local preSuppliedImage
-                    for _, v in pairs(choices) do
-                        if tableMatch(v.params, action) then
-                            if v.image then
-                                preSuppliedImage = v.image
-                            end
-                            break
-                        end
-                    end
-                    if preSuppliedImage then
-                        --------------------------------------------------------------------------------
-                        -- Write to file:
-                        --------------------------------------------------------------------------------
-                        local encodedIcon = mod.processEncodedIcon(preSuppliedImage)
-                        mod.setItem(app, bank, button, "icon", encodedIcon)
-                    end
-                end
-
-                --------------------------------------------------------------------------------
                 -- Change the control and update the UI:
                 --------------------------------------------------------------------------------
                 updateUI()
@@ -1484,7 +1430,7 @@ function plugin.init(deps, env)
         label           = i18n("speedEditor"),
         image           = imageFromPath(env:pathToAbsolute("images/speededitor.icns")),
         tooltip         = i18n("speedEditor"),
-        height          = 1000,
+        height          = 960,
     })
         :addHeading(1, i18n("speedEditor"))
         :addContent(2, [[

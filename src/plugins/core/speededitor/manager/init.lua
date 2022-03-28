@@ -543,8 +543,6 @@ function plugin.init(deps, env)
                 end
             end
 
-            log.df("applications: %s", hs.inspect(applications))
-
             for bundleID, item in pairs(applications) do
                 choices
                     :add(i18n("switchSpeedEditorTo") .. " " .. item.displayName)
