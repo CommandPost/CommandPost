@@ -1,0 +1,505 @@
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 21px;
+	height: 21px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
+.bottomButton {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	cursor: default;
+	text-align: center;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  	width: 146px;
+  	font-weight: normal;
+	font-family: -apple-system;
+	font-size: 13px;
+}
+
+.bottomButton:active {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.selected {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.disabled {
+	color: #999!important;
+	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+}
+
+.speedEditorDropdown {
+	width: 200px;
+	float: left;
+}
+
+.speedEditor {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.speedEditor td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sdTip {
+	color: #436694;
+	font-style: italic;
+	padding-top: 5px;
+	display: block;
+	clear: both;
+}
+
+.sdButtonLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 225px;
+}
+
+.sdRowIcon {
+	width: 10%;
+}
+
+.sdRowAction {
+	width: 40%;
+}
+
+.sdRowActionButton {
+	width: 5%;
+}
+
+.sdRowLabel {
+	width: 27%;
+}
+
+.sdResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 200px;
+}
+
+.sdRowOrder {
+	width: 8%;
+}
+
+.speedEditor thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.speedEditor thead tr, .speedEditor tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.speedEditor thead tr {
+	width: calc( 100% - 8px);
+}
+
+.speedEditor tbody {
+	display:block;
+	height: 430px;
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.speedEditorLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
+/*
+.speedEditor tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+*/
+
+.resetStreamDeck {
+	margin: 10px 0px;
+	text-align: center;
+	float: left;
+	width: 200px;
+}
+
+.buttonDisabled {
+	pointer-events:none;
+	opacity: 0.4;
+}
+
+.speedEditorControl {
+	padding-top: 0px;
+	padding-bottom: 3pt;
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+	height: 20px;
+}
+
+.sdActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 350px;
+}
+
+.sdActionButton {
+	padding: 5px 5px !important;
+}
+
+#speedEditorController {
+	font-weight: bold;
+}
+
+#speedEditorGroupControls {
+	min-height: 295px;
+}
+
+#speedEditorGroupControls .speedEditorGroup {
+	/* display: none; */
+}
+
+#speedEditorGroupControls .speedEditorGroup.selected {
+	display: block;
+}
+
+.speedEditorGroupSelect {
+	float: right;
+}
+
+/* ICON DROP ZONE: */
+
+.dropzone {
+  position: relative;
+  border: 2.5px dotted #FFF;
+  border-radius: 5px;
+  color: white;
+  font: bold 12px/50px arial;
+  height: 90px;
+  /* margin: 7.5px auto; */
+  text-align: center;
+  width: 90px;
+}
+
+.dropzone.hover {
+  border: 2.5px solid #5760e7;
+  color: #5760e7;
+}
+
+.dropzone.dropped {
+  background: #222;
+  border: 2.5px solid #444;
+}
+
+.dropzone div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropzone img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: 0 auto;
+  height: 90px;
+}
+
+.dropzone [type="file"] {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.touchButtonDropZone {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  margin: 0;
+  font-size: 0;
+  border-image-width: 0;
+}
+
+.touchButtonDropZone::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+/* NEW STUFF */
+
+.speedEditor {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.speedEditor td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.speedEditor thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.speedEditor thead tr, .speedEditor tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.speedEditor thead tr {
+	width: calc( 100% - 8px);
+}
+
+.speedEditor tbody {
+	display:block;
+	/* height: 65px; */
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.speedEditorActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 186px;
+}
+
+.speedEditorActionButton {
+	padding: 5px 5px !important;
+}
+
+/* ICON DROP ZONE: */
+
+.dropzone {
+  position: relative;
+  border: 2.5px dotted #FFF;
+  border-radius: 5px;
+  color: white;
+  font: bold 12px/50px arial;
+  height: 90px;
+  /* margin: 7.5px auto; */
+  text-align: center;
+  width: 90px;
+}
+
+.dropzone.hover {
+  border: 2.5px solid #5760e7;
+  color: #5760e7;
+}
+
+.dropzone.dropped {
+  background: #222;
+  border: 2.5px solid #444;
+}
+
+.dropzone div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropzone img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: 0 auto;
+  height: 90px;
+}
+
+.dropzone [type="file"] {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.touchButtonDropZone {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  margin: 0;
+  font-size: 0;
+  border-image-width: 0;
+}
+
+.touchButtonDropZone::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+/* User Interfaces */
+
+#speededitorOriginalUI {
+    display: inline-table;
+    background-color: black;
+}
+
+#speededitorMiniUI {
+    display: inline-table;
+    background-color: black;
+}
+
+#speededitorXLUI {
+    display: inline-table;
+    background-color: black;
+}
+
+#speededitorOriginalUI td {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 2px #aaa solid;
+    background: #222;
+    overflow: none;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    background-size:contain;
+}
+
+#speededitorMiniUI td {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 2px #aaa solid;
+    background: #222;
+    overflow: none;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    background-size:contain;
+}
+
+#speededitorXLUI td {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 2px #aaa solid;
+    background: #222;
+    overflow: none;
+    text-align: center;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    background-size:contain;
+}
