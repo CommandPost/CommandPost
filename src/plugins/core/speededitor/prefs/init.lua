@@ -10,15 +10,12 @@ local log                       = require "hs.logger".new "prefsSpeedEditor"
 local inspect                   = require "hs.inspect"
 
 local application               = require "hs.application"
-local canvas                    = require "hs.canvas"
-local chooser                   = require "hs.chooser"
 local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
-local styledtext                = require "hs.styledtext"
-local timer                     = require "hs.timer"
+--local speededitor               = require "hs.speededitor"
 
 local config                    = require "cp.config"
 local html                      = require "cp.web.html"
@@ -28,102 +25,25 @@ local tools                     = require "cp.tools"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
-local delayed                   = timer.delayed
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
-local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromAppBundle        = image.imageFromAppBundle
 local imageFromPath             = image.imageFromPath
-local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
-local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableContains             = tools.tableContains
 local tableMatch                = tools.tableMatch
-local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
-
--- ICON_LABEL_UPDATE_DELAY -> string
--- Constant
--- How long to delay updating the icon label.
-local ICON_LABEL_UPDATE_DELAY = 0.5
-
--- DEFAULT_FONT_COLOR -> string
--- Constant
--- The default font color value.
-local DEFAULT_FONT_COLOR = "FFFFFF"
-
--- DEFAULT_FONT_SIZE -> string
--- Constant
--- The default font size value.
-local DEFAULT_FONT_SIZE = "15"
-
--- DEFAULT_FONT -> string
--- Constant
--- The default font value.
-local DEFAULT_FONT = ".AppleSystemUIFont"
-
--- KEY_CREATOR_URL -> string
--- Constant
--- URL to Key Creator Website
-local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
-
--- BUY_MORE_ICONS_URL -> string
--- Constant
--- URL to SideshowFX Website
-local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Stream+Deck"
 
 -- SNIPPET_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
 local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
-
--- delayedFn -> hs.timer
--- Variable
--- A delayed timer used for the Icon Label updater.
-local delayedFn
-
---- plugins.core.speededitor.prefs.supportedExtensions -> string
---- Variable
---- Table of supported extensions for Speed Editor Icons.
-mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
-
-local iconPath = config.assetsPath .. "/icons/"
-
---- plugins.core.speededitor.prefs.defaultIconPath -> string
---- Variable
---- Default Path where built-in icons are stored
-mod.defaultIconPath = iconPath .. "Speed Editor/"
-
---- plugins.core.speededitor.prefs.automaticallyApplyIconFromAction <cp.prop: boolean>
---- Field
---- Automatically Apply Icon from Action
-mod.automaticallyApplyIconFromAction = config.prop("speedEditor.preferences.automaticallyApplyIconFromAction", true)
-
---- plugins.core.speededitor.prefs.backgroundColour <cp.prop: string>
---- Field
---- Background Colour.
-mod.backgroundColour = config.prop("speedEditor.preferences.backgroundColour", "#000000")
-
---- plugins.core.speededitor.prefs.resizeImagesOnImport <cp.prop: string>
---- Field
---- Resize Icons on Import Preference.
-mod.resizeImagesOnImport = config.prop("speedEditor.preferences.resizeImagesOnImport", "100%")
-
---- plugins.core.speededitor.prefs.lastIconPath <cp.prop: string>
---- Field
---- Last icon path.
-mod.lastIconPath = config.prop("speedEditor.preferences.lastIconPath", mod.defaultIconPath)
-
---- plugins.core.speededitor.prefs.iconHistory <cp.prop: table>
---- Field
---- Icon History
-mod.iconHistory = json.prop(config.cachePath, "Speed Editor", "Icon History.cpCache", {})
 
 --- plugins.core.speededitor.prefs.pasteboard <cp.prop: table>
 --- Field
@@ -323,78 +243,25 @@ local function updateUI(params)
     local bankData = appData and appData[bank]
 
     --------------------------------------------------------------------------------
-    -- Update the button images for all the buttons:
-    --------------------------------------------------------------------------------
-    local numberOfButtons = mod._speedEditorManager.numberOfButtons[device]
-
-    for i=1, numberOfButtons do
-        local buttonData = bankData and bankData[tostring(i)]
-        local snippetImage = mod._speedEditorManager.getSnippetImage(device, buttonData)
-        if snippetImage then
-            --------------------------------------------------------------------------------
-            -- It's an image from a Snippet:
-            --------------------------------------------------------------------------------
-            script = script .. [[
-                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. snippetImage .. [[')";
-            ]] .. "\n"
-        elseif buttonData and buttonData.icon and buttonData.icon ~= "" then
-            --------------------------------------------------------------------------------
-            -- It's an image from a supplied icon:
-            --------------------------------------------------------------------------------
-            script = script .. [[
-                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
-            ]] .. "\n"
-        elseif buttonData and buttonData.encodedIconLabel and buttonData.encodedIconLabel ~= "" then
-            --------------------------------------------------------------------------------
-            -- It's an image from an icon label:
-            --------------------------------------------------------------------------------
-            script = script .. [[
-                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.encodedIconLabel .. [[')";
-            ]] .. "\n"
-        else
-            --------------------------------------------------------------------------------
-            -- There's no icon for this button:
-            --------------------------------------------------------------------------------
-            script = script .. [[
-                document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "";
-            ]] .. "\n"
-        end
-    end
-
-    --------------------------------------------------------------------------------
     -- Update the fields for the currently selected button:
     --------------------------------------------------------------------------------
     local pressAction = ""
     local releaseAction = ""
-    local repeatPressActionUntilReleased = false
-    local iconLabel = ""
     local snippetAction = ""
-    local fontSize = DEFAULT_FONT_SIZE
-    local fontColor = DEFAULT_FONT_COLOR
-    local icon = ""
+    local repeatPressActionUntilReleased = false
 
     local buttonData = bankData and bankData[button]
     if buttonData then
         pressAction                         = escapeTilda(buttonData.actionTitle)
         releaseAction                       = escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle)
-        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or false
-        iconLabel                           = escapeTilda(buttonData.label)
         snippetAction                       = escapeTilda(buttonData.snippetAction and buttonData.snippetAction.actionTitle)
-        fontSize                            = buttonData.fontSize or DEFAULT_FONT_SIZE
-        fontColor                           = buttonData.fontColor or DEFAULT_FONT_COLOR
-        icon                                = buttonData.icon or ""
+        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or false
     end
 
     script = script .. [[
-        setIcon("]] .. icon .. [[");
-
         changeValueByID('press_action', `]] .. pressAction .. [[`);
         changeValueByID('release_action', `]] .. releaseAction .. [[`);
-        changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeValueByID('snippet_action', `]] .. snippetAction .. [[`);
-        changeValueByID('fontSize', ']] .. fontSize .. [[');
-
-        changeFontColor(']] .. fontColor .. [[');
 
         changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleased or false) .. [[);
     ]]
@@ -469,112 +336,6 @@ function mod.setItem(app, bank, button, key, value)
     mod.items(items)
 end
 
---- plugins.core.speededitor.prefs.buildIconFromLabel(params) -> string
---- Function
---- Creates a new icon image from a string.
----
---- Parameters:
----  * params - A table of parameters.
----
---- Returns:
----  * A new encoded icon as URL string.
-function mod.buildIconFromLabel(params)
-    local app = params["application"]
-    local bank = params["bank"]
-    local button = params["button"] or mod.lastButton()
-
-    local items = mod.items()
-    local lastDevice = mod.lastDevice()
-    local lastUnit = mod.lastUnit()
-
-    local currentDevice = items[lastDevice]
-
-    local currentUnit = currentDevice and currentDevice[lastUnit]
-
-    local selectedApp = currentUnit[app]
-
-    local selectedBank = selectedApp and selectedApp[bank]
-
-    local selectedButton = selectedBank and selectedBank[button]
-
-    local fontColor = selectedButton and selectedButton.fontColor and "#" .. selectedButton.fontColor or "#" .. DEFAULT_FONT_COLOR
-    local fontSize = selectedButton and selectedButton.fontSize or DEFAULT_FONT_SIZE
-    local font = selectedButton and selectedButton.font or DEFAULT_FONT
-    local value = selectedButton and selectedButton.label or ""
-
-    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
-    v[1] = {
-        --------------------------------------------------------------------------------
-        -- Force Black background:
-        --------------------------------------------------------------------------------
-        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-        type = "rectangle",
-    }
-
-    v[2] = {
-        frame = { h = 100, w = 100, x = 0, y = 0 },
-        text = value,
-        textAlignment = "left",
-        textColor = { hex = fontColor },
-        textSize = tonumber(fontSize),
-        textFont = font,
-        type = "text",
-    }
-
-    local img = v:imageFromCanvas()
-
-    return img:encodeAsURLString(true)
-end
-
---- plugins.core.speededitor.prefs.processEncodedIcon(icon, controlType) -> string
---- Function
---- Processes an encoded icon.
----
---- Parameters:
----  * icon - The encoded icon as URL string or a hs.image object.
----  * controlType - The control type as string.
----
---- Returns:
----  * A new encoded icon as URL string.
-function mod.processEncodedIcon(icon)
-
-    local newImage
-    if type(icon) == "userdata" then
-        newImage = icon
-    else
-        newImage = imageFromURL(icon)
-    end
-
-    local backgroundColour = mod.backgroundColour()
-    local resizeImagesOnImport = mod.resizeImagesOnImport()
-    local offset = tostring( (100 - tonumber(resizeImagesOnImport:sub(1, -2))) /2 ) .. "%"
-
-    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
-
-    --------------------------------------------------------------------------------
-    -- Background:
-    --------------------------------------------------------------------------------
-    v[1] = {
-        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-        fillColor = { alpha = 1, hex = backgroundColour },
-        type = "rectangle",
-    }
-
-    --------------------------------------------------------------------------------
-    -- Icon - Scaled as per preferences:
-    --------------------------------------------------------------------------------
-    v[2] = {
-      type="image",
-      image = newImage,
-      frame = { x = offset, y = offset, h = resizeImagesOnImport, w = resizeImagesOnImport },
-    }
-
-    local fixedImage = v:imageFromCanvas()
-
-    return fixedImage:encodeAsURLString(true)
-end
-
 -- speedEditorPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
@@ -589,12 +350,7 @@ local function speedEditorPanelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
-        if callbackType == "badExtension" then
-            --------------------------------------------------------------------------------
-            -- Bad Icon File Extension:
-            --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("badSpeedEditorIcon"), i18n("pleaseTryAgain"), i18n("ok"))
-        elseif callbackType == "updateAction" then
+        if callbackType == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
@@ -1024,79 +780,6 @@ local function speedEditorPanelCallback(id, params)
             items[device][unit][app][bank].bankLabel = bankLabel
 
             mod.items(items)
-
-        elseif callbackType == "iconClicked" then
-            --------------------------------------------------------------------------------
-            -- Icon Drop Zone Clicked:
-            --------------------------------------------------------------------------------
-            if not doesDirectoryExist(mod.lastIconPath()) then
-                mod.lastIconPath(mod.defaultIconPath)
-            end
-
-            local result = chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.lastIconPath(), true, false, false, mod.supportedExtensions, true)
-            local failed = false
-            if result and result["1"] then
-                local path = result["1"]
-
-                --------------------------------------------------------------------------------
-                -- Save path for next time:
-                --------------------------------------------------------------------------------
-                mod.lastIconPath(removeFilenameFromPath(path))
-
-                local appInfo = infoForBundlePath(path)
-                local bundleID = appInfo and appInfo.CFBundleIdentifier
-                local icon = imageFromPath(path) or imageFromAppBundle(bundleID)
-                if icon then
-                    local encodedIcon = mod.processEncodedIcon(icon)
-                    if encodedIcon then
-                        --------------------------------------------------------------------------------
-                        -- Save Icon to file:
-                        --------------------------------------------------------------------------------
-                        local app = params["application"]
-                        local bank = params["bank"]
-
-                        local button = mod.lastButton()
-
-                        mod.setItem(app, bank, button, "icon", encodedIcon)
-
-                        --------------------------------------------------------------------------------
-                        -- Write to history:
-                        --------------------------------------------------------------------------------
-                        local iconHistory = mod.iconHistory()
-                        while (#(iconHistory) >= 5) do
-                            table.remove(iconHistory,1)
-                        end
-                        local filename = getFilenameFromPath(path, true)
-                        table.insert(iconHistory, {filename, encodedIcon})
-                        mod.iconHistory(iconHistory)
-
-                        --------------------------------------------------------------------------------
-                        -- Update the UI:
-                        --------------------------------------------------------------------------------
-                        updateUI()
-                    else
-                        failed = true
-                    end
-                else
-                    failed = true
-                end
-                if failed then
-                    webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
-                end
-            end
-
-        elseif callbackType == "updateIcon" then
-            --------------------------------------------------------------------------------
-            -- Update Icon (by drag and drop):
-            --------------------------------------------------------------------------------
-            local app = params["application"]
-            local bank = params["bank"]
-            local button = params["button"] or mod.lastButton()
-            local icon = params["icon"]
-
-            mod.setItem(app, bank, button, "icon", icon)
-
-            updateUI()
         elseif callbackType == "dropAndDrop" then
             --------------------------------------------------------------------------------
             -- Drag & Drop:
@@ -1130,63 +813,6 @@ local function speedEditorPanelCallback(id, params)
             items[lastDevice][lastUnit][app][bank][destination] = b
 
             mod.items(items)
-
-            --------------------------------------------------------------------------------
-            -- Update the UI:
-            --------------------------------------------------------------------------------
-            updateUI()
-
-        elseif callbackType == "iconHistory" then
-            --------------------------------------------------------------------------------
-            -- Icon History:
-            --------------------------------------------------------------------------------
-            local menu = {}
-            local iconHistory = mod.iconHistory()
-
-            if #iconHistory > 0 then
-                for i=#iconHistory, 1, -1 do
-                    local item = iconHistory[i]
-                    table.insert(menu,
-                        {
-                            title = item[1],
-                            fn = function()
-                                local app = params["application"]
-                                local bank = params["bank"]
-                                local button = mod.lastButton()
-
-                                local encodedIcon = mod.processEncodedIcon(item[2])
-                                mod.setItem(app, bank, button, "icon", encodedIcon)
-
-                                --------------------------------------------------------------------------------
-                                -- Update the UI:
-                                --------------------------------------------------------------------------------
-                                updateUI()
-                            end,
-                        })
-                end
-            end
-
-            if next(menu) == nil then
-                table.insert(menu,
-                    {
-                        title = "Empty",
-                        disabled = true,
-                    })
-            end
-
-            local popup = menubar.new()
-            popup:setMenu(menu):removeFromMenuBar()
-            popup:popupMenu(mouse.absolutePosition(), true)
-
-        elseif callbackType == "clearIcon" then
-            --------------------------------------------------------------------------------
-            -- Clear Icon:
-            --------------------------------------------------------------------------------
-            local app = params["application"]
-            local bank = params["bank"]
-            local button = mod.lastButton()
-
-            mod.setItem(app, bank, button, "icon", nil)
 
             --------------------------------------------------------------------------------
             -- Update the UI:
@@ -1403,146 +1029,6 @@ local function speedEditorPanelCallback(id, params)
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.absolutePosition(), true)
-        elseif callbackType == "updateIconLabel" then
-            --------------------------------------------------------------------------------
-            -- Delay screen and UI updates to avoid lag when the user's typing:
-            --------------------------------------------------------------------------------
-            delayedFn = function()
-                --------------------------------------------------------------------------------
-                -- Write to file:
-                --------------------------------------------------------------------------------
-                local app = params["application"]
-                local bank = params["bank"]
-                local value = params["value"]
-
-                local button = mod.lastButton()
-
-                mod.setItem(app, bank, button, "label", value)
-
-                --------------------------------------------------------------------------------
-                -- Generate encoded icon label:
-                --------------------------------------------------------------------------------
-                local encodedImg = ""
-                if value and trim(value) ~= "" then
-                    encodedImg = mod.buildIconFromLabel(params)
-                end
-
-                mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
-
-                updateUI()
-            end
-
-            if not mod.iconLabelDelayed then
-                mod.iconLabelDelayed = delayed.new(ICON_LABEL_UPDATE_DELAY, function() delayedFn() end)
-            end
-
-            mod.iconLabelDelayed:start()
-        elseif callbackType == "updateFontSize" then
-            --------------------------------------------------------------------------------
-            -- Update Font Size:
-            --------------------------------------------------------------------------------
-            local app = params["application"]
-            local bank = params["bank"]
-            local value = params["value"]
-
-            local button = mod.lastButton()
-
-            mod.setItem(app, bank, button, "fontSize", value)
-
-            --------------------------------------------------------------------------------
-            -- Update encoded icon label:
-            --------------------------------------------------------------------------------
-            local encodedImg = ""
-            if value and trim(value) ~= "" then
-                encodedImg = mod.buildIconFromLabel(params)
-            end
-
-            mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
-            updateUI()
-        elseif callbackType == "updateFontColor" then
-            --------------------------------------------------------------------------------
-            -- Update Font Color:
-            --------------------------------------------------------------------------------
-            local app = params["application"]
-            local bank = params["bank"]
-            local value = params["value"]
-
-            local button = mod.lastButton()
-
-            mod.setItem(app, bank, button, "fontColor", value)
-
-            --------------------------------------------------------------------------------
-            -- Update encoded icon label:
-            --------------------------------------------------------------------------------
-            local encodedImg = ""
-            if value and trim(value) ~= "" then
-                encodedImg = mod.buildIconFromLabel(params)
-            end
-
-            mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
-            updateUI()
-        elseif callbackType == "selectFont" then
-            --------------------------------------------------------------------------------
-            -- Select a font:
-            --------------------------------------------------------------------------------
-            if not mod.fontChooser then
-                local completionFn = function(result)
-                    if result then
-                        local value = result.id
-
-                        local app = params["application"]
-                        local bank = params["bank"]
-                        local button = mod.lastButton()
-
-                        mod.setItem(app, bank, button, "font", value)
-
-                        --------------------------------------------------------------------------------
-                        -- Update encoded icon label:
-                        --------------------------------------------------------------------------------
-                        local encodedImg = ""
-                        if value and trim(value) ~= "" then
-                            encodedImg = mod.buildIconFromLabel(params)
-                        end
-
-                        mod.setItem(app, bank, button, "encodedIconLabel", encodedImg)
-
-                        --------------------------------------------------------------------------------
-                        -- Refresh the hardware:
-                        --------------------------------------------------------------------------------
-                        updateUI()
-                    end
-                end
-
-                local fontNames = styledtext.fontNames()
-
-                local choices = {}
-                for _, v in pairs(fontNames) do
-                    if string.sub(v, 1, 1) ~= "." then
-                        local fontName = styledtext.new(v, {
-                            font = { name = v, size = 18 },
-                            color = { white = 1, alpha = 1 },
-                        })
-                        table.insert(choices, {
-                            ["text"] = fontName,
-                            ["id"] = v,
-                        })
-                    end
-                end
-
-                mod.fontChooser = chooser.new(completionFn)
-                    :bgDark(true)
-                    :choices(choices)
-            end
-
-            mod.fontChooser:show()
         elseif callbackType == "copyDevice" then
             --------------------------------------------------------------------------------
             -- Copy Device:
@@ -1752,16 +1238,6 @@ local function speedEditorPanelCallback(id, params)
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.absolutePosition(), true)
-        elseif callbackType == "openKeyCreator" then
-            --------------------------------------------------------------------------------
-            -- Open Key Creator:
-            --------------------------------------------------------------------------------
-            execute('open "' .. KEY_CREATOR_URL .. '"')
-        elseif callbackType == "buyIcons" then
-            --------------------------------------------------------------------------------
-            -- Buy More Icons:
-            --------------------------------------------------------------------------------
-            execute('open "' .. BUY_MORE_ICONS_URL .. '"')
         elseif callbackType == "importSettings" then
             --------------------------------------------------------------------------------
             -- Import Settings:
@@ -2097,7 +1573,7 @@ function plugin.init(deps, env)
             </div>
             <br />
         ]], false)
-        :addParagraph(11, html.span {class="tip"} (html(i18n("speedEditorAppTip"), false) ) .. "\n\n")
+        :addParagraph(11, html.span {class="tip"} (html(i18n("speedEditorTip"), false) ) .. "\n\n")
         :addContent(12, generateContent, false)
 
     --------------------------------------------------------------------------------

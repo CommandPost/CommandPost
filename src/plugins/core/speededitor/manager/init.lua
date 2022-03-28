@@ -8,9 +8,7 @@ local log                       = require "hs.logger".new "speedEditor"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
-local canvas                    = require "hs.canvas"
 local eventtap                  = require "hs.eventtap"
-local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local speededitor               = require "hs.speededitor"
 local timer                     = require "hs.timer"
@@ -22,11 +20,8 @@ local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
 local displayNotification       = dialog.displayNotification
-local doesFileExist             = tools.doesFileExist
 local doEvery                   = timer.doEvery
 local imageFromPath             = image.imageFromPath
-local imageFromURL              = image.imageFromURL
-local isImage                   = tools.isImage
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local spairs                    = tools.spairs
@@ -47,11 +42,6 @@ mod.lastBank = config.prop("speedEditor.preferences.lastBank", "1")
 --- Variable
 --- A table containing `hs.timer` objects.
 mod.repeatTimers = {}
-
---- plugins.core.speededitor.prefs.previewSelectedApplicationAndBankOnHardware <cp.prop: boolean>
---- Field
---- Should we preview the selected application and bank on hardware?
-mod.previewSelectedApplicationAndBankOnHardware = config.prop("speedEditor.preferences.previewSelectedApplicationAndBankOnHardware", false)
 
 --- plugins.core.speededitor.prefs.snippetsRefreshFrequency <cp.prop: string>
 --- Field
@@ -78,6 +68,11 @@ local defaultLayoutPath = config.basePath .. "/plugins/core/speededitor/default/
 --- Default Speed Editor Layout
 mod.defaultLayout = json.read(defaultLayoutPath)
 
+--- plugins.core.speededitor.manager.items <cp.prop: table>
+--- Field
+--- A table containing the Speed Editor layout.
+mod.items = json.prop(config.userConfigRootPath, "Speed Editor", "Settings.cpSpeedEditor", mod.defaultLayout)
+
 --- plugins.core.speededitor.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
@@ -99,93 +94,6 @@ mod.deviceOrder = {
     ["Speed Editor"] = {},
 }
 
--- imageHolder -> hs.canvas
--- Constant
--- Canvas used to store the blackIcon.
-local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
-imageHolder[1] = {
-    frame = { h = 100, w = 100, x = 0, y = 0 },
-    fillColor = { hex = "#000000" },
-    type = "rectangle",
-}
-
--- blackIcon -> hs.image
--- Constant
--- A black icon
-local blackIcon = imageHolder:imageFromCanvas()
-
---- plugins.core.speededitor.manager.getSnippetImage(device, buttonData) -> string
---- Function
---- Generates the Preference Panel HTML Content.
----
---- Parameters:
----  * device - The device name as a string.
----  * buttonData - A table of button data.
----
---- Returns:
----  * An encoded image as a string
-function mod.getSnippetImage(device, buttonData)
-    --------------------------------------------------------------------------------
-    -- Handle Snippets:
-    --------------------------------------------------------------------------------
-    local widthAndHeight = mod.imageSize[device]
-    local currentEncodedIcon
-    local currentSnippet = buttonData and buttonData.snippetAction
-    if currentSnippet and currentSnippet.action then
-        local code = currentSnippet.action.code
-        if code then
-            --------------------------------------------------------------------------------
-            -- Load Snippet from Snippet Preferences if it exists:
-            --------------------------------------------------------------------------------
-            local snippetID = currentSnippet.action.id
-            local snippets = mod._scriptingPreferences.snippets()
-            if snippets[snippetID] then
-                code = snippets[snippetID].code
-            end
-
-            local successful, result = pcall(load(code))
-            if successful and isImage(result) then
-                local size = result:size()
-                if size.w == widthAndHeight and size.h == widthAndHeight then
-                    --------------------------------------------------------------------------------
-                    -- The generated image is already the correct size:
-                    --------------------------------------------------------------------------------
-                    currentEncodedIcon = result:encodeAsURLString(true)
-                else
-                    --------------------------------------------------------------------------------
-                    -- The generated image is not 90x90 so process:
-                    --------------------------------------------------------------------------------
-                    local v = canvas.new{x = 0, y = 0, w = widthAndHeight, h = widthAndHeight }
-
-                    --------------------------------------------------------------------------------
-                    -- Black Background:
-                    --------------------------------------------------------------------------------
-                    v[1] = {
-                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                        fillColor = { alpha = 1, hex = "#000000" },
-                        type = "rectangle",
-                    }
-
-                    --------------------------------------------------------------------------------
-                    -- Icon - Scaled to fit:
-                    --------------------------------------------------------------------------------
-                    v[2] = {
-                      type="image",
-                      image = result,
-                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                    }
-
-                    local fixedImage = v:imageFromCanvas()
-
-                    currentEncodedIcon = fixedImage:encodeAsURLString(true)
-                end
-            end
-        end
-    end
-
-    return currentEncodedIcon
-end
-
 --- plugins.core.speededitor.manager.getDeviceType(object) -> string
 --- Function
 --- Translates a Speed Editor button layout into a device type string.
@@ -194,21 +102,10 @@ end
 ---  * object - A `hs.speededitor` object
 ---
 --- Returns:
----  * "Mini", "Original" or "XL"
-function mod.getDeviceType(object)
-    --------------------------------------------------------------------------------
-    -- Detect Device Type:
-    --------------------------------------------------------------------------------
-    local columns, rows = object:buttonLayout()
-    if columns == 3 and rows == 2 then
-        return "Mini"
-    elseif columns == 5 and rows == 3 then
-        return "Original"
-    elseif columns == 8 and rows == 4 then
-        return "XL"
-    else
-        log.ef("Unknown Speed Editor Model. Columns: %s, Rows: %s", columns, rows)
-    end
+---  * "Speed Editor"
+function mod.getDeviceType()
+    -- Currently there's only one model.
+    return "Speed Editor"
 end
 
 --- plugins.core.speededitor.manager.buttonCallback(object, buttonID, pressed) -> none
@@ -222,10 +119,17 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.buttonCallback(object, buttonID, pressed)
+function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelValue)
+
+    --[[
+    log.df("buttonID: %s", buttonID)
+    log.df("pressed: %s", pressed)
+    log.df("jogWheelMode: %s", jogWheelMode)
+    log.df("jogWheelValue: %s", jogWheelValue)
+    --]]
 
     local serialNumber = object:serialNumber()
-    local deviceType = mod.getDeviceType(object)
+    local deviceType = mod.getDeviceType()
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
     local frontmostApplication = application.frontmostApplication()
@@ -261,16 +165,6 @@ function mod.buttonCallback(object, buttonID, pressed)
     if not mod.automaticallySwitchApplications() then
         bundleID = mod.lastBundleID()
     end
-
-    --------------------------------------------------------------------------------
-    -- Preview Selected Application & Bank on Hardware:
-    --------------------------------------------------------------------------------
-    if mod.previewSelectedApplicationAndBankOnHardware() then
-        bundleID = mod.lastApplication()
-        bankID = mod.lastBank()
-    end
-
-    buttonID = tostring(buttonID)
 
     local theDevice = items[deviceType]
     local theUnit = theDevice and theDevice[deviceID]
@@ -330,11 +224,6 @@ function mod.buttonCallback(object, buttonID, pressed)
 
 end
 
---- plugins.core.speededitor.manager.imageCache() -> none
---- Variable
---- A cache of images used on the Speed Editor.
-mod.imageCache = {}
-
 --- plugins.core.speededitor.manager.update() -> none
 --- Function
 --- Updates the screens of all Speed Editor devices.
@@ -346,172 +235,8 @@ mod.imageCache = {}
 ---  * None
 function mod.update()
 
-    local containsIconSnippets = false
+    -- TODO
 
-    for deviceType, devices in pairs(mod.devices) do
-        for _, device in pairs(devices) do
-            --------------------------------------------------------------------------------
-            -- Determine bundleID:
-            --------------------------------------------------------------------------------
-            local serialNumber = device:serialNumber()
-
-            local buttonCount = mod.numberOfButtons[deviceType]
-            local deviceID = mod.deviceOrder[deviceType][serialNumber]
-
-            local frontmostApplication = application.frontmostApplication()
-            local bundleID = frontmostApplication:bundleID()
-
-            --------------------------------------------------------------------------------
-            -- Get layout from preferences file:
-            --------------------------------------------------------------------------------
-            local items = mod.items()
-            local deviceData = items[deviceType] and items[deviceType][deviceID]
-
-            --------------------------------------------------------------------------------
-            -- Revert to "All Applications" if no settings for frontmost app exist:
-            --------------------------------------------------------------------------------
-            if deviceData and not deviceData[bundleID] then
-                bundleID = "All Applications"
-            end
-
-            --------------------------------------------------------------------------------
-            -- Ignore if ignored:
-            --------------------------------------------------------------------------------
-            local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
-            if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
-                bundleID = "All Applications"
-            end
-
-            --------------------------------------------------------------------------------
-            -- If not Automatically Switching Applications:
-            --------------------------------------------------------------------------------
-            if not mod.automaticallySwitchApplications() then
-                bundleID = mod.lastBundleID()
-            end
-
-            --------------------------------------------------------------------------------
-            -- Determine bankID:
-            --------------------------------------------------------------------------------
-            local activeBanks = mod.activeBanks()
-            local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
-
-            --------------------------------------------------------------------------------
-            -- Preview Selected Application & Bank on Hardware:
-            --------------------------------------------------------------------------------
-            if mod.previewSelectedApplicationAndBankOnHardware() then
-                bundleID = mod.lastApplication()
-                bankID = mod.lastBank()
-            end
-
-            --------------------------------------------------------------------------------
-            -- Get bank data:
-            --------------------------------------------------------------------------------
-            local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
-
-            --------------------------------------------------------------------------------
-            -- Update every button:
-            --------------------------------------------------------------------------------
-            for buttonID=1, buttonCount do
-                local success = false
-                local buttonData = bankData and bankData[tostring(buttonID)]
-
-                local imageToUse
-
-                if buttonData then
-                    local label                 = buttonData.label
-                    local icon                  = buttonData.icon
-                    local encodedIconLabel      = buttonData.encodedIconLabel
-
-                    local snippetImage = mod.getSnippetImage(deviceType, buttonData)
-                    if snippetImage then
-                        --------------------------------------------------------------------------------
-                        -- Generate an icon from a Snippet:
-                        --------------------------------------------------------------------------------
-                        local theImage = imageFromURL(snippetImage)
-                        if theImage then
-                            imageToUse = theImage
-                            success = true
-                            containsIconSnippets = true
-                        end
-                    elseif icon then
-                        --------------------------------------------------------------------------------
-                        -- Draw an icon:
-                        --------------------------------------------------------------------------------
-                        local theImage = imageFromURL(icon)
-                        if theImage then
-                            imageToUse = theImage
-                            success = true
-                        end
-                    elseif buttonData.encodedIconLabel then
-                        --------------------------------------------------------------------------------
-                        -- Draw an image from an icon label:
-                        --------------------------------------------------------------------------------
-                        local theImage = imageFromURL(encodedIconLabel)
-                        if theImage then
-                            imageToUse = theImage
-                            success = true
-                        end
-                    elseif label then
-                        --------------------------------------------------------------------------------
-                        -- Draw a label (only here for legacy reasons):
-                        --------------------------------------------------------------------------------
-                        local widthAndHeight = mod.imageSize[device]
-                        local c = canvas.new{x = 0, y = 0, h = widthAndHeight, w = widthAndHeight}
-                        c[1] = {
-                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
-                            fillColor = { hex = "#000000"  },
-                            type = "rectangle",
-                        }
-                        c[2] = {
-                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
-                            text = label,
-                            textAlignment = "left",
-                            textColor = { white = 1.0 },
-                            textSize = 20,
-                            type = "text",
-                        }
-                        local textIcon = c:imageFromCanvas()
-
-                        imageToUse = textIcon
-                        success = true
-                    end
-                end
-                if not success then
-                    --------------------------------------------------------------------------------
-                    -- Default to black if no label or icon supplied:
-                    --------------------------------------------------------------------------------
-                    imageToUse = blackIcon
-                end
-
-                --------------------------------------------------------------------------------
-                -- Only update the image on the hardware if necessary:
-                --------------------------------------------------------------------------------
-                local cacheID = deviceType .. deviceID .. buttonID
-                if imageToUse ~= mod.imageCache[cacheID] then
-                    device:setButtonImage(buttonID, imageToUse)
-                    mod.imageCache[cacheID] = imageToUse
-                end
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Enable or disable the refresh timer:
-    --------------------------------------------------------------------------------
-    if containsIconSnippets then
-        if not mod.refreshTimer then
-            local snippetsRefreshFrequency = tonumber(mod.snippetsRefreshFrequency())
-            mod.refreshTimer = timer.new(snippetsRefreshFrequency, function()
-                mod.update()
-            end)
-        end
-        mod.refreshTimer:start()
-    else
-        if mod.refreshTimer then
-            mod.refreshTimer:stop()
-            mod.refreshTimer = nil
-        end
-    end
 end
 
 --- plugins.core.speededitor.manager.discoveryCallback(connected, object) -> none
@@ -527,12 +252,12 @@ end
 function mod.discoveryCallback(connected, object)
     local serialNumber = object:serialNumber()
     if serialNumber == nil then
-        log.ef("Failed to get Speed Editor's Serial Number. This normally means the Speed Editor App is running.")
+        log.ef("Failed to get Speed Editor's Serial Number. Is DaVinci Resolve running?")
     else
-        local deviceType = mod.getDeviceType(object)
+        local deviceType = mod.getDeviceType()
         if connected then
-            --log.df("Speed Editor Connected: %s - %s", deviceType, serialNumber)
-            mod.devices[deviceType][serialNumber] = object:buttonCallback(mod.buttonCallback)
+            log.df("Speed Editor Connected: %s - %s", deviceType, serialNumber)
+            mod.devices[deviceType][serialNumber] = object:callback(mod.buttonCallback)
 
             --------------------------------------------------------------------------------
             -- Sort the devices alphabetically based on serial number:
@@ -546,7 +271,7 @@ function mod.discoveryCallback(connected, object)
             mod.update()
         else
             if mod.devices and mod.devices[deviceType][serialNumber] then
-                --log.df("Speed Editor Disconnected: %s - %s", deviceType, serialNumber)
+                log.df("Speed Editor Disconnected: %s - %s", deviceType, serialNumber)
                 mod.devices[deviceType][serialNumber] = nil
             else
                 log.ef("Disconnected Speed Editor wasn't previously registered: %s - %s", deviceType, serialNumber)
@@ -600,18 +325,6 @@ function mod.stop()
     mod.repeatTimers = {}
 
     --------------------------------------------------------------------------------
-    -- Black out all the icons:
-    --------------------------------------------------------------------------------
-    for deviceType, devices in pairs(mod.devices) do
-        for _, device in pairs(devices) do
-            local buttonCount = mod.numberOfButtons[deviceType]
-            for buttonID=1, buttonCount do
-                device:setButtonImage(buttonID, blackIcon)
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
     -- Kill any devices:
     --------------------------------------------------------------------------------
     for deviceType, devices in pairs(mod.devices) do
@@ -627,17 +340,12 @@ function mod.stop()
         mod._appWatcher:stop()
         mod._appWatcher = nil
     end
-
-    --------------------------------------------------------------------------------
-    -- Empty the cache:
-    --------------------------------------------------------------------------------
-    mod.imageCache = {}
 end
 
 --- plugins.core.speededitor.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable Speed Editor Support.
-mod.enabled = config.prop("enableStreamDesk", false):watch(function(enabled)
+mod.enabled = config.prop("enableSpeedEditor", false):watch(function(enabled)
     if enabled then
         mod.start()
     else
@@ -659,42 +367,6 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-    --------------------------------------------------------------------------------
-    -- Migrate old preferences to newer format if 'Settings.cpSpeedEditor' doesn't
-    -- already exist, and if we haven't already upgraded previously:
-    --------------------------------------------------------------------------------
-    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/Speed Editor/Settings.cpSpeedEditor")
-    mod.items = json.prop(config.userConfigRootPath, "Speed Editor", "Settings.cpSpeedEditor", mod.defaultLayout)
-    if not newLayoutExists then
-        local updatedPreferencesToV2 = config.prop("speededitor.updatedPreferencesToV2", false)
-        local legacyPath = config.userConfigRootPath .. "/Speed Editor/Default.cpSpeedEditor"
-        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
-            local legacyPreferences = json.read(legacyPath)
-            local newData = {}
-            if legacyPreferences then
-                for groupID, data in pairs(legacyPreferences) do
-                    local bundleID
-                    local bankID
-                    if string.sub(groupID, 1, 4) == "fcpx" then
-                        bundleID = "com.apple.FinalCut"
-                        bankID = string.sub(groupID, 5)
-                    end
-                    if string.sub(groupID, 1, 6) == "global" then
-                        bundleID = "All Applications"
-                        bankID = string.sub(groupID, 7)
-                    end
-
-                    if not newData["Original"] then newData["Original"] = {} end
-                    if not newData["Original"]["1"] then newData["Original"]["1"] = {} end
-                    if not newData["Original"]["1"][bundleID] then newData["Original"]["1"][bundleID] = {} end
-                    newData["Original"]["1"][bundleID][bankID] = fnutils.copy(data)
-                end
-                updatedPreferencesToV2(true)
-                mod.items(newData)
-                log.df("Converted Speed Editor Preferences from Default.cpSpeedEditor to Settings.cpSpeedEditor.")
-            end
-        end
-    end
 
     local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/speededitor.icns"))
 
@@ -722,7 +394,7 @@ function plugin.init(deps, env)
     local actionmanager = deps.actionmanager
     local numberOfBanks = deps.csman.NUMBER_OF_BANKS
     local numberOfDevices = deps.csman.NUMBER_OF_DEVICES
-    actionmanager.addHandler("global_speedEditorbanks")
+    actionmanager.addHandler("global_speededitorbanks")
         :onChoices(function(choices)
             for device, _ in pairs(mod.devices) do
                 for unit=1, numberOfDevices do
@@ -870,6 +542,8 @@ function plugin.init(deps, env)
                     end
                 end
             end
+
+            log.df("applications: %s", hs.inspect(applications))
 
             for bundleID, item in pairs(applications) do
                 choices

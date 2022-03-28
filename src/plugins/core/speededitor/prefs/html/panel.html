@@ -630,9 +630,7 @@
 		</th>
 		<th style="width: 250px;">
 			<select id="device" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
-				<option value="Original" {{ lastDevice == "Original" and "selected" or ""}}>Stream Deck</option>
-				<option value="XL" {{ lastDevice == "XL" and "selected" or ""}}>Stream Deck XL</option>
-				<option value="Mini" {{ lastDevice == "Mini" and "selected" or ""}}>Stream Deck Mini</option>
+				<option value="Speed Editor" {{ lastDevice == "Speed Editor" and "selected" or ""}}>Speed Editor</option>
 			</select>
 		</th>
 	</tr>
@@ -749,7 +747,7 @@
                     </tr>
                     <tr>
                         <td width="2" height="184" rowspan="13"></td>
-                        <td width="32" height="31"></td>
+                        <td device="Speed Editor" button="SYNC BIN" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="31"></td>
                         <td width="3" height="184" rowspan="13"></td>
                         <td device="Speed Editor" button="AUDIO LEVEL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="31"></td>
                         <td width="2" height="184" rowspan="13"></td>
@@ -806,7 +804,7 @@
                     </tr>
                     <tr>
                         <td width="23" height="234" rowspan="9"></td>
-                        <td device="Speed Editor" button="WHEEL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="110" height="113" colspan="9" rowspan="8"></td>
+                        <td device="Speed Editor" button="JOG WHEEL" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="110" height="113" colspan="9" rowspan="8"></td>
                         <td width="23" height="234" rowspan="9"></td>
                     </tr>
                     <tr>
@@ -909,50 +907,9 @@
 							</td>
 						</tr>
 
-						<!-- ICON: -->
-						<tr id="iconA">
-							<th width="229px">{{ i18n("imageDropZone") }}:</th>
-							<th width="229px" id="iconLabelHeading">{{ i18n("textLabel") }}:</th>
-						</tr>
-						<tr id="iconB">
-							<td width="229px">
-								<div id="iconDropZone" class="dropzone{{ class }}" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
-									<div id="iconDropZonePreview" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
-										<p style="padding-top: 13px;">icon</p>
-									</div>
-									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconDropZone(this)" onclick="pressIconDropZone()" />
-								</div>
-							</td>
-							<td width="229px" style="vertical-align: top;" id="iconLabelB">
-								<textarea id="iconLabel" class="speedEditorActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea><br />
-								<a href="#" style="display: inline !important" class="button speedEditorActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
-								<select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
-									{%
-									for i=1, 200 do
-									%}
-									<option value="{{i}}">{{i}}px</option>
-									{%
-									end
-									%}
-								</select><input style="width: 53px;" id="fontColor" class="speedEditorActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
-							</td>
-						</tr>
-						<tr id="iconC">
-							<th width="229px" id="buttonResolution">
-								<a href="#" class="button speedEditorActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
-							</th>
-						</tr>
-
-						<!-- SPACER: -->
+						<!-- USE SNIPPET TO TOGGLE LED STATUS : -->
 						<tr>
-							<td>
-								</br>
-							</td>
-						</tr>
-
-						<!-- USE SNIPPET TO GENERATE ICON: -->
-						<tr>
-							<th width="229px">{{ i18n("useSnippetToGenerateIcon") }}:</th>
+							<th width="229px">{{ i18n("useSnippetToToggleLEDStatus") }}:</th>
 						</tr>
 						<tr>
 							<td width="229px"><input type="text" id="snippet_action" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
