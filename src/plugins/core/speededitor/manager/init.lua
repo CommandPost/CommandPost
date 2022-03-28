@@ -9,6 +9,7 @@ local log                       = require "hs.logger".new "speedEditor"
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
 local eventtap                  = require "hs.eventtap"
+local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local speededitor               = require "hs.speededitor"
 local timer                     = require "hs.timer"
@@ -19,12 +20,14 @@ local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
+local copy                      = fnutils.copy
 local displayNotification       = dialog.displayNotification
 local doEvery                   = timer.doEvery
 local imageFromPath             = image.imageFromPath
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local spairs                    = tools.spairs
+local tableMatch                = tools.tableMatch
 
 local mod = {}
 
@@ -224,6 +227,8 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
 
 end
 
+local ledCache = {}
+
 --- plugins.core.speededitor.manager.update() -> none
 --- Function
 --- Updates the screens of all Speed Editor devices.
@@ -235,7 +240,115 @@ end
 ---  * None
 function mod.update()
 
-    -- TODO
+    local containsLEDSnippet = false
+
+    for deviceType, devices in pairs(mod.devices) do
+        for _, device in pairs(devices) do
+            --------------------------------------------------------------------------------
+            -- Determine bundleID:
+            --------------------------------------------------------------------------------
+            local serialNumber = device:serialNumber()
+            local deviceID = mod.deviceOrder[deviceType][serialNumber]
+
+            local frontmostApplication = application.frontmostApplication()
+            local bundleID = frontmostApplication:bundleID()
+
+            --------------------------------------------------------------------------------
+            -- Get layout from preferences file:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+            local deviceData = items[deviceType] and items[deviceType][deviceID]
+
+            --------------------------------------------------------------------------------
+            -- Revert to "All Applications" if no settings for frontmost app exist:
+            --------------------------------------------------------------------------------
+            if deviceData and not deviceData[bundleID] then
+                bundleID = "All Applications"
+            end
+
+            --------------------------------------------------------------------------------
+            -- Ignore if ignored:
+            --------------------------------------------------------------------------------
+            local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
+            if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
+                bundleID = "All Applications"
+            end
+
+            --------------------------------------------------------------------------------
+            -- If not Automatically Switching Applications:
+            --------------------------------------------------------------------------------
+            if not mod.automaticallySwitchApplications() then
+                bundleID = mod.lastBundleID()
+            end
+
+            --------------------------------------------------------------------------------
+            -- Determine bankID:
+            --------------------------------------------------------------------------------
+            local activeBanks = mod.activeBanks()
+            local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
+
+            --------------------------------------------------------------------------------
+            -- Get bank data:
+            --------------------------------------------------------------------------------
+            local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
+
+            --------------------------------------------------------------------------------
+            -- Update every button:
+            --------------------------------------------------------------------------------
+            -- TODO: move to hs.speededitor
+            local ledNames = {"AUDIO ONLY", "CAM1", "CAM2", "CAM3", "CAM4", "CAM5", "CAM6", "CAM7", "CAM8", "CAM9", "CLOSE UP", "CUT", "DIS", "JOG", "LIVE OWR", "SCRL", "SHTL", "SMTH CUT", "SNAP", "TRANS", "VIDEO ONLY"}
+            local ledStatus = {}
+            for _, ledID in pairs(ledNames) do
+                local buttonData = bankData and bankData[ledID]
+                local snippetAction = buttonData and buttonData.snippetAction
+                local snippetActionAction = snippetAction and snippetAction.action
+                local code = snippetActionAction and snippetActionAction.code
+                if code then
+                    containsLEDSnippet = true
+
+                    --------------------------------------------------------------------------------
+                    -- Load Snippet from Snippet Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippetID = snippetActionAction.id
+                    local snippets = mod._scriptingPreferences.snippets()
+                    if snippets[snippetID] then
+                        code = snippets[snippetID].code
+                    end
+
+                    local successful, result = pcall(load(code))
+                    if successful and type(result) == "boolean" then
+                        log.df("found a valid snippet!")
+                        ledStatus[ledID] = result
+                    end
+                else
+                    ledStatus[ledID] = false
+                end
+            end
+            if not tableMatch(ledStatus, ledCache) then
+                log.df("updating leds")
+                device:led(ledStatus)
+            end
+            ledCache = copy(ledStatus)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Enable or disable the refresh timer:
+    --------------------------------------------------------------------------------
+    if containsLEDSnippet then
+        if not mod.refreshTimer then
+            local snippetsRefreshFrequency = tonumber(mod.snippetsRefreshFrequency())
+            mod.refreshTimer = timer.new(snippetsRefreshFrequency, function()
+                mod.update()
+            end)
+        end
+        mod.refreshTimer:start()
+    else
+        if mod.refreshTimer then
+            mod.refreshTimer:stop()
+            mod.refreshTimer = nil
+        end
+    end
 
 end
 
