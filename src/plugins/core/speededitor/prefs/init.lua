@@ -176,6 +176,21 @@ local function renderPanel(context)
     return mod._renderPanel(context)
 end
 
+-- insertImage(path)
+-- Function
+-- Encodes an image as a PNG URL String
+--
+-- Parameters:
+--  * path - Path to the image you want to encode.
+--
+-- Returns:
+--  * The encoded URL string
+local function insertImage(path)
+    local p = mod._env:pathToAbsolute(path)
+    local i = imageFromPath(p)
+    return i:encodeAsURLString(false, "PNG")
+end
+
 -- generateContent() -> string
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -219,6 +234,8 @@ local function generateContent()
 
         numberOfBanks           = mod.numberOfBanks,
         numberOfDevices         = mod.numberOfDevices,
+
+        insertImage             = insertImage,
 
         lastApplication         = mod.lastApplication(),
         lastBank                = mod.lastBank(),
@@ -265,15 +282,6 @@ local function updateUI(params)
         changeValueByID("application", "]] .. app .. [[");
         changeValueByID("bank", "]] .. bank .. [[");
     ]]
-
-    --------------------------------------------------------------------------------
-    -- Show the correct UI:
-    --------------------------------------------------------------------------------
-    script = script .. [[
-        document.getElementById("speededitorOriginalUI").style.display = "]] .. (device == "Original" and "inline-table" or "None") .. [[";
-        document.getElementById("speededitorMiniUI").style.display = "]] .. (device == "Mini" and "inline-table" or "None") .. [[";
-        document.getElementById("speededitorXLUI").style.display = "]] .. (device == "XL" and "inline-table" or "None") .. [[";
-    ]] .. "\n"
 
     --------------------------------------------------------------------------------
     -- Update the UI label:

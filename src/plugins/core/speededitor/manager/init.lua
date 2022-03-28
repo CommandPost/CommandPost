@@ -82,45 +82,21 @@ mod.defaultLayout = json.read(defaultLayoutPath)
 --- Field
 --- Table of active banks for each application.
 mod.activeBanks = config.prop("speedEditor.activeBanks", {
-    ["Mini"] = {},
-    ["Original"] = {},
-    ["XL"] = {},
+    ["Speed Editor"] = {},
 })
 
 -- plugins.core.speededitor.manager.devices -> table
 -- Variable
 -- Table of Speed Editor Devices.
 mod.devices = {
-    ["Mini"] = {},
-    ["Original"] = {},
-    ["XL"] = {},
+    ["Speed Editor"] = {},
 }
 
 -- plugins.core.speededitor.manager.deviceOrder -> table
 -- Variable
 -- Table of Speed Editor Device Orders.
 mod.deviceOrder = {
-    ["Mini"] = {},
-    ["Original"] = {},
-    ["XL"] = {},
-}
-
--- plugins.core.speededitor.manager.numberOfButtons -> table
--- Variable
--- Table of Speed Editor Device Button Count.
-mod.numberOfButtons = {
-    ["Mini"] = 6,
-    ["Original"] = 15,
-    ["XL"] = 32,
-}
-
--- plugins.core.speededitor.manager.imageSize -> table
--- Variable
--- Table of Speed Editor Screen Sizes:
-mod.imageSize = {
-    ["Mini"] = 80,
-    ["Original"] = 72,
-    ["XL"] = 96,
+    ["Speed Editor"] = {},
 }
 
 -- imageHolder -> hs.canvas
