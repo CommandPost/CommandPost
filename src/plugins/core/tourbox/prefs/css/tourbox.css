@@ -164,6 +164,9 @@ input[type="color"]::-webkit-color-swatch {
 	height:403px;
 	font-size:0px;
 	background-image:url({* insertImage('images/background.png') *});
+	background-repeat: no-repeat;
+	background-size: 447px 403px;
+
 }
 
 #TourBox-01 {

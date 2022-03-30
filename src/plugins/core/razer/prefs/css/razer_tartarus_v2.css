@@ -8,6 +8,8 @@
 	height:625px;
 	font-size:0px;
 	background-image:url({* insertImage('images/razer_tartarus_v2.png') *});
+	background-repeat: no-repeat;
+	background-size: 429px 625px;
 }
 
 #razer_tartarus_v2_01 {

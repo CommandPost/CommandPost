@@ -668,7 +668,7 @@
     "daVinciResolveControlSurfaceResetEverythingConfirmation": "This will reset all DaVinci Resolve Control Surface items across all devices to the default values.",
     "daVinciResolveControlSurfaceResetUnitConfirmation": "This will reset all DaVinci Resolve Control Surface items for this particular unit to the default values.",
     "daVinciResolveControlSurfaceSupport": "DaVinci Resolve Control Surface Support",
-    "daVinciResolveControlSurfaceTip": "These features have been tested with Speed Editor Firmware v1.4.1.",
+    "daVinciResolveControlSurfaceTip": "DaVinci Resolve will override CommandPost when running.<br />These features have been tested with Speed Editor Firmware v1.4.1.<br />We recommend using a wired connection.",
     "decrease": "Decrease",
     "decreaseClipHeight": "Decrease Clip Height",
     "decreaseOpacity": "Decrease Opacity by %{amount} Percent",

@@ -1463,7 +1463,7 @@ function plugin.init(deps, env)
         label           = "Resolve",
         image           = imageFromPath(env:pathToAbsolute("images/resolve.icns")),
         tooltip         = i18n("daVinciResolve"),
-        height          = 960,
+        height          = 995,
     })
         :addHeading(1, i18n("daVinciResolveControlSurfaceSupport"))
         :addContent(2, [[
