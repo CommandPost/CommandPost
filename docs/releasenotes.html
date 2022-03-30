@@ -9,6 +9,56 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+        	<h1>CommandPost 1.3.0</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+			    <li>Added support for the Blackmagic Resolve Speed Editor. This wouldn't be possible without the genius work from Sylvain Munaut. Special thanks to Morten Bentsen, Håvard Njåstad and Sondre Tungesvik Njåstad.</li>
+                <li>Added actions to Prevent Mac from Sleeping (this was previously only available via the menubar). Thanks for suggesting Undertaker01!</li>
+                <li>Added option to invert the timeline mouse zoom feature in Final Cut Pro, as well as adjust the sensitivity. Thanks for suggesting dutchct!</li>
+                <li>Added actions to control the volume slider in the Final Cut Pro Inspector. Thanks for suggesting Olm Ek!</li>
+                <li>Added Timeline Scroll presets to Monogram Creator.</li>
+		    </ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+			    <li>The Stream Deck preferences panel has been completely re-designed to more closely match our Loupedeck panels - allowing for better Drag & Drop support, and right-click contextual menus. You can now programatically generate icons. Thanks for suggesting James Peach!</li>
+                <li>The Preferences and Control Surfaces toolbars now look much better on macOS Monterey.</li>
+                <li>You can now assign shortcut keys without a modifier key. This is useful is you want to assign an action to the F1 key for example. Thanks for suggesting Florian Duffe!</li>
+                <li>You can now assign any CommandPost action within the "All Applications" Keyboard section.</li>
+                <li>The various Loupedeck Control Surfaces panels are now accessible from a single Loupedeck icon, which triggers a popup menu.</li>
+                <li>We've added an option to the Loupedeck CT and Live to "Preview Selected Application & Bank on Hardware", so that you can visually check how a layout looks without leaving the CommandPost interface.</li>
+                <li>Loupedeck devices running the older firmware, now more reliably wake form sleep. Thanks for reporting Knut Hake!</li>
+                <li>Added Catalan translation. Thanks for suggesting Lluís Bartra!</li>
+			</ul>
+
+			<h2>❌ Removed</h2>
+			<ul>
+			    <li>The Compressor Watch Folders feature has been removed, as this can now be achieved natively in Compressor.</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug that broken any actions that used Final Cut Pro Audio Components. Thanks for reporting Daniel Stiefelhagen!</li>
+                <li>Fixed a bug where Timeline Batch Export would fail to close the "Go to the folder" prompt on macOS Monterey. Thanks for reporting Kevin Luk!</li>
+                <li>Skimming is now disabled when doing a Timeline Batch Export to improve reliability. Thanks for reporting Kevin Luk!</li>
+                <li>"Enable Loupedeck Support" now appears correctly in the Search Console.</li>
+                <li>The Vimeo Toolbox now correctly handles both the "Username" and "Name" headers in the CSV. Thanks for reporting Ché Baker!</li>
+                <li>The "Report Final Cut Pro Bug to Apple" feature now works on Apple Silicon.</li>
+                <li>We now check that the default Timeline Batch Export destination exists in the menubar before commencing. This fixes a bug where the Default Destination name changed between Final Cut Pro versions.</li>
+                <li>Fixed a bug which prevented CommandPost from detecting the correct Timeline Title in 10.5.4 and above.</li>
+                <li>Fixed a potential Lua error in the "Ignore Card" feature. Thanks for reporting Jack Ohrman!</li>
+                <li>Fixed a potential Lua error in our Snapshot code.</li>
+                <li>Allow copying to "Unlisted & Ignored Applications" in Control Surfaces panels. Thanks for reporting danielsti!</li>
+                <li>If you added a custom application to the Loupedeck Preferences (i.e. Logic Pro X) and turned off "Automatically Switch Applications", there was no actions for switching to Logic Pro X. This has now been fixed. Thanks for reporting Eric Badura!</li>
+                <li>You can now right-click on text boxes in the CommandPost Preferences panels, Control Surface panels and Final Cut Pro HUD.</li>
+                <li>TourBox Devices now work correctly on macOS Big Sur & Monterey. Thanks for reporting Brett Sherman!</li>
+                <li>Fixed a bug related to the Final Cut Pro Libraries List View that prevented the HUD Batch Rename tool from working. Thanks for reporting Florian Duffe!</li>
+                <li>We've added a bandaid solution to HOPEFULLY solve crashes related to the Touch Bar.</li>
+			</ul>
+
+			<hr />
+
 			<h1>CommandPost 1.2.16</h1>
 
 			<h2>🎉 New Features</h2>
