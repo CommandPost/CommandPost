@@ -503,3 +503,12 @@ input[type="color"]::-webkit-color-swatch {
     pointer-events: auto;
     background-size:contain;
 }
+
+.seButton {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.seButtonSection {
+    display: none;
+}

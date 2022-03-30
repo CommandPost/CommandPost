@@ -1,7 +1,5 @@
-<script>{(js/jscolor.js)}</script>
-<style>{(css/speededitor.css)}</style>
+<style>{(css/resolve.css)}</style>
 <script>
-
 	function changeRepeatPressActionUntilReleased() {
 		try {
 			var result = {
@@ -13,6 +11,25 @@
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					value: document.getElementById("repeatPressActionUntilReleased").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeLEDAlwaysOn() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeLEDAlwaysOn",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("ledAlwaysOn").checked,
 				},
 			}
 			postMessage(result);
@@ -59,116 +76,6 @@
 				id: "{{ id }}",
 				params: {
 					type: "resetControl",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function selectFont() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "selectFont",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function updateFontSize() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "updateFontSize",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-					value: document.getElementById("fontSize").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function updateFontColor() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "updateFontColor",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-					value: document.getElementById('fontColor').jscolor.toString(),
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function updateIconLabel() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "updateIconLabel",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-					value: document.getElementById('iconLabel').value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function iconHistory() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "iconHistory",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function clearIcon() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "clearIcon",
 					device: document.getElementById("device").value,
 					unit: document.getElementById("unit").value,
 					application: document.getElementById("application").value,
@@ -238,90 +145,6 @@
 		}
 	}
 
-	function setIcon(encodedIcon) {
-		if (encodedIcon != "") {
-			document.getElementById("iconDropZonePreview").innerHTML = "<img src='" + encodedIcon + "'>";
-    		document.getElementById("iconDropZone").className = "dropzone dropped";
-    	} else {
-			document.getElementById("iconDropZonePreview").innerHTML = "<p style=\"padding-top: 13px;\">icon</p>";
-			document.getElementById("iconDropZone").className = "dropzone";
-    	}
-	}
-
-	function pressIconDropZone() {
-		try {
-			var result = {
-				id: "{{ id }}",
-				params: {
-					type: "iconClicked",
-					device: document.getElementById("device").value,
-					unit: document.getElementById("unit").value,
-					application: document.getElementById("application").value,
-					bank: document.getElementById("bank").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function changeIconDropZone(element) {
-		var file = element.files[0];
-
-		element.classList.remove("hover");
-
-		var match = element.accept.split(/, ?/).indexOf(file.type);
-
-		if (element.accept && match == -1) {
-			// File type dropped doesn't match the accepted list:
-			try {
-				var result = {
-					id: "{{ id }}",
-					params: {
-						type: "badExtension",
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-			return;
-		};
-
-		element.classList.add("dropped");
-
-		var reader = new FileReader(file);
-		reader.readAsDataURL(file);
-
-		reader.onload = function(e) {
-			var data = e.target.result;
-			document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-
-			// Icon Callback:
-			try {
-				var result = {
-					id: "{{ id }}",
-					params: {
-						type: "updateIcon",
-                        device: document.getElementById("device").value,
-                        unit: document.getElementById("unit").value,
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						icon: data,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-
-			// Reset the drop zone:
-			element.value = "";
-
-		};
-	}
-
 	function changeFontColor(value) {
 		document.getElementById('fontColor').jscolor.fromString(value);
 	}
@@ -366,6 +189,25 @@
 		}
 	}
 
+	function changeSensitivity() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeSensitivity",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("sensitivity").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function changeBankLabel() {
 		try {
 			var result = {
@@ -402,60 +244,6 @@
 		} catch(err) {
 			alertErrorMessage(err);
 		}
-	}
-
-	function changeDropZone(button, element) {
-		var file = element.files[0];
-
-		element.classList.remove("hover");
-
-		var match = element.accept.split(/, ?/).indexOf(file.type);
-
-		if (element.accept && match == -1) {
-			// File type dropped doesn't match the accepted list:
-			try {
-				var result = {
-					id: "{{ id }}",
-					params: {
-						type: "badExtension",
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-			return;
-		};
-
-		element.classList.add("dropped");
-
-		var reader = new FileReader(file);
-		reader.readAsDataURL(file);
-
-		reader.onload = function(e) {
-			var data = e.target.result;
-			document.getElementById("dropzone" + button + "_preview").innerHTML = '<img src="' + data + '" />';
-
-			// Icon Callback:
-			try {
-				var result = {
-					id: "{{ id }}",
-					params: {
-						type: "updateIcon",
-						device: document.getElementById("device").value,
-						unit: document.getElementById("unit").value,
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						button: button,
-						icon: data,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-
-		};
 	}
 
 	function changeIgnore() {
@@ -516,50 +304,7 @@
 		var file = files[0]
 
 	    if (file) {
-	    	if (["image/png", "image/gif", "image/jpeg", "image/tiff"].indexOf(file.type) >= 0) {
-				var reader = new FileReader(file);
-				reader.readAsDataURL(file);
-
-				reader.onload = function(e) {
-					var data = e.target.result;
-
-					// Icon Callback:
-					try {
-						var result = {
-							id: "{{ id }}",
-							params: {
-								type: "updateIcon",
-                                device: document.getElementById("device").value,
-                                unit: document.getElementById("unit").value,
-								application: document.getElementById("application").value,
-								bank: document.getElementById("bank").value,
-								button: button,
-								icon: data,
-							},
-						}
-						postMessage(result);
-					} catch(err) {
-						alertErrorMessage(err);
-					}
-
-				};
-
-
-	    	} else {
-				// File type dropped doesn't match the accepted list:
-				try {
-					var result = {
-						id: "{{ id }}",
-						params: {
-							type: "badExtension",
-						},
-					}
-					postMessage(result);
-				} catch(err) {
-					alertErrorMessage(err);
-				}
-				return;
-	    	}
+	        return;
 	    }
 	    else {
 			try {
@@ -703,7 +448,7 @@
 		</th>
 		<th style="padding-left: 20px;">
 			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
-			<input type="text" id="bankLabel" class="speedEditorLabel" value="{{ lastBankLabel }}" onchange="updateBankLabel()" placeholder="{{ i18n("none") }}">
+			<input type="text" id="bankLabel" class="speedEditorLabel" value="{{ lastBankLabel }}" onchange="changeBankLabel()" placeholder="{{ i18n("none") }}">
 		</th>
 		<th style="padding-left: 20px; width: 200px; vertical-align:bottom;">
 			<span id="ignoreApp">
@@ -718,12 +463,6 @@
 	<thead>
 		<tr>
 			<th width="458px" style="text-align: center";>
-                <style>
-                    .seButton {
-                        cursor: pointer;
-                        pointer-events: auto;
-                    }
-                </style>
                 <table id="speedEditorUI" width="447" height="482" border="0" cellpadding="0" cellspacing="0" style="background-image:url({* insertImage('images/speededitor.png') *});">
                     <tr>
                         <td width="447" height="139" colspan="27">
@@ -879,21 +618,21 @@
 					<table class="speedEditor" style="height: 450px;">
 
 						<!-- PRESS & RELEASE ACTION: -->
-						<tr>
+						<tr class="seButtonSection">
 							<th width="229px">{{ i18n("pressAction") }}:</th>
 							<th width="229px">{{ i18n("releaseAction") }}:</th>
 						</tr>
-						<tr>
-							<td width="229px"><input type="text" id="press_action" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px"><input type="text" id="release_action" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<tr class="seButtonSection">
+							<td width="229px"><input type="text" id="pressAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="releaseAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
-						<tr>
-							<td width="229px"><a id="press_actionButton" href="#" class="button speedEditorActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button speedEditorActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
-							<td width="229px"><a id="release_actionButton" href="#" class="button speedEditorActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button speedEditorActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
+						<tr class="seButtonSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- PRESS REPEAT: -->
-						<tr>
+						<tr class="seButtonSection">
 							<td width="458px">
 								<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
 								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
@@ -901,21 +640,69 @@
 						</tr>
 
 						<!-- SPACER: -->
-						<tr>
+						<tr class="seLEDSection">
 							<td>
 								</br>
 							</td>
 						</tr>
 
 						<!-- USE SNIPPET TO TOGGLE LED STATUS : -->
-						<tr>
+						<tr class="seLEDSection">
 							<th width="229px">{{ i18n("useSnippetToToggleLEDStatus") }}:</th>
 						</tr>
-						<tr>
-							<td width="229px"><input type="text" id="snippet_action" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<tr class="seLEDSection">
+							<td width="229px"><input type="text" id="snippetAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
-						<tr>
+						<tr class="seLEDSection">
 							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button speedEditorActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
+						</tr>
+
+						<!-- LED ALWAYS ON CHECKBOX: -->
+						<tr class="seLEDSection">
+							<td width="458px">
+								<input type="checkbox" value="true" id="ledAlwaysOn" onchange="changeLEDAlwaysOn()">
+								<label for="ledAlwaysOn"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("ledAlwaysOn") }}</span></label>
+							</td>
+						</tr>
+
+						<!-- JOG WHEEL ACTIONS: -->
+						<tr class="seJogWheelSection">
+							<th width="229px">{{ i18n("turnLeftAction") }}:</th>
+							<th width="229px">{{ i18n("turnRightAction") }}:</th>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px"><input type="text" id="turnLeftAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL SENSITIVITY: -->
+						<tr class="seJogWheelSection">
+							<th width="229px">{{ i18n("sensitivity") }}:</th>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px">
+								<select id="sensitivity" style="width: 210px;" onchange="changeSensitivity()">
+									<option value="250">1 ({{ i18n("verySensitive") }})</option>
+									<option value="500">2</option>
+									<option value="1000">3</option>
+									<option value="2000">4</option>
+									<option value="3000">5</option>
+									<option value="4000">6</option>
+									<option value="5000">7</option>
+									<option value="6000">8</option>
+									<option value="7000">9</option>
+									<option value="8000">10 ({{ i18n("default") }})</option>
+									<option value="9000">11</option>
+									<option value="10000">12</option>
+									<option value="11000">13</option>
+									<option value="12000">14</option>
+									<option value="13000">15</option>
+								</select>
+							</td>
 						</tr>
 
 						<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->

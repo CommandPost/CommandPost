@@ -1,6 +1,6 @@
---- === plugins.core.speededitor.prefs ===
+--- === plugins.core.controlsurfaces.resolve.prefs ===
 ---
---- Speed Editor Preferences Panel
+--- Blackmagic DaVinci Resolve Control Surface Preferences Panel
 
 local require                   = require
 
@@ -15,7 +15,7 @@ local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
---local speededitor               = require "hs.speededitor"
+local speededitor               = require "hs.speededitor"
 
 local config                    = require "cp.config"
 local html                      = require "cp.web.html"
@@ -45,35 +45,35 @@ local mod = {}
 -- URL to Snippet Support Site
 local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
 
---- plugins.core.speededitor.prefs.pasteboard <cp.prop: table>
+--- plugins.core.controlsurfaces.resolve.prefs.pasteboard <cp.prop: table>
 --- Field
 --- Pasteboard
-mod.pasteboard = json.prop(config.cachePath, "Speed Editor", "Pasteboard.cpCache", {})
+mod.pasteboard = json.prop(config.cachePath, "DaVinci Resolve Control Surface", "Pasteboard.cpCache", {})
 
---- plugins.core.speededitor.prefs.lastExportPath <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.prefs.lastExportPath <cp.prop: string>
 --- Field
 --- Last Export path.
-mod.lastExportPath = config.prop("speedEditor.preferences.lastExportPath", os.getenv("HOME") .. "/Desktop/")
+mod.lastExportPath = config.prop("daVinciResolveControlSurface.preferences.lastExportPath", os.getenv("HOME") .. "/Desktop/")
 
---- plugins.core.speededitor.prefs.lastImportPath <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.prefs.lastImportPath <cp.prop: string>
 --- Field
 --- Last Import path.
-mod.lastImportPath = config.prop("speedEditor.preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
+mod.lastImportPath = config.prop("daVinciResolveControlSurface.preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
 
---- plugins.core.speededitor.prefs.lastDevice <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.prefs.lastDevice <cp.prop: string>
 --- Field
 --- Last Device used in the Preferences Panel.
-mod.lastDevice = config.prop("speedEditor.preferences.lastDevice", "Original")
+mod.lastDevice = config.prop("daVinciResolveControlSurface.preferences.lastDevice", "Speed Editor")
 
---- plugins.core.speededitor.prefs.lastUnit <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.prefs.lastUnit <cp.prop: string>
 --- Field
 --- Last Unit used in the Preferences Panel.
-mod.lastUnit = config.prop("speedEditor.preferences.lastUnit", "1")
+mod.lastUnit = config.prop("daVinciResolveControlSurface.preferences.lastUnit", "1")
 
---- plugins.core.speededitor.prefs.lastUnit <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.prefs.lastUnit <cp.prop: string>
 --- Field
 --- Last Unit used in the Preferences Panel.
-mod.lastButton = config.prop("speedEditor.preferences.lastButton", "1")
+mod.lastButton = config.prop("daVinciResolveControlSurface.preferences.lastButton", "1")
 
 -- renderPanel(context) -> none
 -- Function
@@ -145,7 +145,7 @@ local function generateContent()
     end
 
     local context = {
-        id                      = "speedEditorPanelCallback",
+        id                      = "daVinciResolveControlSurfacePanelCallback",
 
         builtInApps             = builtInApps,
         userApps                = userApps,
@@ -204,6 +204,36 @@ local function updateUI(params)
     ]]
 
     --------------------------------------------------------------------------------
+    -- Change the UI depending on the selected control:
+    --------------------------------------------------------------------------------
+    if button == "JOG WHEEL" then
+        script = script .. [[
+            setStyleDisplayByClass("seButtonSection", "none");
+            setStyleDisplayByClass("seJogWheelSection", "table");
+        ]] .. "\n"
+    else
+        script = script .. [[
+            setStyleDisplayByClass("seButtonSection", "table");
+            setStyleDisplayByClass("seJogWheelSection", "none");
+        ]] .. "\n"
+    end
+
+    --------------------------------------------------------------------------------
+    -- Only show LED options if the button has an LED:
+    --------------------------------------------------------------------------------
+    if tableContains(speededitor.ledNames, button) then
+        script = script .. [[
+            setStyleDisplayByClass("seLEDSection", "table");
+        ]] .. "\n"
+
+    else
+        script = script .. [[
+            setStyleDisplayByClass("seLEDSection", "none");
+        ]] .. "\n"
+
+    end
+
+    --------------------------------------------------------------------------------
     -- Update the UI label:
     --------------------------------------------------------------------------------
     script = script .. [[
@@ -248,22 +278,38 @@ local function updateUI(params)
     local pressAction = ""
     local releaseAction = ""
     local snippetAction = ""
+    local turnLeftAction = ""
+    local turnRightAction = ""
+    local ledAlwaysOn = false
     local repeatPressActionUntilReleased = false
+    local sensitivity = mod._resolveManager.defaultSensitivity[device]
 
     local buttonData = bankData and bankData[button]
     if buttonData then
-        pressAction                         = escapeTilda(buttonData.actionTitle)
-        releaseAction                       = escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle)
-        snippetAction                       = escapeTilda(buttonData.snippetAction and buttonData.snippetAction.actionTitle)
-        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or false
+        pressAction                         = escapeTilda(buttonData.pressAction        and buttonData.pressAction.actionTitle)
+        releaseAction                       = escapeTilda(buttonData.releaseAction      and buttonData.releaseAction.actionTitle)
+        snippetAction                       = escapeTilda(buttonData.snippetAction      and buttonData.snippetAction.actionTitle)
+        turnLeftAction                      = escapeTilda(buttonData.turnLeftAction     and buttonData.turnLeftAction.actionTitle)
+        turnRightAction                     = escapeTilda(buttonData.turnRightAction    and buttonData.turnRightAction.actionTitle)
+
+        ledAlwaysOn                         = buttonData.ledAlwaysOn or ledAlwaysOn
+        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or repeatPressActionUntilReleased
+
+        sensitivity                         = buttonData.sensitivity or sensitivity
     end
 
     script = script .. [[
-        changeValueByID('press_action', `]] .. pressAction .. [[`);
-        changeValueByID('release_action', `]] .. releaseAction .. [[`);
-        changeValueByID('snippet_action', `]] .. snippetAction .. [[`);
+        changeValueByID('pressAction', `]] .. pressAction .. [[`);
+        changeValueByID('releaseAction', `]] .. releaseAction .. [[`);
+        changeValueByID('snippetAction', `]] .. snippetAction .. [[`);
+
+        changeValueByID('turnLeftAction', `]] .. turnLeftAction .. [[`);
+        changeValueByID('turnRightAction', `]] .. turnRightAction .. [[`);
 
         changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleased or false) .. [[);
+        changeCheckedByID('ledAlwaysOn', ]] .. tostring(ledAlwaysOn or false) .. [[);
+
+        changeValueByID("sensitivity", "]] .. sensitivity .. [[");
     ]]
 
     --------------------------------------------------------------------------------
@@ -282,10 +328,10 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     -- Update the hardware:
     --------------------------------------------------------------------------------
-    mod._speedEditorManager.update()
+    mod._resolveManager.update()
 end
 
---- plugins.core.speededitor.prefs.setItem(app, bank, button, key, [value]) -> none
+--- plugins.core.controlsurfaces.resolve.prefs.setItem(app, bank, button, key, [value]) -> none
 --- Method
 --- Update the Speed Editor layout file.
 ---
@@ -309,7 +355,7 @@ function mod.setItem(app, bank, button, key, value)
     end
 
     if not app or not bank or not button or not key then
-        log.ef("[plugins.core.speededitor.prefs.setItem] Something has gone terribly wrong. Aborting!")
+        log.ef("[plugins.core.controlsurfaces.resolve.prefs.setItem] Something has gone terribly wrong. Aborting!")
         log.ef("device: %s", lastDevice)
         log.ef("unit: %s", lastUnit)
         log.ef("app: %s", app)
@@ -336,7 +382,7 @@ function mod.setItem(app, bank, button, key, value)
     mod.items(items)
 end
 
--- speedEditorPanelCallback() -> none
+-- daVinciResolveControlSurfacePanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
 --
@@ -346,7 +392,7 @@ end
 --
 -- Returns:
 --  * None
-local function speedEditorPanelCallback(id, params)
+local function daVinciResolveControlSurfacePanelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
@@ -458,21 +504,12 @@ local function speedEditorPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Update the preferences file:
                 --------------------------------------------------------------------------------
-                if buttonType == "pressAction" then
-                    --------------------------------------------------------------------------------
-                    -- We just do this in the "root" of the button table for legacy reasons:
-                    --------------------------------------------------------------------------------
-                    mod.setItem(app, bank, button, "actionTitle", actionTitle)
-                    mod.setItem(app, bank, button, "handlerID", handlerID)
-                    mod.setItem(app, bank, button, "action", action)
-                else
-                    local result = {
-                        ["actionTitle"] = actionTitle,
-                        ["handlerID"] = handlerID,
-                        ["action"] = action,
-                    }
-                    mod.setItem(app, bank, button, buttonType, result)
-                end
+                local result = {
+                    ["actionTitle"] = actionTitle,
+                    ["handlerID"] = handlerID,
+                    ["action"] = action,
+                }
+                mod.setItem(app, bank, button, buttonType, result)
 
                 --------------------------------------------------------------------------------
                 -- Change the control and update the UI:
@@ -493,13 +530,7 @@ local function speedEditorPanelCallback(id, params)
                                         and items[lastDevice][lastDevice][app][bank]
                                         and items[lastDevice][lastDevice][app][bank][button]
 
-            local currentActionTitle
-
-            if buttonType == "pressAction" then
-                currentActionTitle = currentButton and currentButton.actionTitle
-            else
-                currentActionTitle = currentButton and currentButton[buttonType] and currentButton[buttonType].actionTitle
-            end
+            local currentActionTitle = currentButton and currentButton[buttonType] and currentButton[buttonType].actionTitle
 
             if currentActionTitle and currentActionTitle ~= "" then
                 mod.activator[activatorID]:lastQueryValue(currentActionTitle)
@@ -519,16 +550,7 @@ local function speedEditorPanelCallback(id, params)
 
             local button = mod.lastButton()
 
-            if buttonType == "pressAction" then
-                --------------------------------------------------------------------------------
-                -- We just do this in the "root" of the button table for legacy reasons:
-                --------------------------------------------------------------------------------
-                mod.setItem(app, bank, button, "actionTitle", nil)
-                mod.setItem(app, bank, button, "handlerID", nil)
-                mod.setItem(app, bank, button, "action", nil)
-            else
-                mod.setItem(app, bank, button, buttonType, nil)
-            end
+            mod.setItem(app, bank, button, buttonType, nil)
 
             --------------------------------------------------------------------------------
             -- Update the UI:
@@ -612,6 +634,30 @@ local function speedEditorPanelCallback(id, params)
             mod.setItem(app, bank, button, "repeatPressActionUntilReleased", value)
 
             updateUI()
+        elseif callbackType == "changeLEDAlwaysOn" then
+            --------------------------------------------------------------------------------
+            -- Update "LED Always On":
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local button = params["button"] or mod.lastButton()
+            local value = params["value"]
+
+            mod.setItem(app, bank, button, "ledAlwaysOn", value)
+
+            updateUI()
+        elseif callbackType == "changeSensitivity" then
+            --------------------------------------------------------------------------------
+            -- Update "Sensitivity":
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local button = params["button"] or mod.lastButton()
+            local value = params["value"]
+
+            mod.setItem(app, bank, button, "sensitivity", value)
+
+            updateUI()
         elseif callbackType == "changeDeviceUnitApplicationBank" then
             --------------------------------------------------------------------------------
             -- Change Device/Unit/Application/Bank:
@@ -690,11 +736,11 @@ local function speedEditorPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Change the bank:
                 --------------------------------------------------------------------------------
-                local activeBanks = mod._speedEditorManager.activeBanks()
+                local activeBanks = mod._resolveManager.activeBanks()
                 if not activeBanks[device] then activeBanks[device] = {} end
                 if not activeBanks[device][unit] then activeBanks[device][unit] = {} end
                 activeBanks[device][unit][app] = tostring(bank)
-                mod._speedEditorManager.activeBanks(activeBanks)
+                mod._resolveManager.activeBanks(activeBanks)
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:
@@ -814,7 +860,7 @@ local function speedEditorPanelCallback(id, params)
             --------------------------------------------------------------------------------
             webviewAlert(mod._manager.getWebview(), function(result)
                 if result == i18n("yes") then
-                    local defaultLayout = copy(mod._speedEditorManager.defaultLayout)
+                    local defaultLayout = copy(mod._resolveManager.defaultLayout)
                     mod.items(defaultLayout)
 
                     --------------------------------------------------------------------------------
@@ -822,7 +868,7 @@ local function speedEditorPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     mod._manager.refresh()
                 end
-            end, i18n("speedEditorResetEverythingConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("daVinciResolveControlSurfaceResetEverythingConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetDevice" then
             --------------------------------------------------------------------------------
             -- Reset Device:
@@ -832,14 +878,14 @@ local function speedEditorPanelCallback(id, params)
                     local device = params["device"]
                     local items = mod.items()
 
-                    local defaultLayout = mod._speedEditorManager.defaultLayout
+                    local defaultLayout = mod._resolveManager.defaultLayout
                     local blank = defaultLayout and defaultLayout[device] and copy(defaultLayout[device]) or {}
 
                     items[device] = blank
                     mod.items(items)
                     updateUI(params)
                 end
-            end, i18n("speedEditorResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("daVinciResolveControlSurfaceResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetUnit" then
             --------------------------------------------------------------------------------
             -- Reset Unit:
@@ -853,14 +899,14 @@ local function speedEditorPanelCallback(id, params)
                     if not items[device] then items[device] = {} end
                     if not items[device][unit] then items[device][unit] = {} end
 
-                    local defaultLayout = mod._speedEditorManager.defaultLayout
+                    local defaultLayout = mod._resolveManager.defaultLayout
                     local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and copy(defaultLayout[device][unit]) or {}
 
                     items[device][unit] = blank
                     mod.items(items)
                     updateUI(params)
                 end
-            end, i18n("speedEditorResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("daVinciResolveControlSurfaceResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetApplication" then
             --------------------------------------------------------------------------------
             -- Reset Application:
@@ -876,14 +922,14 @@ local function speedEditorPanelCallback(id, params)
                     if not items[device][unit] then items[device][unit] = {} end
                     if not items[device][unit][app] then items[device][unit][app] = {} end
 
-                    local defaultLayout = mod._speedEditorManager.defaultLayout
+                    local defaultLayout = mod._resolveManager.defaultLayout
                     local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and copy(defaultLayout[device][unit][app]) or {}
 
                     items[device][unit][app] = blank
                     mod.items(items)
                     updateUI(params)
                 end
-            end, i18n("speedEditorResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("daVinciResolveControlSurfaceResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetBank" then
             --------------------------------------------------------------------------------
             -- Reset Bank:
@@ -901,14 +947,14 @@ local function speedEditorPanelCallback(id, params)
                     if not items[device][unit][app] then items[device][unit][app] = {} end
                     if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
 
-                    local defaultLayout = mod._speedEditorManager.defaultLayout
+                    local defaultLayout = mod._resolveManager.defaultLayout
                     local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and defaultLayout[device][unit][app][bank] and copy(defaultLayout[device][unit][app][bank]) or {}
 
                     items[device][unit][app][bank] = blank
                     mod.items(items)
                     updateUI(params)
                 end
-            end, i18n("speedEditorResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("daVinciResolveControlSurfaceResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "showContextMenu" then
             --------------------------------------------------------------------------------
             -- Show Context Menu:
@@ -1002,15 +1048,9 @@ local function speedEditorPanelCallback(id, params)
                 disabled = true,
             })
 
-            local devices = {
-                ["Speed Editor"] = "Original",
-                ["Speed Editor Mini"] = "Mini",
-                ["Speed Editor XL"] = "XL",
-            }
-
-            for deviceLabel, deviceID in pairs(devices) do
+            for deviceID, _ in pairs(mod._resolveManager.devices) do
                 table.insert(menu, {
-                    title = deviceLabel,
+                    title = deviceID,
                     fn = function() copyDevice(deviceID) end
                 })
             end
@@ -1046,16 +1086,10 @@ local function speedEditorPanelCallback(id, params)
                 disabled = true,
             })
 
-            local devices = {
-                ["Speed Editor"] = "Original",
-                ["Speed Editor Mini"] = "Mini",
-                ["Speed Editor XL"] = "XL",
-            }
-
-            for deviceLabel, deviceID in pairs(devices) do
+            for deviceID, _ in pairs(mod._resolveManager.devices) do
                 for unitID=1, mod.numberOfDevices do
                     table.insert(menu, {
-                        title = deviceLabel .. " " .. unitID,
+                        title = deviceID .. " " .. unitID,
                         fn = function() copyUnit(deviceID, tostring(unitID)) end
                     })
                 end
@@ -1381,7 +1415,7 @@ local function speedEditorPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Speed Editor Preferences Panel:")
+            log.df("Unknown Callback in DaVinci Resolve Control Surfaces Preferences Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
@@ -1389,14 +1423,14 @@ local function speedEditorPanelCallback(id, params)
 end
 
 local plugin = {
-    id              = "core.speededitor.prefs",
+    id              = "core.controlsurfaces.resolve.prefs",
     group           = "core",
     dependencies    = {
-        ["core.controlsurfaces.manager"]        = "manager",
-        ["core.speededitor.manager"]            = "speedEditorManager",
-        ["core.action.manager"]                 = "actionmanager",
-        ["core.application.manager"]            = "appmanager",
-        ["core.preferences.panels.scripting"]   = "scriptingPreferences",
+        ["core.controlsurfaces.manager"]            = "manager",
+        ["core.controlsurfaces.resolve.manager"]    = "resolveManager",
+        ["core.action.manager"]                     = "actionmanager",
+        ["core.application.manager"]                = "appmanager",
+        ["core.preferences.panels.scripting"]       = "scriptingPreferences",
     }
 }
 
@@ -1405,7 +1439,7 @@ function plugin.init(deps, env)
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
     mod._appmanager             = deps.appmanager
-    mod._speedEditorManager     = deps.speedEditorManager
+    mod._resolveManager         = deps.resolveManager
     mod._manager                = deps.manager
     mod._webviewLabel           = deps.manager.getLabel()
     mod._actionmanager          = deps.actionmanager
@@ -1416,23 +1450,23 @@ function plugin.init(deps, env)
     mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
     mod.numberOfDevices         = deps.manager.NUMBER_OF_DEVICES
 
-    mod.items                   = deps.speedEditorManager.items
-    mod.enabled                 = deps.speedEditorManager.enabled
-    mod.lastApplication         = deps.speedEditorManager.lastApplication
-    mod.lastBank                = deps.speedEditorManager.lastBank
+    mod.items                   = deps.resolveManager.items
+    mod.enabled                 = deps.resolveManager.enabled
+    mod.lastApplication         = deps.resolveManager.lastApplication
+    mod.lastBank                = deps.resolveManager.lastBank
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         priority        = 2032,
-        id              = "speededitor",
-        label           = i18n("speedEditor"),
-        image           = imageFromPath(env:pathToAbsolute("images/speededitor.icns")),
-        tooltip         = i18n("speedEditor"),
+        id              = "daVinciResolve",
+        label           = "Resolve",
+        image           = imageFromPath(env:pathToAbsolute("images/resolve.icns")),
+        tooltip         = i18n("daVinciResolve"),
         height          = 960,
     })
-        :addHeading(1, i18n("speedEditor"))
+        :addHeading(1, i18n("daVinciResolveControlSurfaceSupport"))
         :addContent(2, [[
             <style>
                 .menubarRow {
@@ -1448,25 +1482,19 @@ function plugin.init(deps, env)
         ]], false)
         :addCheckbox(3,
             {
-                class       = "enableSpeedEditor",
-                label       = i18n("enableSpeedEditor"),
+                label       = i18n("enableDaVinciResolveControlSurfaceSupport"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)
-                    if #application.applicationsForBundleID("com.elgato.SpeedEditor") == 0 then
-                        mod.enabled(params.checked)
-                    else
-                        webviewAlert(mod._manager.getWebview(), function() end, i18n("speedEditorAppRunning"), i18n("speedEditorAppRunningMessage"), i18n("ok"))
-                        mod._manager.refresh()
-                    end
+                    mod.enabled(params.checked)
                 end,
             }
         )
         :addCheckbox(4,
             {
                 label       = i18n("automaticallySwitchApplications"),
-                checked     = mod._speedEditorManager.automaticallySwitchApplications,
+                checked     = mod._resolveManager.automaticallySwitchApplications,
                 onchange    = function(_, params)
-                    mod._speedEditorManager.automaticallySwitchApplications(params.checked)
+                    mod._resolveManager.automaticallySwitchApplications(params.checked)
                     updateUI()
                 end,
             }
@@ -1491,7 +1519,7 @@ function plugin.init(deps, env)
         :addSelect(7,
             {
                 label       =   i18n("snippetsRefreshFrequency"),
-                value       =   mod._speedEditorManager.snippetsRefreshFrequency,
+                value       =   mod._resolveManager.snippetsRefreshFrequency,
                 class       =   "snippetsRefreshFrequency restrictRightTopSectionSize",
                 options     =   function()
                                     local options = {}
@@ -1505,11 +1533,11 @@ function plugin.init(deps, env)
                                 end,
                 required    =   true,
                 onchange    =   function(_, params)
-                                    mod._speedEditorManager.snippetsRefreshFrequency(params.value)
-                                    if mod._speedEditorManager.refreshTimer then
-                                        mod._speedEditorManager.refreshTimer:stop()
-                                        mod._speedEditorManager.refreshTimer = nil
-                                        mod._speedEditorManager.update()
+                                    mod._resolveManager.snippetsRefreshFrequency(params.value)
+                                    if mod._resolveManager.refreshTimer then
+                                        mod._resolveManager.refreshTimer:stop()
+                                        mod._resolveManager.refreshTimer = nil
+                                        mod._resolveManager.update()
                                     end
                                 end,
             }
@@ -1519,13 +1547,13 @@ function plugin.init(deps, env)
             </div>
             <br />
         ]], false)
-        :addParagraph(11, html.span {class="tip"} (html(i18n("speedEditorTip"), false) ) .. "\n\n")
+        :addParagraph(11, html.span {class="tip"} (html(i18n("daVinciResolveControlSurfaceTip"), false) ) .. "\n\n")
         :addContent(12, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
-    mod._panel:addHandler("onchange", "speedEditorPanelCallback", speedEditorPanelCallback)
+    mod._panel:addHandler("onchange", "daVinciResolveControlSurfacePanelCallback", daVinciResolveControlSurfacePanelCallback)
 
     return mod
 end

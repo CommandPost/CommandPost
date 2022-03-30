@@ -1,7 +1,6 @@
 <script>{(js/jscolor.js)}</script>
 <style>{(css/streamdeck.css)}</style>
 <script>
-
 	function changeRepeatPressActionUntilReleased() {
 		try {
 			var result = {
@@ -710,7 +709,7 @@
 		</th>
 		<th style="padding-left: 20px;">
 			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
-			<input type="text" id="bankLabel" class="streamDeckLabel" value="{{ lastBankLabel }}" onchange="updateBankLabel()" placeholder="{{ i18n("none") }}">
+			<input type="text" id="bankLabel" class="streamDeckLabel" value="{{ lastBankLabel }}" onchange="changeBankLabel()" placeholder="{{ i18n("none") }}">
 		</th>
 		<th style="padding-left: 20px; width: 200px; vertical-align:bottom;">
 			<span id="ignoreApp">
