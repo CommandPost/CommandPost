@@ -1,0 +1,768 @@
+<style>{(css/resolve.css)}</style>
+<script>
+	function changeRepeatPressActionUntilReleased() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeRepeatPressActionUntilReleased",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("repeatPressActionUntilReleased").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeLEDAlwaysOn() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeLEDAlwaysOn",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("ledAlwaysOn").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function examples() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "examples",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyControlToAllBanks() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "copyControlToAllBanks",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetControl() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "resetControl",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function selectButton(buttonType) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateAction",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					buttonType: buttonType,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clearButton(buttonType) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "clearAction",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					buttonType: buttonType,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function editSnippet(actionType) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "editSnippet",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					actionType: actionType,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeFontColor(value) {
+		document.getElementById('fontColor').jscolor.fromString(value);
+	}
+
+	function changeImage(id, data) {
+		document.getElementById(id).getElementsByTagName('img')[0].src = data;
+	}
+
+	function updateUI() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateUI",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeDeviceUnitApplicationBank() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeDeviceUnitApplicationBank",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeSensitivity() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeSensitivity",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("sensitivity").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeBankLabel() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeBankLabel",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					bankLabel: document.getElementById("bankLabel").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clickButton(callbackType, button) {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: callbackType,
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					button: button,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeIgnore() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeIgnore",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					ignore: document.getElementById("ignore").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function showContextMenu(ev) {
+		ev.preventDefault();
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "showContextMenu",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					button: ev.srcElement.getAttribute("button"),
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+		return false;
+	}
+
+	function allowDrop(ev) {
+		ev.dataTransfer.dropEffect = "copy";
+		ev.preventDefault();
+	}
+
+	function drag(ev) {
+		ev.dataTransfer.setData("button", ev.target.getAttribute("button"));
+	}
+
+	function drop(ev) {
+
+		ev.preventDefault();
+
+		var button = ev.toElement.getAttribute("button");
+
+		var dt = ev.dataTransfer
+	    var files = dt.files
+		var file = files[0]
+
+	    if (file) {
+	        return;
+	    }
+	    else {
+			try {
+				var result = {
+					id: "{{ id }}",
+					params: {
+						type: "dropAndDrop",
+                        device: document.getElementById("device").value,
+                        unit: document.getElementById("unit").value,
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						source: ev.dataTransfer.getData("button"),
+						destination: button,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
+	function changeControl(element) {
+		// -------------------------------------------------
+		// UPDATE LABEL UI:
+		// -------------------------------------------------
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updateUI",
+					device: element.getAttribute("device"),
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					button: element.getAttribute("button"),
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('importSettings')">{{ i18n("importSettings") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('exportSettings')">{{ i18n("exportSettings") }}</a>
+		</th>
+		<th>
+	</tr>
+</table>
+
+<hr />
+
+<table style="text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px;">
+	<tr>
+		<th style="width: 67px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("device") }}: </span>
+		</th>
+		<th style="width: 250px;">
+			<select id="device" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
+				<option value="Speed Editor" {{ lastDevice == "Speed Editor" and "selected" or ""}}>Speed Editor</option>
+			</select>
+		</th>
+	</tr>
+</table>
+
+<table style="width: 1000px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px;">
+	<tr>
+		<th style=text-align: left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("unit") }}: </span>
+				<select id="unit" style="width: 35px;" onchange="changeDeviceUnitApplicationBank()">
+					{%
+					for i=1, numberOfDevices do
+					%}
+					<option value="{{i}}" {{ lastUnit == tostring(i) and "selected" or ""}}>{{i}}</option>
+					{% end %}
+				</select>
+			</span>
+		</th>
+		<th style=text-align: left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
+				<select id="application" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
+					<option value="All Applications">{{ i18n("unlistedAndIgnoredApplications") }}</option>
+					<option disabled>──────────</option>
+					{%
+					for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
+						local selected = ""
+						if lastApplication == id then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{id}}">{{label}}</option>
+					{% end %}
+					<option disabled>──────────</option>
+					{%
+					local atLeastOne = false
+					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
+						atLeastOne = true
+						local selected = ""
+						if lastApplication == id then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{id}}">{{label}}</option>
+					{%
+					end
+					if atLeastOne then
+					%}
+					<option disabled>──────────</option>
+					{%
+					end
+					%}
+					<option value="Add Application">{{ i18n("addApplication") }}</option>
+				</select>
+			</span>
+		</th>
+		<th style="padding-left: 20px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
+				<select id="bank" style="width: 100px;" onchange="changeDeviceUnitApplicationBank()">
+					{%
+					for i=1, numberOfBanks do
+						local selected = ""
+						if lastBank == tostring(i) then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{i}}">{{i}}</option>
+					{% end %}
+				</select>
+			</span>
+		</th>
+		<th style="padding-left: 20px;">
+			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
+			<input type="text" id="bankLabel" class="speedEditorLabel" value="{{ lastBankLabel }}" onchange="changeBankLabel()" placeholder="{{ i18n("none") }}">
+		</th>
+		<th style="padding-left: 20px; width: 200px; vertical-align:bottom;">
+			<span id="ignoreApp">
+				<input type="checkbox" value="ignore" id="ignore" onchange="changeIgnore()">
+		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("ignoreApplication") }}</span></label>
+	  		</span>
+		</th>
+	</tr>
+</table>
+
+<table>
+	<thead>
+		<tr>
+			<th width="458px" style="text-align: center";>
+                <table id="speedEditorUI" width="447" height="482" border="0" cellpadding="0" cellspacing="0" style="background-image:url({* insertImage('images/speededitor.png') *});">
+                    <tr>
+                        <td width="447" height="139" colspan="27">
+                    </tr>
+                    <tr>
+                        <td width="28" height="343" rowspan="17"></td>
+                        <td class="seButton" device="Speed Editor" button="SMART INSRT" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td width="3" height="82" rowspan="7"></td>
+                        <td class="seButton" device="Speed Editor" button="APPND" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" colspan="3" rowspan="2"></td>
+                        <td width="2" height="82" rowspan="7"></td>
+                        <td class="seButton" device="Speed Editor" button="RIPL OWR" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td width="27" height="343" rowspan="17"></td>
+                        <td class="seButton" device="Speed Editor" button="ESC" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td width="71" height="1" colspan="5"></td>
+                        <td class="seButton" device="Speed Editor" button="FULL VIEW" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td width="28" height="109" colspan="2" rowspan="8"></td>
+                        <td class="seButton" device="Speed Editor" button="SOURCE" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="47" height="32" colspan="3" rowspan="2"></td>
+                        <td width="5" height="49" rowspan="4"></td>
+                        <td class="seButton" device="Speed Editor" button="TIMELINE" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="47" height="32" colspan="3" rowspan="2"></td>
+                        <td width="29" height="109" colspan="2" rowspan="8"></td>
+                    </tr>
+                    <tr>
+                        <td width="2" height="184" rowspan="13"></td>
+                        <td class="seButton" device="Speed Editor" button="SYNC BIN" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="31"></td>
+                        <td width="3" height="184" rowspan="13"></td>
+                        <td class="seButton" device="Speed Editor" button="AUDIO LEVEL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="31"></td>
+                        <td width="2" height="184" rowspan="13"></td>
+                    </tr>
+                    <tr>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3" colspan="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="47" height="17" colspan="3" rowspan="2"></td>
+                        <td width="47" height="17" colspan="3" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="seButton" device="Speed Editor" button="CLOSE UP" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="PLACE ON TOP" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" colspan="3" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="SRC OWR" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="TRANS" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="SPLIT" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="SNAP" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="RIPL DEL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="seButton" device="Speed Editor" button="SHTL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="31" height="31" rowspan="2"></td>
+                        <td width="2" height="60" rowspan="4"></td>
+                        <td class="seButton" device="Speed Editor" button="JOG" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="31" colspan="3" rowspan="2"></td>
+                        <td width="3" height="60" rowspan="4"></td>
+                        <td class="seButton" device="Speed Editor" button="SCRL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="31" height="31" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="32" height="15" rowspan="2"></td>
+                        <td width="32" height="15" colspan="3" rowspan="2"></td>
+                        <td width="32" height="15" rowspan="2"></td>
+                        <td width="32" height="15" rowspan="2"></td>
+                        <td width="32" height="15" rowspan="2"></td>
+                        <td width="32" height="15" rowspan="2"></td>
+                        <td width="32" height="15" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="31" height="29" rowspan="2"></td>
+                        <td width="32" height="29" colspan="3" rowspan="2"></td>
+                        <td width="31" height="29" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="seButton" device="Speed Editor" button="IN" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="49" height="33" colspan="3" rowspan="2"></td>
+                        <td width="3" height="35" rowspan="3"></td>
+                        <td class="seButton" device="Speed Editor" button="OUT" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="49" height="33" colspan="3" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="33" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="33" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 9" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="33" rowspan="2"></td>
+                        <td class="seButton" device="Speed Editor" button="LIVE OWR" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="33" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="23" height="234" rowspan="9"></td>
+                        <td class="seButton" device="Speed Editor" button="JOG WHEEL" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="110" height="113" colspan="9" rowspan="8"></td>
+                        <td width="23" height="234" rowspan="9"></td>
+                    </tr>
+                    <tr>
+                        <td width="49" height="2" colspan="3"></td>
+                        <td width="49" height="2" colspan="3"></td>
+                        <td width="32" height="2"></td>
+                        <td width="32" height="2"></td>
+                        <td width="32" height="2"></td>
+                        <td width="32" height="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="seButton" device="Speed Editor" button="TRIM IN" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                        <td width="3" height="226" rowspan="7"></td>
+                        <td class="seButton" device="Speed Editor" button="TRIM OUT" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" colspan="3"></td>
+                        <td width="2" height="226" rowspan="7"></td>
+                        <td class="seButton" device="Speed Editor" button="ROLL" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                        <td class="seButton" device="Speed Editor" button="VIDEO ONLY" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                    </tr>
+                    <tr>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3" colspan="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                    </tr>
+                    <tr>
+                        <td class="seButton" device="Speed Editor" button="SLIP SRC" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30"></td>
+                        <td class="seButton" device="Speed Editor" button="SLIP DEST" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30" colspan="3"></td>
+                        <td class="seButton" device="Speed Editor" button="TRANS DUR" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30"></td>
+                        <td class="seButton" device="Speed Editor" button="CAM 3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30"></td>
+                        <td class="seButton" device="Speed Editor" button="AUDIO ONLY" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="30"></td>
+                    </tr>
+                    <tr>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3" colspan="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                        <td width="32" height="3"></td>
+                    </tr>
+                    <tr>
+                        <td class="seButton" device="Speed Editor" button="CUT" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32">
+                        </td>
+                        <td class="seButton" device="Speed Editor" button="DIS" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32" colspan="3"></td>
+                        <td class="seButton" device="Speed Editor" button="SMTH CUT" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="32" height="32"></td>
+                        <td class="seButton" device="Speed Editor" button="STOP PLAY" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="135" height="32" colspan="7"></td>
+                    </tr>
+                    <tr>
+                        <td width="32" height="126" rowspan="2"></td>
+                        <td width="32" height="126" colspan="3" rowspan="2"></td>
+                        <td width="32" height="126" rowspan="2"></td>
+                        <td width="135" height="126" colspan="7" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="110" height="121" colspan="9"></td>
+                    </tr>
+                </table>
+			</th>
+			<th style="text-align:top; padding-top: 20px;">
+				<p style="text-align: left; padding-left:20px; font-size:16px; margin: 0px;">
+					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
+				</p>
+				<div id="speedEditorGroupControls" class="uiItem">
+					<table class="speedEditor" style="height: 450px;">
+
+						<!-- PRESS & RELEASE ACTION: -->
+						<tr class="seButtonSection">
+							<th width="229px">{{ i18n("pressAction") }}:</th>
+							<th width="229px">{{ i18n("releaseAction") }}:</th>
+						</tr>
+						<tr class="seButtonSection">
+							<td width="229px"><input type="text" id="pressAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="releaseAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seButtonSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('pressAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('releaseAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- PRESS REPEAT: -->
+						<tr class="seButtonSection">
+							<td width="458px">
+								<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
+								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+							</td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr class="seLEDSection">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- USE SNIPPET TO TOGGLE LED STATUS : -->
+						<tr class="seLEDSection">
+							<th width="229px">{{ i18n("useSnippetToToggleLEDStatus") }}:</th>
+						</tr>
+						<tr class="seLEDSection">
+							<td width="229px"><input type="text" id="snippetAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seLEDSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button speedEditorActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
+						</tr>
+
+						<!-- LED ALWAYS ON CHECKBOX: -->
+						<tr class="seLEDSection">
+							<td width="458px">
+								<input type="checkbox" value="true" id="ledAlwaysOn" onchange="changeLEDAlwaysOn()">
+								<label for="ledAlwaysOn"><span style="font-weight:normal; font-size:10px; padding-left:5px;">{{ i18n("ledAlwaysOn") }}</span></label>
+							</td>
+						</tr>
+
+						<!-- JOG WHEEL ACTIONS: -->
+						<tr class="seJogWheelSection">
+							<th width="229px">{{ i18n("turnLeftAction") }}:</th>
+							<th width="229px">{{ i18n("turnRightAction") }}:</th>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px"><input type="text" id="turnLeftAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL SENSITIVITY: -->
+						<tr class="seJogWheelSection">
+							<th width="229px">{{ i18n("sensitivity") }}:</th>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px">
+								<select id="sensitivity" style="width: 210px;" onchange="changeSensitivity()">
+									<option value="250">1 ({{ i18n("verySensitive") }})</option>
+									<option value="500">2</option>
+									<option value="1000">3</option>
+									<option value="2000">4</option>
+									<option value="3000">5</option>
+									<option value="4000">6</option>
+									<option value="5000">7</option>
+									<option value="6000">8</option>
+									<option value="7000">9</option>
+									<option value="8000">10 ({{ i18n("default") }})</option>
+									<option value="9000">11</option>
+									<option value="10000">12</option>
+									<option value="11000">13</option>
+									<option value="12000">14</option>
+									<option value="13000">15</option>
+								</select>
+							</td>
+						</tr>
+
+						<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->
+						<tr style="padding-top: 10px;">
+							<th>
+								<a href="#" class="bottomButton" onclick="copyControlToAllBanks()" style="width: 180px;">{{ i18n("copyControlToAllBanks") }}</a>
+							</th>
+							<th>
+								<a href="#" class="bottomButton" onclick="resetControl()" style="width: 180px;">{{ i18n("resetControl") }}</a>
+							</th>
+						</tr>
+
+					</table>
+				</div>
+
+			</th>
+		</tr>
+	</thead>
+</table>
+
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetEverything')">{{ i18n("resetEverything") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetDevice')">{{ i18n("resetDevice") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetUnit')">{{ i18n("resetUnit") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetApplication')">{{ i18n("resetApplication") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetBank')">{{ i18n("resetBank") }}</a>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyDevice')">{{ i18n("copyDevice") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyUnit')">{{ i18n("copyUnit") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyApplication')">{{ i18n("copyApplication") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyBank')">{{ i18n("copyBank") }}</a>
+		</th>
+	</tr>
+</table>
+
+<script>
+	// Update UI on initial load:
+	updateUI();
+</script>

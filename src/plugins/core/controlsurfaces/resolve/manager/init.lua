@@ -1,18 +1,17 @@
---- === plugins.core.streamdeck.manager ===
+--- === plugins.core.controlsurfaces.resolve.manager ===
 ---
---- Elgato Stream Deck Manager Plugin.
+--- Blackmagic DaVinci Resolve Control Surface Support.
 
 local require = require
 
-local log                       = require "hs.logger".new "streamDeck"
+local log                       = require "hs.logger".new "resolvePanel"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
-local canvas                    = require "hs.canvas"
 local eventtap                  = require "hs.eventtap"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
-local streamdeck                = require "hs.streamdeck"
+local speededitor               = require "hs.speededitor"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
@@ -21,235 +20,130 @@ local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
+local copy                      = fnutils.copy
 local displayNotification       = dialog.displayNotification
-local doesFileExist             = tools.doesFileExist
 local doEvery                   = timer.doEvery
 local imageFromPath             = image.imageFromPath
-local imageFromURL              = image.imageFromURL
-local isImage                   = tools.isImage
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local spairs                    = tools.spairs
+local tableMatch                = tools.tableMatch
 
 local mod = {}
 
---- plugins.core.streamdeck.manager.lastApplication <cp.prop: string>
+--- plugins.core.resolve.manager.lastApplication <cp.prop: string>
 --- Field
 --- Last Application used in the Preferences Panel.
-mod.lastApplication = config.prop("streamDeck.preferences.lastApplication", "All Applications")
+mod.lastApplication = config.prop("daVinciResolveControlSurface.preferences.lastApplication", "All Applications")
 
---- plugins.core.streamdeck.manager.lastApplication <cp.prop: string>
+--- plugins.core.resolve.manager.lastApplication <cp.prop: string>
 --- Field
 --- Last Bank used in the Preferences Panel.
-mod.lastBank = config.prop("streamDeck.preferences.lastBank", "1")
+mod.lastBank = config.prop("daVinciResolveControlSurface.preferences.lastBank", "1")
 
---- plugins.core.streamdeck.manager.repeatTimers -> table
+--- plugins.core.resolve.manager.repeatTimers -> table
 --- Variable
 --- A table containing `hs.timer` objects.
 mod.repeatTimers = {}
 
---- plugins.core.streamdeck.prefs.previewSelectedApplicationAndBankOnHardware <cp.prop: boolean>
---- Field
---- Should we preview the selected application and bank on hardware?
-mod.previewSelectedApplicationAndBankOnHardware = config.prop("streamDeck.preferences.previewSelectedApplicationAndBankOnHardware", false)
-
---- plugins.core.streamdeck.prefs.snippetsRefreshFrequency <cp.prop: string>
+--- plugins.core.resolve.prefs.snippetsRefreshFrequency <cp.prop: string>
 --- Field
 --- How often snippets are refreshed.
-mod.snippetsRefreshFrequency = config.prop("streamDeck.preferences.snippetsRefreshFrequency", "1")
+mod.snippetsRefreshFrequency = config.prop("daVinciResolveControlSurface.preferences.snippetsRefreshFrequency", "1")
 
---- plugins.core.streamdeck.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- plugins.core.resolve.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
 --- Enable or disable the automatic switching of applications.
-mod.automaticallySwitchApplications = config.prop("streamDeck.automaticallySwitchApplications", false)
+mod.automaticallySwitchApplications = config.prop("daVinciResolveControlSurface.automaticallySwitchApplications", false)
 
---- plugins.core.streamdeck.manager.lastBundleID <cp.prop: string>
+--- plugins.core.resolve.manager.lastBundleID <cp.prop: string>
 --- Field
 --- The last Bundle ID.
-mod.lastBundleID = config.prop("streamDeck.lastBundleID", "All Applications")
+mod.lastBundleID = config.prop("daVinciResolveControlSurface.lastBundleID", "All Applications")
 
 -- defaultLayoutPath -> string
 -- Variable
 -- Default Layout Path
-local defaultLayoutPath = config.basePath .. "/plugins/core/streamdeck/default/Default.cpStreamDeck"
+local defaultLayoutPath = config.basePath .. "/plugins/core/controlsurfaces/resolve/default/Default.cpResolve"
 
---- plugins.core.streamdeck.manager.defaultLayout -> table
+--- plugins.core.resolve.manager.defaultLayout -> table
 --- Variable
---- Default Stream Deck Layout
+--- Default Layout
 mod.defaultLayout = json.read(defaultLayoutPath)
 
---- plugins.core.streamdeck.manager.activeBanks <cp.prop: table>
+--- plugins.core.resolve.manager.items <cp.prop: table>
+--- Field
+--- A table containing the control surface layout.
+mod.items = json.prop(config.userConfigRootPath, "DaVinci Resolve Control Surface", "Settings.cpResolve", mod.defaultLayout)
+
+--- plugins.core.resolve.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
-mod.activeBanks = config.prop("streamDeck.activeBanks", {
-    ["Mini"] = {},
-    ["Original"] = {},
-    ["XL"] = {},
+mod.activeBanks = config.prop("daVinciResolveControlSurface.activeBanks", {
+    ["Speed Editor"] = {},
 })
 
--- plugins.core.streamdeck.manager.devices -> table
+-- plugins.core.resolve.manager.devices -> table
 -- Variable
--- Table of Stream Deck Devices.
+-- Table of Devices.
 mod.devices = {
-    ["Mini"] = {},
-    ["Original"] = {},
-    ["XL"] = {},
+    ["Speed Editor"] = {},
 }
 
--- plugins.core.streamdeck.manager.deviceOrder -> table
+-- plugins.core.resolve.manager.deviceOrder -> table
 -- Variable
--- Table of Stream Deck Device Orders.
+-- Table of Device Orders.
 mod.deviceOrder = {
-    ["Mini"] = {},
-    ["Original"] = {},
-    ["XL"] = {},
+    ["Speed Editor"] = {},
 }
 
--- plugins.core.streamdeck.manager.numberOfButtons -> table
+-- plugins.core.resolve.manager.defaultSensitivity -> table
 -- Variable
--- Table of Stream Deck Device Button Count.
-mod.numberOfButtons = {
-    ["Mini"] = 6,
-    ["Original"] = 15,
-    ["XL"] = 32,
+-- Table of Default Sensitivity Values.
+mod.defaultSensitivity = {
+    ["Speed Editor"] = 8000,
 }
 
--- plugins.core.streamdeck.manager.imageSize -> table
--- Variable
--- Table of Stream Deck Screen Sizes:
-mod.imageSize = {
-    ["Mini"] = 80,
-    ["Original"] = 72,
-    ["XL"] = 96,
-}
-
--- imageHolder -> hs.canvas
--- Constant
--- Canvas used to store the blackIcon.
-local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
-imageHolder[1] = {
-    frame = { h = 100, w = 100, x = 0, y = 0 },
-    fillColor = { hex = "#000000" },
-    type = "rectangle",
-}
-
--- blackIcon -> hs.image
--- Constant
--- A black icon
-local blackIcon = imageHolder:imageFromCanvas()
-
---- plugins.core.streamdeck.manager.getSnippetImage(device, buttonData) -> string
+--- plugins.core.resolve.manager.getDeviceType(object) -> string
 --- Function
---- Generates the Preference Panel HTML Content.
+--- Translates a button layout into a device type string.
 ---
 --- Parameters:
----  * device - The device name as a string.
----  * buttonData - A table of button data.
+---  * object - A `hs.resolve` object
 ---
 --- Returns:
----  * An encoded image as a string
-function mod.getSnippetImage(device, buttonData)
+---  * "Speed Editor"
+function mod.getDeviceType()
     --------------------------------------------------------------------------------
-    -- Handle Snippets:
+    -- Currently there's only one model. This is future proofing for if/when
+    -- I eventually add the full-size keyboard or they come out with different
+    -- keyboards.
     --------------------------------------------------------------------------------
-    local widthAndHeight = mod.imageSize[device]
-    local currentEncodedIcon
-    local currentSnippet = buttonData and buttonData.snippetAction
-    if currentSnippet and currentSnippet.action then
-        local code = currentSnippet.action.code
-        if code then
-            --------------------------------------------------------------------------------
-            -- Load Snippet from Snippet Preferences if it exists:
-            --------------------------------------------------------------------------------
-            local snippetID = currentSnippet.action.id
-            local snippets = mod._scriptingPreferences.snippets()
-            if snippets[snippetID] then
-                code = snippets[snippetID].code
-            end
-
-            local successful, result = pcall(load(code))
-            if successful and isImage(result) then
-                local size = result:size()
-                if size.w == widthAndHeight and size.h == widthAndHeight then
-                    --------------------------------------------------------------------------------
-                    -- The generated image is already the correct size:
-                    --------------------------------------------------------------------------------
-                    currentEncodedIcon = result:encodeAsURLString(true)
-                else
-                    --------------------------------------------------------------------------------
-                    -- The generated image is not 90x90 so process:
-                    --------------------------------------------------------------------------------
-                    local v = canvas.new{x = 0, y = 0, w = widthAndHeight, h = widthAndHeight }
-
-                    --------------------------------------------------------------------------------
-                    -- Black Background:
-                    --------------------------------------------------------------------------------
-                    v[1] = {
-                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                        fillColor = { alpha = 1, hex = "#000000" },
-                        type = "rectangle",
-                    }
-
-                    --------------------------------------------------------------------------------
-                    -- Icon - Scaled to fit:
-                    --------------------------------------------------------------------------------
-                    v[2] = {
-                      type="image",
-                      image = result,
-                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                    }
-
-                    local fixedImage = v:imageFromCanvas()
-
-                    currentEncodedIcon = fixedImage:encodeAsURLString(true)
-                end
-            end
-        end
-    end
-
-    return currentEncodedIcon
+    return "Speed Editor"
 end
 
---- plugins.core.streamdeck.manager.getDeviceType(object) -> string
+--- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
---- Translates a Stream Deck button layout into a device type string.
+--- Control Surface Button Callback
 ---
 --- Parameters:
----  * object - A `hs.streamdeck` object
----
---- Returns:
----  * "Mini", "Original" or "XL"
-function mod.getDeviceType(object)
-    --------------------------------------------------------------------------------
-    -- Detect Device Type:
-    --------------------------------------------------------------------------------
-    local columns, rows = object:buttonLayout()
-    if columns == 3 and rows == 2 then
-        return "Mini"
-    elseif columns == 5 and rows == 3 then
-        return "Original"
-    elseif columns == 8 and rows == 4 then
-        return "XL"
-    else
-        log.ef("Unknown Stream Deck Model. Columns: %s, Rows: %s", columns, rows)
-    end
-end
-
---- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
---- Function
---- Stream Deck Button Callback
----
---- Parameters:
----  * object - The `hs.streamdeck` userdata object
+---  * object - The `hs.resolve` userdata object
 ---  * buttonID - A number containing the button that was pressed/released
 ---  * pressed - A boolean indicating whether the button was pressed (`true`) or released (`false`)
 ---
 --- Returns:
 ---  * None
-function mod.buttonCallback(object, buttonID, pressed)
+function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelValue)
+
+    --[[
+    log.df("buttonID: %s", buttonID)
+    log.df("pressed: %s", pressed)
+    log.df("jogWheelMode: %s", jogWheelMode)
+    log.df("jogWheelValue: %s", jogWheelValue)
+    --]]
 
     local serialNumber = object:serialNumber()
-    local deviceType = mod.getDeviceType(object)
+    local deviceType = mod.getDeviceType()
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
     local frontmostApplication = application.frontmostApplication()
@@ -286,45 +180,98 @@ function mod.buttonCallback(object, buttonID, pressed)
         bundleID = mod.lastBundleID()
     end
 
-    --------------------------------------------------------------------------------
-    -- Preview Selected Application & Bank on Hardware:
-    --------------------------------------------------------------------------------
-    if mod.previewSelectedApplicationAndBankOnHardware() then
-        bundleID = mod.lastApplication()
-        bankID = mod.lastBank()
-    end
+    --[[
+    log.df("deviceType: %s", deviceType)
+    log.df("deviceID: %s", deviceID)
+    log.df("bundleID: %s", bundleID)
+    log.df("bankID: %s", bankID)
+    log.df("buttonID: %s", buttonID)
+    --]]
 
-    buttonID = tostring(buttonID)
-
+    --------------------------------------------------------------------------------
+    -- Get the data from the layout file:
+    --------------------------------------------------------------------------------
     local theDevice = items[deviceType]
     local theUnit = theDevice and theDevice[deviceID]
     local theApp = theUnit and theUnit[bundleID]
     local theBank = theApp and theApp[bankID]
     local theButton = theBank and theBank[buttonID]
 
-    if theButton then
+    --------------------------------------------------------------------------------
+    -- Nothing assigned to that button:
+    --------------------------------------------------------------------------------
+    if not theButton then
+        return
+    end
+
+    if jogWheelMode then
+        --------------------------------------------------------------------------------
+        -- Jog Wheel Turned:
+        --------------------------------------------------------------------------------
+        local sensitivity = (theButton and theButton.sensitivity) or mod.defaultSensitivity[deviceType]
+        if math.abs(jogWheelValue) > tonumber(sensitivity) then
+            if jogWheelValue < 0 then
+                --------------------------------------------------------------------------------
+                -- Turn Left:
+                --------------------------------------------------------------------------------
+                local turnLeftAction = theButton.turnLeftAction
+                if turnLeftAction then
+                    local handlerID = turnLeftAction.handlerID
+                    local action = turnLeftAction.action
+                    if handlerID and action then
+                        --------------------------------------------------------------------------------
+                        -- Trigger the action:
+                        --------------------------------------------------------------------------------
+                        local handler = mod._actionmanager.getHandler(handlerID)
+                        handler:execute(action)
+                    end
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- Turn Right:
+                --------------------------------------------------------------------------------
+                local turnRightAction = theButton.turnRightAction
+                if turnRightAction then
+                    local handlerID = turnRightAction.handlerID
+                    local action = turnRightAction.action
+                    if handlerID and action then
+                        --------------------------------------------------------------------------------
+                        -- Trigger the  action:
+                        --------------------------------------------------------------------------------
+                        local handler = mod._actionmanager.getHandler(handlerID)
+                        handler:execute(action)
+                    end
+                end
+            end
+        end
+    else
+        --------------------------------------------------------------------------------
+        -- Button Pressed/Released:
+        --------------------------------------------------------------------------------
         local repeatPressActionUntilReleased = theButton.repeatPressActionUntilReleased
         local repeatID = deviceType .. deviceID .. buttonID
-
         if pressed then
-            local handlerID = theButton.handlerID
-            local action = theButton.action
-            if handlerID and action then
-                --------------------------------------------------------------------------------
-                -- Trigger the press action:
-                --------------------------------------------------------------------------------
-                local handler = mod._actionmanager.getHandler(handlerID)
-                handler:execute(action)
+            local pressAction = theButton.pressAction
+            if pressAction then
+                local handlerID = pressAction.handlerID
+                local action = pressAction.action
+                if handlerID and action then
+                    --------------------------------------------------------------------------------
+                    -- Trigger the press action:
+                    --------------------------------------------------------------------------------
+                    local handler = mod._actionmanager.getHandler(handlerID)
+                    handler:execute(action)
 
-                --------------------------------------------------------------------------------
-                -- Repeat if necessary:
-                --------------------------------------------------------------------------------
-                if repeatPressActionUntilReleased then
-                    mod.repeatTimers[repeatID] = doEvery(keyRepeatInterval(), function()
-                        handler:execute(action)
-                    end)
+                    --------------------------------------------------------------------------------
+                    -- Repeat if necessary:
+                    --------------------------------------------------------------------------------
+                    if repeatPressActionUntilReleased then
+                        mod.repeatTimers[repeatID] = doEvery(keyRepeatInterval(), function()
+                            handler:execute(action)
+                        end)
+                    end
+
                 end
-
             end
         else
             --------------------------------------------------------------------------------
@@ -354,14 +301,14 @@ function mod.buttonCallback(object, buttonID, pressed)
 
 end
 
---- plugins.core.streamdeck.manager.imageCache() -> none
---- Variable
---- A cache of images used on the Stream Deck.
-mod.imageCache = {}
+-- ledCache
+-- Variable
+-- A table of LED statuses
+local ledCache = {}
 
---- plugins.core.streamdeck.manager.update() -> none
+--- plugins.core.resolve.manager.update() -> none
 --- Function
---- Updates the screens of all Stream Deck devices.
+--- Updates all the control surface LEDs.
 ---
 --- Parameters:
 ---  * None
@@ -370,7 +317,7 @@ mod.imageCache = {}
 ---  * None
 function mod.update()
 
-    local containsIconSnippets = false
+    local containsLEDSnippet = false
 
     for deviceType, devices in pairs(mod.devices) do
         for _, device in pairs(devices) do
@@ -378,8 +325,6 @@ function mod.update()
             -- Determine bundleID:
             --------------------------------------------------------------------------------
             local serialNumber = device:serialNumber()
-
-            local buttonCount = mod.numberOfButtons[deviceType]
             local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
             local frontmostApplication = application.frontmostApplication()
@@ -420,14 +365,6 @@ function mod.update()
             local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
 
             --------------------------------------------------------------------------------
-            -- Preview Selected Application & Bank on Hardware:
-            --------------------------------------------------------------------------------
-            if mod.previewSelectedApplicationAndBankOnHardware() then
-                bundleID = mod.lastApplication()
-                bankID = mod.lastBank()
-            end
-
-            --------------------------------------------------------------------------------
             -- Get bank data:
             --------------------------------------------------------------------------------
             local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
@@ -435,94 +372,51 @@ function mod.update()
             --------------------------------------------------------------------------------
             -- Update every button:
             --------------------------------------------------------------------------------
-            for buttonID=1, buttonCount do
-                local success = false
-                local buttonData = bankData and bankData[tostring(buttonID)]
+            local ledStatus = {}
+            for _, ledID in pairs(speededitor.ledNames) do
+                local buttonData = bankData and bankData[ledID]
+                local snippetAction = buttonData and buttonData.snippetAction
+                local snippetActionAction = snippetAction and snippetAction.action
+                local code = snippetActionAction and snippetActionAction.code
+                if code then
+                    containsLEDSnippet = true
 
-                local imageToUse
-
-                if buttonData then
-                    local label                 = buttonData.label
-                    local icon                  = buttonData.icon
-                    local encodedIconLabel      = buttonData.encodedIconLabel
-
-                    local snippetImage = mod.getSnippetImage(deviceType, buttonData)
-                    if snippetImage then
-                        --------------------------------------------------------------------------------
-                        -- Generate an icon from a Snippet:
-                        --------------------------------------------------------------------------------
-                        local theImage = imageFromURL(snippetImage)
-                        if theImage then
-                            imageToUse = theImage
-                            success = true
-                            containsIconSnippets = true
-                        end
-                    elseif icon then
-                        --------------------------------------------------------------------------------
-                        -- Draw an icon:
-                        --------------------------------------------------------------------------------
-                        local theImage = imageFromURL(icon)
-                        if theImage then
-                            imageToUse = theImage
-                            success = true
-                        end
-                    elseif buttonData.encodedIconLabel then
-                        --------------------------------------------------------------------------------
-                        -- Draw an image from an icon label:
-                        --------------------------------------------------------------------------------
-                        local theImage = imageFromURL(encodedIconLabel)
-                        if theImage then
-                            imageToUse = theImage
-                            success = true
-                        end
-                    elseif label then
-                        --------------------------------------------------------------------------------
-                        -- Draw a label (only here for legacy reasons):
-                        --------------------------------------------------------------------------------
-                        local widthAndHeight = mod.imageSize[device]
-                        local c = canvas.new{x = 0, y = 0, h = widthAndHeight, w = widthAndHeight}
-                        c[1] = {
-                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
-                            fillColor = { hex = "#000000"  },
-                            type = "rectangle",
-                        }
-                        c[2] = {
-                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
-                            text = label,
-                            textAlignment = "left",
-                            textColor = { white = 1.0 },
-                            textSize = 20,
-                            type = "text",
-                        }
-                        local textIcon = c:imageFromCanvas()
-
-                        imageToUse = textIcon
-                        success = true
+                    --------------------------------------------------------------------------------
+                    -- Load Snippet from Snippet Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippetID = snippetActionAction.id
+                    local snippets = mod._scriptingPreferences.snippets()
+                    if snippets[snippetID] then
+                        code = snippets[snippetID].code
                     end
-                end
-                if not success then
-                    --------------------------------------------------------------------------------
-                    -- Default to black if no label or icon supplied:
-                    --------------------------------------------------------------------------------
-                    imageToUse = blackIcon
-                end
 
-                --------------------------------------------------------------------------------
-                -- Only update the image on the hardware if necessary:
-                --------------------------------------------------------------------------------
-                local cacheID = deviceType .. deviceID .. buttonID
-                if imageToUse ~= mod.imageCache[cacheID] then
-                    device:setButtonImage(buttonID, imageToUse)
-                    mod.imageCache[cacheID] = imageToUse
+                    local successful, result = pcall(load(code))
+                    if successful and type(result) == "boolean" then
+                        ledStatus[ledID] = result
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Either use the "LED Always On" preference, or leave it off:
+                    --------------------------------------------------------------------------------
+                    local ledAlwaysOn = buttonData and buttonData.ledAlwaysOn
+                    ledStatus[ledID] = ledAlwaysOn or false
                 end
             end
+
+            --------------------------------------------------------------------------------
+            -- Only update the hardware if there's a change:
+            --------------------------------------------------------------------------------
+            if not tableMatch(ledStatus, ledCache) then
+                device:led(ledStatus)
+            end
+            ledCache = copy(ledStatus)
         end
     end
 
     --------------------------------------------------------------------------------
     -- Enable or disable the refresh timer:
     --------------------------------------------------------------------------------
-    if containsIconSnippets then
+    if containsLEDSnippet then
         if not mod.refreshTimer then
             local snippetsRefreshFrequency = tonumber(mod.snippetsRefreshFrequency())
             mod.refreshTimer = timer.new(snippetsRefreshFrequency, function()
@@ -536,27 +430,33 @@ function mod.update()
             mod.refreshTimer = nil
         end
     end
+
 end
 
---- plugins.core.streamdeck.manager.discoveryCallback(connected, object) -> none
+--- plugins.core.resolve.manager.discoveryCallback(connected, object) -> none
 --- Function
---- Stream Deck Discovery Callback
+--- Control Surface Discovery Callback
 ---
 --- Parameters:
 ---  * connected - A boolean, `true` if a device was connected, `false` if a device was disconnected
----  * object - An `hs.streamdeck` object, being the device that was connected/disconnected
+---  * object - An `hs.speededitor` object, being the device that was connected/disconnected
 ---
 --- Returns:
 ---  * None
 function mod.discoveryCallback(connected, object)
     local serialNumber = object:serialNumber()
     if serialNumber == nil then
-        log.ef("Failed to get Stream Deck's Serial Number. This normally means the Stream Deck App is running.")
+        log.ef("Failed to get DaVinci Resolve Control Surface Serial Number. Is DaVinci Resolve running?")
     else
-        local deviceType = mod.getDeviceType(object)
+        local deviceType = mod.getDeviceType()
         if connected then
-            --log.df("Stream Deck Connected: %s - %s", deviceType, serialNumber)
-            mod.devices[deviceType][serialNumber] = object:buttonCallback(mod.buttonCallback)
+            --log.df("DaVinci Resolve Control Surface Connected: %s - %s", deviceType, serialNumber)
+            mod.devices[deviceType][serialNumber] = object:callback(mod.buttonCallback)
+
+            --------------------------------------------------------------------------------
+            -- Force the device into SHTL Jog Wheel mode:
+            --------------------------------------------------------------------------------
+            object:jogMode("SHTL")
 
             --------------------------------------------------------------------------------
             -- Sort the devices alphabetically based on serial number:
@@ -570,18 +470,18 @@ function mod.discoveryCallback(connected, object)
             mod.update()
         else
             if mod.devices and mod.devices[deviceType][serialNumber] then
-                --log.df("Stream Deck Disconnected: %s - %s", deviceType, serialNumber)
+                --log.df("DaVinci Resolve Control Surface Disconnected: %s - %s", deviceType, serialNumber)
                 mod.devices[deviceType][serialNumber] = nil
             else
-                log.ef("Disconnected Stream Deck wasn't previously registered: %s - %s", deviceType, serialNumber)
+                log.ef("Disconnected DaVinci Resolve Control Surface wasn't previously registered: %s - %s", deviceType, serialNumber)
             end
         end
     end
 end
 
---- plugins.core.streamdeck.manager.start() -> boolean
+--- plugins.core.resolve.manager.start() -> boolean
 --- Function
---- Starts the Stream Deck Plugin
+--- Starts the DaVinci Resolve Control Surface Plugin
 ---
 --- Parameters:
 ---  * None
@@ -590,7 +490,7 @@ end
 ---  * None
 function mod.start()
     --------------------------------------------------------------------------------
-    -- Setup watch to refresh the Stream Deck's when apps change focus:
+    -- Setup watch to refresh the control surfaces when apps change focus:
     --------------------------------------------------------------------------------
     mod._appWatcher = appWatcher.new(function(_, event)
         if event == appWatcher.activated then
@@ -599,14 +499,14 @@ function mod.start()
     end):start()
 
     --------------------------------------------------------------------------------
-    -- Initialise Stream Deck support:
+    -- Initialise DaVinci Resolve Control Surface support:
     --------------------------------------------------------------------------------
-    streamdeck.init(mod.discoveryCallback)
+    speededitor.init(mod.discoveryCallback)
 end
 
---- plugins.core.streamdeck.manager.start() -> boolean
+--- plugins.core.resolve.manager.start() -> boolean
 --- Function
---- Stops the Stream Deck Plugin
+--- Stops DaVinci Resolve Control Surface Support.
 ---
 --- Parameters:
 ---  * None
@@ -624,18 +524,6 @@ function mod.stop()
     mod.repeatTimers = {}
 
     --------------------------------------------------------------------------------
-    -- Black out all the icons:
-    --------------------------------------------------------------------------------
-    for deviceType, devices in pairs(mod.devices) do
-        for _, device in pairs(devices) do
-            local buttonCount = mod.numberOfButtons[deviceType]
-            for buttonID=1, buttonCount do
-                device:setButtonImage(buttonID, blackIcon)
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
     -- Kill any devices:
     --------------------------------------------------------------------------------
     for deviceType, devices in pairs(mod.devices) do
@@ -651,17 +539,12 @@ function mod.stop()
         mod._appWatcher:stop()
         mod._appWatcher = nil
     end
-
-    --------------------------------------------------------------------------------
-    -- Empty the cache:
-    --------------------------------------------------------------------------------
-    mod.imageCache = {}
 end
 
---- plugins.core.streamdeck.manager.enabled <cp.prop: boolean>
+--- plugins.core.resolve.manager.enabled <cp.prop: boolean>
 --- Field
---- Enable or disable Stream Deck Support.
-mod.enabled = config.prop("enableStreamDesk", false):watch(function(enabled)
+--- Enable or disable DaVinci Resolve Control Surface support
+mod.enabled = config.prop("enableSpeedEditor", false):watch(function(enabled)
     if enabled then
         mod.start()
     else
@@ -670,7 +553,7 @@ mod.enabled = config.prop("enableStreamDesk", false):watch(function(enabled)
 end)
 
 local plugin = {
-    id          = "core.streamdeck.manager",
+    id          = "core.controlsurfaces.resolve.manager",
     group       = "core",
     required    = true,
     dependencies    = {
@@ -682,45 +565,9 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
-    --------------------------------------------------------------------------------
-    -- Migrate old preferences to newer format if 'Settings.cpStreamDeck' doesn't
-    -- already exist, and if we haven't already upgraded previously:
-    --------------------------------------------------------------------------------
-    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/Stream Deck/Settings.cpStreamDeck")
-    mod.items = json.prop(config.userConfigRootPath, "Stream Deck", "Settings.cpStreamDeck", mod.defaultLayout)
-    if not newLayoutExists then
-        local updatedPreferencesToV2 = config.prop("streamdeck.updatedPreferencesToV2", false)
-        local legacyPath = config.userConfigRootPath .. "/Stream Deck/Default.cpStreamDeck"
-        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
-            local legacyPreferences = json.read(legacyPath)
-            local newData = {}
-            if legacyPreferences then
-                for groupID, data in pairs(legacyPreferences) do
-                    local bundleID
-                    local bankID
-                    if string.sub(groupID, 1, 4) == "fcpx" then
-                        bundleID = "com.apple.FinalCut"
-                        bankID = string.sub(groupID, 5)
-                    end
-                    if string.sub(groupID, 1, 6) == "global" then
-                        bundleID = "All Applications"
-                        bankID = string.sub(groupID, 7)
-                    end
+function plugin.init(deps)
 
-                    if not newData["Original"] then newData["Original"] = {} end
-                    if not newData["Original"]["1"] then newData["Original"]["1"] = {} end
-                    if not newData["Original"]["1"][bundleID] then newData["Original"]["1"][bundleID] = {} end
-                    newData["Original"]["1"][bundleID][bankID] = fnutils.copy(data)
-                end
-                updatedPreferencesToV2(true)
-                mod.items(newData)
-                log.df("Converted Stream Deck Preferences from Default.cpStreamDeck to Settings.cpStreamDeck.")
-            end
-        end
-    end
-
-    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/streamdeck.icns"))
+    local icon = imageFromPath(config.bundledPluginsPath .. "/core/controlsurfaces/resolve/prefs/images/resolve.icns")
 
     --------------------------------------------------------------------------------
     -- Shared dependancies:
@@ -733,10 +580,11 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local global = deps.global
     global
-        :add("cpStreamDeck")
+        :add("cpResolveControlSurfaceSupport")
         :whenActivated(function()
             mod.enabled:toggle()
         end)
+        :titled(i18n("toggleDaVinciResolveControlSurfaceSupport"))
         :groupedBy("commandPost")
         :image(icon)
 
@@ -746,21 +594,13 @@ function plugin.init(deps, env)
     local actionmanager = deps.actionmanager
     local numberOfBanks = deps.csman.NUMBER_OF_BANKS
     local numberOfDevices = deps.csman.NUMBER_OF_DEVICES
-    actionmanager.addHandler("global_streamDeckbanks")
+    actionmanager.addHandler("global_resolvebanks")
         :onChoices(function(choices)
             for device, _ in pairs(mod.devices) do
                 for unit=1, numberOfDevices do
-
-                    local deviceLabel = device
-                    if deviceLabel == "Original" then
-                        deviceLabel = ""
-                    else
-                        deviceLabel = deviceLabel .. " "
-                    end
-
                     for bank=1, numberOfBanks do
-                        choices:add("Stream Deck " .. deviceLabel .. i18n("bank") .. " " .. tostring(bank) .. " (Unit " .. unit .. ")")
-                            :subText(i18n("streamDeckBankDescription"))
+                        choices:add(device .. " " .. i18n("bank") .. " " .. tostring(bank) .. " (Unit " .. unit .. ")")
+                            :subText(i18n("resolveBankDescription"))
                             :params({
                                 action = "bank",
                                 device = device,
@@ -773,8 +613,8 @@ function plugin.init(deps, env)
                     end
 
                     choices
-                        :add(i18n("next") .. " Stream Deck " .. deviceLabel .. i18n("bank") .. " (Unit " .. unit .. ")")
-                        :subText(i18n("streamDeckBankDescription"))
+                        :add(i18n("next") .. " " .. device .. " " .. i18n("bank") .. " (Unit " .. unit .. ")")
+                        :subText(i18n("resolveBankDescription"))
                         :params({
                             action = "next",
                             device = device,
@@ -785,8 +625,8 @@ function plugin.init(deps, env)
                         :image(icon)
 
                     choices
-                        :add(i18n("previous") .. " Stream Deck " .. deviceLabel .. i18n("bank") .. " (Unit " .. unit .. ")")
-                        :subText(i18n("streamDeckBankDescription"))
+                        :add(i18n("previous") .. " " .. device .. " " .. i18n("bank") .. " (Unit " .. unit .. ")")
+                        :subText(i18n("resolveBankDescription"))
                         :params({
                             action = "previous",
                             device = device,
@@ -865,16 +705,16 @@ function plugin.init(deps, env)
                     deviceLabel = deviceLabel .. " "
                 end
 
-                displayNotification("Stream Deck " .. deviceLabel .. "(Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
+                displayNotification("Speed Editor " .. deviceLabel .. "(Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
             end
         end)
-        :onActionId(function(action) return "streamDeckBank" .. action.id end)
+        :onActionId(function(action) return "resolveBank" .. action.id end)
 
     --------------------------------------------------------------------------------
     -- Actions to Manually Change Application:
     --------------------------------------------------------------------------------
     local applicationmanager = deps.appmanager
-    actionmanager.addHandler("global_streamdeckapplications", "global")
+    actionmanager.addHandler("global_resolveapplications", "global")
         :onChoices(function(choices)
             local applications = applicationmanager.getApplications()
 
@@ -882,7 +722,9 @@ function plugin.init(deps, env)
                 displayName = "All Applications",
             }
 
-            -- Add User Added Applications from Loupedeck Preferences:
+            --------------------------------------------------------------------------------
+            -- Add User Added Applications from Preferences:
+            --------------------------------------------------------------------------------
             local items = mod.items()
 
             for _, unitObj in pairs(items) do
@@ -897,23 +739,23 @@ function plugin.init(deps, env)
 
             for bundleID, item in pairs(applications) do
                 choices
-                    :add(i18n("switchStreamDeckTo") .. " " .. item.displayName)
-                    :subText(i18n("streamDeckAppDescription"))
+                    :add(i18n("switchDaVinciResolveControlSurfaceTo") .. " " .. item.displayName)
+                    :subText(i18n("resolveAppDescription"))
                     :params({
                         bundleID = bundleID,
                     })
-                    :id("global_streamdeckapplications_switch_" .. bundleID)
+                    :id("global_resolveapplications_switch_" .. bundleID)
                     :image(icon)
 
                 if bundleID ~= "All Applications" then
                     choices
-                        :add(i18n("switchStreamDeckTo") .. " " .. item.displayName .. " " .. i18n("andLaunch"))
-                        :subText(i18n("streamDeckAppDescription"))
+                        :add(i18n("switchDaVinciResolveControlSurfaceTo") .. " " .. item.displayName .. " " .. i18n("andLaunch"))
+                        :subText(i18n("resolveAppDescription"))
                         :params({
                             bundleID = bundleID,
                             launch = true,
                         })
-                        :id("global_streamdeckapplications_launch_" .. bundleID)
+                        :id("global_resolveapplications_launch_" .. bundleID)
                         :image(icon)
                 end
             end
@@ -932,7 +774,7 @@ function plugin.init(deps, env)
             end
         end)
         :onActionId(function(params)
-            return "global_streamdeckapplications_" .. params.bundleID
+            return "global_resolveapplications_" .. params.bundleID
         end)
         :cached(false)
 

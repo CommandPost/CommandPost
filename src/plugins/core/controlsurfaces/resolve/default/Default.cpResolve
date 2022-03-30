@@ -1,0 +1,311 @@
+{
+  "Speed Editor" : {
+    "1" : {
+      "com.apple.motionapp" : {
+        "ignore" : true
+      },
+      "com.apple.finder" : {
+        "ignore" : true
+      },
+      "com.apple.systempreferences" : {
+        "ignore" : true
+      },
+      "com.blackmagic-design.DaVinciResolve" : {
+        "ignore" : true
+      },
+      "com.ecamm.EcammLive" : {
+        "ignore" : true
+      },
+      "org.latenitefilms.CommandPost" : {
+        "ignore" : true
+      },
+      "com.microsoft.teams" : {
+        "ignore" : true
+      },
+      "com.apple.FinalCut" : {
+        "1" : {
+          "SNAP" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "View",
+                  "Snapping"
+                ]
+              },
+              "actionTitle" : "Snapping",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 9" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle09",
+              "actionTitle" : "Cut and Switch to Viewer Angle 9",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 4" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle04",
+              "actionTitle" : "Cut and Switch to Viewer Angle 4",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "TIMELINE" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Window",
+                  "Go To",
+                  "Timeline"
+                ]
+              },
+              "actionTitle" : "Timeline",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 3" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle03",
+              "actionTitle" : "Cut and Switch to Viewer Angle 3",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 8" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle08",
+              "actionTitle" : "Cut and Switch to Viewer Angle 8",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "VIDEO ONLY" : {
+            "pressAction" : {
+              "action" : "MultiAngleEditStyleVideo",
+              "actionTitle" : "Cut\/Switch Multicam Video Only",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "APPND" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Edit",
+                  "Append to Storyline"
+                ]
+              },
+              "actionTitle" : "Append to Storyline",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "JOG WHEEL" : {
+            "turnRightAction" : {
+              "action" : "JumpToNextFrame",
+              "actionTitle" : "Go to Next Frame",
+              "handlerID" : "fcpx_shortcuts"
+            },
+            "turnLeftAction" : {
+              "action" : "JumpToPreviousFrame",
+              "actionTitle" : "Go to Previous Frame",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "STOP PLAY" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play"
+                ]
+              },
+              "actionTitle" : "Play",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "TRIM OUT" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Trim",
+                  "Trim End"
+                ]
+              },
+              "actionTitle" : "Trim End",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "TRANS" : {
+            "pressAction" : {
+              "action" : "AddTransition",
+              "actionTitle" : "Add Default Transition",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 2" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle02",
+              "actionTitle" : "Cut and Switch to Viewer Angle 2",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 7" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle07",
+              "actionTitle" : "Cut and Switch to Viewer Angle 7",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "OUT" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Mark",
+                  "Set Range End"
+                ]
+              },
+              "actionTitle" : "Set Range End",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "PLACE ON TOP" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Edit",
+                  "Connect to Primary Storyline"
+                ]
+              },
+              "actionTitle" : "Connect to Primary Storyline",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 1" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle01",
+              "actionTitle" : "Cut and Switch to Viewer Angle 1",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "SOURCE" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Window",
+                  "Go To",
+                  "Event Viewer"
+                ]
+              },
+              "actionTitle" : "Event Viewer",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 6" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle06",
+              "actionTitle" : "Cut and Switch to Viewer Angle 6",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "action" : "MultiAngleEditStyleAudio",
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CUT" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Trim",
+                  "Blade"
+                ]
+              },
+              "actionTitle" : "Blade",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "TRIM IN" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Trim",
+                  "Trim Start"
+                ]
+              },
+              "actionTitle" : "Trim Start",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "FULL VIEW" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ]
+              },
+              "actionTitle" : "Play Full Screen",
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 5" : {
+            "pressAction" : {
+              "action" : "CutSwitchAngle05",
+              "actionTitle" : "Cut and Switch to Viewer Angle 5",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "IN" : {
+            "pressAction" : {
+              "action" : {
+                "plain" : true,
+                "locale" : "en",
+                "path" : [
+                  "Mark",
+                  "Set Range Start"
+                ]
+              },
+              "actionTitle" : "Set Range Start",
+              "handlerID" : "fcpx_menu"
+            }
+          }
+        }
+      },
+      "com.apple.DiskUtility" : {
+        "ignore" : true
+      },
+      "us.zoom.xos" : {
+        "ignore" : true
+      },
+      "com.apple.Compressor" : {
+        "ignore" : true
+      },
+      "com.apple.TextEdit" : {
+        "ignore" : true
+      }
+    }
+  }
+}
