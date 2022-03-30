@@ -54,7 +54,7 @@ mod.snippetsRefreshFrequency = config.prop("daVinciResolveControlSurface.prefere
 --- plugins.core.resolve.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
 --- Enable or disable the automatic switching of applications.
-mod.automaticallySwitchApplications = config.prop("daVinciResolveControlSurface.automaticallySwitchApplications", false)
+mod.automaticallySwitchApplications = config.prop("daVinciResolveControlSurface.automaticallySwitchApplications", true)
 
 --- plugins.core.resolve.manager.lastBundleID <cp.prop: string>
 --- Field
@@ -450,7 +450,7 @@ function mod.discoveryCallback(connected, object)
     else
         local deviceType = mod.getDeviceType()
         if connected then
-            --log.df("DaVinci Resolve Control Surface Connected: %s - %s", deviceType, serialNumber)
+            log.df("DaVinci Resolve Control Surface Connected: %s - %s", deviceType, serialNumber)
             mod.devices[deviceType][serialNumber] = object:callback(mod.buttonCallback)
 
             --------------------------------------------------------------------------------
@@ -470,7 +470,7 @@ function mod.discoveryCallback(connected, object)
             mod.update()
         else
             if mod.devices and mod.devices[deviceType][serialNumber] then
-                --log.df("DaVinci Resolve Control Surface Disconnected: %s - %s", deviceType, serialNumber)
+                log.df("DaVinci Resolve Control Surface Disconnected: %s - %s", deviceType, serialNumber)
                 mod.devices[deviceType][serialNumber] = nil
             else
                 log.ef("Disconnected DaVinci Resolve Control Surface wasn't previously registered: %s - %s", deviceType, serialNumber)
