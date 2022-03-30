@@ -42,7 +42,7 @@ local mod = {}
 -- SNIPPET_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
+local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_led_status"
 
 --- plugins.core.controlsurfaces.resolve.prefs.pasteboard <cp.prop: table>
 --- Field
