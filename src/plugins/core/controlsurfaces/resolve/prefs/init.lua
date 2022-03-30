@@ -35,7 +35,6 @@ local mergeTable                = tools.mergeTable
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableContains             = tools.tableContains
-local tableMatch                = tools.tableMatch
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}

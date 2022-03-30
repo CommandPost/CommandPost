@@ -898,21 +898,23 @@ function plugin.init(deps, env)
             for bundleID, item in pairs(applications) do
                 choices
                     :add(i18n("switchStreamDeckTo") .. " " .. item.displayName)
-                    :subText("")
+                    :subText(i18n("streamDeckAppDescription"))
                     :params({
                         bundleID = bundleID,
                     })
                     :id("global_streamdeckapplications_switch_" .. bundleID)
+                    :image(icon)
 
                 if bundleID ~= "All Applications" then
                     choices
                         :add(i18n("switchStreamDeckTo") .. " " .. item.displayName .. " " .. i18n("andLaunch"))
-                        :subText("")
+                        :subText(i18n("streamDeckAppDescription"))
                         :params({
                             bundleID = bundleID,
                             launch = true,
                         })
                         :id("global_streamdeckapplications_launch_" .. bundleID)
+                        :image(icon)
                 end
             end
         end)

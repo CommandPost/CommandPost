@@ -15,7 +15,6 @@ local speededitor               = require "hs.speededitor"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
-local deferred                  = require "cp.deferred"
 local dialog                    = require "cp.dialog"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
@@ -122,18 +121,6 @@ function mod.getDeviceType()
     --------------------------------------------------------------------------------
     return "Speed Editor"
 end
-
-local lastJogWheelValue = 0
-local jogWheelCount = 0
-
-local jogWheelDeferred = deferred.new(0.01):action(function()
-    if jogWheelCount > 0 then
-        print("right " .. jogWheelCount)
-    else
-        print("left " .. jogWheelCount)
-    end
-    jogWheelCount = 0
-end)
 
 --- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
@@ -578,7 +565,7 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
 
     local icon = imageFromPath(config.bundledPluginsPath .. "/core/controlsurfaces/resolve/prefs/images/resolve.icns")
 
@@ -753,21 +740,23 @@ function plugin.init(deps, env)
             for bundleID, item in pairs(applications) do
                 choices
                     :add(i18n("switchDaVinciResolveControlSurfaceTo") .. " " .. item.displayName)
-                    :subText("")
+                    :subText(i18n("resolveAppDescription"))
                     :params({
                         bundleID = bundleID,
                     })
                     :id("global_resolveapplications_switch_" .. bundleID)
+                    :image(icon)
 
                 if bundleID ~= "All Applications" then
                     choices
                         :add(i18n("switchDaVinciResolveControlSurfaceTo") .. " " .. item.displayName .. " " .. i18n("andLaunch"))
-                        :subText("")
+                        :subText(i18n("resolveAppDescription"))
                         :params({
                             bundleID = bundleID,
                             launch = true,
                         })
                         :id("global_resolveapplications_launch_" .. bundleID)
+                        :image(icon)
                 end
             end
         end)
