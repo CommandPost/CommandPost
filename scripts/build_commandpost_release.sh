@@ -80,7 +80,7 @@ function generate_appcast() {
   # Get Build Number from plist:
   #
 
-  local BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Hammerspoon/CommandPost-Info.plist)
+  local BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "${COMMANDPOST_HOME}/../CommandPost-App/build/CommandPost.app/Contents/Info.plist")
 
   touch "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
   echo "
@@ -139,11 +139,14 @@ cd "${COMMANDPOST_HOME}/../CommandPost-App/"
 echo " * Cleaning up prior to build..."
 ./scripts/build.sh clean
 
+echo " * Building CommandPost-App Docs..."
+./scripts/build.sh docs
+
 echo " * Building CommandPost-App..."
 ./scripts/build.sh build -s Release -c Release -d -u
 
-echo " * Building CommandPost-App Docs..."
-./scripts/build.sh docs
+echo " * Validating CommandPost-App..."
+./scripts/build.sh validate
 
 echo " * Building Uninstall App..."
 build_uninstall
