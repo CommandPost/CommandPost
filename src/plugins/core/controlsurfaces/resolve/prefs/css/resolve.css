@@ -169,7 +169,20 @@ input[type="color"]::-webkit-color-swatch {
 	padding: 5px 5px !important;
 }
 
-/* Speed Editor User Interface */
+/* Speed Editor & Editor Keyboard User Interface */
+
+#editorKeyboardUI {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:447px;
+	height:482px;
+	font-size:0px;
+	background-image: url({* insertImage('images/keyboard.png') *});
+	background-repeat: no-repeat;
+	background-size: 447px 482px;
+	image-rendering: -webkit-optimize-contrast;
+}
 
 #speedEditorUI {
 	position:relative;
@@ -178,9 +191,10 @@ input[type="color"]::-webkit-color-swatch {
 	width:447px;
 	height:482px;
 	font-size:0px;
-	background-image: url({* insertImage('images/speededitor.png') *});
+	background-image: url("{* insertImage('images/speededitor.png') *}");
 	background-repeat: no-repeat;
 	background-size: 447px 482px;
+	image-rendering: -webkit-optimize-contrast;
 }
 
 .seButton {

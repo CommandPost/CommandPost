@@ -135,24 +135,53 @@ end
 function tools.keyStroke(modifiers, character, app)
     modifiers = modifiers or {}
 
-    for _, m in pairs(modifiers) do
-        if m == "command" then m = "cmd" end
-        if m == "option" then m = "alt" end
-        if m == "control" then m = "ctrl" end
-        if m == "function" then m = "fn" end
-        newKeyEvent(map[m], true):post(app)
+    local cleanedModifiers = {}
+    for _, modifier in pairs(modifiers) do
+        if modifier == "command" then modifier = "cmd" end
+        if modifier == "option" then modifier = "alt" end
+        if modifier == "control" then modifier = "ctrl" end
+        if modifier == "function" then modifier = "fn" end
+        if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+            table.insert(cleanedModifiers, modifier)
+        end
+    end
+
+    newKeyEvent(cleanedModifiers, character, true):post(app)
+    newKeyEvent(cleanedModifiers, character, false):post(app)
+
+    --------------------------------------------------------------------------------
+    -- NOTE TO FUTURE CHRIS:
+    -- According to the Hammerspoon documentation, "the proper way to perform a
+    -- keypress with modifiers is through multiple key events", which we were doing
+    -- below. However this causes weird issues, where keypresses weren't doing
+    -- what they were supposed to, etc. I ASSUME it was just a timing issue.
+    -- As of 5th April 2022, the above seems to work as intended on macOS 12.3
+    -- and Final Cut Pro 10.6.1.
+    --------------------------------------------------------------------------------
+
+    --[[
+    local cleanedModifiers = {}
+    for _, modifier in pairs(modifiers) do
+        if modifier == "command" then modifier = "cmd" end
+        if modifier == "option" then modifier = "alt" end
+        if modifier == "control" then modifier = "ctrl" end
+        if modifier == "function" then modifier = "fn" end
+        if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+            table.insert(cleanedModifiers, map[modifier])
+        end
+    end
+
+    for _, modifier in pairs(cleanedModifiers) do
+        newKeyEvent(modifier, true):post(app)
     end
 
     newKeyEvent(character, true):post(app)
     newKeyEvent(character, false):post(app)
 
-    for _, m in pairs(modifiers) do
-        if m == "command" then m = "cmd" end
-        if m == "option" then m = "alt" end
-        if m == "control" then m = "ctrl" end
-        if m == "function" then m = "fn" end
-        newKeyEvent(map[m], false):post(app)
+    for _, modifier in pairs(cleanedModifiers) do
+        newKeyEvent(modifier, false):post(app)
     end
+    --]]
 end
 
 --- cp.tools.pressSystemKey(key) -> none

@@ -11,7 +11,7 @@ local appWatcher                = require "hs.application.watcher"
 local eventtap                  = require "hs.eventtap"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
-local speededitor               = require "hs.speededitor"
+local blackmagic                = require "hs.blackmagic"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
@@ -20,6 +20,7 @@ local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
+local applicationsForBundleID   = application.applicationsForBundleID
 local copy                      = fnutils.copy
 local displayNotification       = dialog.displayNotification
 local doEvery                   = timer.doEvery
@@ -30,6 +31,24 @@ local spairs                    = tools.spairs
 local tableMatch                = tools.tableMatch
 
 local mod = {}
+
+-- Jog Wheel Constants:
+local JOG_WHEEL_ABSOLUTE_ONE    = 192
+local JOG_WHEEL_ABSOLUTE_TWO    = 947
+local JOG_WHEEL_ABSOLUTE_THREE  = 1349
+local JOG_WHEEL_ABSOLUTE_FOUR   = 2409
+local JOG_WHEEL_ABSOLUTE_FIVE   = 3437
+local JOG_WHEEL_ABSOLUTE_SIX    = 4096
+
+--- plugins.core.resolve.manager.DEFAULT_SENSITIVITY -> number
+--- Constant
+--- The default sensitivity used for Blackmagic Resolve Control Surfaces.
+mod.DEFAULT_SENSITIVITY = 8000
+
+--- plugins.core.resolve.manager.DEFAULT_JOG_MODE -> string
+--- Constant
+--- The default Jog Wheel Mode.
+mod.DEFAULT_JOG_MODE = "RELATIVE"
 
 --- plugins.core.resolve.manager.lastApplication <cp.prop: string>
 --- Field
@@ -81,6 +100,7 @@ mod.items = json.prop(config.userConfigRootPath, "DaVinci Resolve Control Surfac
 --- Table of active banks for each application.
 mod.activeBanks = config.prop("daVinciResolveControlSurface.activeBanks", {
     ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
 })
 
 -- plugins.core.resolve.manager.devices -> table
@@ -88,6 +108,7 @@ mod.activeBanks = config.prop("daVinciResolveControlSurface.activeBanks", {
 -- Table of Devices.
 mod.devices = {
     ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
 }
 
 -- plugins.core.resolve.manager.deviceOrder -> table
@@ -95,32 +116,39 @@ mod.devices = {
 -- Table of Device Orders.
 mod.deviceOrder = {
     ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
 }
 
 -- plugins.core.resolve.manager.defaultSensitivity -> table
 -- Variable
 -- Table of Default Sensitivity Values.
 mod.defaultSensitivity = {
-    ["Speed Editor"] = 8000,
+    ["Speed Editor"] = mod.DEFAULT_SENSITIVITY,
+    ["Editor Keyboard"] = mod.DEFAULT_SENSITIVITY,
 }
 
---- plugins.core.resolve.manager.getDeviceType(object) -> string
---- Function
---- Translates a button layout into a device type string.
----
---- Parameters:
----  * object - A `hs.resolve` object
----
---- Returns:
----  * "Speed Editor"
-function mod.getDeviceType()
-    --------------------------------------------------------------------------------
-    -- Currently there's only one model. This is future proofing for if/when
-    -- I eventually add the full-size keyboard or they come out with different
-    -- keyboards.
-    --------------------------------------------------------------------------------
-    return "Speed Editor"
-end
+-- ledCache -> table
+-- Variable
+-- A table of LED statuses
+local ledCache = {
+    ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
+}
+
+-- lastApplicationBundleID -> string
+-- Variable
+-- The last application bundle ID
+local lastApplicationBundleID = ""
+
+-- ledCache -> table
+-- Variable
+-- A table of LED statuses
+local ignoreFirstJogWheelMessage = true
+
+-- shouldKillLEDCacheDueToResolve -> boolean
+-- Variable
+-- Should we kill the LED cache because DaVinci Resolve was running?
+local shouldKillLEDCacheDueToResolve = false
 
 --- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
@@ -135,6 +163,13 @@ end
 ---  * None
 function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelValue)
 
+    --------------------------------------------------------------------------------
+    -- Abort if DaVinci Resolve is running:
+    --------------------------------------------------------------------------------
+    if next(applicationsForBundleID("com.blackmagic-design.DaVinciResolve")) ~= nil then
+        --log.df("[Blackmagic Control Surface Support] Ignoring message because DaVinci Resolve is running.")
+        return
+    end
     --[[
     log.df("buttonID: %s", buttonID)
     log.df("pressed: %s", pressed)
@@ -143,7 +178,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     --]]
 
     local serialNumber = object:serialNumber()
-    local deviceType = mod.getDeviceType()
+    local deviceType = object:deviceType()
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
     local frontmostApplication = application.frontmostApplication()
@@ -197,6 +232,8 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     local theBank = theApp and theApp[bankID]
     local theButton = theBank and theBank[buttonID]
 
+    --log.df("jogWheelValue: %s", jogWheelValue)
+
     --------------------------------------------------------------------------------
     -- Nothing assigned to that button:
     --------------------------------------------------------------------------------
@@ -204,36 +241,72 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
         return
     end
 
+    --------------------------------------------------------------------------------
+    -- Is it a Jog Wheel event or a Button Event?
+    --------------------------------------------------------------------------------
     if jogWheelMode then
-        --------------------------------------------------------------------------------
-        -- Jog Wheel Turned:
-        --------------------------------------------------------------------------------
-        local sensitivity = (theButton and theButton.sensitivity) or mod.defaultSensitivity[deviceType]
-        if math.abs(jogWheelValue) > tonumber(sensitivity) then
-            if jogWheelValue < 0 then
-                --------------------------------------------------------------------------------
-                -- Turn Left:
-                --------------------------------------------------------------------------------
-                local turnLeftAction = theButton.turnLeftAction
-                if turnLeftAction then
-                    local handlerID = turnLeftAction.handlerID
-                    local action = turnLeftAction.action
-                    if handlerID and action then
-                        --------------------------------------------------------------------------------
-                        -- Trigger the action:
-                        --------------------------------------------------------------------------------
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
+        if jogWheelMode == "RELATIVE" then
+            --------------------------------------------------------------------------------
+            -- Jog Wheel Turned (in relative mode):
+            --------------------------------------------------------------------------------
+            local sensitivity = (theButton and theButton.sensitivity) or mod.defaultSensitivity[deviceType]
+            if math.abs(jogWheelValue) > tonumber(sensitivity) then
+                if jogWheelValue < 0 then
+                    --------------------------------------------------------------------------------
+                    -- Turn Left:
+                    --------------------------------------------------------------------------------
+                    local turnLeftAction = theButton.turnLeftAction
+                    if turnLeftAction then
+                        local handlerID = turnLeftAction.handlerID
+                        local action = turnLeftAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Turn Right:
+                    --------------------------------------------------------------------------------
+                    local turnRightAction = theButton.turnRightAction
+                    if turnRightAction then
+                        local handlerID = turnRightAction.handlerID
+                        local action = turnRightAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the  action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
                     end
                 end
-            else
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- Jog Wheel Turned (in absolute mode):
+            --------------------------------------------------------------------------------
+            local nextJogAction
+            if jogWheelValue == 0 then
                 --------------------------------------------------------------------------------
-                -- Turn Right:
+                -- Ignore the first jog wheel message when changing apps or banks:
                 --------------------------------------------------------------------------------
-                local turnRightAction = theButton.turnRightAction
-                if turnRightAction then
-                    local handlerID = turnRightAction.handlerID
-                    local action = turnRightAction.action
+                if ignoreFirstJogWheelMessage then
+                    ignoreFirstJogWheelMessage = false
+                    --log.df("Ignoring the first jog wheel change")
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Always trigger the Zero action.
+                --------------------------------------------------------------------------------
+                local zeroAction = theButton.absoluteZeroAction
+                if zeroAction then
+                    local handlerID = zeroAction.handlerID
+                    local action = zeroAction.action
                     if handlerID and action then
                         --------------------------------------------------------------------------------
                         -- Trigger the  action:
@@ -242,7 +315,52 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                         handler:execute(action)
                     end
                 end
+                return
             end
+
+            if jogWheelValue == JOG_WHEEL_ABSOLUTE_ONE then
+                nextJogAction = theButton.turnRightOneAction
+            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_TWO then
+                nextJogAction = theButton.turnRightTwoAction
+            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_THREE then
+                nextJogAction = theButton.turnRightThreeAction
+            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_FOUR then
+                nextJogAction = theButton.turnRightFourAction
+            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_FIVE then
+                nextJogAction = theButton.turnRightFiveAction
+            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_SIX then
+                nextJogAction = theButton.turnRightSixAction
+            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_ONE * -1) then
+                nextJogAction = theButton.turnLeftOneAction
+            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_TWO * -1) then
+                nextJogAction = theButton.turnLeftTwoAction
+            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_THREE * -1) then
+                nextJogAction = theButton.turnLeftThreeAction
+            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_FOUR * -1) then
+                nextJogAction = theButton.turnLeftFourAction
+            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_FIVE * -1) then
+                nextJogAction = theButton.turnLeftFiveAction
+            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_SIX * -1) then
+                nextJogAction = theButton.turnLeftSixAction
+            else
+                --------------------------------------------------------------------------------
+                -- Nothing to see here...
+                --------------------------------------------------------------------------------
+                return
+            end
+
+            if nextJogAction then
+                local handlerID = nextJogAction.handlerID
+                local action = nextJogAction.action
+                if handlerID and action then
+                    --------------------------------------------------------------------------------
+                    -- Trigger the  action:
+                    --------------------------------------------------------------------------------
+                    local handler = mod._actionmanager.getHandler(handlerID)
+                    handler:execute(action)
+                end
+            end
+
         end
     else
         --------------------------------------------------------------------------------
@@ -301,11 +419,6 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
 
 end
 
--- ledCache
--- Variable
--- A table of LED statuses
-local ledCache = {}
-
 --- plugins.core.resolve.manager.update() -> none
 --- Function
 --- Updates all the control surface LEDs.
@@ -316,9 +429,33 @@ local ledCache = {}
 --- Returns:
 ---  * None
 function mod.update()
+    --------------------------------------------------------------------------------
+    -- Abort if DaVinci Resolve is running:
+    --------------------------------------------------------------------------------
+    if next(applicationsForBundleID("com.blackmagic-design.DaVinciResolve")) ~= nil then
+        --log.df("[Blackmagic Control Surface Support] Ignoring message because DaVinci Resolve is running.")
+        shouldKillLEDCacheDueToResolve = true
+        return
+    end
 
+    --------------------------------------------------------------------------------
+    -- Kill the LED cache if Resolve was running:
+    --------------------------------------------------------------------------------
+    if shouldKillLEDCacheDueToResolve then
+        --------------------------------------------------------------------------------
+        -- Kill the LED cache:
+        --------------------------------------------------------------------------------
+        for deviceType, devices in pairs(mod.devices) do
+            ledCache[deviceType] = {}
+        end
+
+        shouldKillLEDCacheDueToResolve = false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Update every device:
+    --------------------------------------------------------------------------------
     local containsLEDSnippet = false
-
     for deviceType, devices in pairs(mod.devices) do
         for _, device in pairs(devices) do
             --------------------------------------------------------------------------------
@@ -329,6 +466,15 @@ function mod.update()
 
             local frontmostApplication = application.frontmostApplication()
             local bundleID = frontmostApplication:bundleID()
+
+            --------------------------------------------------------------------------------
+            -- If the application has actually changed, lets ignore the first Jog Wheel
+            -- message.
+            --------------------------------------------------------------------------------
+            if bundleID ~= lastApplicationBundleID then
+                ignoreFirstJogWheelMessage = true
+            end
+            lastApplicationBundleID = bundleID
 
             --------------------------------------------------------------------------------
             -- Get layout from preferences file:
@@ -370,10 +516,17 @@ function mod.update()
             local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
 
             --------------------------------------------------------------------------------
+            -- Update Jog Wheel Mode:
+            --------------------------------------------------------------------------------
+            local jogMode = (bankData and bankData.jogMode) or mod.DEFAULT_JOG_MODE
+            device:jogMode(jogMode)
+
+            --------------------------------------------------------------------------------
             -- Update every button:
             --------------------------------------------------------------------------------
             local ledStatus = {}
-            for _, ledID in pairs(speededitor.ledNames) do
+            local ledNames = blackmagic.ledNames[deviceType]
+            for _, ledID in pairs(ledNames) do
                 local buttonData = bankData and bankData[ledID]
                 local snippetAction = buttonData and buttonData.snippetAction
                 local snippetActionAction = snippetAction and snippetAction.action
@@ -406,10 +559,10 @@ function mod.update()
             --------------------------------------------------------------------------------
             -- Only update the hardware if there's a change:
             --------------------------------------------------------------------------------
-            if not tableMatch(ledStatus, ledCache) then
+            if not tableMatch(ledStatus, ledCache[deviceType]) then
                 device:led(ledStatus)
             end
-            ledCache = copy(ledStatus)
+            ledCache[deviceType] = copy(ledStatus)
         end
     end
 
@@ -448,15 +601,15 @@ function mod.discoveryCallback(connected, object)
     if serialNumber == nil then
         log.ef("Failed to get DaVinci Resolve Control Surface Serial Number. Is DaVinci Resolve running?")
     else
-        local deviceType = mod.getDeviceType()
+        local deviceType = object:deviceType()
         if connected then
-            log.df("DaVinci Resolve Control Surface Connected: %s - %s", deviceType, serialNumber)
+            log.df("[DaVinci Resolve Control Surface] Connected: %s (Serial: %s)", deviceType, serialNumber)
             mod.devices[deviceType][serialNumber] = object:callback(mod.buttonCallback)
 
             --------------------------------------------------------------------------------
-            -- Force the device into SHTL Jog Wheel mode:
+            -- Trash the LED cache:
             --------------------------------------------------------------------------------
-            object:jogMode("SHTL")
+            ledCache[deviceType] = {}
 
             --------------------------------------------------------------------------------
             -- Sort the devices alphabetically based on serial number:
@@ -470,10 +623,15 @@ function mod.discoveryCallback(connected, object)
             mod.update()
         else
             if mod.devices and mod.devices[deviceType][serialNumber] then
-                log.df("DaVinci Resolve Control Surface Disconnected: %s - %s", deviceType, serialNumber)
+                log.df("[DaVinci Resolve Control Surface] Disconnected: %s (Serial: %s)", deviceType, serialNumber)
                 mod.devices[deviceType][serialNumber] = nil
+
+                --------------------------------------------------------------------------------
+                -- Trash the LED cache:
+                --------------------------------------------------------------------------------
+                ledCache[deviceType] = {}
             else
-                log.ef("Disconnected DaVinci Resolve Control Surface wasn't previously registered: %s - %s", deviceType, serialNumber)
+                log.ef("[DaVinci Resolve Control Surface] Disconnected device that wasn't previously registered: %s - %s", deviceType, serialNumber)
             end
         end
     end
@@ -501,7 +659,7 @@ function mod.start()
     --------------------------------------------------------------------------------
     -- Initialise DaVinci Resolve Control Surface support:
     --------------------------------------------------------------------------------
-    speededitor.init(mod.discoveryCallback)
+    blackmagic.init(mod.discoveryCallback)
 end
 
 --- plugins.core.resolve.manager.start() -> boolean
@@ -514,6 +672,27 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
+    --------------------------------------------------------------------------------
+    -- Kill the LED cache:
+    --------------------------------------------------------------------------------
+    for deviceType, devices in pairs(mod.devices) do
+        ledCache[deviceType] = {}
+    end
+
+    --------------------------------------------------------------------------------
+    -- Turn off all LEDs:
+    --------------------------------------------------------------------------------
+    for deviceType, devices in pairs(mod.devices) do
+        for _, device in pairs(devices) do
+            local ledNames = blackmagic.ledNames[deviceType]
+            local ledStatus = {}
+            for _, ledID in pairs(ledNames) do
+                ledStatus[ledID] = false
+            end
+            device:led(ledStatus)
+        end
+    end
+
     --------------------------------------------------------------------------------
     -- Stop any stray repeat timers:
     --------------------------------------------------------------------------------
@@ -544,7 +723,7 @@ end
 --- plugins.core.resolve.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable DaVinci Resolve Control Surface support
-mod.enabled = config.prop("enableSpeedEditor", false):watch(function(enabled)
+mod.enabled = config.prop("enableDaVinciResolveControlSurfaceSupport", false):watch(function(enabled)
     if enabled then
         mod.start()
     else
@@ -696,16 +875,14 @@ function plugin.init(deps)
                 mod.update()
 
                 items = mod.items() -- Reload items
-                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                local label = items[device] and items[device][unit] and items[device][unit][bundleID] and items[device][unit][bundleID][newBank] and items[device][unit][bundleID][newBank]["bankLabel"] or newBank
 
-                local deviceLabel = device
-                if deviceLabel == "Original" then
-                    deviceLabel = ""
-                else
-                    deviceLabel = deviceLabel .. " "
-                end
+                --------------------------------------------------------------------------------
+                -- Ignore the first jog wheel message:
+                --------------------------------------------------------------------------------
+                ignoreFirstJogWheelMessage = true
 
-                displayNotification("Speed Editor " .. deviceLabel .. "(Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
+                displayNotification(device .. " (Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
             end
         end)
         :onActionId(function(action) return "resolveBank" .. action.id end)
