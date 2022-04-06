@@ -990,103 +990,219 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Reset Everything:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local defaultLayout = copy(mod._resolveManager.defaultLayout)
-                    mod.items(defaultLayout)
+            local resetEverything = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the entire UI, as Custom Apps will now be gone:
-                    --------------------------------------------------------------------------------
-                    mod._manager.refresh()
-                end
-            end, i18n("daVinciResolveControlSurfaceResetEverythingConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            mod.items({})
+                        else
+                            local defaultLayout = copy(mod._resolveManager.defaultLayout)
+                            mod.items(defaultLayout)
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the entire UI, as Custom Apps will now be gone:
+                        --------------------------------------------------------------------------------
+                        mod._manager.refresh()
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetEverythingConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetEverything(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetEverything(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetDevice" then
             --------------------------------------------------------------------------------
             -- Reset Device:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local items = mod.items()
+            local resetDevice = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local items = mod.items()
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and copy(defaultLayout[device]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and copy(defaultLayout[device]) or {}
 
-                    items[device] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            items[device] = {}
+                        else
+                            items[device] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetDevice(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetDevice(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetUnit" then
             --------------------------------------------------------------------------------
             -- Reset Unit:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local unit = params["unit"]
-                    local items = mod.items()
+            local resetUnit = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local items = mod.items()
 
-                    if not items[device] then items[device] = {} end
-                    if not items[device][unit] then items[device][unit] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device][unit] then items[device][unit] = {} end
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and copy(defaultLayout[device][unit]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and copy(defaultLayout[device][unit]) or {}
 
-                    items[device][unit] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+
+                        if completelyEmpty then
+                            items[device][unit] = {}
+                        else
+                            items[device][unit] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetUnit(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetUnit(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetApplication" then
             --------------------------------------------------------------------------------
             -- Reset Application:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local unit = params["unit"]
-                    local app = params["application"]
-                    local items = mod.items()
+            local resetApplication = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local app = params["application"]
+                        local items = mod.items()
 
-                    if not items[device] then items[device] = {} end
-                    if not items[device][unit] then items[device][unit] = {} end
-                    if not items[device][unit][app] then items[device][unit][app] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device][unit] then items[device][unit] = {} end
+                        if not items[device][unit][app] then items[device][unit][app] = {} end
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and copy(defaultLayout[device][unit][app]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and copy(defaultLayout[device][unit][app]) or {}
 
-                    items[device][unit][app] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            items[device][unit][app] = {}
+                        else
+                            items[device][unit][app] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetApplication(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetApplication(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetBank" then
             --------------------------------------------------------------------------------
             -- Reset Bank:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local unit = params["unit"]
-                    local app = params["application"]
-                    local bank = params["bank"]
-                    local items = mod.items()
+            local resetBank = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local app = params["application"]
+                        local bank = params["bank"]
+                        local items = mod.items()
 
-                    if not items[device] then items[device] = {} end
-                    if not items[device][unit] then items[device][unit] = {} end
-                    if not items[device][unit][app] then items[device][unit][app] = {} end
-                    if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device][unit] then items[device][unit] = {} end
+                        if not items[device][unit][app] then items[device][unit][app] = {} end
+                        if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and defaultLayout[device][unit][app][bank] and copy(defaultLayout[device][unit][app][bank]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and defaultLayout[device][unit][app][bank] and copy(defaultLayout[device][unit][app][bank]) or {}
 
-                    items[device][unit][app][bank] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            items[device][unit][app][bank] = {}
+                        else
+                            items[device][unit][app][bank] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetBank(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetBank(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "showContextMenu" then
             --------------------------------------------------------------------------------
             -- Show Context Menu:
