@@ -133,7 +133,6 @@ function plugin.init(deps)
     -- Titles Search Console:
     --------------------------------------------------------------------------------
     mod.title = actionmanager.getActivator("finalcutpro.title"):allowHandlers("fcpx_title")
-    local cmds = deps.fcpxCmds
     cmds:add("cpFinalCutProTitle")
         :whenActivated(function()
             mod.title:show()

@@ -457,7 +457,7 @@ function mod.update()
         --------------------------------------------------------------------------------
         -- Kill the LED cache:
         --------------------------------------------------------------------------------
-        for deviceType, devices in pairs(mod.devices) do
+        for deviceType, _ in pairs(mod.devices) do
             ledCache[deviceType] = {}
         end
 
@@ -709,7 +709,7 @@ function mod.stop()
     --------------------------------------------------------------------------------
     -- Kill the LED cache:
     --------------------------------------------------------------------------------
-    for deviceType, devices in pairs(mod.devices) do
+    for deviceType, _ in pairs(mod.devices) do
         ledCache[deviceType] = {}
     end
 
