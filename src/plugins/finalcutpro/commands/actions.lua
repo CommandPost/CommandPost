@@ -5,12 +5,17 @@
 
 local require           = require
 
+local image             = require "hs.image"
+
 local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
 local displayMessage    = dialog.displayMessage
 local format            = string.format
+local iconFallback      = tools.iconFallback
+local imageFromPath     = image.imageFromPath
 
 local mod = {}
 
@@ -23,6 +28,11 @@ local ID = "cmds"
 -- Constant
 -- Group ID
 local GROUP = "fcpx"
+
+-- FINAL_CUT_PRO_ICON -> hs.image
+-- Constant
+-- The Final Cut Pro Icon
+local FINAL_CUT_PRO_ICON = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns"))
 
 --- plugins.finalcutpro.commands.actions.init(actionmanager, cmds) -> none
 --- Function
@@ -45,12 +55,11 @@ function mod.init(actionmanager, cmds)
         :onActionId(mod.getId)
 
     --------------------------------------------------------------------------------
-    -- Watch for any aditional commands added after this point...
+    -- Watch for any additional commands added after this point...
     --------------------------------------------------------------------------------
     cmds:watch({
         add     = function() mod._handler:reset() end
     })
-
 end
 
 --- plugins.finalcutpro.commands.actions.onChoices(choices) -> none
@@ -84,6 +93,7 @@ function mod.onChoices(choices)
                 :subText(subtext)
                 :params(action)
                 :id(mod.getId(action))
+                :image(cmd:getImage() or FINAL_CUT_PRO_ICON) -- Default to the FCPX icon if nothing else supplied.
         end
     end
 end
@@ -159,7 +169,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["core.action.manager"]     = "actionmanager",
-        ["finalcutpro.commands"]            = "cmds",
+        ["finalcutpro.commands"]    = "cmds",
     }
 }
 

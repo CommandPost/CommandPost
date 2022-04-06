@@ -104,6 +104,14 @@ mod.activeBanks = config.prop("daVinciResolveControlSurface.activeBanks", {
     ["Editor Keyboard"] = {},
 })
 
+--- plugins.core.resolve.manager.activeBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.previousActiveBanks = config.prop("daVinciResolveControlSurface.previousActiveBanks", {
+    ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
+})
+
 -- plugins.core.resolve.manager.devices -> table
 -- Variable
 -- Table of Devices.
@@ -136,15 +144,18 @@ local ledCache = {
     ["Editor Keyboard"] = {},
 }
 
+-- ledCache -> table
+-- Variable
+-- A table of LED statuses
+local ignoreFirstJogWheelMessage = {
+    ["Speed Editor"] = true,
+    ["Editor Keyboard"] = true,
+}
+
 -- lastApplicationBundleID -> string
 -- Variable
 -- The last application bundle ID
 local lastApplicationBundleID = ""
-
--- ledCache -> table
--- Variable
--- A table of LED statuses
-local ignoreFirstJogWheelMessage = true
 
 -- shouldKillLEDCacheDueToResolve -> boolean
 -- Variable
@@ -295,9 +306,9 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                 --------------------------------------------------------------------------------
                 -- Ignore the first jog wheel message when changing apps or banks:
                 --------------------------------------------------------------------------------
-                if ignoreFirstJogWheelMessage then
-                    ignoreFirstJogWheelMessage = false
-                    --log.df("Ignoring the first jog wheel change")
+                if ignoreFirstJogWheelMessage[deviceType] then
+                    ignoreFirstJogWheelMessage[deviceType] = false
+                    log.df("Ignoring the first jog wheel change")
                     return
                 end
 
@@ -473,7 +484,7 @@ function mod.update()
             -- message.
             --------------------------------------------------------------------------------
             if bundleID ~= lastApplicationBundleID then
-                ignoreFirstJogWheelMessage = true
+                ignoreFirstJogWheelMessage[deviceType] = true
             end
             lastApplicationBundleID = bundleID
 
@@ -845,6 +856,18 @@ function plugin.init(deps)
                         })
                         :id(device .. "_" .. unit .. "_previousBank")
                         :image(icon)
+
+                    choices
+                        :add(i18n("last") .. " " .. device .. " " .. i18n("bank") .. " (Unit " .. unit .. ")")
+                        :subText(i18n("resolveBankDescription"))
+                        :params({
+                            action = "last",
+                            device = device,
+                            unit = tostring(unit),
+                            id = device .. "_" .. unit .. "_lastBank",
+                        })
+                        :id(device .. "_" .. unit .. "_lastBank")
+                        :image(icon)
                 end
             end
             return choices
@@ -877,6 +900,7 @@ function plugin.init(deps)
                 end
 
                 local activeBanks = mod.activeBanks()
+                local previousActiveBanksCache = copy(activeBanks)
 
                 if not activeBanks[device] then activeBanks[device] = {} end
                 if not activeBanks[device][unit] then activeBanks[device][unit] = {} end
@@ -897,10 +921,14 @@ function plugin.init(deps)
                     else
                         activeBanks[device][unit][bundleID] = tostring(tonumber(currentBank) - 1)
                     end
+                elseif result.action == "last" then
+                    local previousActiveBanks = mod.previousActiveBanks()
+                    activeBanks[device][unit][bundleID] = previousActiveBanks[device][unit][bundleID]
                 end
 
                 local newBank = activeBanks[device][unit][bundleID]
 
+                mod.previousActiveBanks(previousActiveBanksCache)
                 mod.activeBanks(activeBanks)
 
                 mod.update()
@@ -911,7 +939,7 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 -- Ignore the first jog wheel message:
                 --------------------------------------------------------------------------------
-                ignoreFirstJogWheelMessage = true
+                ignoreFirstJogWheelMessage[device] = true
 
                 displayNotification(device .. " (Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
             end

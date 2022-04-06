@@ -1,12 +1,17 @@
 --- === plugins.finalcutpro.console ===
 ---
---- Final Cut Pro Search Console
+--- Final Cut Pro Search Consoles
 
-local require   = require
+local require           = require
 
-local config    = require "cp.config"
-local fcp       = require "cp.apple.finalcutpro"
-local tools     = require "cp.tools"
+local image             = require "hs.image"
+
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
+
+local imageFromPath     = image.imageFromPath
 
 local mod = {}
 
@@ -14,9 +19,10 @@ local plugin = {
     id              = "finalcutpro.console",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.commands"]        = "fcpxCmds",
-        ["core.action.manager"]         = "actionmanager",
-        ["core.console"]                = "console",
+        ["finalcutpro.commands"]               = "fcpxCmds",
+        ["core.action.manager"]                = "actionmanager",
+        ["core.console"]                       = "console",
+        ["finalcutpro.timeline.pluginactions"] = "pluginactions", -- Load all the plugin actions first!
     }
 }
 
@@ -27,12 +33,23 @@ function plugin.init(deps)
     if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
+    -- Dependencies:
+    --------------------------------------------------------------------------------
+    local cmds = deps.fcpxCmds
+    local actionmanager = deps.actionmanager
+
+    --------------------------------------------------------------------------------
+    -- Paths:
+    --------------------------------------------------------------------------------
+    local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+    local coreIconPath = config.basePath .. "/plugins/core/console/images/"
+
+    --------------------------------------------------------------------------------
     -- Register a Final Cut Pro specific activator for the Search Console:
     --------------------------------------------------------------------------------
     local bundleID = fcp:bundleID()
     deps.console.register(bundleID, function()
         if not mod.activator then
-            local actionmanager = deps.actionmanager
             mod.activator = actionmanager.getActivator("finalcutpro.console")
 
             --------------------------------------------------------------------------------
@@ -53,8 +70,6 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Allow specific toolbar icons in the Search Console:
             --------------------------------------------------------------------------------
-            local coreIconPath = config.basePath .. "/plugins/core/console/images/"
-            local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
             local toolbarIcons = {
                 global_applications = { path = coreIconPath .. "apps.png",      priority = 1},
                 fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 2},
@@ -74,13 +89,68 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add a Final Cut Pro specific action to open the Search Console:
     --------------------------------------------------------------------------------
-    local cmds = deps.fcpxCmds
     cmds:add("cpConsole")
         :groupedBy("commandPost")
         :whenActivated(function()
             deps.console.show()
         end)
         :activatedBy():ctrl("space")
+
+    --------------------------------------------------------------------------------
+    -- Video Effect Search Console:
+    --------------------------------------------------------------------------------
+    mod.videoEffect = actionmanager.getActivator("finalcutpro.videoEffect"):allowHandlers("fcpx_videoEffect")
+    cmds:add("cpFinalCutProVideoEffect")
+        :whenActivated(function()
+            mod.videoEffect:show()
+        end)
+        :titled(i18n("openVideoEffectsInSearchConsole"))
+        :image(imageFromPath(iconPath .. "videoEffect.png"))
+
+    --------------------------------------------------------------------------------
+    -- Audio Effect Search Console:
+    --------------------------------------------------------------------------------
+    mod.audioEffect = actionmanager.getActivator("finalcutpro.videoEffect"):allowHandlers("fcpx_audioEffect")
+    cmds:add("cpFinalCutProAudioEffect")
+        :whenActivated(function()
+            mod.audioEffect:show()
+        end)
+        :titled(i18n("openAudioEffectsInSearchConsole"))
+        :image(imageFromPath(iconPath .. "audioEffect.png"))
+
+    --------------------------------------------------------------------------------
+    -- Generators Search Console:
+    --------------------------------------------------------------------------------
+    mod.generators = actionmanager.getActivator("finalcutpro.videoEffect"):allowHandlers("fcpx_generator")
+    cmds:add("cpFinalCutProGenerator")
+        :whenActivated(function()
+            mod.generators:show()
+        end)
+        :titled(i18n("openGeneratorsInSearchConsole"))
+        :image(imageFromPath(iconPath .. "generator.png"))
+
+    --------------------------------------------------------------------------------
+    -- Titles Search Console:
+    --------------------------------------------------------------------------------
+    mod.title = actionmanager.getActivator("finalcutpro.title"):allowHandlers("fcpx_title")
+    local cmds = deps.fcpxCmds
+    cmds:add("cpFinalCutProTitle")
+        :whenActivated(function()
+            mod.title:show()
+        end)
+        :titled(i18n("openTitlesInSearchConsole"))
+        :image(imageFromPath(iconPath .. "title.png"))
+
+    --------------------------------------------------------------------------------
+    -- Transition Search Console:
+    --------------------------------------------------------------------------------
+    mod.transitions = actionmanager.getActivator("finalcutpro.transitions"):allowHandlers("fcpx_transition")
+    cmds:add("cpFinalCutProTransition")
+        :whenActivated(function()
+            mod.transitions:show()
+        end)
+        :titled(i18n("openTransitionsInSearchConsole"))
+        :image(imageFromPath(iconPath .. "transition.png"))
 
     return mod
 end
