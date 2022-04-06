@@ -15,7 +15,7 @@ local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
-local speededitor               = require "hs.speededitor"
+local blackmagic                = require "hs.blackmagic"
 
 local config                    = require "cp.config"
 local html                      = require "cp.web.html"
@@ -38,6 +38,11 @@ local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
+
+-- DEFAULT_BUTTON -> string
+-- Constant
+-- The default button in the preferences panel.
+local DEFAULT_BUTTON = "SOURCE"
 
 -- SNIPPET_HELP_URL -> string
 -- Constant
@@ -72,7 +77,7 @@ mod.lastUnit = config.prop("daVinciResolveControlSurface.preferences.lastUnit", 
 --- plugins.core.controlsurfaces.resolve.prefs.lastUnit <cp.prop: string>
 --- Field
 --- Last Unit used in the Preferences Panel.
-mod.lastButton = config.prop("daVinciResolveControlSurface.preferences.lastButton", "1")
+mod.lastButton = config.prop("daVinciResolveControlSurface.preferences.lastButton", DEFAULT_BUTTON)
 
 -- renderPanel(context) -> none
 -- Function
@@ -176,14 +181,22 @@ end
 -- Returns:
 --  * None
 local function updateUI(params)
+
     --------------------------------------------------------------------------------
     -- Get parameters from table or from saved data:
     --------------------------------------------------------------------------------
-    local device    = params and params["device"] or mod.lastDevice()
-    local unit      = params and params["unit"] or mod.lastUnit()
-    local app       = params and params["application"] or mod.lastApplication()
-    local bank      = params and params["bank"] or mod.lastBank()
-    local button    = params and params["button"] or mod.lastButton()
+    local device    = (params and params["device"])         or mod.lastDevice()
+    local unit      = (params and params["unit"])           or mod.lastUnit()
+    local app       = (params and params["application"])    or mod.lastApplication()
+    local bank      = (params and params["bank"])           or mod.lastBank()
+    local button    = (params and params["button"])         or mod.lastButton()
+
+    --------------------------------------------------------------------------------
+    -- Make sure the button actually exists on the selected device:
+    --------------------------------------------------------------------------------
+    if not tableContains(blackmagic.buttonNames[device], button) and button ~= "JOG WHEEL" then
+        button = DEFAULT_BUTTON
+    end
 
     --------------------------------------------------------------------------------
     -- Update the last button:
@@ -203,24 +216,25 @@ local function updateUI(params)
     ]]
 
     --------------------------------------------------------------------------------
-    -- Change the UI depending on the selected control:
+    -- Change the UI depending on the device type:
     --------------------------------------------------------------------------------
-    if button == "JOG WHEEL" then
+    if device == "Speed Editor" then
         script = script .. [[
-            setStyleDisplayByClass("seButtonSection", "none");
-            setStyleDisplayByClass("seJogWheelSection", "table");
-        ]] .. "\n"
-    else
+            document.getElementById("speedEditorUI").style.display = "table";
+            document.getElementById("editorKeyboardUI").style.display = "none";
+        ]]
+    elseif device == "Editor Keyboard" then
         script = script .. [[
-            setStyleDisplayByClass("seButtonSection", "table");
-            setStyleDisplayByClass("seJogWheelSection", "none");
-        ]] .. "\n"
+            document.getElementById("speedEditorUI").style.display = "none";
+            document.getElementById("editorKeyboardUI").style.display = "table";
+        ]]
     end
 
     --------------------------------------------------------------------------------
     -- Only show LED options if the button has an LED:
     --------------------------------------------------------------------------------
-    if tableContains(speededitor.ledNames, button) then
+    local ledNames = blackmagic.ledNames[device]
+    if tableContains(ledNames, button) then
         script = script .. [[
             setStyleDisplayByClass("seLEDSection", "table");
         ]] .. "\n"
@@ -269,7 +283,50 @@ local function updateUI(params)
 
     end
 
+    --------------------------------------------------------------------------------
+    -- Change the UI depending on the selected control:
+    --------------------------------------------------------------------------------
     local bankData = appData and appData[bank]
+    local jogMode = (bankData and bankData.jogMode) or mod._resolveManager.DEFAULT_JOG_MODE
+    if button == "JOG WHEEL" then
+        if jogMode == "ABSOLUTE" or jogMode == "ABSOLUTE ZERO" then
+            --------------------------------------------------------------------------------
+            -- Absolute & Absolute Zero Mode:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                setStyleDisplayByClass("seButtonSection", "none");
+                setStyleDisplayByClass("seJogWheelSection", "table");
+                setStyleDisplayByClass("seJogWheelAbsoluteSection", "table");
+                setStyleDisplayByClass("seJogWheelRelativeSection", "none");
+
+            ]] .. "\n"
+        else
+            --------------------------------------------------------------------------------
+            -- Relative Mode (Default):
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                setStyleDisplayByClass("seButtonSection", "none");
+                setStyleDisplayByClass("seJogWheelSection", "table");
+                setStyleDisplayByClass("seJogWheelAbsoluteSection", "none");
+                setStyleDisplayByClass("seJogWheelRelativeSection", "table");
+
+            ]] .. "\n"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Update the dropdown list:
+        --------------------------------------------------------------------------------
+        script = script .. [[
+            changeValueByID("jogMode", "]] .. jogMode .. [[");
+        ]] .. "\n"
+    else
+        script = script .. [[
+            setStyleDisplayByClass("seButtonSection", "table");
+            setStyleDisplayByClass("seJogWheelSection", "none");
+            setStyleDisplayByClass("seJogWheelAbsoluteSection", "none");
+            setStyleDisplayByClass("seJogWheelRelativeSection", "none");
+        ]] .. "\n"
+    end
 
     --------------------------------------------------------------------------------
     -- Update the fields for the currently selected button:
@@ -279,17 +336,52 @@ local function updateUI(params)
     local snippetAction = ""
     local turnLeftAction = ""
     local turnRightAction = ""
+
+    local turnLeftOneAction = ""
+    local turnLeftTwoAction = ""
+    local turnLeftThreeAction = ""
+    local turnLeftFourAction = ""
+    local turnLeftFiveAction = ""
+    local turnLeftSixAction = ""
+
+    local turnRightOneAction = ""
+    local turnRightTwoAction = ""
+    local turnRightThreeAction = ""
+    local turnRightFourAction = ""
+    local turnRightFiveAction = ""
+    local turnRightSixAction = ""
+
+    local absoluteZeroAction = ""
+
     local ledAlwaysOn = false
     local repeatPressActionUntilReleased = false
+
     local sensitivity = mod._resolveManager.defaultSensitivity[device]
 
     local buttonData = bankData and bankData[button]
     if buttonData then
-        pressAction                         = escapeTilda(buttonData.pressAction        and buttonData.pressAction.actionTitle)
-        releaseAction                       = escapeTilda(buttonData.releaseAction      and buttonData.releaseAction.actionTitle)
-        snippetAction                       = escapeTilda(buttonData.snippetAction      and buttonData.snippetAction.actionTitle)
-        turnLeftAction                      = escapeTilda(buttonData.turnLeftAction     and buttonData.turnLeftAction.actionTitle)
-        turnRightAction                     = escapeTilda(buttonData.turnRightAction    and buttonData.turnRightAction.actionTitle)
+        pressAction                         = escapeTilda(buttonData.pressAction            and buttonData.pressAction.actionTitle)
+        releaseAction                       = escapeTilda(buttonData.releaseAction          and buttonData.releaseAction.actionTitle)
+        snippetAction                       = escapeTilda(buttonData.snippetAction          and buttonData.snippetAction.actionTitle)
+        turnLeftAction                      = escapeTilda(buttonData.turnLeftAction         and buttonData.turnLeftAction.actionTitle)
+        turnRightAction                     = escapeTilda(buttonData.turnRightAction        and buttonData.turnRightAction.actionTitle)
+
+
+        turnLeftOneAction                   = escapeTilda(buttonData.turnLeftOneAction      and buttonData.turnLeftOneAction.actionTitle)
+        turnLeftTwoAction                   = escapeTilda(buttonData.turnLeftTwoAction      and buttonData.turnLeftTwoAction.actionTitle)
+        turnLeftThreeAction                 = escapeTilda(buttonData.turnLeftThreeAction    and buttonData.turnLeftThreeAction.actionTitle)
+        turnLeftFourAction                  = escapeTilda(buttonData.turnLeftFourAction     and buttonData.turnLeftFourAction.actionTitle)
+        turnLeftFiveAction                  = escapeTilda(buttonData.turnLeftFiveAction     and buttonData.turnLeftFiveAction.actionTitle)
+        turnLeftSixAction                   = escapeTilda(buttonData.turnLeftSixAction      and buttonData.turnLeftSixAction.actionTitle)
+
+        turnRightOneAction                  = escapeTilda(buttonData.turnRightOneAction     and buttonData.turnRightOneAction.actionTitle)
+        turnRightTwoAction                  = escapeTilda(buttonData.turnRightTwoAction     and buttonData.turnRightTwoAction.actionTitle)
+        turnRightThreeAction                = escapeTilda(buttonData.turnRightThreeAction   and buttonData.turnRightThreeAction.actionTitle)
+        turnRightFourAction                 = escapeTilda(buttonData.turnRightFourAction    and buttonData.turnRightFourAction.actionTitle)
+        turnRightFiveAction                 = escapeTilda(buttonData.turnRightFiveAction    and buttonData.turnRightFiveAction.actionTitle)
+        turnRightSixAction                  = escapeTilda(buttonData.turnRightSixAction     and buttonData.turnRightSixAction.actionTitle)
+
+        absoluteZeroAction                  = escapeTilda(buttonData.absoluteZeroAction and buttonData.absoluteZeroAction.actionTitle)
 
         ledAlwaysOn                         = buttonData.ledAlwaysOn or ledAlwaysOn
         repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or repeatPressActionUntilReleased
@@ -304,6 +396,22 @@ local function updateUI(params)
 
         changeValueByID('turnLeftAction', `]] .. turnLeftAction .. [[`);
         changeValueByID('turnRightAction', `]] .. turnRightAction .. [[`);
+
+        changeValueByID('absoluteZeroAction', `]] .. absoluteZeroAction .. [[`);
+
+        changeValueByID('turnLeftOneAction', `]] .. turnLeftOneAction .. [[`);
+        changeValueByID('turnLeftTwoAction', `]] .. turnLeftTwoAction .. [[`);
+        changeValueByID('turnLeftThreeAction', `]] .. turnLeftThreeAction .. [[`);
+        changeValueByID('turnLeftFourAction', `]] .. turnLeftFourAction .. [[`);
+        changeValueByID('turnLeftFiveAction', `]] .. turnLeftFiveAction .. [[`);
+        changeValueByID('turnLeftSixAction', `]] .. turnLeftSixAction .. [[`);
+
+        changeValueByID('turnRightOneAction', `]] .. turnRightOneAction .. [[`);
+        changeValueByID('turnRightTwoAction', `]] .. turnRightTwoAction .. [[`);
+        changeValueByID('turnRightThreeAction', `]] .. turnRightThreeAction .. [[`);
+        changeValueByID('turnRightFourAction', `]] .. turnRightFourAction .. [[`);
+        changeValueByID('turnRightFiveAction', `]] .. turnRightFiveAction .. [[`);
+        changeValueByID('turnRightSixAction', `]] .. turnRightSixAction .. [[`);
 
         changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleased or false) .. [[);
         changeCheckedByID('ledAlwaysOn', ]] .. tostring(ledAlwaysOn or false) .. [[);
@@ -374,8 +482,11 @@ function mod.setItem(app, bank, button, key, value)
         if type(value) == "table" then value = copy(value) end
         items[lastDevice][lastUnit][app][bank][button][key] = value
     else
-        if type(key) == "table" then key = copy(key) end
-        items[lastDevice][lastUnit][app][bank][button] = key
+        if type(key) == "table" then
+            items[lastDevice][lastUnit][app][bank][button] = copy(key)
+        else
+            items[lastDevice][lastUnit][app][bank][button][key] = nil
+        end
     end
 
     mod.items(items)
@@ -657,6 +768,28 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
             mod.setItem(app, bank, button, "sensitivity", value)
 
             updateUI()
+        elseif callbackType == "changeJogMode" then
+            --------------------------------------------------------------------------------
+            -- Update "Jog Mode":
+            --------------------------------------------------------------------------------
+            local device = params["device"]
+            local unit = params["unit"]
+            local app = params["application"]
+            local bank = params["bank"]
+            local value = params["value"]
+
+            local items = mod.items()
+
+            if not items[device] then items[device] = {} end
+            if not items[device][unit] then items[device][unit] = {} end
+            if not items[device][unit][app] then items[device][unit][app] = {} end
+            if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
+
+            items[device][unit][app][bank].jogMode = value
+
+            mod.items(items)
+
+            updateUI()
         elseif callbackType == "changeDeviceUnitApplicationBank" then
             --------------------------------------------------------------------------------
             -- Change Device/Unit/Application/Bank:
@@ -857,103 +990,219 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Reset Everything:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local defaultLayout = copy(mod._resolveManager.defaultLayout)
-                    mod.items(defaultLayout)
+            local resetEverything = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the entire UI, as Custom Apps will now be gone:
-                    --------------------------------------------------------------------------------
-                    mod._manager.refresh()
-                end
-            end, i18n("daVinciResolveControlSurfaceResetEverythingConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            mod.items({})
+                        else
+                            local defaultLayout = copy(mod._resolveManager.defaultLayout)
+                            mod.items(defaultLayout)
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the entire UI, as Custom Apps will now be gone:
+                        --------------------------------------------------------------------------------
+                        mod._manager.refresh()
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetEverythingConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetEverything(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetEverything(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetDevice" then
             --------------------------------------------------------------------------------
             -- Reset Device:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local items = mod.items()
+            local resetDevice = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local items = mod.items()
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and copy(defaultLayout[device]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and copy(defaultLayout[device]) or {}
 
-                    items[device] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            items[device] = {}
+                        else
+                            items[device] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetDevice(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetDevice(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetUnit" then
             --------------------------------------------------------------------------------
             -- Reset Unit:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local unit = params["unit"]
-                    local items = mod.items()
+            local resetUnit = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local items = mod.items()
 
-                    if not items[device] then items[device] = {} end
-                    if not items[device][unit] then items[device][unit] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device][unit] then items[device][unit] = {} end
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and copy(defaultLayout[device][unit]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and copy(defaultLayout[device][unit]) or {}
 
-                    items[device][unit] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+
+                        if completelyEmpty then
+                            items[device][unit] = {}
+                        else
+                            items[device][unit] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetUnit(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetUnit(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetApplication" then
             --------------------------------------------------------------------------------
             -- Reset Application:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local unit = params["unit"]
-                    local app = params["application"]
-                    local items = mod.items()
+            local resetApplication = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local app = params["application"]
+                        local items = mod.items()
 
-                    if not items[device] then items[device] = {} end
-                    if not items[device][unit] then items[device][unit] = {} end
-                    if not items[device][unit][app] then items[device][unit][app] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device][unit] then items[device][unit] = {} end
+                        if not items[device][unit][app] then items[device][unit][app] = {} end
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and copy(defaultLayout[device][unit][app]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and copy(defaultLayout[device][unit][app]) or {}
 
-                    items[device][unit][app] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            items[device][unit][app] = {}
+                        else
+                            items[device][unit][app] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetApplication(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetApplication(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "resetBank" then
             --------------------------------------------------------------------------------
             -- Reset Bank:
             --------------------------------------------------------------------------------
-            webviewAlert(mod._manager.getWebview(), function(result)
-                if result == i18n("yes") then
-                    local device = params["device"]
-                    local unit = params["unit"]
-                    local app = params["application"]
-                    local bank = params["bank"]
-                    local items = mod.items()
+            local resetBank = function(completelyEmpty)
+                webviewAlert(mod._manager.getWebview(), function(result)
+                    if result == i18n("yes") then
+                        local device = params["device"]
+                        local unit = params["unit"]
+                        local app = params["application"]
+                        local bank = params["bank"]
+                        local items = mod.items()
 
-                    if not items[device] then items[device] = {} end
-                    if not items[device][unit] then items[device][unit] = {} end
-                    if not items[device][unit][app] then items[device][unit][app] = {} end
-                    if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device][unit] then items[device][unit] = {} end
+                        if not items[device][unit][app] then items[device][unit][app] = {} end
+                        if not items[device][unit][app][bank] then items[device][unit][app][bank] = {} end
 
-                    local defaultLayout = mod._resolveManager.defaultLayout
-                    local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and defaultLayout[device][unit][app][bank] and copy(defaultLayout[device][unit][app][bank]) or {}
+                        local defaultLayout = mod._resolveManager.defaultLayout
+                        local blank = defaultLayout and defaultLayout[device] and defaultLayout[device][unit] and defaultLayout[device][unit][app] and defaultLayout[device][unit][app][bank] and copy(defaultLayout[device][unit][app][bank]) or {}
 
-                    items[device][unit][app][bank] = blank
-                    mod.items(items)
-                    updateUI(params)
-                end
-            end, i18n("daVinciResolveControlSurfaceResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+                        if completelyEmpty then
+                            items[device][unit][app][bank] = {}
+                        else
+                            items[device][unit][app][bank] = blank
+                        end
+
+                        mod.items(items)
+                        updateUI(params)
+                    end
+                end, i18n("daVinciResolveControlSurfaceResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("factoryDefault"),
+                fn = function() resetBank(false) end,
+            })
+
+            table.insert(menu, {
+                title = i18n("completelyEmpty"),
+                fn = function() resetBank(true) end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
         elseif callbackType == "showContextMenu" then
             --------------------------------------------------------------------------------
             -- Show Context Menu:

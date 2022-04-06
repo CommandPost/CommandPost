@@ -25,6 +25,7 @@ local exactMatch        = tools.exactMatch
 local format            = string.format
 local insert            = table.insert
 local Observable        = rx.Observable
+local readFromFile      = tools.readFromFile
 local remove            = table.remove
 
 local Do                = go.Do
@@ -95,11 +96,11 @@ end
 -- If the file cannot be found for the specific locale, it will try the `Base` locale instead.
 --
 -- Parameters:
--- * app        - The `cp.app` being searched for.
--- * fileName   - The specific file under the local folder to look for. E.g. "MainMenu.nib"
+--  * app        - The `cp.app` being searched for.
+--  * fileName   - The specific file under the local folder to look for. E.g. "MainMenu.nib"
 --
 -- Returns:
--- * path       - The absolute path to the file name, or `nil` if not found.
+--  * path       - The absolute path to the file name, or `nil` if not found.
 local function findLocaleFilePath(app, locale, fileName)
     local resourcePath = app:resourcesPath()
 
@@ -131,12 +132,12 @@ end
 -- in the locale, it will attempt to find the `Base` locale instead.
 --
 -- Parameters:
--- * app            - The `cp.app` being searched.
--- * locale         - The `localeID` to search for.
--- * storyboardName - The name of the storyboard path to find.
+--  * app            - The `cp.app` being searched.
+--  * locale         - The `localeID` to search for.
+--  * storyboardName - The name of the storyboard path to find.
 --
 -- Returns:
--- * path   - in the form `"<app path>/Contents/Resources/<locale>.lproj/<storyboardName>.storyboardc"`
+--  * path   - in the form `"<app path>/Contents/Resources/<locale>.lproj/<storyboardName>.storyboardc"`
 local function findStoryboardPath(app, locale, storyboardName)
     local fileName = storyboardName .. "." .. STORYBOARD_EXT
     return findLocaleFilePath(app, locale, fileName) or findBaseFilePath(app, fileName)
@@ -211,27 +212,68 @@ local function processNib(menuNib, localeCode, menuCache)
     end
 end
 
+-- validateNib -> boolean
+-- Function
+-- Make sure the NIB is a valid binary or plain text plist.
+--
+-- Parameters:
+--  * path - The path to the NIB
+--
+-- Returns:
+--  * `true` if valid otherwise `false`
+local function validateNib(path)
+    local data = readFromFile(path)
+    if not data then
+        log.ef("[cp.app.menu] NIB file could not be read: %s", path)
+        return false
+    end
+
+    if data:sub(1, 6) == "bplist" then
+        --------------------------------------------------------------------------------
+        -- It's a binary plist:
+        --------------------------------------------------------------------------------
+        return true
+    elseif data:sub(1, 5) == "<?xml" then
+        --------------------------------------------------------------------------------
+        -- It's a plain text plist:
+        --------------------------------------------------------------------------------
+        return true
+    elseif data:sub(1, 10) == "NIBArchive" then
+        --------------------------------------------------------------------------------
+        -- It's a NIBArchive we can't read:
+        --------------------------------------------------------------------------------
+        log.ef("[cp.app.menu] NIB file is a NIBArchive (which we don't support yet): %s", path)
+        return false
+    end
+
+    log.ef("[cp.app.menu] NIB file is not a valid plist: %s", path)
+    return false
+end
+
 -- readMenuNib(path, theLocale, menuCache) -> boolean
 -- Function
 -- Reads the menu `.nib` file at the specified path, if it exists, then processes it to build out
 -- the items inclosed into the `menuCache` table.
 --
 -- Parameters:
--- * path       - the path to the menu `.nib` file
--- * locale     - The `localeID` being processed.
--- * menuCache  - The `table` containing the cached menu items for all languages.
+--  * path       - the path to the menu `.nib` file
+--  * locale     - The `localeID` being processed.
+--  * menuCache  - The `table` containing the cached menu items for all languages.
 --
 -- Returns:
--- * `true` if the `.nib` could be read and was processed, otherwise `false`.
+--  * `true` if the `.nib` could be read and was processed, otherwise `false`.
 local function readMenuNib(path, localeCode, menuCache)
     if path then
-        local menuNib = archiver.unarchiveFile(path)
-        if menuNib then
-            processNib(menuNib, localeCode, menuCache)
-            return true
-        else
-            log.ef("Unable to process the menu .nib file in: %s", path)
-            return false
+        local valid = validateNib(path)
+        if valid then
+            local menuNib = archiver.unarchiveFile(path)
+            if menuNib then
+                processNib(menuNib, localeCode, menuCache)
+                return true
+            else
+                log.ef("Unable to process the menu .nib file in: %s", path)
+                return false
+            end
         end
     end
     return false
@@ -297,12 +339,12 @@ end
 -- If the menu is already loaded into the cache, it returns `true`.
 --
 -- Parameters:
--- * app        - The `cp.app` being processed.
--- * locale     - The `localeID` to search for.
--- * menuCache  - The table of menus for all locales loaded so far.
+--  * app        - The `cp.app` being processed.
+--  * locale     - The `localeID` to search for.
+--  * menuCache  - The table of menus for all locales loaded so far.
 --
 -- Returns:
--- * `true` if the menus for the specified locale have been loaded, otherwise false.
+--  * `true` if the menus for the specified locale have been loaded, otherwise false.
 local function loadMenuTitlesFromStoryboard(app, locale, menuCache)
     -- find out if we're working with a Storyboard
     local storyboardName = app:info()[menu.STORYBOARD_FILE]
@@ -442,7 +484,7 @@ end
 ---  * A table of Menu Bar Values
 ---
 --- Notes:
---- * This menu may get added to over time if additional locales are loaded - previously loaded locales are not removed from the cache.
+---  * This menu may get added to over time if additional locales are loaded - previously loaded locales are not removed from the cache.
 function menu:getMenuTitles(locales)
     local app = self:app()
     if type(locales) ~= "table" then
@@ -472,15 +514,15 @@ end
 ---  * The `Statement`, ready to execute.
 ---
 --- Notes:
---- * Each step on the path can be either one of:
+---  * Each step on the path can be either one of:
 ---   * a string     - The exact name of the menu item.
 ---   * a number     - The menu item number, starting from 1.
 ---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
---- * The `options` may include:
+---  * The `options` may include:
 ---   * locale - The `localeID` or `string` for the locale that the path values are in.
 ---   * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
---- * Examples:
+---  * Examples:
 ---   * `previewApp:menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()`
 function menu:doSelectMenu(path, options)
     options = options or {}
@@ -515,15 +557,15 @@ end
 ---  * `true` if the press was successful.
 ---
 --- Notes:
---- * Each step on the path can be either one of:
+---  * Each step on the path can be either one of:
 ---   * a string     - The exact name of the menu item.
 ---   * a number     - The menu item number, starting from 1.
 ---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
---- * The `options` may include:
+---  * The `options` may include:
 ---   * locale - The `localeID` or `string` for the locale that the path values are in.
 ---   * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
---- * Example usage:
+---  * Example usage:
 ---   * `require("cp.app").forBundleID("com.apple.FinalCut"):menu():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
 function menu:selectMenu(path, options)
     options = options or {}
@@ -571,7 +613,7 @@ end
 ---  * `true` if checked otherwise `false`.
 ---
 --- Notes:
---- * The `options` may include:
+---  * The `options` may include:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 function menu:isChecked(path, options)
     local menuItemUI = self:findMenuUI(path, options)
@@ -590,7 +632,7 @@ end
 ---  * `true` if enabled otherwise `false`.
 ---
 --- Notes:
---- * The `options` may include:
+---  * The `options` may include:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 function menu:isEnabled(path, options)
     local menuItemUI = self:findMenuUI(path, options)
@@ -602,11 +644,11 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that returns `true` if the item at the end of the path is enabled.
 ---
 --- Parameters:
---- * path      - The menu path to check.
---- * options   - The options.
+---  * path      - The menu path to check.
+---  * options   - The options.
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) to execute.
+---  * A [Statement](cp.rx.go.Statement.md) to execute.
 function menu:doIsEnabled(path, options)
     return Do(Last(self:doFindMenuUI(path, options)))
     :Then(function(item)
@@ -627,9 +669,9 @@ end
 ---  * The `AXMenuItem` found, or `nil`.
 ---
 --- Notes:
---- * The `finder` should have the following signature:
+---  * The `finder` should have the following signature:
 ---   * `function(parentItem, path, childName, locale) -> childItem`
---- * The elements are:
+---  * The elements are:
 ---   * parentItem    - The `AXMenuItem` containing the children. E.g. the `Go To` menu under `Window`.
 ---   * path          - An array of strings in the specified locale leading to the parent item. E.g. `{"Window", "Go To"}`.
 ---   * childName     - The name of the next child to find, in the specified locale. E.g. `"Libraries"`.
@@ -677,14 +719,14 @@ end
 ---  * The `Statement`, ready to be executed.
 ---
 --- Notes:
---- * Each step on the path can be either one of:
+---  * Each step on the path can be either one of:
 ---   * a string     - The exact name of the menu item.
 ---   * a number     - The menu item number, starting from 1.
 ---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
---- * The `options` may contain:
+---  * The `options` may contain:
 ---   * locale   - The locale that any strings in the path are in. Defaults to "en".
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
---- * Examples:
+---  * Examples:
 ---   * `myApp:menu():doFindMenuUI({"Edit", "Copy"}):Now(function(item) print(item:title() .. " enabled: ", item:enabled()) end, error)`
 function menu:doFindMenuUI(path, options)
     if type(path) ~= "table" or #path == 0 then
@@ -815,11 +857,11 @@ end
 ---  * The full list of Menu UIs for the path in a table.
 ---
 --- Notes:
---- * Each step on the path can be either one of:
+---  * Each step on the path can be either one of:
 ---   * a string     - The exact name of the menu item.
 ---   * a number     - The menu item number, starting from 1.
 ---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
---- * The `options` can contain:
+---  * The `options` can contain:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 function menu:findMenuUI(path, options)
@@ -970,12 +1012,12 @@ end
 ---  * Nothing
 ---
 --- Notes:
---- * The `options` may include:
+---  * The `options` may include:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 ---   * startPath - The path to the menu item to start at.
---- * The `visitFn` will be called on each menu item with the following parameters:
+---  * The `visitFn` will be called on each menu item with the following parameters:
 ---   * `function(path, menuItem)`
---- * The `menuItem` is the AXMenuItem object, and the `path` is an array with the path to that menu item. For example, if it is the "Copy" item in the "Edit" menu, the path will be `{ "Edit" }`.
+---  * The `menuItem` is the AXMenuItem object, and the `path` is an array with the path to that menu item. For example, if it is the "Copy" item in the "Edit" menu, the path will be `{ "Edit" }`.
 function menu:visitMenuItems(visitFn, options)
     local menuUI
     local path = options and options.startPath or {}

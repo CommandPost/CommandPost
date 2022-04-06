@@ -7,11 +7,17 @@ local require           = require
 
 --local log               = require "hs.logger".new "actions"
 
+local hs                = _G.hs
+
+local image             = require "hs.image"
+
 local dialog            = require "cp.dialog"
 local i18n              = require "cp.i18n"
 
 local displayMessage    = dialog.displayMessage
 local format            = string.format
+local imageFromPath     = image.imageFromPath
+local processInfo       = hs.processInfo
 
 local mod = {}
 
@@ -24,6 +30,11 @@ local ID = "cmds"
 -- Constant
 -- Global ID.
 local GROUP = "global"
+
+-- COMMANDPOST_ICON -> hs.image
+-- Constant
+-- The CommandPost Icon
+local COMMANDPOST_ICON = imageFromPath(processInfo.bundlePath .. "/Contents/Resources/AppIcon.icns")
 
 --- plugins.core.commands.actions.init(actionmanager, cmds) -> none
 --- Function
@@ -41,9 +52,9 @@ function mod.init(actionmanager, cmds)
     mod._manager = actionmanager
 
     mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
-    :onChoices(mod.onChoices)
-    :onExecute(mod.onExecute)
-    :onActionId(mod.getId)
+        :onChoices(mod.onChoices)
+        :onExecute(mod.onExecute)
+        :onActionId(mod.getId)
 
     --------------------------------------------------------------------------------
     -- Watch for any additional commands added after this point:
@@ -81,7 +92,7 @@ function mod.onChoices(choices)
                 :subText(subtext)
                 :params(action)
                 :id(mod.getId(action))
-                :image(cmd:getImage())
+                :image(cmd:getImage() or COMMANDPOST_ICON) -- Default to the CommandPost Icon if nothing supplied.
         end
     end
 end

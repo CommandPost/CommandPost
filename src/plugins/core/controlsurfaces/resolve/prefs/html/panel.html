@@ -208,6 +208,25 @@
 		}
 	}
 
+	function changeJogMode() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "changeJogMode",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					value: document.getElementById("jogMode").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function changeBankLabel() {
 		try {
 			var result = {
@@ -375,7 +394,8 @@
 		</th>
 		<th style="width: 250px;">
 			<select id="device" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
-				<option value="Speed Editor" {{ lastDevice == "Speed Editor" and "selected" or ""}}>Speed Editor</option>
+				<option value="Editor Keyboard">Editor Keyboard</option>
+				<option value="Speed Editor">Speed Editor</option>
 			</select>
 		</th>
 	</tr>
@@ -405,8 +425,12 @@
 						if lastApplication == id then
 							selected = [[selected=""]]
 						end
+						local disabled = ""
+						if id == "com.blackmagic-design.DaVinciResolve" then
+						    disabled = " disabled"
+						end
 					%}
-					<option {{selected}} value="{{id}}">{{label}}</option>
+					<option {{selected}} value="{{id}}" {{disabled}}>{{label}}</option>
 					{% end %}
 					<option disabled>──────────</option>
 					{%
@@ -463,7 +487,162 @@
 	<thead>
 		<tr>
 			<th width="458px" style="text-align: center";>
-                <table id="speedEditorUI" width="447" height="482" border="0" cellpadding="0" cellspacing="0" *});">
+
+			    <!-- Editor Keyboard -->
+                <table id="editorKeyboardUI" width="447" height="482" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td width="447" height="176" colspan="53"></td>
+                    </tr>
+                    <tr>
+                        <td width="14" height="306" rowspan="15"></td>
+                        <td button="SMART INSRT" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="14" height="13"></td>
+                        <td width="1" height="34" rowspan="6"></td>
+                        <td button="APPND" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" colspan="3"></td>
+                        <td width="1" height="34" rowspan="6"></td>
+                        <td button="RIPL OWR" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="42" height="306" rowspan="15"></td>
+                        <td button="SYNC BIN" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="12" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="INSRT BLACK" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="1" height="306" rowspan="15"></td>
+                        <td button="FREEZ" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="TRANS" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="1" height="306" rowspan="15"></td>
+                        <td button="PIC IN PIC" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="SWAP" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="1" height="306" rowspan="15"></td>
+                        <td button="VIDEO ONLY" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="AUDIO ONLY" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="INSERT" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="12" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="O WR" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="1" height="306" rowspan="15"></td>
+                        <td button="REPL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="FIT TO FILL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="1" height="306" rowspan="15"></td>
+                        <td button="RIPL DEL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="12" height="306" rowspan="15"></td>
+                        <td button="TIME CODE" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="CAM" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="1" height="306" rowspan="15"></td>
+                        <td button="DATE TIME" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="2" height="306" rowspan="15"></td>
+                        <td button="CLIP NAME" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td width="26" height="45" colspan="2" rowspan="7"></td>
+                        <td button="SOURCE" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="20" height="13" colspan="3"></td>
+                        <td width="2" height="20" rowspan="3"></td>
+                        <td button="TIMELINE" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="20" height="13" colspan="3"></td>
+                        <td width="26" height="45" colspan="2" rowspan="7"></td>
+                    </tr>
+                    <tr>
+                        <td width="14" height="2"></td>
+                        <td width="13" height="2" colspan="3"></td>
+                        <td width="13" height="2"></td>
+                        <td width="12" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="12" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="293" rowspan="14"></td>
+                        <td width="13" height="7" rowspan="2"></td>
+                        <td width="13" height="65" rowspan="11"></td>
+                        <td width="13" height="7" rowspan="2"></td>
+                        <td width="13" height="7" rowspan="2"></td>
+                        <td width="20" height="7" colspan="3" rowspan="2"></td>
+                        <td width="20" height="7" colspan="3" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td button="CLOSE UP" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="14" height="13" rowspan="2"></td>
+                        <td button="PLACE ON TOP" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" colspan="3" rowspan="2"></td>
+                        <td button="SRC OWR" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td button="TRIM EDTOR" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" rowspan="2"></td>
+                        <td button="F TC" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" rowspan="2"></td>
+                        <td button="DUR ENTER" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" rowspan="2"></td>
+                        <td button="SHTL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" rowspan="2"></td>
+                        <td width="1" height="25" rowspan="4"></td>
+                        <td button="JOG" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="14" height="13" colspan="3" rowspan="2"></td>
+                        <td width="1" height="25" rowspan="4"></td>
+                        <td button="SCRL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="14" height="6" rowspan="2"></td>
+                        <td width="13" height="6" colspan="3" rowspan="2"></td>
+                        <td width="13" height="6" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="13" height="273" rowspan="10"></td>
+                        <td width="13" height="273" rowspan="10"></td>
+                        <td width="13" height="273" rowspan="10"></td>
+                        <td width="13" height="12" rowspan="2"></td>
+                        <td width="14" height="12" colspan="3" rowspan="2"></td>
+                        <td width="13" height="12" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td button="IN" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="21" height="14" colspan="3" rowspan="2"></td>
+                        <td width="1" height="14" rowspan="2"></td>
+                        <td button="OUT" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="20" height="14" colspan="3" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="22" height="261" rowspan="8"></td>
+                        <td button="JOG WHEEL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="50" height="48" colspan="9" rowspan="7"></td>
+                        <td width="22" height="261" rowspan="8"></td>
+                    </tr>
+                    <tr>
+                        <td button="TRIM IN" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="14" height="14"></td>
+                        <td width="1" height="258" rowspan="7"></td>
+                        <td button="TRIM OUT" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="14" colspan="3"></td>
+                        <td width="1" height="258" rowspan="7"></td>
+                        <td button="ROLL" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="14"></td>
+                    </tr>
+                    <tr>
+                        <td width="14" height="1"></td>
+                        <td width="13" height="1" colspan="3"></td>
+                        <td width="13" height="1"></td>
+                    </tr>
+                    <tr>
+                        <td button="SLIP SRC" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="14" height="13"></td>
+                        <td button="SLIP DEST" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" colspan="3"></td>
+                        <td button="TRANS DUR" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                    </tr>
+                    <tr>
+                        <td width="14" height="2"></td>
+                        <td width="13" height="2" colspan="3"></td>
+                        <td width="13" height="2"></td>
+                    </tr>
+                    <tr>
+                        <td button="CUT" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="14" height="13"></td>
+                        <td button="DIS" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13" colspan="3"></td>
+                        <td button="SMTH CUT" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                        <td button="00" class="seButton" device="Editor Keyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)" width="13" height="13"></td>
+                    </tr>
+                    <tr>
+                        <td width="14" height="215" rowspan="2"></td>
+                        <td width="13" height="215" colspan="3" rowspan="2"></td>
+                        <td width="13" height="215" rowspan="2"></td>
+                        <td width="13" height="215" rowspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td width="50" height="213" colspan="9"></td>
+                    </tr>
+                </table>
+
+			    <!-- Speed Editor: -->
+                <table id="speedEditorUI" width="447" height="482" border="0" cellpadding="0" cellspacing="0">
                     <tr>
                         <td width="447" height="139" colspan="27">
                     </tr>
@@ -665,25 +844,39 @@
 							</td>
 						</tr>
 
-						<!-- JOG WHEEL ACTIONS: -->
+						<!-- JOG WHEEL MODE: -->
 						<tr class="seJogWheelSection">
+							<th width="229px">{{ i18n("jogWheelMode") }}:</th>
+						</tr>
+						<tr class="seJogWheelSection">
+							<td width="229px">
+								<select id="jogMode" style="width: 210px;" onchange="changeJogMode()">
+    								<option value="RELATIVE">{{ i18n("relative") }}</option>
+									<option value="ABSOLUTE">{{ i18n("absolute") }}</option>
+									<option value="ABSOLUTE ZERO">{{ i18n("absoluteSnapsToZero") }}</option>
+								</select>
+							</td>
+						</tr>
+
+						<!-- JOG WHEEL ACTIONS: -->
+						<tr class="seJogWheelRelativeSection">
 							<th width="229px">{{ i18n("turnLeftAction") }}:</th>
 							<th width="229px">{{ i18n("turnRightAction") }}:</th>
 						</tr>
-						<tr class="seJogWheelSection">
+						<tr class="seJogWheelRelativeSection">
 							<td width="229px"><input type="text" id="turnLeftAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 							<td width="229px"><input type="text" id="turnRightAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
-						<tr class="seJogWheelSection">
+						<tr class="seJogWheelRelativeSection">
 							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftAction')">{{ i18n("editSnippet") }}</a></td>
 							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- JOG WHEEL SENSITIVITY: -->
-						<tr class="seJogWheelSection">
+						<tr class="seJogWheelRelativeSection">
 							<th width="229px">{{ i18n("sensitivity") }}:</th>
 						</tr>
-						<tr class="seJogWheelSection">
+						<tr class="seJogWheelRelativeSection">
 							<td width="229px">
 								<select id="sensitivity" style="width: 210px;" onchange="changeSensitivity()">
 									<option value="250">1 ({{ i18n("verySensitive") }})</option>
@@ -703,6 +896,101 @@
 									<option value="13000">15</option>
 								</select>
 							</td>
+						</tr>
+
+						<!-- JOG WHEEL ABSOLUTE ACTIONS 1: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("turnLeftAction") }} - {{ i18n("step") }} 1:</th>
+							<th width="229px">{{ i18n("turnRightAction") }} - {{ i18n("step") }} 1:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="turnLeftOneAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightOneAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftOneAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftOneAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftOneAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightOneAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightOneAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightOneAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL ABSOLUTE ACTIONS 2: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("turnLeftAction") }} - {{ i18n("step") }} 2:</th>
+							<th width="229px">{{ i18n("turnRightAction") }} - {{ i18n("step") }} 2:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="turnLeftTwoAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightTwoAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftTwoAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftTwoAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftTwoAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightTwoAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightTwoAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightTwoAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL ABSOLUTE ACTIONS 3: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("turnLeftAction") }} - {{ i18n("step") }} 3:</th>
+							<th width="229px">{{ i18n("turnRightAction") }} - {{ i18n("step") }} 3:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="turnLeftThreeAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightThreeAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftThreeAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftThreeAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftThreeAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightThreeAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightThreeAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightThreeAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL ABSOLUTE ACTIONS 4: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("turnLeftAction") }} - {{ i18n("step") }} 4:</th>
+							<th width="229px">{{ i18n("turnRightAction") }} - {{ i18n("step") }} 4:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="turnLeftFourAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightFourAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftFourAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftFourAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftFourAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightFourAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightFourAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightFourAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL ABSOLUTE ACTIONS 5: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("turnLeftAction") }} - {{ i18n("step") }} 5:</th>
+							<th width="229px">{{ i18n("turnRightAction") }} - {{ i18n("step") }} 5:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="turnLeftFiveAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightFiveAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftFiveAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftFiveAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftFiveAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightFiveAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightFiveAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightFiveAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL ABSOLUTE ACTIONS 6: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("turnLeftAction") }} - {{ i18n("step") }} 6:</th>
+							<th width="229px">{{ i18n("turnRightAction") }} - {{ i18n("step") }} 6:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="turnLeftSixAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="turnRightSixAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnLeftSixAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnLeftSixAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnLeftSixAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('turnRightSixAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('turnRightSixAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('turnRightSixAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
+						<!-- JOG WHEEL ZERO ACTION: -->
+						<tr class="seJogWheelAbsoluteSection">
+							<th width="229px">{{ i18n("absoluteSnapsToZero") }}:</th>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><input type="text" id="absoluteZeroAction" class="speedEditorActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr class="seJogWheelAbsoluteSection">
+							<td width="229px"><a href="#" class="button speedEditorActionButton" onclick="selectButton('absoluteZeroAction')">{{ i18n("select") }}</a> <a href="#" class="button speedEditorActionButton" onclick="clearButton('absoluteZeroAction')">{{ i18n("clear") }}</a> <a href="#" class="button speedEditorActionButton" onclick="editSnippet('absoluteZeroAction')">{{ i18n("editSnippet") }}</a></td>
 						</tr>
 
 						<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->

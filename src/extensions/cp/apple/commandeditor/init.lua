@@ -12,6 +12,8 @@ local shortcut          = require "cp.commands.shortcut"
 local tools             = require "cp.tools"
 
 local contains          = fnutils.contains
+local copy              = fnutils.copy
+local tableContains     = tools.tableContains
 
 local mod = {}
 
@@ -208,7 +210,7 @@ function mod.shortcutsFromCommandSet(id, commandSet)
             modifiers = mod.translateModifiers(commmand["modifiers"])
         elseif commmand["modifierMask"] ~= nil then
             modifiers = mod.modifierMaskToModifiers(commmand["modifierMask"])
-            if tools.tableContains(modifiers, "numericpad") then
+            if tableContains(modifiers, "numericpad") then
                 keypadModifier = true
             end
         end
@@ -228,7 +230,23 @@ function mod.shortcutsFromCommandSet(id, commandSet)
         end
 
         if keyCode ~= nil and keyCode ~= "" then
-            shortcuts[#shortcuts + 1] = shortcut.new(modifiers, keyCode)
+            --------------------------------------------------------------------------------
+            -- We currently only know how to trigger SHIFT, CONTROL, OPTION, COMMAND and
+            -- FUNCTION modifiers, so lets just ignore ALPHASHIFT, NUMERICPAD and HELP
+            -- for now.
+            --------------------------------------------------------------------------------
+            local cleanedModifiers = {}
+            if keypadModifier then
+                for _, v in pairs(modifiers) do
+                    if v == "shift" or v == "control" or v == "option" or v == "command" or v == "function" then
+                        table.insert(cleanedModifiers, v)
+                    end
+                end
+            else
+                cleanedModifiers = copy(modifiers)
+            end
+
+            shortcuts[#shortcuts + 1] = shortcut.new(cleanedModifiers, keyCode)
         end
     end
 
