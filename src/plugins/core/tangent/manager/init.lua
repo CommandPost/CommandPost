@@ -51,7 +51,7 @@ mod.USER_CONTROL_MAPS_FOLDER = "User Control Maps"
 --- plugins.core.tangent.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
 --- Maximum number of favourites.
-mod.NUMBER_OF_FAVOURITES = 50
+mod.NUMBER_OF_FAVOURITES = 200
 
 --- plugins.core.tangent.manager.MAXIMUM_CONNECTIONS -> number
 --- Constant

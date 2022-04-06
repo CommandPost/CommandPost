@@ -8,10 +8,11 @@ local log                       = require "hs.logger".new "resolvePanel"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
+local blackmagic                = require "hs.blackmagic"
 local eventtap                  = require "hs.eventtap"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
-local blackmagic                = require "hs.blackmagic"
+local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
@@ -657,6 +658,28 @@ function mod.start()
     end):start()
 
     --------------------------------------------------------------------------------
+    -- Watch for sleep events:
+    --------------------------------------------------------------------------------
+    mod._sleepWatcher = sleepWatcher.new(function(eventType)
+        if eventType == sleepWatcher.systemDidWake then
+            if mod.enabled() then
+                --------------------------------------------------------------------------------
+                -- Let's collect garbage first to give ourselves a clean slate.
+                --------------------------------------------------------------------------------
+                collectgarbage()
+                collectgarbage()
+
+                mod.start()
+            end
+        end
+        if eventType == sleepWatcher.systemWillSleep then
+            if mod.enabled() then
+                mod.stop()
+            end
+        end
+    end):start()
+
+    --------------------------------------------------------------------------------
     -- Initialise DaVinci Resolve Control Surface support:
     --------------------------------------------------------------------------------
     blackmagic.init(mod.discoveryCallback)
@@ -727,6 +750,14 @@ mod.enabled = config.prop("enableDaVinciResolveControlSurfaceSupport", false):wa
     if enabled then
         mod.start()
     else
+        --------------------------------------------------------------------------------
+        -- Kill the sleep watcher:
+        --------------------------------------------------------------------------------
+        if mod._sleepWatcher then
+            mod._sleepWatcher:stop()
+            mod._sleepWatcher = nil
+
+        end
         mod.stop()
     end
 end)
