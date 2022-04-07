@@ -11,7 +11,6 @@ local hs                = _G.hs
 local base64            = require "hs.base64"
 local dialog            = require "hs.dialog"
 local image             = require "hs.image"
-local inspect           = require "hs.inspect"
 local ipc				= require "hs.ipc"
 local timer             = require "hs.timer"
 
