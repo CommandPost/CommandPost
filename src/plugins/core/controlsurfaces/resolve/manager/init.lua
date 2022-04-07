@@ -34,16 +34,60 @@ local tableMatch                = tools.tableMatch
 
 local mod = {}
 
--- Long Press Duration:
-local LONG_PRESS_DURATION       = 0.4
+-- LONG_PRESS_DURATION -> number
+-- Constant
+-- How long a button needs to be pressed before it's considered a long press (in seconds).
+local LONG_PRESS_DURATION = 0.4
 
--- Jog Wheel Constants:
-local JOG_WHEEL_ABSOLUTE_ONE    = 192
-local JOG_WHEEL_ABSOLUTE_TWO    = 947
-local JOG_WHEEL_ABSOLUTE_THREE  = 1349
-local JOG_WHEEL_ABSOLUTE_FOUR   = 2409
-local JOG_WHEEL_ABSOLUTE_FIVE   = 3437
-local JOG_WHEEL_ABSOLUTE_SIX    = 4096
+-- JOG_WHEEL_ABSOLUTE_ONE -> table
+-- Constant
+-- Jog Wheel Trigger
+local JOG_WHEEL_ABSOLUTE_ONE = {
+    ["Speed Editor"]    = 680,
+    ["Editor Keyboard"] = 680,
+}
+
+-- JOG_WHEEL_ABSOLUTE_TWO -> table
+-- Constant
+-- Jog Wheel Trigger
+local JOG_WHEEL_ABSOLUTE_TWO = {
+    ["Speed Editor"]    = 1360,
+    ["Editor Keyboard"] = 1360,
+}
+
+-- JOG_WHEEL_ABSOLUTE_THREE -> table
+-- Constant
+-- Jog Wheel Trigger
+
+local JOG_WHEEL_ABSOLUTE_THREE = {
+    ["Speed Editor"]    = 2040,
+    ["Editor Keyboard"] = 2040,
+}
+
+-- JOG_WHEEL_ABSOLUTE_FOUR -> table
+-- Constant
+-- Jog Wheel Trigger
+
+local JOG_WHEEL_ABSOLUTE_FOUR = {
+    ["Speed Editor"]    = 2720,
+    ["Editor Keyboard"] = 2720,
+}
+
+-- JOG_WHEEL_ABSOLUTE_FIVE -> table
+-- Constant
+-- Jog Wheel Trigger
+local JOG_WHEEL_ABSOLUTE_FIVE = {
+    ["Speed Editor"]    = 3400,
+    ["Editor Keyboard"] = 3400,
+}
+
+-- JOG_WHEEL_ABSOLUTE_SIX -> table
+-- Constant
+-- Jog Wheel Trigger
+local JOG_WHEEL_ABSOLUTE_SIX = {
+    ["Speed Editor"]    = 4080,
+    ["Editor Keyboard"] = 4080,
+}
 
 --- plugins.core.resolve.manager.DEFAULT_SENSITIVITY -> number
 --- Constant
@@ -183,6 +227,11 @@ local lastApplicationBundleID = ""
 -- Should we kill the LED cache because DaVinci Resolve was running?
 local shouldKillLEDCacheDueToResolve = false
 
+-- speedEditorJogWheelCache -> table
+-- Variable
+-- Jog Wheel Cache
+local speedEditorJogWheelCache = {}
+
 --- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
 --- Control Surface Button Callback
@@ -203,6 +252,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
         --log.df("[Blackmagic Control Surface Support] Ignoring message because DaVinci Resolve is running.")
         return
     end
+
     --[[
     log.df("buttonID: %s", buttonID)
     log.df("pressed: %s", pressed)
@@ -265,8 +315,6 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     local theBank = theApp and theApp[bankID]
     local theButton = theBank and theBank[buttonID]
 
-    --log.df("jogWheelValue: %s", jogWheelValue)
-
     --------------------------------------------------------------------------------
     -- Nothing assigned to that button:
     --------------------------------------------------------------------------------
@@ -310,7 +358,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                         local action = turnRightAction.action
                         if handlerID and action then
                             --------------------------------------------------------------------------------
-                            -- Trigger the  action:
+                            -- Trigger the action:
                             --------------------------------------------------------------------------------
                             local handler = mod._actionmanager.getHandler(handlerID)
                             handler:execute(action)
@@ -319,6 +367,11 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                 end
             end
         else
+            --------------------------------------------------------------------------------
+            -- Jog Wheel Cache:
+            --------------------------------------------------------------------------------
+            local newSpeedEditorJogWheelCache = ""
+
             --------------------------------------------------------------------------------
             -- Jog Wheel Turned (in absolute mode):
             --------------------------------------------------------------------------------
@@ -329,7 +382,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                 --------------------------------------------------------------------------------
                 if ignoreFirstJogWheelMessage[deviceType] then
                     ignoreFirstJogWheelMessage[deviceType] = false
-                    log.df("Ignoring the first jog wheel change")
+                    --log.df("Ignoring the first jog wheel change")
                     return
                 end
 
@@ -342,52 +395,70 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                     local action = zeroAction.action
                     if handlerID and action then
                         --------------------------------------------------------------------------------
-                        -- Trigger the  action:
+                        -- Trigger the action:
                         --------------------------------------------------------------------------------
                         local handler = mod._actionmanager.getHandler(handlerID)
                         handler:execute(action)
                     end
                 end
+
+                --------------------------------------------------------------------------------
+                -- Reset the cache:
+                --------------------------------------------------------------------------------
+                speedEditorJogWheelCache[deviceType..deviceID] = "ZERO"
                 return
             end
 
-            if jogWheelValue == JOG_WHEEL_ABSOLUTE_ONE then
-                nextJogAction = theButton.turnRightOneAction
-            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_TWO then
-                nextJogAction = theButton.turnRightTwoAction
-            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_THREE then
-                nextJogAction = theButton.turnRightThreeAction
-            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_FOUR then
-                nextJogAction = theButton.turnRightFourAction
-            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_FIVE then
-                nextJogAction = theButton.turnRightFiveAction
-            elseif jogWheelValue == JOG_WHEEL_ABSOLUTE_SIX then
-                nextJogAction = theButton.turnRightSixAction
-            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_ONE * -1) then
-                nextJogAction = theButton.turnLeftOneAction
-            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_TWO * -1) then
-                nextJogAction = theButton.turnLeftTwoAction
-            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_THREE * -1) then
-                nextJogAction = theButton.turnLeftThreeAction
-            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_FOUR * -1) then
-                nextJogAction = theButton.turnLeftFourAction
-            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_FIVE * -1) then
-                nextJogAction = theButton.turnLeftFiveAction
-            elseif jogWheelValue == (JOG_WHEEL_ABSOLUTE_SIX * -1) then
-                nextJogAction = theButton.turnLeftSixAction
+            if jogWheelValue > 0 then
+                if jogWheelValue < JOG_WHEEL_ABSOLUTE_ONE[deviceType] then
+                    newSpeedEditorJogWheelCache = "ONE"
+                    nextJogAction = theButton.turnRightOneAction
+                elseif jogWheelValue < JOG_WHEEL_ABSOLUTE_TWO[deviceType] then
+                    newSpeedEditorJogWheelCache = "TWO"
+                    nextJogAction = theButton.turnRightTwoAction
+                elseif jogWheelValue < JOG_WHEEL_ABSOLUTE_THREE[deviceType] then
+                    newSpeedEditorJogWheelCache = "THREE"
+                    nextJogAction = theButton.turnRightThreeAction
+                elseif jogWheelValue < JOG_WHEEL_ABSOLUTE_FOUR[deviceType] then
+                    newSpeedEditorJogWheelCache = "FOUR"
+                    nextJogAction = theButton.turnRightFourAction
+                elseif jogWheelValue < JOG_WHEEL_ABSOLUTE_FIVE[deviceType] then
+                    newSpeedEditorJogWheelCache = "FIVE"
+                    nextJogAction = theButton.turnRightFiveAction
+                elseif jogWheelValue < JOG_WHEEL_ABSOLUTE_SIX[deviceType] then
+                    newSpeedEditorJogWheelCache = "SIX"
+                    nextJogAction = theButton.turnRightSixAction
+                end
             else
-                --------------------------------------------------------------------------------
-                -- Nothing to see here...
-                --------------------------------------------------------------------------------
-                return
+                if jogWheelValue > (JOG_WHEEL_ABSOLUTE_ONE[deviceType] * -1) then
+                    newSpeedEditorJogWheelCache = "-ONE"
+                    nextJogAction = theButton.turnLeftOneAction
+                elseif jogWheelValue > (JOG_WHEEL_ABSOLUTE_TWO[deviceType] * -1) then
+                    newSpeedEditorJogWheelCache = "-TWO"
+                    nextJogAction = theButton.turnLeftTwoAction
+                elseif jogWheelValue > (JOG_WHEEL_ABSOLUTE_THREE[deviceType] * -1) then
+                    newSpeedEditorJogWheelCache = "-THREE"
+                    nextJogAction = theButton.turnLeftThreeAction
+                elseif jogWheelValue > (JOG_WHEEL_ABSOLUTE_FOUR[deviceType] * -1) then
+                    newSpeedEditorJogWheelCache = "-FOUR"
+                    nextJogAction = theButton.turnLeftFourAction
+                elseif jogWheelValue > (JOG_WHEEL_ABSOLUTE_FIVE[deviceType] * -1) then
+                    newSpeedEditorJogWheelCache = "-FIVE"
+                    nextJogAction = theButton.turnLeftFiveAction
+                elseif jogWheelValue > (JOG_WHEEL_ABSOLUTE_SIX[deviceType] * -1) then
+                    newSpeedEditorJogWheelCache = "-SIX"
+                    nextJogAction = theButton.turnLeftSixAction
+                end
             end
 
-            if nextJogAction then
+            if nextJogAction and newSpeedEditorJogWheelCache ~= speedEditorJogWheelCache[deviceType..deviceID] then
+                speedEditorJogWheelCache[deviceType..deviceID] = newSpeedEditorJogWheelCache
+
                 local handlerID = nextJogAction.handlerID
                 local action = nextJogAction.action
                 if handlerID and action then
                     --------------------------------------------------------------------------------
-                    -- Trigger the  action:
+                    -- Trigger the action:
                     --------------------------------------------------------------------------------
                     local handler = mod._actionmanager.getHandler(handlerID)
                     handler:execute(action)
@@ -504,6 +575,8 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
 
 end
 
+local jogModeOnDeviceCache = {}
+
 --- plugins.core.resolve.manager.update() -> none
 --- Function
 --- Updates all the control surface LEDs.
@@ -601,10 +674,15 @@ function mod.update()
             local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
 
             --------------------------------------------------------------------------------
-            -- Update Jog Wheel Mode:
+            -- Update Jog Wheel Mode (only if needed):
             --------------------------------------------------------------------------------
+            local jogModeOnDeviceCacheID = deviceType .. deviceID
             local jogMode = (bankData and bankData.jogMode) or mod.DEFAULT_JOG_MODE
-            device:jogMode(jogMode)
+            if jogModeOnDeviceCache[jogModeOnDeviceCacheID] ~= jogMode then
+                device:jogMode(jogMode)
+                jogModeOnDeviceCache[jogModeOnDeviceCacheID] = jogMode
+                --log.df("CHANGING JOG MODE TO: %s", jogMode)
+            end
 
             --------------------------------------------------------------------------------
             -- Update every button:
@@ -825,6 +903,12 @@ function mod.stop()
         mod._appWatcher:stop()
         mod._appWatcher = nil
     end
+
+    --------------------------------------------------------------------------------
+    -- Take out the trash!
+    --------------------------------------------------------------------------------
+    collectgarbage()
+    collectgarbage()
 end
 
 --- plugins.core.resolve.manager.enabled <cp.prop: boolean>
