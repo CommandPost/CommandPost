@@ -1097,6 +1097,9 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 if result.action ~= "last" then
                     local previousActiveBanks = mod.previousActiveBanks()
+                    if not previousActiveBanks[device] then previousActiveBanks[device] = {} end
+                    if not previousActiveBanks[device][unit] then previousActiveBanks[device][unit] = {} end
+                    if not previousActiveBanks[device][unit][bundleID] then previousActiveBanks[device][unit][bundleID] = {} end
                     previousActiveBanks[device][unit][bundleID] = currentBank
                     mod.previousActiveBanks(previousActiveBanks)
                 end
