@@ -414,17 +414,14 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                     --------------------------------------------------------------------------------
                     -- Long Press:
                     --------------------------------------------------------------------------------
-                    local longPressAction = theButton.longPressAction
-                    if longPressAction then
-                        local handlerID = longPressAction.handlerID
-                        local action = longPressAction.action
-                        if handlerID and action then
-                            --------------------------------------------------------------------------------
-                            -- Trigger the press action:
-                            --------------------------------------------------------------------------------
-                            local handler = mod._actionmanager.getHandler(handlerID)
-                            handler:execute(action)
-                        end
+                    local handlerID = longPressAction.handlerID
+                    local action = longPressAction.action
+                    if handlerID and action then
+                        --------------------------------------------------------------------------------
+                        -- Trigger the press action:
+                        --------------------------------------------------------------------------------
+                        local handler = mod._actionmanager.getHandler(handlerID)
+                        handler:execute(action)
                     end
                 else
                     --------------------------------------------------------------------------------
