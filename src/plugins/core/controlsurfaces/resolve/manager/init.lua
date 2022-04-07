@@ -1065,7 +1065,6 @@ function plugin.init(deps)
                 end
 
                 local activeBanks = mod.activeBanks()
-                local previousActiveBanksCache = copy(activeBanks)
 
                 if not activeBanks[device] then activeBanks[device] = {} end
                 if not activeBanks[device][unit] then activeBanks[device][unit] = {} end
@@ -1088,12 +1087,20 @@ function plugin.init(deps)
                     end
                 elseif result.action == "last" then
                     local previousActiveBanks = mod.previousActiveBanks()
-                    activeBanks[device][unit][bundleID] = previousActiveBanks[device][unit][bundleID]
+                    activeBanks[device][unit][bundleID] = previousActiveBanks[device][unit][bundleID] or "1"
                 end
 
                 local newBank = activeBanks[device][unit][bundleID]
 
-                mod.previousActiveBanks(previousActiveBanksCache)
+                --------------------------------------------------------------------------------
+                -- Save the previous banks for the "last" action:
+                --------------------------------------------------------------------------------
+                if result.action ~= "last" then
+                    local previousActiveBanks = mod.previousActiveBanks()
+                    previousActiveBanks[device][unit][bundleID] = currentBank
+                    mod.previousActiveBanks(previousActiveBanks)
+                end
+
                 mod.activeBanks(activeBanks)
 
                 mod.update()
