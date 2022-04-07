@@ -860,6 +860,14 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Shutdown Callback:
+    --------------------------------------------------------------------------------
+    config.shutdownCallback:new("resolveKeyboards", function()
+        if mod.enabled() then
+            mod.stop()
+        end
+    end)
 
     local icon = imageFromPath(config.bundledPluginsPath .. "/core/controlsurfaces/resolve/prefs/images/resolve.icns")
 
