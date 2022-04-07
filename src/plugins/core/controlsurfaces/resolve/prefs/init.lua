@@ -337,6 +337,8 @@ local function updateUI(params)
     local turnLeftAction = ""
     local turnRightAction = ""
 
+    local longPressAction = ""
+
     local turnLeftOneAction = ""
     local turnLeftTwoAction = ""
     local turnLeftThreeAction = ""
@@ -366,6 +368,7 @@ local function updateUI(params)
         turnLeftAction                      = escapeTilda(buttonData.turnLeftAction         and buttonData.turnLeftAction.actionTitle)
         turnRightAction                     = escapeTilda(buttonData.turnRightAction        and buttonData.turnRightAction.actionTitle)
 
+        longPressAction                     = escapeTilda(buttonData.longPressAction        and buttonData.longPressAction.actionTitle)
 
         turnLeftOneAction                   = escapeTilda(buttonData.turnLeftOneAction      and buttonData.turnLeftOneAction.actionTitle)
         turnLeftTwoAction                   = escapeTilda(buttonData.turnLeftTwoAction      and buttonData.turnLeftTwoAction.actionTitle)
@@ -393,6 +396,8 @@ local function updateUI(params)
         changeValueByID('pressAction', `]] .. pressAction .. [[`);
         changeValueByID('releaseAction', `]] .. releaseAction .. [[`);
         changeValueByID('snippetAction', `]] .. snippetAction .. [[`);
+
+        changeValueByID('longPressAction', `]] .. longPressAction .. [[`);
 
         changeValueByID('turnLeftAction', `]] .. turnLeftAction .. [[`);
         changeValueByID('turnRightAction', `]] .. turnRightAction .. [[`);

@@ -24,6 +24,7 @@ local tools                     = require "cp.tools"
 local applicationsForBundleID   = application.applicationsForBundleID
 local copy                      = fnutils.copy
 local displayNotification       = dialog.displayNotification
+local doAfter                   = timer.doAfter
 local doEvery                   = timer.doEvery
 local imageFromPath             = image.imageFromPath
 local keyRepeatInterval         = eventtap.keyRepeatInterval
@@ -32,6 +33,9 @@ local spairs                    = tools.spairs
 local tableMatch                = tools.tableMatch
 
 local mod = {}
+
+-- Long Press Duration:
+local LONG_PRESS_DURATION       = 0.4
 
 -- Jog Wheel Constants:
 local JOG_WHEEL_ABSOLUTE_ONE    = 192
@@ -150,6 +154,23 @@ local ledCache = {
 local ignoreFirstJogWheelMessage = {
     ["Speed Editor"] = true,
     ["Editor Keyboard"] = true,
+}
+
+
+-- longPressCache -> table
+-- Variable
+-- A table of long press statuses
+local longPressCache = {
+    ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
+}
+
+-- longPressCache -> table
+-- Variable
+-- A table of long press timers
+local longPressTimers = {
+    ["Speed Editor"] = {},
+    ["Editor Keyboard"] = {},
 }
 
 -- lastApplicationBundleID -> string
@@ -378,52 +399,104 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
         --------------------------------------------------------------------------------
         -- Button Pressed/Released:
         --------------------------------------------------------------------------------
-        local repeatPressActionUntilReleased = theButton.repeatPressActionUntilReleased
-        local repeatID = deviceType .. deviceID .. buttonID
-        if pressed then
-            local pressAction = theButton.pressAction
-            if pressAction then
-                local handlerID = pressAction.handlerID
-                local action = pressAction.action
-                if handlerID and action then
+        local longPressAction = theButton.longPressAction
+        if longPressAction then
+            --------------------------------------------------------------------------------
+            -- Press & Long Press Actions:
+            --------------------------------------------------------------------------------
+            if pressed then
+                longPressCache[deviceType][buttonID] = false
+                longPressTimers[deviceType][buttonID] = doAfter(LONG_PRESS_DURATION, function()
+                    longPressCache[deviceType][buttonID] = true
+                end)
+            else
+                if longPressCache[deviceType][buttonID] then
                     --------------------------------------------------------------------------------
-                    -- Trigger the press action:
+                    -- Long Press:
                     --------------------------------------------------------------------------------
-                    local handler = mod._actionmanager.getHandler(handlerID)
-                    handler:execute(action)
-
-                    --------------------------------------------------------------------------------
-                    -- Repeat if necessary:
-                    --------------------------------------------------------------------------------
-                    if repeatPressActionUntilReleased then
-                        mod.repeatTimers[repeatID] = doEvery(keyRepeatInterval(), function()
-                            handler:execute(action)
-                        end)
+                    local handlerID = longPressAction.handlerID
+                    local action = longPressAction.action
+                    if handlerID and action then
+                        --------------------------------------------------------------------------------
+                        -- Trigger the press action:
+                        --------------------------------------------------------------------------------
+                        local handler = mod._actionmanager.getHandler(handlerID)
+                        handler:execute(action)
                     end
-
+                else
+                    --------------------------------------------------------------------------------
+                    -- Normal Press:
+                    --------------------------------------------------------------------------------
+                    local pressAction = theButton.pressAction
+                    if pressAction then
+                        local handlerID = pressAction.handlerID
+                        local action = pressAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the press action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                    end
+                end
+                longPressCache[deviceType][buttonID] = false
+                if longPressTimers[deviceType][buttonID] then
+                    longPressTimers[deviceType][buttonID]:stop()
+                    longPressTimers[deviceType][buttonID] = nil
                 end
             end
         else
             --------------------------------------------------------------------------------
-            -- Stop repeating if necessary:
+            -- Press & Release Actions:
             --------------------------------------------------------------------------------
-            if repeatPressActionUntilReleased then
-                if mod.repeatTimers[repeatID] then
-                    mod.repeatTimers[repeatID]:stop()
-                    mod.repeatTimers[repeatID] = nil
-                end
-            end
+            local repeatPressActionUntilReleased = theButton.repeatPressActionUntilReleased
+            local repeatID = deviceType .. deviceID .. buttonID
+            if pressed then
+                local pressAction = theButton.pressAction
+                if pressAction then
+                    local handlerID = pressAction.handlerID
+                    local action = pressAction.action
+                    if handlerID and action then
+                        --------------------------------------------------------------------------------
+                        -- Trigger the press action:
+                        --------------------------------------------------------------------------------
+                        local handler = mod._actionmanager.getHandler(handlerID)
+                        handler:execute(action)
 
-            --------------------------------------------------------------------------------
-            -- Trigger the release action:
-            --------------------------------------------------------------------------------
-            local releaseAction = theButton.releaseAction
-            if releaseAction then
-                local handlerID = releaseAction.handlerID
-                local action = releaseAction.action
-                if handlerID and action then
-                    local handler = mod._actionmanager.getHandler(handlerID)
-                    handler:execute(action)
+                        --------------------------------------------------------------------------------
+                        -- Repeat if necessary:
+                        --------------------------------------------------------------------------------
+                        if repeatPressActionUntilReleased then
+                            mod.repeatTimers[repeatID] = doEvery(keyRepeatInterval(), function()
+                                handler:execute(action)
+                            end)
+                        end
+
+                    end
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- Stop repeating if necessary:
+                --------------------------------------------------------------------------------
+                if repeatPressActionUntilReleased then
+                    if mod.repeatTimers[repeatID] then
+                        mod.repeatTimers[repeatID]:stop()
+                        mod.repeatTimers[repeatID] = nil
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Trigger the release action:
+                --------------------------------------------------------------------------------
+                local releaseAction = theButton.releaseAction
+                if releaseAction then
+                    local handlerID = releaseAction.handlerID
+                    local action = releaseAction.action
+                    if handlerID and action then
+                        local handler = mod._actionmanager.getHandler(handlerID)
+                        handler:execute(action)
+                    end
                 end
             end
         end
