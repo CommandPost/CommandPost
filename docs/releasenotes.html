@@ -9,6 +9,44 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+		    <h1>CommandPost 1.3.3</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added support for the DaVinci Resolve Editor Keyboard.</li>
+                <li>Added "absolute" Jog Wheel support to the DaVinci Resolve Speed Editor.</li>
+                <li>Added "long press" actions to the DaVinci Resolve Speed Editor.</li>
+                <li>Added actions to scroll the Final Cut Pro timeline contents horizontally.</li>
+                <li>Added actions to "Jump to Next/Previous Frame", which also takes into account a SHIFT key modifier to jump 10 frames instead of 1.</li>
+                <li>Add actions to trigger Search Console specifically for Final Cut Pro Effects, Titles, Transitions and Generators. Thanks for suggesting Marc Bach!</li>
+                <li>Added an action to go back to the "last" DaVinci Resolve Keyboard bank.</li>
+		    </ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>We've updated the DaVinci Resolve Speed Editor layout to better demonstrate CommandPost's functionality. If you're already using CommandPost, you'll need to reset your layout to see these changes.</li>
+                <li>Improved the reliability of virtual keyboard presses on macOS Monterey & Final Cut Pro 10.6.1.</li>
+                <li>Improved the image quality of the Speed Editor image in the interface. Reported by Archetyped.</li>
+                <li>Improved how we handle LEDs on the Speed Editor. LEDs are now all turned off when your computer is put to sleep, Speed Editor support is disabled, or you quit CommandPost.</li>
+                <li>CommandPost now ignores button presses and jog wheel movements if DaVinci Resolve is running. DaVinci Resolve is now greyed out in the Speed Editor & Editor Keyboard drop-downs.</li>
+                <li>Increased Tangent Favourites from 50 to 200. Thanks for suggesting Marc Bach!</li>
+                <li>Added a Search Console toolbar icon for DaVinci Resolve keyboard banks.</li>
+                <li>Added ability to reset to either completely empty or factory default for all the reset buttons on the DaVinci Resolve Keyboard panel.</li>
+                <li>The "Insert Action" button in the Snippets Preferences now inserts more simplified code, and handles slashes better. Thanks for reporting Marc Bach!</li>
+                <li>We added a few global Lua function to more easily trigger actions: cp.triggerAction(handler, action).</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug in the DaVinci Resolve Keyboard panel where resetting an action would reset the entire button. Thanks for reporting Marc Bach!</li>
+                <li>Changing Speed Editor banks now correctly shows any custom bank labels on the on-screen message.</li>
+                <li>Fixed a bug where Final Cut Pro commands didn't show an icon in the Search Console.</li>
+                <li>Fixed bugs in Distort Y actions. Thanks for reporting Flavio Saramin!</li>
+                <li>Fixed a bug where the Snippets window never remembered the last Snippet.</li>
+			</ul>
+
+			<hr />
+
         	<h1>CommandPost 1.3.2</h1>
 
 			<h2>🔨 Improvements</h2>
