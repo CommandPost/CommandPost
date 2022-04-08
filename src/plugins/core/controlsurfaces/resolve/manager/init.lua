@@ -34,11 +34,6 @@ local tableMatch                = tools.tableMatch
 
 local mod = {}
 
--- LONG_PRESS_DURATION -> number
--- Constant
--- How long a button needs to be pressed before it's considered a long press (in seconds).
-local LONG_PRESS_DURATION = 0.4
-
 -- JOG_WHEEL_ABSOLUTE_ONE -> table
 -- Constant
 -- Jog Wheel Trigger
@@ -89,6 +84,11 @@ local JOG_WHEEL_ABSOLUTE_SIX = {
     ["Editor Keyboard"] = 4080,
 }
 
+--- plugins.core.resolve.manager.LONG_PRESS_DURATION -> number
+--- Constant
+--- How long a button needs to be pressed before it's considered a long press (in seconds).
+mod.DEFAULT_LONG_PRESS_DURATION = 0.4
+
 --- plugins.core.resolve.manager.DEFAULT_SENSITIVITY -> number
 --- Constant
 --- The default sensitivity used for Blackmagic Resolve Control Surfaces.
@@ -113,6 +113,11 @@ mod.lastBank = config.prop("daVinciResolveControlSurface.preferences.lastBank", 
 --- Variable
 --- A table containing `hs.timer` objects.
 mod.repeatTimers = {}
+
+--- plugins.core.resolve.prefs.displayMessageWhenChangingBanks <cp.prop: boolean>
+--- Field
+--- Display a message when changing banks?
+mod.displayMessageWhenChangingBanks = config.prop("daVinciResolveControlSurface.preferences.displayMessageWhenChangingBanks", true)
 
 --- plugins.core.resolve.prefs.snippetsRefreshFrequency <cp.prop: string>
 --- Field
@@ -200,22 +205,15 @@ local ignoreFirstJogWheelMessage = {
     ["Editor Keyboard"] = true,
 }
 
-
 -- longPressCache -> table
 -- Variable
 -- A table of long press statuses
-local longPressCache = {
-    ["Speed Editor"] = {},
-    ["Editor Keyboard"] = {},
-}
+local longPressCache = {}
 
 -- longPressCache -> table
 -- Variable
 -- A table of long press timers
-local longPressTimers = {
-    ["Speed Editor"] = {},
-    ["Editor Keyboard"] = {},
-}
+local longPressTimers = {}
 
 -- lastApplicationBundleID -> string
 -- Variable
@@ -470,34 +468,58 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
         --------------------------------------------------------------------------------
         -- Button Pressed/Released:
         --------------------------------------------------------------------------------
+        local cacheID = deviceType .. deviceID .. buttonID
         local longPressAction = theButton.longPressAction
+        local longPressDuration = tonumber(theButton.longPressDuration or mod.DEFAULT_LONG_PRESS_DURATION)
         if longPressAction then
             --------------------------------------------------------------------------------
             -- Press & Long Press Actions:
             --------------------------------------------------------------------------------
             if pressed then
-                longPressCache[deviceType][buttonID] = false
-                longPressTimers[deviceType][buttonID] = doAfter(LONG_PRESS_DURATION, function()
-                    longPressCache[deviceType][buttonID] = true
+                --------------------------------------------------------------------------------
+                -- It's a press:
+                --------------------------------------------------------------------------------
+                longPressCache[cacheID] = true
+                longPressTimers[cacheID] = doAfter(longPressDuration, function()
+                    --------------------------------------------------------------------------------
+                    -- Trigger the long press.
+                    --------------------------------------------------------------------------------
+                    if longPressCache[cacheID] then
+                        --------------------------------------------------------------------------------
+                        -- Long Press:
+                        --------------------------------------------------------------------------------
+                        local handlerID = longPressAction.handlerID
+                        local action = longPressAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the press action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                        longPressCache[cacheID] = false
+                        if longPressTimers[cacheID] then
+                            longPressTimers[cacheID]:stop()
+                            longPressTimers[cacheID] = nil
+                        end
+                    end
                 end)
             else
-                if longPressCache[deviceType][buttonID] then
+                --------------------------------------------------------------------------------
+                -- It's a release:
+                --------------------------------------------------------------------------------
+                if longPressCache[cacheID] then
                     --------------------------------------------------------------------------------
-                    -- Long Press:
+                    -- It's a Normal Press:
                     --------------------------------------------------------------------------------
-                    local handlerID = longPressAction.handlerID
-                    local action = longPressAction.action
-                    if handlerID and action then
-                        --------------------------------------------------------------------------------
-                        -- Trigger the press action:
-                        --------------------------------------------------------------------------------
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
+
+                    -- Clear cache before JUST to be on the safe side.
+                    longPressCache[cacheID] = false
+                    if longPressTimers[cacheID] then
+                        longPressTimers[cacheID]:stop()
+                        longPressTimers[cacheID] = nil
                     end
-                else
-                    --------------------------------------------------------------------------------
-                    -- Normal Press:
-                    --------------------------------------------------------------------------------
+
                     local pressAction = theButton.pressAction
                     if pressAction then
                         local handlerID = pressAction.handlerID
@@ -510,11 +532,27 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                             handler:execute(action)
                         end
                     end
-                end
-                longPressCache[deviceType][buttonID] = false
-                if longPressTimers[deviceType][buttonID] then
-                    longPressTimers[deviceType][buttonID]:stop()
-                    longPressTimers[deviceType][buttonID] = nil
+                else
+                    --------------------------------------------------------------------------------
+                    -- It's a Normal Release:
+                    --------------------------------------------------------------------------------
+
+                    -- Clear cache before JUST to be on the safe side.
+                    longPressCache[cacheID] = false
+                    if longPressTimers[cacheID] then
+                        longPressTimers[cacheID]:stop()
+                        longPressTimers[cacheID] = nil
+                    end
+
+                    local releaseAction = theButton.releaseAction
+                    if releaseAction then
+                        local handlerID = releaseAction.handlerID
+                        local action = releaseAction.action
+                        if handlerID and action then
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                    end
                 end
             end
         else
@@ -1087,6 +1125,8 @@ function plugin.init(deps)
                     end
                 elseif result.action == "last" then
                     local previousActiveBanks = mod.previousActiveBanks()
+                    if not previousActiveBanks[device] then previousActiveBanks[device] = {} end
+                    if not previousActiveBanks[device][unit] then previousActiveBanks[device][unit] = {} end
                     activeBanks[device][unit][bundleID] = previousActiveBanks[device][unit][bundleID] or "1"
                 end
 
@@ -1099,7 +1139,6 @@ function plugin.init(deps)
                     local previousActiveBanks = mod.previousActiveBanks()
                     if not previousActiveBanks[device] then previousActiveBanks[device] = {} end
                     if not previousActiveBanks[device][unit] then previousActiveBanks[device][unit] = {} end
-                    if not previousActiveBanks[device][unit][bundleID] then previousActiveBanks[device][unit][bundleID] = {} end
                     previousActiveBanks[device][unit][bundleID] = currentBank
                     mod.previousActiveBanks(previousActiveBanks)
                 end
@@ -1115,8 +1154,9 @@ function plugin.init(deps)
                 -- Ignore the first jog wheel message:
                 --------------------------------------------------------------------------------
                 ignoreFirstJogWheelMessage[device] = true
-
-                displayNotification(device .. " (Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
+                if mod.displayMessageWhenChangingBanks() then
+                    displayNotification(device .. " (Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
+                end
             end
         end)
         :onActionId(function(action) return "resolveBank" .. action.id end)

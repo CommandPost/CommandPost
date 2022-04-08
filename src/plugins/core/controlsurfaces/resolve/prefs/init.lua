@@ -79,6 +79,11 @@ mod.lastUnit = config.prop("daVinciResolveControlSurface.preferences.lastUnit", 
 --- Last Unit used in the Preferences Panel.
 mod.lastButton = config.prop("daVinciResolveControlSurface.preferences.lastButton", DEFAULT_BUTTON)
 
+--- plugins.core.controlsurfaces.resolve.prefs.changeBankOnHardwareWhenChangingHere <cp.prop: boolean>
+--- Field
+--- Should we change bank on hardware when changing in preferences?
+mod.changeBankOnHardwareWhenChangingHere = config.prop("daVinciResolveControlSurface.preferences.changeBankOnHardwareWhenChangingHere", true)
+
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -331,36 +336,38 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     -- Update the fields for the currently selected button:
     --------------------------------------------------------------------------------
-    local pressAction = ""
-    local releaseAction = ""
-    local snippetAction = ""
-    local turnLeftAction = ""
-    local turnRightAction = ""
+    local pressAction                       = ""
+    local releaseAction                     = ""
+    local snippetAction                     = ""
+    local turnLeftAction                    = ""
+    local turnRightAction                   = ""
 
-    local longPressAction = ""
+    local longPressAction                   = ""
 
-    local turnLeftOneAction = ""
-    local turnLeftTwoAction = ""
-    local turnLeftThreeAction = ""
-    local turnLeftFourAction = ""
-    local turnLeftFiveAction = ""
-    local turnLeftSixAction = ""
+    local turnLeftOneAction                 = ""
+    local turnLeftTwoAction                 = ""
+    local turnLeftThreeAction               = ""
+    local turnLeftFourAction                = ""
+    local turnLeftFiveAction                = ""
+    local turnLeftSixAction                 = ""
 
-    local turnRightOneAction = ""
-    local turnRightTwoAction = ""
-    local turnRightThreeAction = ""
-    local turnRightFourAction = ""
-    local turnRightFiveAction = ""
-    local turnRightSixAction = ""
+    local turnRightOneAction                = ""
+    local turnRightTwoAction                = ""
+    local turnRightThreeAction              = ""
+    local turnRightFourAction               = ""
+    local turnRightFiveAction               = ""
+    local turnRightSixAction                = ""
 
-    local absoluteZeroAction = ""
+    local absoluteZeroAction                = ""
 
     local ledAlwaysOn = false
-    local repeatPressActionUntilReleased = false
+    local repeatPressActionUntilReleased    = false
 
-    local sensitivity = mod._resolveManager.defaultSensitivity[device]
+    local sensitivity                       = mod._resolveManager.defaultSensitivity[device]
+    local longPressDuration                 = mod._resolveManager.DEFAULT_LONG_PRESS_DURATION
 
-    local buttonData = bankData and bankData[button]
+    local buttonData                        = bankData and bankData[button]
+
     if buttonData then
         pressAction                         = escapeTilda(buttonData.pressAction            and buttonData.pressAction.actionTitle)
         releaseAction                       = escapeTilda(buttonData.releaseAction          and buttonData.releaseAction.actionTitle)
@@ -384,12 +391,13 @@ local function updateUI(params)
         turnRightFiveAction                 = escapeTilda(buttonData.turnRightFiveAction    and buttonData.turnRightFiveAction.actionTitle)
         turnRightSixAction                  = escapeTilda(buttonData.turnRightSixAction     and buttonData.turnRightSixAction.actionTitle)
 
-        absoluteZeroAction                  = escapeTilda(buttonData.absoluteZeroAction and buttonData.absoluteZeroAction.actionTitle)
+        absoluteZeroAction                  = escapeTilda(buttonData.absoluteZeroAction     and buttonData.absoluteZeroAction.actionTitle)
 
-        ledAlwaysOn                         = buttonData.ledAlwaysOn or ledAlwaysOn
-        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or repeatPressActionUntilReleased
+        ledAlwaysOn                         = buttonData.ledAlwaysOn                        or ledAlwaysOn
+        repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased     or repeatPressActionUntilReleased
 
-        sensitivity                         = buttonData.sensitivity or sensitivity
+        sensitivity                         = buttonData.sensitivity                        or sensitivity
+        longPressDuration                   = buttonData.longPressDuration                  or longPressDuration
     end
 
     script = script .. [[
@@ -422,6 +430,7 @@ local function updateUI(params)
         changeCheckedByID('ledAlwaysOn', ]] .. tostring(ledAlwaysOn or false) .. [[);
 
         changeValueByID("sensitivity", "]] .. sensitivity .. [[");
+        changeValueByID("longPressDuration", "]] .. longPressDuration .. [[");
     ]]
 
     --------------------------------------------------------------------------------
@@ -773,6 +782,18 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
             mod.setItem(app, bank, button, "sensitivity", value)
 
             updateUI()
+        elseif callbackType == "changeLongPressDuration" then
+            --------------------------------------------------------------------------------
+            -- Update "Long Press Duration":
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local button = params["button"] or mod.lastButton()
+            local value = params["value"]
+
+            mod.setItem(app, bank, button, "longPressDuration", value)
+
+            updateUI()
         elseif callbackType == "changeJogMode" then
             --------------------------------------------------------------------------------
             -- Update "Jog Mode":
@@ -871,13 +892,29 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                 mod.lastBank(bank)
 
                 --------------------------------------------------------------------------------
-                -- Change the bank:
+                -- If change bank on hardware:
                 --------------------------------------------------------------------------------
-                local activeBanks = mod._resolveManager.activeBanks()
-                if not activeBanks[device] then activeBanks[device] = {} end
-                if not activeBanks[device][unit] then activeBanks[device][unit] = {} end
-                activeBanks[device][unit][app] = tostring(bank)
-                mod._resolveManager.activeBanks(activeBanks)
+                if mod.changeBankOnHardwareWhenChangingHere() then
+                    --------------------------------------------------------------------------------
+                    -- Change the bank:
+                    --------------------------------------------------------------------------------
+                    local activeBanks = mod._resolveManager.activeBanks()
+                    if not activeBanks[device] then activeBanks[device] = {} end
+                    if not activeBanks[device][unit] then activeBanks[device][unit] = {} end
+
+                        --------------------------------------------------------------------------------
+                        -- Update the previous/last active bank as well whilst we're at it:
+                        --------------------------------------------------------------------------------
+                        local currentBank = activeBanks and activeBanks[device] and activeBanks[device][unit] and activeBanks[device][unit][app] or "1"
+                        local previousActiveBanks = mod._resolveManager.previousActiveBanks()
+                        if not previousActiveBanks[device] then previousActiveBanks[device] = {} end
+                        if not previousActiveBanks[device][unit] then previousActiveBanks[device][unit] = {} end
+                        previousActiveBanks[device][unit][app] = currentBank
+                        mod._resolveManager.previousActiveBanks(previousActiveBanks)
+
+                    activeBanks[device][unit][app] = tostring(bank)
+                    mod._resolveManager.activeBanks(activeBanks)
+                end
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:
@@ -1717,7 +1754,7 @@ function plugin.init(deps, env)
         label           = "Resolve",
         image           = imageFromPath(env:pathToAbsolute("images/resolve.icns")),
         tooltip         = i18n("daVinciResolve"),
-        height          = 995,
+        height          = 1035,
     })
         :addHeading(1, i18n("daVinciResolveControlSurfaceSupport"))
         :addContent(2, [[
@@ -1748,6 +1785,26 @@ function plugin.init(deps, env)
                 checked     = mod._resolveManager.automaticallySwitchApplications,
                 onchange    = function(_, params)
                     mod._resolveManager.automaticallySwitchApplications(params.checked)
+                    updateUI()
+                end,
+            }
+        )
+        :addCheckbox(5,
+            {
+                label       = i18n("displayMessageWhenChangingBanks"),
+                checked     = mod._resolveManager.displayMessageWhenChangingBanks,
+                onchange    = function(_, params)
+                    mod._resolveManager.displayMessageWhenChangingBanks(params.checked)
+                    updateUI()
+                end,
+            }
+        )
+        :addCheckbox(5.1,
+            {
+                label       = i18n("changeBankOnHardwareWhenChangingHere"),
+                checked     = mod.changeBankOnHardwareWhenChangingHere,
+                onchange    = function(_, params)
+                    mod.changeBankOnHardwareWhenChangingHere(params.checked)
                     updateUI()
                 end,
             }
