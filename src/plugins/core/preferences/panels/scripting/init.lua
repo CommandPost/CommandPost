@@ -371,7 +371,7 @@ function plugin.init(deps, env)
                             --------------------------------------------------------------------------------
                             -- If the value contains a slash or quotes put it in brackets:
                             --------------------------------------------------------------------------------
-                            local value = v
+                            local value
                             if v:find("/", 1, true) or v:find([["]], 1, true) or v:find([[\]], 1, true) then
                                 value = "[[" .. v .. "]]"
                             else
