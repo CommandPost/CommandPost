@@ -350,7 +350,6 @@ function plugin.init(deps, env)
             -- Insert Action:
             --------------------------------------------------------------------------------
             actionmanager.getActivator("snippetsAddAction"):onActivate(function(handler, action, _)
-
                 --------------------------------------------------------------------------------
                 -- Simplify a table into a single line string:
                 --------------------------------------------------------------------------------
@@ -358,10 +357,28 @@ function plugin.init(deps, env)
                 processTable = function(input)
                     local s = "{"
                     for i, v in pairs(input) do
+                        --------------------------------------------------------------------------------
+                        -- If the key is a number, wrap it in a bracket and quotes:
+                        --------------------------------------------------------------------------------
+                        local key = i
+                        if type(i) == "number" then
+                            key = "['" .. i .. "']"
+                        end
+
                         if type(v) == "table" then
-                            s = s .. i .. "=" .. processTable(v) .. ","
+                            s = s .. key .. "=" .. processTable(v) .. ","
                         else
-                            s = s .. i .. "=[[" .. v .. "]],"
+                            --------------------------------------------------------------------------------
+                            -- If the value contains a slash or quotes put it in brackets:
+                            --------------------------------------------------------------------------------
+                            local value
+                            if v:find("/", 1, true) or v:find([["]], 1, true) or v:find([[\]], 1, true) then
+                                value = "[[" .. v .. "]]"
+                            else
+                                value = [["]] .. v .. [["]]
+                            end
+
+                            s = s .. key .. "=" .. value .. ","
                         end
                     end
                     if s:sub(-1) == "," then
