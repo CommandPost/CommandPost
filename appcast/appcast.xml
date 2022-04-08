@@ -8,12 +8,12 @@
 		<item>
 			<title>Version 1.3.4</title>
 			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
-			<pubDate>Fri,  8 Apr 2022 21:09:35 +1000</pubDate>
+			<pubDate>Fri,  8 Apr 2022 21:35:00 +1000</pubDate>
 			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.3.4/CommandPost_1.3.4.dmg"
-				sparkle:version="7263"
+				sparkle:version="7266"
                 sparkle:shortVersionString="1.3.4"
-				sparkle:dsaSignature="MC4CFQCVj9EzdxgsUdq3NelGzFVdvhYuhQIVAMydNoGc9yevib/nBbC0TVL2hwu7"
-				sparkle:edSignature="IostlDFHgWOLY6Hr2o+Mre4IKCE2NUdJZd1sbkJX/9wvrKVrZGaN8BYF5hvFrNUWC6JThgsdQyqPW0d7IBFWAQ==" length="46926210"
+				sparkle:dsaSignature="MCwCFBUV7O5PbQnV1fv28pdiCFTAyQcDAhRblKz53afEB5KSWQZ4uMeIqbTtXw=="
+				sparkle:edSignature="UE+a4A9mk0lXDZWJbqIiV7WMMGkYso1wRFJ5L38hTw29wSPS84XastFrDY2c0pnl55csxJrGW/kBZCt300O0Ag==" length="46924048"
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
