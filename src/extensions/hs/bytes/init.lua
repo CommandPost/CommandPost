@@ -154,6 +154,8 @@ local function doRead(data, index, fn, ...)
     if fn then
         local value, newIndex = fn(data, index)
         return value, doRead(data, newIndex, ...)
+    else
+        return index
     end
 end
 
