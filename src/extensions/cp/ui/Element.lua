@@ -25,6 +25,24 @@ local isCallable        = is.callable
 
 local Element = class("cp.ui.Element"):include(lazy)
 
+--- cp.ui.Element:isTypeOf(thing) -> boolean
+--- Function
+--- Checks if the `thing` is an `Element`. If called on subclasses, it will check
+--- if the `thing` is an instance of the subclass.
+---
+--- Parameters:
+---  * `thing`		- The thing to check
+---
+--- Returns:
+---  * `true` if the thing is a `Element` instance.
+---
+--- Notes:
+---  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
+---    not an instance. For example `Element:isTypeOf(value)`
+function Element.static:isTypeOf(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(self)
+end
+
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
 --- Matches to any valid `hs.axuielement`. Sub-types should provide their own `matches` method.

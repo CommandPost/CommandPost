@@ -20,7 +20,7 @@ local Cell = Element:subclass("cp.ui.Cell")
 ---  * A boolean
 Cell.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXCell")
 
---- cp.ui.Cell.with(...) -> function(parent, uiFinder) -> Cell
+--- cp.ui.Cell:with(...) -> function(parent, uiFinder) -> Cell
 --- Function
 --- A combinator function that returns a `Cell` constructor function that accepts the `parent` and `uiFinder`.
 ---
@@ -29,10 +29,10 @@ Cell.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXCell")
 ---
 --- Returns:
 ---  * A function that will return a new `Cell` instance.
-function Cell.static.with(...)
+function Cell.static:with(...)
     local childInits = pack(...)
     return function(parent, uiFinder)
-        return Cell(parent, uiFinder, childInits)
+        return self(parent, uiFinder, childInits)
     end
 end
 

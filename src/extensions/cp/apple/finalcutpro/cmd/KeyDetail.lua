@@ -80,7 +80,7 @@ end
 function KeyDetail.lazy.value:detail()
     return ScrollArea(self,
         self.contentGroupUI:mutate(ax.childMatching(ScrollArea.matches)),
-        Table.withRowsOf(Cell.with(TextField), Cell.with(TextField))
+        Table:withRowsOf(Cell:with(TextField), Cell:with(TextField))
     )
 end
 
