@@ -251,7 +251,7 @@ end
 -- Function
 -- Reads the the byte at the index as a number. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -266,7 +266,7 @@ end
 -- Function
 -- Reads the the two bytes at the index as a 16-bit number, big-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -284,7 +284,7 @@ end
 -- Function
 -- Reads the the two bytes at the index as a 16-bit number, little-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -302,7 +302,7 @@ end
 -- Function
 -- Reads the the three bytes at the index as a 24-bit number, big-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -321,7 +321,7 @@ end
 -- Function
 -- Reads the the three bytes at the index as a 24-bit number, little-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -340,7 +340,7 @@ end
 -- Function
 -- Reads the the two bytes at the index as a 32-bit number, big-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -358,7 +358,7 @@ end
 -- Function
 -- Reads the the two bytes at the index as a 32-bit number, little-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -376,7 +376,7 @@ end
 -- Function
 -- Reads the the two bytes at the index as a 64-bit number, big-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -394,7 +394,7 @@ end
 -- Function
 -- Reads the the two bytes at the index as a 64-bit number, little-endian. No safety checks.
 --
--- Paramters:
+-- Parameters:
 -- * value  - a `string` of bytes.
 -- * index  - the point to start reading from
 --
@@ -406,6 +406,90 @@ local function readInt64le(value, index)
     little, index = readInt32le(value, index)
     big, index = readInt32le(value, index)
     return (big << 32) | little, index
+end
+
+-- readFloat32be(value, index) -> number, number
+-- Function
+-- Reads the the four bytes at the index as a IEEE 754 standard 32-bit floating point number, stored in big-endian byte order. No safety checks.
+--
+-- Parameters:
+-- * value  - a `string` of bytes.
+-- * index  - the point to start reading from
+--
+-- Returns:
+-- * number - the actual number value
+-- * number - the next index to read from.
+--
+-- Notes:
+-- * The IEEE 754 standard specifies a binary32 as having:
+--   * a sign bit, 1 bit
+--   * a biased exponent, 8 bits
+--   * a mantissa, 23 bits
+local function readFloat32be(value, index)
+    return string.unpack(">f", value, index)
+end
+
+-- readFloat32le(value, index) -> number, number
+-- Function
+-- Reads the the four bytes at the index as a IEEE 754 standard 32-bit floating point number, stored in little-endian byte order. No safety checks.
+--
+-- Parameters:
+-- * value  - a `string` of bytes.
+-- * index  - the point to start reading from
+--
+-- Returns:
+-- * number - the actual number value
+-- * number - the next index to read from.
+--
+-- Notes:
+-- * The IEEE 754 standard specifies a binary32 as having:
+--   * a sign bit, 1 bit
+--   * a biased exponent, 8 bits
+--   * a mantissa, 23 bits
+local function readFloat32le(value, index)
+    return string.unpack("<f", value, index)
+end
+
+-- readFloat64be(value, index) -> number, number
+-- Function
+-- Reads the the eight bytes at the index as a IEEE 754 standard 64-bit floating point number, stored in big-endian byte order. No safety checks.
+--
+-- Parameters:
+-- * value  - a `string` of bytes.
+-- * index  - the point to start reading from
+--
+-- Returns:
+-- * number - the actual number value
+-- * number - the next index to read from.
+--
+-- Notes:
+-- * The IEEE 754 standard specifies a binary64 as having:
+--   * a sign bit, 1 bit
+--   * a biased exponent, 11 bits
+--   * a mantissa, 52 bits
+local function readFloat64be(value, index)
+    return string.unpack(">d", value, index)
+end
+
+-- readFloat64le(value, index) -> number, number
+-- Function
+-- Reads the the eight bytes at the index as a IEEE 754 standard 64-bit floating point number, stored in little-endian byte order. No safety checks.
+--
+-- Parameters:
+-- * value  - a `string` of bytes.
+-- * index  - the point to start reading from
+--
+-- Returns:
+-- * number - the actual number value
+-- * number - the next index to read from.
+--
+-- Notes:
+-- * The IEEE 754 standard specifies a binary64 as having:
+--   * a sign bit, 1 bit
+--   * a biased exponent, 11 bits
+--   * a mantissa, 52 bits
+local function readFloat64le(value, index)
+    return string.unpack("<d", value, index)
 end
 
 -- writeInt8(value) -> number
@@ -531,6 +615,62 @@ local function writeInt64le(value)
     local l1, l2, l3, l4 = writeInt32be(value)
     local h1, h2, h3, h4 = writeInt32be(value >> 32)
     return l4, l3, l2, l1, h4, h3, h2, h1
+end
+
+-- writeFloat32be(value) -> number, number, number, number
+-- Function
+-- Returns the lowest 32 bits of the value as a four 8-bit `number`s, big-endian order.
+--
+-- Parameters:
+-- * values - the `number` to write as an four 8-bit ints.
+--
+-- Returns:
+-- * four 8-bit numbers, highest to lowest significance.
+local function writeFloat32be(value)
+    local stringValue = string.pack(">f", value)
+    return stringValue:byte(1, 4)
+end
+
+-- writeFloat32le(value) -> number, number, number, number
+-- Function
+-- Returns the lowest 32 bits of the value as a four 8-bit `number`s, little-endian order.
+--
+-- Parameters:
+-- * values - the `number` to write as an four 8-bit ints.
+--
+-- Returns:
+-- * four 8-bit numbers, lowest to highest significance.
+local function writeFloat32le(value)
+    local stringValue = string.pack("<f", value)
+    return stringValue:byte(1, 4)
+end
+
+-- writeFloat64be(value) -> number, number, number, number, number, number, number, number
+-- Function
+-- Returns the lowest 64 bits of the value as a eight 8-bit `number`s, big-endian order.
+--
+-- Parameters:
+-- * values - the `number` to write as an eight 8-bit ints.
+--
+-- Returns:
+-- * eight 8-bit numbers, highest to lowest significance.
+local function writeFloat64be(value)
+    local stringValue = string.pack(">d", value)
+    return stringValue:byte(1, 8)
+end
+
+-- writeFloat64le(value) -> number, number, number, number, number, number, number, number
+-- Function
+-- Returns the lowest 64 bits of the value as a eight 8-bit `number`s, little-endian order.
+--
+-- Parameters:
+-- * values - the `number` to write as an eight 8-bit ints.
+--
+-- Returns:
+-- * eight 8-bit numbers, lowest to highest significance.
+local function writeFloat64le(value)
+    local stringValue = string.pack("<d", value)
+    return stringValue:byte(1, 8)
 end
 
 -- intMask(bits) -> number

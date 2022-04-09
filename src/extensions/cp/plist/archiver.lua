@@ -15,13 +15,13 @@ mod.ARCHIVER_KEY = "$archiver"
 -- TODO: Add Documentation
 mod.ARCHIVER_VALUE = "NSKeyedArchiver"
 
--- TODO: Add Documentation
+-- The objects definition
 mod.OBJECTS_KEY = "$objects"
 
--- TODO: Add Documentation
+-- The key of the top-level object.
 mod.TOP_KEY	= "$top"
 
--- TODO: Add Documentation
+-- The key when referencing another object
 mod.CFUID	= "CF$UID"
 
 -- checkArchiver(archive) -> boolean
