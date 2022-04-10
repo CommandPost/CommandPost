@@ -12,90 +12,61 @@ local log                                   = require "hs.logger" .new "nibarch"
 local bytes                                 = require "hs.bytes"
 local fs                                    = require "hs.fs"
 
+local Array                                 = require "cp.nib.decoder.Array"
+local Dictionary                            = require "cp.nib.decoder.Dictionary"
+local Set                                   = require "cp.nib.decoder.Set"
+local varint                                = require "cp.nib.varint"
+
 local exactly                               = bytes.exactly
 local uint8, uint32le                       = bytes.uint8, bytes.uint32le
 local int8, int16le, int32le, int64le       = bytes.int8, bytes.int16le, bytes.int32le, bytes.int64le
 local float32le, float64le                  = bytes.float32le, bytes.float64le
 
-local char                                  = string.char
 local insert                                = table.insert
-local unpack                                = table.unpack
 
--- varint(value, index) -> number, number | string
--- Function
--- Converts a byte `string` in the `NIBArchive` `varint` format into an unsigned `number` value, or a `number` value into a byte `string`.
--- It codes integers in 7-bit chunks, little-endian order. The high-bit in each byte signifies if it is the last byte.
---
--- Parameters:
---  * value - The `string` or `number` to convert.
---  * index - The index to start at, if the value is a `string`. (defaults to `1`)
---
--- Returns:
---  * The converted `number` value, or the `string` value.
---  * The second `number` will the the index of the next byte after the converted value.
-local function varint(value, index)
-    if type(value) == "string" then
-        index = index or 1
-        -- log.df("varint: index: %d", index)
-        local result = 0
-        local shift = 0
-        local byte
-        repeat
-            byte = value:byte(index)
-            index = index + 1
-            result = result + ((byte & 0x7F) << shift)
-            shift = shift + 7
-        until (byte & 0x80) ~= 0
-        -- log.df("varint: result: %d; index: %d", result, index)
-        return result, index
-    elseif type(value) == "number" then
-        local result = {}
-        while value > 0 do
-            local byte = value & 0x7F
-            value = value >> 7
-            if value == 0 then
-                byte = byte | 0x80
-            end
-            insert(result, byte)
-        end
-        return char(unpack(result))
-    end
+--- cp.nib.archiver.defaultDecoders() -> decoder, ...
+--- Function
+--- Returns the default decoders.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The default decoders.
+local function defaultDecoders()
+    return Array, Dictionary, Set
 end
 
--- newArchiveHeader(major, minor, objectCount, firstObject, keyCount, firstKey, valueCount, firstValue, classCount, firstClass) -> table
+-- newArchiveHeader(objectCount, objectStart, keyCount, keyStart, valueCount, valueStart, classCount, classStart) -> table
 -- Function
 -- Creates an `NIBArchive` header table.
 --
 -- Parameters:
---  * major - The major version number.
---  * minor - The minor version number.
 --  * objectCount - The number of objects in the archive.
---  * firstObject - The offset of the first object.
+--  * objectStart - The offset of the first object.
 --  * keyCount - The number of keys in the archive.
---  * firstKey - The offset of the first key.
+--  * keyStart - The offset of the first key.
 --  * valueCount - The number of values in the archive.
---  * firstValue - The offset of the first value.
+--  * valueStart - The offset of the first value.
 --  * classCount - The number of classes in the archive.
---  * firstClass - The offset of the first class.
+--  * classStart - The offset of the first class.
 --
 -- Returns:
---  * A `table` with the above contained as keys.
-local function newArchiveHeader(major, minor, objectCount, firstObject, keyCount, firstKey, valueCount, firstValue, classCount, firstClass)
+--  * A `table` with the above contained as keys, with starting indexes incremented by `1` for use in `1`-based arrays.
+local function newArchiveHeader(objectCount, objectStart, keyCount, keyStart, valueCount, valueStart, classCount, classStart)
     return {
-        major = major,
-        minor = minor,
         objectCount = objectCount,
-        firstObject = firstObject,
+        objectStart = objectStart+1,
         keyCount = keyCount,
-        firstKey = firstKey,
+        keyStart = keyStart+1,
         valueCount = valueCount,
-        firstValue = firstValue,
+        valueStart = valueStart+1,
         classCount = classCount,
-        firstClass = firstClass,
+        classStart = classStart+1,
     }
 end
 
--- processObjects(data, objectCount, firstObject) -> table
+-- processObjects(data, objectCount, objectStart) -> table
 -- Function
 -- Processes the given `data` string, with the specified object count and offset.
 -- All object records are processed and added to the `object` table.
@@ -103,7 +74,7 @@ end
 -- Parameters:
 --  * data - The `string` of bytes to process.
 --  * objectCount - The number of objects in the archive.
---  * firstObject - The offset of the first object.
+--  * objectStart - The offset of the first object.
 --
 -- Returns:
 --  * A table containing the processed `object` table.
@@ -113,24 +84,24 @@ end
 --    * The class name index, as a `varint`. An offset into the list of class names.
 --    * Values index, as a `varint`. An offset into the list of values for the first value.
 --    * The number of values, as a `varint`.
-local function processObjects(data, objectCount, firstObject)
+local function processObjects(data, objectCount, objectStart)
     -- log.df("processObjects")
     local objects = {}
-    local index = firstObject+1
+    local index = objectStart+1
     for _ = 1, objectCount do
         local classIndex, valuesIndex, valuesCount
         classIndex, valuesIndex, valuesCount, index = bytes.read(data, index, varint, varint, varint)
         -- log.df("processObjects: classIndex: %d; valuesIndex: %d; valuesCount: %d; index: %d", classIndex, valuesIndex, valuesCount, index)
         insert(objects, {
-            classIndex = classIndex,
-            valuesIndex = valuesIndex,
+            classIndex = classIndex+1,
+            valuesIndex = valuesIndex+1,
             valuesCount = valuesCount,
         })
     end
     return objects
 end
 
--- processKeys(data, keyCount, firstKey) -> table
+-- processKeys(data, keyCount, keyStart) -> table
 -- Function
 -- Processes the given `data` string, with the specified key count and offset.
 -- All key records are processed and added to the `key` table.
@@ -138,7 +109,7 @@ end
 -- Parameters:
 --  * data - The `string` of bytes to process.
 --  * keyCount - The number of keys in the archive.
---  * firstKey - The offset of the first key.
+--  * keyStart - The offset of the first key.
 --
 -- Returns:
 --  * A table containing the processed `key` table.
@@ -147,10 +118,10 @@ end
 --  * Each key record is the following sequence of bytes:
 --    * Key name length, as a `varint`.
 --    * Key name, as a `string`, with the length specified by the previous `varint`.
-local function processKeys(data, keyCount, firstKey)
+local function processKeys(data, keyCount, keyStart)
     -- log.df("processKeys")
     local keys = {}
-    local index = firstKey+1
+    local index = keyStart+1
     for _ = 1, keyCount do
         local keyLength, key
         -- log.df("processKeys: reading from index: %d", index)
@@ -162,7 +133,7 @@ local function processKeys(data, keyCount, firstKey)
     return keys
 end
 
--- processValues(data, valueCount, firstValue) -> table
+-- processValues(data, valueCount, valueStart) -> table
 -- Function
 -- Processes the given `data` string, with the specified value count and offset.
 -- All value records are processed and added to the `value` table.
@@ -170,7 +141,7 @@ end
 -- Parameters:
 --  * data - The `string` of bytes to process.
 --  * valueCount - The number of values in the archive.
---  * firstValue - The offset of the first value.
+--  * valueStart - The offset of the first value.
 --
 -- Returns:
 --  * A table containing the processed `value` table.
@@ -190,10 +161,10 @@ end
 --      * `8` - string: the length of the string as a `varint`, followed by the string itself.
 --      * `9` - nil: 0 bytes
 --      * `10` - object reference: 4 bytes uint32 LE (index into the list of objects)
-local function processValues(data, valueCount, firstValue)
+local function processValues(data, valueCount, valueStart)
     -- log.df("processValues")
     local values = {}
-    local index = firstValue+1
+    local index = valueStart+1
     for _ = 1, valueCount do
         local keyIndex, valueType, value
         keyIndex, valueType, index = bytes.read(data, index, varint, uint8)
@@ -224,7 +195,7 @@ local function processValues(data, valueCount, firstValue)
             value, index = bytes.read(data, index, uint32le)
         end
         insert(values, {
-            keyIndex = keyIndex,
+            keyIndex = keyIndex+1,
             valueType = valueType,
             value = value,
         })
@@ -232,7 +203,7 @@ local function processValues(data, valueCount, firstValue)
     return values
 end
 
--- processClasses(data, classCount, firstClass) -> table
+-- processClasses(data, classCount, classStart) -> table
 -- Function
 -- Processes the given `data` string, with the specified class count and offset.
 -- All class records are processed and added to the `class` table.
@@ -240,7 +211,7 @@ end
 -- Parameters:
 --  * data - The `string` of bytes to process.
 --  * classCount - The number of classes in the archive.
---  * firstClass - The offset of the first class.
+--  * classStart - The offset of the first class.
 --
 -- Returns:
 --  * A table containing the processed `class` table.
@@ -251,20 +222,20 @@ end
 --    * Number of extra int32 LE values, as a `varint`. Only values `0` and `1` have been observed.
 --    * The extra int32 LE values (if present)
 --    * The class name, as a `string`, with the length specified by the class name length `varint`.
-local function processClasses(data, classCount, firstClass)
+local function processClasses(data, classCount, classStart)
     -- log.df("processClasses")
     local classes = {}
-    local index = firstClass+1
+    local index = classStart+1
     for _ = 1, classCount do
-        local classNameLength, extraInt32leCount, extraInts, className
-        classNameLength, extraInt32leCount, index = bytes.read(data, index, varint, varint)
+        local classnameLength, extraInt32leCount, extraInts, classname
+        classnameLength, extraInt32leCount, index = bytes.read(data, index, varint, varint)
         extraInts = {}
         for j = 1, extraInt32leCount do
             extraInts[j], index = bytes.read(data, index, int32le)
         end
-        className, index = bytes.read(data, index, exactly(classNameLength))
+        classname, index = bytes.read(data, index, exactly(classnameLength))
         insert(classes, {
-            className = className,
+            classname = classname,
             extraInts = extraInts,
         })
     end
@@ -284,13 +255,13 @@ end
 --  * A table containing the processed `object`, `key`, `value`, and `class` tables.
 local function processArchive(data, header)
     -- 1. Process the objects.
-    local objects = processObjects(data, header.objectCount, header.firstObject)
+    local objects = processObjects(data, header.objectCount, header.objectStart)
     -- 2. Process the keys.
-    local keys = processKeys(data, header.keyCount, header.firstKey)
+    local keys = processKeys(data, header.keyCount, header.keyStart)
     -- 3. Process the values.
-    local values = processValues(data, header.valueCount, header.firstValue)
+    local values = processValues(data, header.valueCount, header.valueStart)
     -- 4. Process the classes.
-    local classes = processClasses(data, header.classCount, header.firstClass)
+    local classes = processClasses(data, header.classCount, header.classStart)
 
     return {
         object = objects,
@@ -300,15 +271,93 @@ local function processArchive(data, header)
     }
 end
 
+-- findClass(archive, index) -> table
+-- Function
+-- Finds the class with the given index in the given archive.
+--
+-- Parameters:
+--  * archive - The `NIBArchive` table.
+--  * index - The 0-based index of the class to find.
+--
+-- Returns:
+--  * The class `table`, or `nil` if the class was not found.
+local function findClass(archive, index)
+    return archive.class[index]
+end
+
+-- findKey(archive, index) -> string
+-- Function
+-- Finds the key with the given index in the given archive.
+--
+-- Parameters:
+--  * archive - The `NIBArchive` table.
+--  * index - The 0-based index of the key to find.
+--
+-- Returns:
+--  * The key `string`, or `nil` if the key was not found.
+local function findKey(archive, index)
+    return archive.key[index]
+end
+
+-- loadValues(archive, instance, valueStart, valueCount) -> nil
+-- Function
+-- Loads the values for the given instance into the given archive.
+--
+-- Parameters:
+--  * archive - The `NIBArchive` table.
+--  * instance - The instance to assign the values to.
+--  * valueStart - The 0-based offset of the first value.
+--  * valueCount - The number of values to load.
+--
+-- Returns:
+--  * Nothing
+local function loadValues(archive, instance, valueStart, valueCount)
+    -- log.df("loadValues")
+    local values = archive.value
+    for i = 1, valueCount do
+        local value = archive.value[valueStart+i]
+        local key = findKey(archive, value.keyIndex)
+        if value.valueType == 10 then
+            -- TODO: Complete or delete this function
+            -- instance[key] = nil
+        end
+    end
+end
+
+-- defrost(archive, cache)
+-- Function
+-- Defrosts the given `archive` table, storing objects into the `cache` table at the same index as they appear in the `archive.object` list.
+--
+-- Parameters:
+--  * archive - The `NIBArchive` table to defrost.
+--  * cache - The `table` to store the defrosted objects in.
+--
+-- Returns:
+--  * The `cache` table.
+local function defrost(archive, cache)
+    -- log.df("defrost")
+    for i, object in ipairs(archive.object) do
+        -- log.df("defrosting object %d", i)
+        local class = findClass(archive, object.classIndex)
+        local instance = {
+            classname = class.classname
+        }
+        loadValues(archive, instance, object.valueStart, object.valueCount)
+    end
+    return cache
+end
+
 -- The index where the NIBArchive header starts
-local HEADER_INDEX = 11
+local HEADER_INDEX = 1 + 10 + 4 + 4
 
 local mod = {}
+mod.mt = {}
+mod.mt.__index = mod.mt
 
---- cp.nib.archiver.ARCHIVER_ID -> string
+--- cp.nib.archiver.SIGNATURE -> string
 --- Constant
 --- Marks the data stream as an `NIBArchive`.
-mod.ARCHIVER_ID = "NIBArchive"
+mod.SIGNATURE = "NIBArchive"
 
 --- cp.nib.archiver.isSupported(data) -> boolean
 --- Function
@@ -320,49 +369,66 @@ mod.ARCHIVER_ID = "NIBArchive"
 --- Returns:
 ---  * `true` if the `data` is an NIBArchive, `false` otherwise.
 function mod.isSupported(data)
-    local value = bytes.read(data, bytes.exactly(10))
-    return value == mod.ARCHIVER_ID
+    local value, major, minor = bytes.read(data, bytes.exactly(10), int32le, int32le)
+    return value == mod.SIGNATURE and major == 1 and minor >= 9
 end
 
---- cp.nib.archiver.unarchive(archive, defrostFn) -> table | nil, string
---- Function
---- Unarchives the given `archive` bytes into a `table`, if it is a valid NIBArchive.
+--- cp.nib.archiver.new(decoders) -> cp.nib.archiver
+--- Constructor
+--- Creates a new `cp.nib.archiver` instance, with the specified list of `decoders`.
 ---
 --- Parameters:
----  * archive - The `string` of bytes to unarchive.
----  * defrostFn - The defrost function to use.
+---  * decoders - The list of `cp.nib.decoder` functions to use.
 ---
 --- Returns:
----  * The `table` containing the unarchived data, or `nil` if the `archive` is not a valid NIBArchive.
+---  * The new `cp.nib.archiver` instance.
+function mod.new(decoders)
+    local self = setmetatable({}, mod.mt)
+    self.decoders = decoders
+    return self
+end
+
+--- cp.nib.archiver:fromBytes(data) -> table | nil, string
+--- Method
+--- Unarchives the given `string` of bytes into a `table`, if it is a valid `NIBArchive`.
+---
+--- Parameters:
+---  * data - The `string` of bytes to unarchive.
+---
+--- Returns:
+---  * The `table` containing the unarchived data, or `nil` if the `archive` is not a valid `NIBArchive`.
 ---  * The `string` error message, if any.
-function mod.unarchive(data, defrostFn)
+function mod.mt:fromBytes(data)
     if not mod.isSupported(data) then
         return nil, string.format("Provided data is not an NIBArchive.")
     end
     local header = newArchiveHeader(bytes.read(data, HEADER_INDEX,
-        uint32le, uint32le, -- major, minor
-        uint32le, uint32le, -- objectCount, firstObject
-        uint32le, uint32le, -- keyCount, firstKey
-        uint32le, uint32le, -- valueCount, firstValue
-        uint32le, uint32le  -- classCount, firstClass
+        uint32le, uint32le, -- objectCount, objectStart
+        uint32le, uint32le, -- keyCount, keyStart
+        uint32le, uint32le, -- valueCount, valueStart
+        uint32le, uint32le  -- classCount, classStart
     ))
     -- log.df("unarchive: header: %s", hs.inspect(header))
     local archive = processArchive(data, header)
 
-    return archive
+    local cache = {}
+
+    defrost(archive, cache)    
+
+    return cache
 end
 
---- cp.nib.archiver.unarchiveFile(filename, defrostFn) -> table | nil, string
---- Function
+--- cp.nib.archiver:unarchiveFile(filename) -> table | nil, string
+--- Method
 --- Attempts to read the specified `filename` and unarchives it into a `table`, if it is a valid NIBArchive.
 ---
 --- Parameters:
 ---  * filename - The `string` of the file to read.
----  * defrostFn - The `function` to use to defrost the archive.
 ---
 --- Returns:
 ---  * A `table` containing the archive data, or `nil` if the file could not be read.
-function mod.unarchiveFile(filename, defrostFn)
+--- * The `string` error message, if any.
+function mod.mt:fromFile(filename)
     if not filename then
         return nil, "No filename was provided"
     end
@@ -378,7 +444,7 @@ function mod.unarchiveFile(filename, defrostFn)
     local data = file:read "*a"                 -- *a or *all reads the whole file
     file:close()
 
-    return mod.unarchive(data, defrostFn)
+    return self:fromBytes(data)
 end
 
 mod._varint = varint
