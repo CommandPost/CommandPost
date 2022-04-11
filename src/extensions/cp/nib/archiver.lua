@@ -22,7 +22,27 @@ local uint8, uint32le                       = bytes.uint8, bytes.uint32le
 local int8, int16le, int32le, int64le       = bytes.int8, bytes.int16le, bytes.int32le, bytes.int64le
 local float32le, float64le                  = bytes.float32le, bytes.float64le
 
+local format                                = string.format
 local insert                                = table.insert
+
+
+local VALUE_HANDLERS = {
+    [0] = int8,
+    [1] = int16le,
+    [2] = int32le,
+    [3] = int64le,
+    [4] = function(_, index) return true, index end,
+    [5] = function(_, index) return false, index end,
+    [6] = float32le,
+    [7] = float64le,
+    [8] = function(data, index)
+        local length
+        length, index = bytes.read(data, index, varint)
+        return bytes.read(data, index, exactly(length))
+    end,
+    [9] = function(_, index) return nil, index end,
+    [10] = int32le, -- object table index
+}
 
 --- cp.nib.archiver.defaultDecoders() -> decoder, ...
 --- Function
@@ -66,144 +86,78 @@ local function newArchiveHeader(objectCount, objectStart, keyCount, keyStart, va
     }
 end
 
--- processObjects(data, objectCount, objectStart) -> table
--- Function
--- Processes the given `data` string, with the specified object count and offset.
--- All object records are processed and added to the `object` table.
---
--- Parameters:
---  * data - The `string` of bytes to process.
---  * objectCount - The number of objects in the archive.
---  * objectStart - The offset of the first object.
---
--- Returns:
---  * A table containing the processed `object` table.
---
--- Notes:
---  * Each object record is the following sequence of bytes:
---    * The class name index, as a `varint`. An offset into the list of class names.
---    * Values index, as a `varint`. An offset into the list of values for the first value.
---    * The number of values, as a `varint`.
-local function processObjects(data, objectCount, objectStart)
-    -- log.df("processObjects")
-    local objects = {}
-    local index = objectStart+1
-    for _ = 1, objectCount do
-        local classIndex, valuesIndex, valuesCount
-        classIndex, valuesIndex, valuesCount, index = bytes.read(data, index, varint, varint, varint)
-        -- log.df("processObjects: classIndex: %d; valuesIndex: %d; valuesCount: %d; index: %d", classIndex, valuesIndex, valuesCount, index)
-        insert(objects, {
-            classIndex = classIndex+1,
-            valuesIndex = valuesIndex+1,
-            valuesCount = valuesCount,
-        })
-    end
-    return objects
-end
-
--- processKeys(data, keyCount, keyStart) -> table
+-- processKeys(data, keyCount, firstKey) -> table
 -- Function
 -- Processes the given `data` string, with the specified key count and offset.
 -- All key records are processed and added to the `key` table.
 --
 -- Parameters:
 --  * data - The `string` of bytes to process.
---  * keyCount - The number of keys in the archive.
---  * keyStart - The offset of the first key.
+--  * header - The archive header `table`.
 --
 -- Returns:
---  * A table containing the processed `key` table.
+--  * A `1`-based table containing the processed `key` table.
 --
 -- Notes:
---  * Each key record is the following sequence of bytes:
+--  * Each key in the data stream is the following sequence of bytes:
 --    * Key name length, as a `varint`.
 --    * Key name, as a `string`, with the length specified by the previous `varint`.
-local function processKeys(data, keyCount, keyStart)
-    -- log.df("processKeys")
+local function processKeys(data, header)
     local keys = {}
-    local index = keyStart+1
-    for _ = 1, keyCount do
+    local index = header.keyStart
+    for _ = 1, header.keyCount do
         local keyLength, key
-        -- log.df("processKeys: reading from index: %d", index)
         keyLength, index = bytes.read(data, index, varint)
-        -- log.df("processKeys: keyLength: %d; index: %d", keyLength, index)
         key, index = bytes.read(data, index, exactly(keyLength))
         insert(keys, key)
     end
     return keys
 end
 
--- processValues(data, valueCount, valueStart) -> table
+-- processValues(data, header, keys) -> table
 -- Function
--- Processes the given `data` string, with the specified value count and offset.
--- All value records are processed and added to the `value` table.
+-- Processes the given `data` string, given the `valueCount` and `firstValue` in the `header` table.
+-- It uses the `keys` table to lookup the key for each value.
+-- All value records are processed and added to the `values` table.
 --
 -- Parameters:
 --  * data - The `string` of bytes to process.
---  * valueCount - The number of values in the archive.
---  * valueStart - The offset of the first value.
+--  * header - The archive header `table`.
+--  * keys - The keys table.
 --
 -- Returns:
---  * A table containing the processed `value` table.
---
--- Notes:
---  * Each value record is the following sequence of bytes:
---    * The key index, as a `varint`. An offset into the list of keys, for the key that this value is associated with.
---    * The value type, as a `uint8`. One of the following:
---      * `0` - int8: 1 byte
---      * `1` - int16 LE: 2 bytes
---      * `2` - int32 LE: 4 bytes
---      * `3` - int64 LE: 8 bytes
---      * `4` - true: 0 bytes
---      * `5` - false: 0 bytes
---      * `6` - float32 LE: 4 bytes
---      * `7` - float64 LE: 8 bytes
---      * `8` - string: the length of the string as a `varint`, followed by the string itself.
---      * `9` - nil: 0 bytes
---      * `10` - object reference: 4 bytes uint32 LE (index into the list of objects)
-local function processValues(data, valueCount, valueStart)
-    -- log.df("processValues")
+--  * A `1`-based table containing the processed `values` table, each with the following properties:
+--    * `key` - The key for the value.
+--    * `type` - The type of the value.
+--    * `value` - The value.
+local function processValues(data, header, keys)
     local values = {}
-    local index = valueStart+1
-    for _ = 1, valueCount do
-        local keyIndex, valueType, value
+    local index = header.valueStart
+    for i = 1, header.valueCount do
+        local keyIndex, key, valueType, valueHandler, value
+
         keyIndex, valueType, index = bytes.read(data, index, varint, uint8)
-        if valueType == 0 then
-            value, index = bytes.read(data, index, int8)
-        elseif valueType == 1 then
-            value, index = bytes.read(data, index, int16le)
-        elseif valueType == 2 then
-            value, index = bytes.read(data, index, int32le)
-        elseif valueType == 3 then
-            value, index = bytes.read(data, index, int64le)
-        elseif valueType == 4 then
-            value = true
-        elseif valueType == 5 then
-            value = false
-        elseif valueType == 6 then
-            value, index = bytes.read(data, index, float32le)
-        elseif valueType == 7 then
-            value, index = bytes.read(data, index, float64le)
-        elseif valueType == 8 then
-            local stringLength, string
-            stringLength, index = bytes.read(data, index, varint)
-            string, index = bytes.read(data, index, exactly(stringLength))
-            value = string
-        elseif valueType == 9 then
-            value = nil
-        elseif valueType == 10 then
-            value, index = bytes.read(data, index, uint32le)
+        key = keys[keyIndex+1]
+        if not key then
+            return nil, format("Invalid key index: %d for value #%d", keyIndex, i)
         end
+
+        valueHandler = VALUE_HANDLERS[valueType]
+        if not valueHandler then
+            return nil, format("Unknown value type: %d for value #%d", valueType, i)
+        end
+        value, index = bytes.read(data, index, valueHandler)
+
         insert(values, {
-            keyIndex = keyIndex+1,
-            valueType = valueType,
+            key = key,
+            type = valueType,
             value = value,
         })
     end
     return values
 end
 
--- processClasses(data, classCount, classStart) -> table
+-- processClasses(data, classCount, firstClass) -> table
 -- Function
 -- Processes the given `data` string, with the specified class count and offset.
 -- All class records are processed and added to the `class` table.
@@ -211,7 +165,7 @@ end
 -- Parameters:
 --  * data - The `string` of bytes to process.
 --  * classCount - The number of classes in the archive.
---  * classStart - The offset of the first class.
+--  * firstClass - The offset of the first class.
 --
 -- Returns:
 --  * A table containing the processed `class` table.
@@ -222,10 +176,10 @@ end
 --    * Number of extra int32 LE values, as a `varint`. Only values `0` and `1` have been observed.
 --    * The extra int32 LE values (if present)
 --    * The class name, as a `string`, with the length specified by the class name length `varint`.
-local function processClasses(data, classCount, classStart)
+local function processClasses(data, classCount, firstClass)
     -- log.df("processClasses")
     local classes = {}
-    local index = classStart+1
+    local index = firstClass
     for _ = 1, classCount do
         local classnameLength, extraInt32leCount, extraInts, classname
         classnameLength, extraInt32leCount, index = bytes.read(data, index, varint, varint)
@@ -242,33 +196,47 @@ local function processClasses(data, classCount, classStart)
     return classes
 end
 
--- processArchive(data, header) -> table
+-- processObjects(data, header, classes, values[, defrostFn]) -> table | nil, string
 -- Function
--- Processes the given `data` string, with the specified archive header providing counts and offsets.
--- All object, key, value, and class records are processed and added to the `object`, `key`, `value`, and `class` tables, respectively.
+-- Process the given data string, given the `objectCount` and `firstObject` in the `header` table.
+-- It uses the `classes` and `values` tables to lookup the class and values for each object.
+-- If provided, the `defrostFn` is passed the empty instance table, the class table, and the values for the object, as a list.
 --
 -- Parameters:
 --  * data - The `string` of bytes to process.
---  * header - The `NIBArchive` header table.
+--  * header - The archive header `table`.
+--  * classes - The classes table.
+--  * values - The values table.
+--  * defrostFn - A function to call for each object, with the empty instance table, class table, and values table as parameters.
 --
 -- Returns:
---  * A table containing the processed `object`, `key`, `value`, and `class` tables.
-local function processArchive(data, header)
-    -- 1. Process the objects.
-    local objects = processObjects(data, header.objectCount, header.objectStart)
-    -- 2. Process the keys.
-    local keys = processKeys(data, header.keyCount, header.keyStart)
-    -- 3. Process the values.
-    local values = processValues(data, header.valueCount, header.valueStart)
-    -- 4. Process the classes.
-    local classes = processClasses(data, header.classCount, header.classStart)
+--  * If successful, a `1`-based table containing the processed `objects` table.
+--  * If unsuccessful, `nil` followed by a `string` containing the error message.
+local function processObjects(data, header, classes, values)
+    local objects = {}
+    local index = header.firstObject
+    for i = 1, header.objectCount do
+        local classIndex, valuesIndex, valuesCount
+        classIndex, valuesIndex, valuesCount, index = bytes.read(data, index, varint, varint, varint)
 
-    return {
-        object = objects,
-        key = keys,
-        value = values,
-        class = classes,
-    }
+        local class = classes[classIndex+1]
+        if not class then
+            return nil, format("Invalid class index: %d for object #%d", classIndex, i)
+        end
+
+        local instanceValues = {}
+        for j = 1, valuesCount do
+            local value = values[valuesIndex+j]
+            if not value then
+                return nil, format("Invalid value index: %d for object #%d", valuesIndex, i)
+            end
+            insert(instanceValues, value)
+        end
+
+        local instance = {}
+        objects[i] = instance
+    end
+    return objects
 end
 
 -- findClass(archive, index) -> table
@@ -409,13 +377,7 @@ function mod.mt:fromBytes(data)
         uint32le, uint32le  -- classCount, classStart
     ))
     -- log.df("unarchive: header: %s", hs.inspect(header))
-    local archive = processArchive(data, header)
-
-    local cache = {}
-
-    defrost(archive, cache)    
-
-    return cache
+    return self:_processArchive(data, header)
 end
 
 --- cp.nib.archiver:unarchiveFile(filename) -> table | nil, string
@@ -445,6 +407,55 @@ function mod.mt:fromFile(filename)
     file:close()
 
     return self:fromBytes(data)
+end
+
+
+-- cp.nib.archive:_processArchive(data, header) -> table
+-- Method
+-- Processes the given `data` string, with the specified archive header providing counts and offsets.
+-- All object, key, value, and class records are processed and added to the `object`, `key`, `value`, and `class` tables, respectively.
+--
+-- Parameters:
+--  * data - The `string` of bytes to process.
+--  * header - The `NIBArchive` header table.
+--
+-- Returns:
+--  * A table containing the processed `object`, `key`, `value`, and `class` tables.
+function mod.mt:_processArchive(data, header)
+    -- 1. Process the keys.
+    local keys = processKeys(data, header)
+    -- 2. Process the values.
+    local values = processValues(data, header, keys)
+    -- 3. Process the classes.
+    local classes = processClasses(data, header)
+    -- 4. Process the objects.
+    local objects = processObjects(data, header, classes, values)
+
+    -- 5. Decode the objects.
+    local cache = {}
+    for i, object in ipairs(objects) do
+        local instance = {}
+        cache[i] = instance
+        self:_decodeObject(object, instance, cache)
+    end
+    return cache
+end
+
+-- cp.nib.archive:_decodeObject(object, instance, cache)
+-- Method
+-- Decodes the given `object` into the `instance` table, using the `cache` table to look up referenced objects.
+--
+-- Parameters:
+--  * object - The `object` table to decode.
+--  * instance - The `table` to store the decoded `object` in.
+--  * cache - The `table` of `object` tables to look up.
+--
+-- Returns:
+--  * Nothing.
+function mod.mt:_decodeObject(object, instance, cache)
+    local class = findClass(cache, object.classIndex)
+    instance.classname = class.classname
+    self:_decodeValues(instance, object.values, cache)
 end
 
 mod._varint = varint
