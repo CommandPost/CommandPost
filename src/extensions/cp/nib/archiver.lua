@@ -44,6 +44,12 @@ local VALUE_HANDLERS = {
     [10] = int32le, -- object table index
 }
 
+-- The value type that is a reference to another object.
+local REFERENCE_TYPE = 10
+
+-- The index where the NIBArchive header starts
+local HEADER_INDEX = 1 + 10 + 4 + 4
+
 --- cp.nib.archiver.defaultDecoders() -> decoder, ...
 --- Function
 --- Returns the default decoders.
@@ -212,111 +218,60 @@ end
 -- Returns:
 --  * If successful, a `1`-based table containing the processed `objects` table.
 --  * If unsuccessful, `nil` followed by a `string` containing the error message.
+--
+-- Notes:
+--  * Each object in the data stream is the following sequence of bytes:
+--    * The class index, as a `varint`.
+--    * The index into the values table for the first value, as a `varint`.
+--    * The number of values, as a `varint`.
+--  * Each `object` in the returned list contains the following:
+--    * `class` - The class for the object.
+--    * `values` - The values list for the object.
+--  * If a `value` is a reference to another object (ie. `type` is `10`), the `reference` property will contain the referenced object.
 local function processObjects(data, header, classes, values)
     local objects = {}
     local index = header.firstObject
+    -- read the objects from the data stream
     for i = 1, header.objectCount do
-        local classIndex, valuesIndex, valuesCount
-        classIndex, valuesIndex, valuesCount, index = bytes.read(data, index, varint, varint, varint)
+        local classIndex, valuesStart, valuesCount
+        classIndex, valuesStart, valuesCount, index = bytes.read(data, index, varint, varint, varint)
 
         local class = classes[classIndex+1]
         if not class then
             return nil, format("Invalid class index: %d for object #%d", classIndex, i)
         end
 
-        local instanceValues = {}
-        for j = 1, valuesCount do
-            local value = values[valuesIndex+j]
-            if not value then
-                return nil, format("Invalid value index: %d for object #%d", valuesIndex, i)
-            end
-            insert(instanceValues, value)
-        end
-
-        local instance = {}
-        objects[i] = instance
+        objects[i] = {
+            class = class,
+            valuesStart = valuesStart,
+            valuesCount = valuesCount,
+        }
     end
+
+    -- store the values for each object
+    for i, object in ipairs(objects) do
+        local objectValues = {}
+        local valuesStart = object.valuesStart
+        for j = 1, object.valuesCount do
+            local value = values[valuesStart+j]
+            if not value then
+                return nil, format("Invalid value index: %d for object #%d", valuesStart+j, i)
+            end
+            local reference
+            if value.type == REFERENCE_TYPE then -- link to the referenced object
+                reference = objects[value.value+1]
+            end
+            objectValues[value.key] = {
+                type = value.type,
+                value = value.value,
+                reference = reference,
+            }
+        end
+        object.values = objectValues
+    end
+
     return objects
 end
-
--- findClass(archive, index) -> table
--- Function
--- Finds the class with the given index in the given archive.
---
--- Parameters:
---  * archive - The `NIBArchive` table.
---  * index - The 0-based index of the class to find.
---
--- Returns:
---  * The class `table`, or `nil` if the class was not found.
-local function findClass(archive, index)
-    return archive.class[index]
-end
-
--- findKey(archive, index) -> string
--- Function
--- Finds the key with the given index in the given archive.
---
--- Parameters:
---  * archive - The `NIBArchive` table.
---  * index - The 0-based index of the key to find.
---
--- Returns:
---  * The key `string`, or `nil` if the key was not found.
-local function findKey(archive, index)
-    return archive.key[index]
-end
-
--- loadValues(archive, instance, valueStart, valueCount) -> nil
--- Function
--- Loads the values for the given instance into the given archive.
---
--- Parameters:
---  * archive - The `NIBArchive` table.
---  * instance - The instance to assign the values to.
---  * valueStart - The 0-based offset of the first value.
---  * valueCount - The number of values to load.
---
--- Returns:
---  * Nothing
-local function loadValues(archive, instance, valueStart, valueCount)
-    -- log.df("loadValues")
-    local values = archive.value
-    for i = 1, valueCount do
-        local value = archive.value[valueStart+i]
-        local key = findKey(archive, value.keyIndex)
-        if value.valueType == 10 then
-            -- TODO: Complete or delete this function
-            -- instance[key] = nil
-        end
-    end
-end
-
--- defrost(archive, cache)
--- Function
--- Defrosts the given `archive` table, storing objects into the `cache` table at the same index as they appear in the `archive.object` list.
---
--- Parameters:
---  * archive - The `NIBArchive` table to defrost.
---  * cache - The `table` to store the defrosted objects in.
---
--- Returns:
---  * The `cache` table.
-local function defrost(archive, cache)
-    -- log.df("defrost")
-    for i, object in ipairs(archive.object) do
-        -- log.df("defrosting object %d", i)
-        local class = findClass(archive, object.classIndex)
-        local instance = {
-            classname = class.classname
-        }
-        loadValues(archive, instance, object.valueStart, object.valueCount)
-    end
-    return cache
-end
-
--- The index where the NIBArchive header starts
-local HEADER_INDEX = 1 + 10 + 4 + 4
 
 local mod = {}
 mod.mt = {}
@@ -410,7 +365,7 @@ function mod.mt:fromFile(filename)
 end
 
 
--- cp.nib.archive:_processArchive(data, header) -> table
+-- cp.nib.archiver:_processArchive(data, header) -> table
 -- Method
 -- Processes the given `data` string, with the specified archive header providing counts and offsets.
 -- All object, key, value, and class records are processed and added to the `object`, `key`, `value`, and `class` tables, respectively.
@@ -432,30 +387,53 @@ function mod.mt:_processArchive(data, header)
     local objects = processObjects(data, header, classes, values)
 
     -- 5. Decode the objects.
-    local cache = {}
-    for i, object in ipairs(objects) do
-        local instance = {}
-        cache[i] = instance
-        self:_decodeObject(object, instance, cache)
+    for i = 1, #objects do
+        self:_getObject(i, objects)
     end
-    return cache
+    
+    return foo
 end
 
--- cp.nib.archive:_decodeObject(object, instance, cache)
+-- cp.nib.archiver:_getObject(i, objects) -> table
+-- Method
+-- Gets the object at the given `i` index, either retrieving it from the `cache` table or
+-- decoding it from the `objects` table and storing it in the `cache` table.
+--
+-- Parameters:
+--  * i - The index of the object to get.
+--  * objects - The `objects` table to get the object from.
+--
+-- Returns:
+--  * The decoded object.
+function mod.mt:_getObject(i, objects)
+    local object = objects[i]
+    if not object then
+        return nil
+    end
+
+    local instance = object.instance
+    if not instance then
+        object.instance = self:_decodeObject(object)
+    end
+    return instance
+end
+
+-- cp.nib.archiver:_decodeObject(object) -> any
 -- Method
 -- Decodes the given `object` into the `instance` table, using the `cache` table to look up referenced objects.
 --
 -- Parameters:
 --  * object - The `object` table to decode.
---  * instance - The `table` to store the decoded `object` in.
---  * cache - The `table` of `object` tables to look up.
 --
 -- Returns:
---  * Nothing.
-function mod.mt:_decodeObject(object, instance, cache)
-    local class = findClass(cache, object.classIndex)
-    instance.classname = class.classname
-    self:_decodeValues(instance, object.values, cache)
+--  * The decoded instance, or `nil` if no decoder matches.
+function mod.mt:_decodeObject(object)
+    for _, decoder in ipairs(self.decoders) do
+        local instance = decoder(object)
+        if instance then
+            return instance
+        end
+    end
 end
 
 mod._varint = varint

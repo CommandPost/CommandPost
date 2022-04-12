@@ -13,6 +13,9 @@ local char                  = string.char
 -- Returns:
 --  * The converted `number` value, or the `string` value.
 --  * The second `number` will the the index of the next byte after the converted value.
+--
+-- Notes:
+--  * Intended to be used with the `hs.bytes` module. Can both read and write in the format.
 local function varint(value, index)
     if type(value) == "string" then
         index = index or 1

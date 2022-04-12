@@ -132,7 +132,7 @@ end
 
 --- cp.nib.archiver.SIGNATURE -> string
 --- Constant
---- `NIBArchive` byte streams begin with this value (`"NIBArchive"`) 
+--- `NIBArchive` byte streams begin with this value (`"NIBArchive"`)
 archive.SIGNATURE = "NIBArchive"
 
 --- cp.nib.archiver.isSupported(data) -> boolean
