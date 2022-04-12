@@ -9,6 +9,20 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+		    <h1>CommandPost 1.3.9</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>In Final Cut Pro 10.6.2, Apple has changed the file format where they store the main menu structure for Final Cut Pro (from a binary property list to a NIBArchive), and we're currently trying to work out how to read the new format - as it's undocumented, we're not sure how long it'll take us to solve. In the meantime, we've added a temporary workaround where we use the menu main structure from 10.6.1, so that you can continue to use CommandPost with this new release. New menu items (such as "Show Duplicate Ranges") will still be available in the Search Console as Command Editor Shortcuts and scanned menu items.</li>
+			</ul>
+
+			<h2>😭 Known Issues</h2>
+			<ul>
+                <li>Currently we can't detect whether or not the Timeline is focussed in Final Cut Pro 10.6.2. This breaks some features such as "Set Spatial Conform Type", because we need to determine if you're selecting clips in the Browser or the Timeline - so CommandPost currently just assumes you're working in the browser. We'll investigate a workaround ASAP. If you spot any other Final Cut Pro 10.6.2 issues or bugs, please let us know!</li>
+			</ul>
+
+		    <hr />
+
 		    <h1>CommandPost 1.3.8</h1>
 
 			<h2>🐞 Bug Fix</h2>
