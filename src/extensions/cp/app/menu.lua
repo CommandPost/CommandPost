@@ -914,7 +914,6 @@ function menu:findMenuUI(path, options)
                 --------------------------------------------------------------------------------
                 for _, item in ipairs(menuTitles) do
                     local pathItemTitle = item[pathLocale.code]
-                    log.df("findMenuUI: pathItemTitle: %s", hs.inspect(pathItemTitle))
                     if exactMatch(pathItemTitle, step, options.plain) then
                         menuItemUI = item.ui
                         if not axutils.isValid(menuItemUI) then
