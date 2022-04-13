@@ -15,6 +15,16 @@ local fcp           = require "cp.apple.finalcutpro"
 
 local mod = {}
 
+function mod.checkFrontmostApp()
+    local frontmostApplication = application.frontmostApplication()
+    local bundleID = frontmostApplication:bundleID()
+    if bundleID and bundleID == fcp:bundleID() then
+        mod.cmds:isEnabled(true)
+    else
+        mod.cmds:isEnabled(false)
+    end
+end
+
 local plugin = {
     id              = "finalcutpro.commands",
     group           = "finalcutpro",
@@ -31,31 +41,28 @@ function plugin.init()
     --------------------------------------------------------------------------------
     mod.cmds = commands.new("fcpx")
 
-    local checkFrontmostApp = function()
-        local frontmostApplication = application.frontmostApplication()
-        local bundleID = frontmostApplication:bundleID()
-        if bundleID and bundleID == fcp:bundleID() then
-            mod.cmds:isEnabled(true)
-        else
-            mod.cmds:isEnabled(false)
-        end
-    end
-
     --------------------------------------------------------------------------------
     -- Watch for Final Cut Pro becoming active:
     --------------------------------------------------------------------------------
     mod._appWatcher = appWatcher.new(function(_, event)
         if event == appWatcher.activated then
-            checkFrontmostApp()
+            mod.checkFrontmostApp()
         end
     end):start()
+
+    return mod.cmds
+end
+
+function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Check on CommandPost's launch:
     --------------------------------------------------------------------------------
-    checkFrontmostApp()
-
-    return mod.cmds
+    mod.checkFrontmostApp()
 end
 
 return plugin

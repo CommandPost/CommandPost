@@ -6,7 +6,7 @@ local hs = _G.hs
 
 local coresetup = {}
 
-function coresetup.setup(modpath, prettypath, fullpath, configdir, docstringspath, hasinitfile, autoload_extensions) --luacheck:ignore
+function coresetup.setup(modpath, frameworkspath, prettypath, fullpath, configdir, docstringspath, hasinitfile, autoload_extensions) --luacheck:ignore
     local tostring, pack, tconcat, sformat, tsort = tostring, table.pack, table.concat, string.format, table.sort
     local traceback = debug.traceback
 
@@ -700,7 +700,7 @@ end
     local hscrash = require("hs.crash")
 
     -- These modules are so tightly coupled that we will unconditionally preload them
-    require("hs.application.internal")
+    require("hs.libapplication")
     require("hs.uielement")
     require("hs.window")
     require("hs.application")

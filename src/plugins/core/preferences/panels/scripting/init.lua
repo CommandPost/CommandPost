@@ -8,6 +8,7 @@ local require           = require
 
 local hs                = _G.hs
 
+local base64            = require "hs.base64"
 local dialog            = require "hs.dialog"
 local image             = require "hs.image"
 local ipc				= require "hs.ipc"
@@ -16,6 +17,7 @@ local timer             = require "hs.timer"
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local json              = require "cp.json"
+local tools             = require "cp.tools"
 
 local template          = require "resty.template"
 
@@ -23,6 +25,8 @@ local execute           = hs.execute
 local allowAppleScript  = hs.allowAppleScript
 
 local blockAlert        = dialog.blockAlert
+local encode            = base64.encode
+local encodeURI         = tools.encodeURI
 local htmlEscape        = template.escape
 local imageFromPath     = image.imageFromPath
 local webviewAlert      = dialog.webviewAlert
@@ -188,11 +192,23 @@ local plugin = {
 
 function plugin.init(deps, env)
 
-    local icon = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/SEScriptEditorX.icns")
-
+    --------------------------------------------------------------------------------
+    -- Dependancies:
+    --------------------------------------------------------------------------------
     mod._manager = deps.manager
-
     local actionmanager = deps.actionmanager
+
+    --------------------------------------------------------------------------------
+    -- Setup a global shortcut function for trigger actions:
+    --------------------------------------------------------------------------------
+    cp.triggerAction = function(handler, action)
+        local theHandler = actionmanager.getHandler(handler)
+        if theHandler then
+            theHandler:execute(action)
+        end
+    end
+
+    local icon = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/SEScriptEditorX.icns")
 
     local panel = deps.manager.addPanel({
         priority    = 2049,
@@ -325,7 +341,10 @@ function plugin.init(deps, env)
             local snippet = params["snippet"]
             if code and snippet and snippet ~= "" then
                 local snippets = mod.snippets()
-                snippets[snippet] = { ["code"] = code }
+                snippets[snippet] = {
+                    ["code"] = code,
+                    ["selected"] = true
+                }
                 mod.snippets(snippets)
             end
         elseif params["type"] == "insertAction" then
@@ -333,11 +352,52 @@ function plugin.init(deps, env)
             -- Insert Action:
             --------------------------------------------------------------------------------
             actionmanager.getActivator("snippetsAddAction"):onActivate(function(handler, action, _)
-                local result = [[local handler = cp.plugins("core.action.manager").getHandler("]] .. handler:id()  .. [[")]] .. "\n"
-                result = result .. "local action = " .. "\n"
-                result = result .. hs.inspect(action) .. "\n"
-                result = result .. [[handler:execute(action)]]
-                mod._manager.injectScript("insertTextAtCursor(`" .. result .. "`);")
+                --------------------------------------------------------------------------------
+                -- Simplify a table into a single line string:
+                --------------------------------------------------------------------------------
+                local processTable
+                processTable = function(input)
+                    local s = "{"
+                    for i, v in pairs(input) do
+                        --------------------------------------------------------------------------------
+                        -- If the key is a number, wrap it in a bracket and quotes:
+                        --------------------------------------------------------------------------------
+                        local key = i
+                        if type(i) == "number" then
+                            key = "['" .. i .. "']"
+                        end
+
+                        if type(v) == "table" then
+                            s = s .. key .. "=" .. processTable(v) .. ","
+                        else
+                            --------------------------------------------------------------------------------
+                            -- If the value contains a slash or quotes put it in brackets:
+                            --------------------------------------------------------------------------------
+                            local value
+                            if v:find("/", 1, true) or v:find([["]], 1, true) or v:find([[\]], 1, true) then
+                                value = "[[" .. v .. "]]"
+                            else
+                                value = [["]] .. v .. [["]]
+                            end
+
+                            s = s .. key .. "=" .. value .. ","
+                        end
+                    end
+                    if s:sub(-1) == "," then
+                        s = s:sub(1, -2)
+                    end
+                    s = s .. "}"
+                    return s
+                end
+
+                local actionString = [[cp.triggerAction("]] .. handler:id()  .. [[",]] .. processTable(action) .. ")"
+
+                --------------------------------------------------------------------------------
+                -- URI Encode then Base64 Encode the String to Avoid Non-Standard Character
+                -- and JavaScript Escaping Weirdness:
+                --------------------------------------------------------------------------------
+                local encodedActionString = encode(encodeURI(actionString))
+                mod._manager.injectScript("insertTextAtCursor(`" .. encodedActionString .. "`);")
             end):show()
         elseif params["type"] == "execute" then
             --------------------------------------------------------------------------------
@@ -347,6 +407,7 @@ function plugin.init(deps, env)
             if snippet and snippet ~= "" then
                 local snippets = mod.snippets()
                 local code = snippets[snippet].code
+
                 local successful, message = pcall(load(code))
                 if not successful then
                     local webview = mod._manager._webview

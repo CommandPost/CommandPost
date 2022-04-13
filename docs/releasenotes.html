@@ -9,6 +9,214 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+		    <h1>CommandPost 1.3.9</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>In Final Cut Pro 10.6.2, Apple has changed the file format where they store the main menu structure for Final Cut Pro (from a binary property list to a NIBArchive), and we're currently trying to work out how to read the new format - as it's undocumented, we're not sure how long it'll take us to solve. In the meantime, we've added a temporary workaround where we use the menu main structure from 10.6.1, so that you can continue to use CommandPost with this new release. New menu items (such as "Show Duplicate Ranges") will still be available in the Search Console as Command Editor Shortcuts and scanned menu items.</li>
+			</ul>
+
+			<h2>😭 Known Issues</h2>
+			<ul>
+                <li>Currently we can't detect whether or not the Timeline is focussed in Final Cut Pro 10.6.2. This breaks some features such as "Set Spatial Conform Type", because we need to determine if you're selecting clips in the Browser or the Timeline - so CommandPost currently just assumes you're working in the browser. We'll investigate a workaround ASAP. If you spot any other Final Cut Pro 10.6.2 issues or bugs, please let us know!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.8</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Fixed a regression where CommandPost would error on startup if Final Cut Pro wasn't installed. Apologies to all our users that aren't using Final Cut Pro! Thanks for reporting Matt Dial!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.7</h1>
+
+            <h2>🔨 Improvements</h2>
+			<ul>
+                <li>We now scan the "additional" commands in Final Cut Pro. This means there are now keyboard command set actions for "Next Focus Point", "Previous Focus Point", "Cinematic Tool" and "Cinematic Editor" (and any future "additional" commands Apple adds in the future).</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a rare bug where sometimes CommandPost shortcuts for Final Cut Pro would not activate if you started CommandPost with Final Cut Pro already running.</li>
+                <li>The "Insert Action" button in the Snippets Editor now correctly formats code with non-standard characters, like the command icon you see on your keyboard. Previously inserted actions still work - they just look a bit weird. Thanks for reporting Marc Bach!</li>
+                <li>You can now use the full range of LED colours on the Razer Tartarus V2 when using custom colours. Thanks for reporting Leonardo Franke!</li>
+                <li>Fixed a bug which prevented CommandPost from detecting when Final Cut Pro was playing or stopped. We're hopeful this might fix the Scrolling Timeline Feature for some users. Thanks for reporting Martin Lohmann, Wizi Roy Shmueli and Javier Olvedo!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.6</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>If you add a Custom Application in the Blackmagic Resolve Speed Editor or Editor Keyboard panel, the Custom Applications menubar items will now correctly appear in the Search Console. For example, if you add Hedge as a custom application, all of its menubar items will now appear in the CommandPost Search Console (assuming Hedge is running), so that you can trigger them from the Speed Editor or Editor Keyboard. Thanks for reporting Scott Simmons!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.5</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Fixed a bug where the "Insert Action" button in the Snippets Preferences panel could fail if the action code contained certain characters. Thanks for reporting Marc Bach!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.4</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>The "Long Press" action on the Blackmagic Keyboards now happens after X number of seconds, rather than on the release of the button. Thanks for suggesting Marc Bach!</li>
+                <li>If you do a "Long Press" action on the Blackmagic Keyboards, a seperate release action can now trigger when you release the button.</li>
+                <li>You can now customise the "Long Press" duration for the Blackmagic Keyboards. It defaults to 0.4 seconds.</li>
+                <li>We've added a new preference to the Blackmagic Keyboards panel called "Change Bank on Hardware When Changing Here". When enabled, if you change the bank in the preferences dropdown, it will change on the hardware too, so you can preview LED changes.</li>
+                <li>The "Last Bank" action now takes into account any bank changes causes by changing the bank via the Preferences dropbox (assuming "Change Bank on Hardware When Changing Here" is enabled).</li>
+                <li>Added a new preference to Blackmagic Keyboards panel called "Display Message When Changing Banks" to turn off the overlay that's displayed when changing banks.</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.3</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added support for the DaVinci Resolve Editor Keyboard.</li>
+                <li>Added "absolute" Jog Wheel support to the DaVinci Resolve Speed Editor.</li>
+                <li>Added "long press" actions to the DaVinci Resolve Speed Editor.</li>
+                <li>Added actions to scroll the Final Cut Pro timeline contents horizontally.</li>
+                <li>Added actions to "Jump to Next/Previous Frame", which also takes into account a SHIFT key modifier to jump 10 frames instead of 1.</li>
+                <li>Add actions to trigger Search Console specifically for Final Cut Pro Effects, Titles, Transitions and Generators. Thanks for suggesting Marc Bach!</li>
+                <li>Added an action to go back to the "last" DaVinci Resolve Keyboard bank.</li>
+		    </ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>We've updated the DaVinci Resolve Speed Editor layout to better demonstrate CommandPost's functionality. If you're already using CommandPost, you'll need to reset your layout to see these changes.</li>
+                <li>Improved the reliability of virtual keyboard presses on macOS Monterey & Final Cut Pro 10.6.1.</li>
+                <li>Improved the image quality of the Speed Editor image in the interface. Thanks for reporting Archetyped!</li>
+                <li>Improved how we handle LEDs on the Speed Editor. LEDs are now all turned off when your computer is put to sleep, Speed Editor support is disabled, or you quit CommandPost.</li>
+                <li>CommandPost now ignores button presses and jog wheel movements if DaVinci Resolve is running. DaVinci Resolve is now greyed out in the Speed Editor & Editor Keyboard drop-downs.</li>
+                <li>Increased Tangent Favourites from 50 to 200. Thanks for suggesting Marc Bach!</li>
+                <li>Added a Search Console toolbar icon for DaVinci Resolve keyboard banks.</li>
+                <li>Added ability to reset to either completely empty or factory default for all the reset buttons on the DaVinci Resolve Keyboard panel.</li>
+                <li>The "Insert Action" button in the Snippets Preferences now inserts more simplified code, and handles slashes better. Thanks for reporting Marc Bach!</li>
+                <li>We added a new global Lua function to more easily trigger actions: cp.triggerAction(handler, action).</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug in the DaVinci Resolve Keyboard panel where resetting an action would reset the entire button. Thanks for reporting Marc Bach!</li>
+                <li>Changing Speed Editor banks now correctly shows any custom bank labels on the on-screen message.</li>
+                <li>Fixed a bug where Final Cut Pro commands didn't show an icon in the Search Console.</li>
+                <li>Fixed bugs in Distort Y actions. Thanks for reporting Flavio Saramin!</li>
+                <li>Fixed a bug where the Snippets window never remembered the last Snippet.</li>
+			</ul>
+
+			<hr />
+
+        	<h1>CommandPost 1.3.2</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+			    <li>"Automatically Switch Applications" for the Blackmagic Control Surfaces is now enabled by default on fresh installs.</li>
+                <li>We've changed the default Speed Editor layout to turn all the LEDs on in the "Unlisted & Ignored Applications" layout so you can more easily see it's working. The Jog Wheel now acts as a mouse scroll wheel in this layout by default too.</li>
+                <li>We've changed the wording on the DaVinci Resolve Control Surface panel to make it clear that "DaVinci Resolve will override CommandPost when running" and "we recommend using a wired connection".</li>
+            </ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+			    <li>Fixed a bug where the Speed Editor, Razer and TourBox preferences pages could appear incorrect if certain Safari Extensions are installed. Thanks for reporting!</li>
+			    <li>You can now change the LEDs for the CAM buttons on the Speed Editor.		</li>
+			</ul>
+
+			<hr />
+
+        	<h1>CommandPost 1.3.1</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+			    <li>Another attempt to fix an uncommon Touch Bar related crash that affects a very small number of users.</li>
+			</ul>
+
+			<hr />
+
+        	<h1>CommandPost 1.3.0</h1>
+
+        	<h2>⚠️ Important Changes</h2>
+			<ul>
+			    <li>CommandPost has dropped Mojave support in this release. We now only support macOS Catalina, Big Sur & Monterey. If you're stuck on Mojave you can still use CommandPost 1.2.16.</li>
+			</ul>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+			    <li>Added support for the Blackmagic Resolve Speed Editor. This wouldn't be possible without the genius work from Sylvain Munaut. Special thanks to Morten Bentsen, Håvard Njåstad and Sondre Tungesvik Njåstad.</li>
+                <li>Added actions to Prevent Mac from Sleeping (this was previously only available via the menubar). Thanks for suggesting Undertaker01!</li>
+                <li>Added option to invert the timeline mouse zoom feature in Final Cut Pro, as well as adjust the sensitivity. Thanks for suggesting dutchct!</li>
+                <li>Added actions to control the volume slider in the Final Cut Pro Inspector. Thanks for suggesting Olm Ek!</li>
+                <li>Added Timeline Scroll presets to Monogram Creator.</li>
+		    </ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+			    <li>The Stream Deck preferences panel has been completely re-designed to more closely match our Loupedeck panels - allowing for better Drag & Drop support, and right-click contextual menus. You can now programatically generate icons. Thanks for suggesting James Peach!</li>
+                <li>The Preferences and Control Surfaces toolbars now look much better on macOS Monterey.</li>
+                <li>You can now assign shortcut keys without a modifier key. This is useful is you want to assign an action to the F1 key for example. Thanks for suggesting Florian Duffe!</li>
+                <li>You can now assign any CommandPost action within the "All Applications" Keyboard section.</li>
+                <li>The various Loupedeck Control Surfaces panels are now accessible from a single Loupedeck icon, which triggers a popup menu.</li>
+                <li>We've added an option to the Loupedeck CT and Live to "Preview Selected Application & Bank on Hardware", so that you can visually check how a layout looks without leaving the CommandPost interface.</li>
+                <li>Loupedeck devices running the older firmware, now more reliably wake form sleep. Thanks for reporting Knut Hake!</li>
+                <li>Added Catalan translation. Thanks for suggesting Lluís Bartra!</li>
+			</ul>
+
+			<h2>❌ Removed</h2>
+			<ul>
+			    <li>The Compressor Watch Folders feature has been removed, as this can now be achieved natively in Compressor.</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug that broken any actions that used Final Cut Pro Audio Components. Thanks for reporting Daniel Stiefelhagen!</li>
+                <li>Fixed a bug where Timeline Batch Export would fail to close the "Go to the folder" prompt on macOS Monterey. Thanks for reporting Kevin Luk!</li>
+                <li>Skimming is now disabled when doing a Timeline Batch Export to improve reliability. Thanks for reporting Kevin Luk!</li>
+                <li>"Enable Loupedeck Support" now appears correctly in the Search Console.</li>
+                <li>The Vimeo Toolbox now correctly handles both the "Username" and "Name" headers in the CSV. Thanks for reporting Ché Baker!</li>
+                <li>The "Report Final Cut Pro Bug to Apple" feature now works on Apple Silicon.</li>
+                <li>We now check that the default Timeline Batch Export destination exists in the menubar before commencing. This fixes a bug where the Default Destination name changed between Final Cut Pro versions.</li>
+                <li>Fixed a bug which prevented CommandPost from detecting the correct Timeline Title in 10.5.4 and above.</li>
+                <li>Fixed a potential Lua error in the "Ignore Card" feature. Thanks for reporting Jack Ohrman!</li>
+                <li>Fixed a potential Lua error in our Snapshot code.</li>
+                <li>Allow copying to "Unlisted & Ignored Applications" in Control Surfaces panels. Thanks for reporting danielsti!</li>
+                <li>If you added a custom application to the Loupedeck Preferences (i.e. Logic Pro X) and turned off "Automatically Switch Applications", there was no actions for switching to Logic Pro X. This has now been fixed. Thanks for reporting Eric Badura!</li>
+                <li>You can now right-click on text boxes in the CommandPost Preferences panels, Control Surface panels and Final Cut Pro HUD.</li>
+                <li>TourBox Devices now work correctly on macOS Big Sur & Monterey. Thanks for reporting Brett Sherman!</li>
+                <li>Fixed a bug related to the Final Cut Pro Libraries List View that prevented the HUD Batch Rename tool from working. Thanks for reporting Florian Duffe!</li>
+                <li>We've added a bandaid solution to HOPEFULLY solve crashes related to the Touch Bar.</li>
+			</ul>
+
+			<hr />
+
+			<h1>CommandPost 1.2.16</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul><li>Added action to "Edit New Title" and "Edit New Lower Thirds" which adds a new title in Final Cut Pro, and highlights the text field so that you can instantly start typing. Thanks for suggesting Hugh Nagle!</li>
+			<li>Added a Contrast control for the Color Wheels in Final Cut Pro for Monogram users. Thanks for suggesting Rob Mervin!</li>
+			<li>Added Timeline Zoom in Final Cut Pro for Monogram users. Thanks for suggesting Sven Pape!</li>
+			<li>Added clip Volume control in Final Cut Pro for Monogram Users. Thanks for suggesting Drew Boyd!</li>
+			<li>Added Timeline Clip Height in Final Cut Pro for Monogram users.</li>
+			<li>Added actions to change Razer Backlight Mode & Brightness, so you can trigger these from any control surface, HUD or Search Console.</li>
+			<li>Added action to "Send Vimeo CSV to Final Cut Pro", so you can trigger this from any control surface, HUD or Search Console.</li>
+			<li>macOS Shortcuts are now available on the Search Console for macOS Monterey users.</li></ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul><li>The Chinese (Simplified) translations have been improved. Thanks Charles Liu!</li></ul>
+
+			<hr />
+
 			<h1>CommandPost 1.2.15</h1>
 
 			<h2>🐞 Bug Fixes</h2>

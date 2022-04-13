@@ -451,9 +451,9 @@ function mod.popUpButton(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = PopUpButton(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
 
-        function row:doSelectValue(value)
+        function row:doSelectValue(value, overrideValue)
             return Do(self:doShow())
-            :Then(self.value:doSelectValue(value))
+            :Then(self.value:doSelectValue(value, overrideValue))
         end
         -- returns the PopUpButton.value prop as the observable
         function row:toObservable()

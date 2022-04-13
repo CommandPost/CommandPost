@@ -181,10 +181,10 @@ end
 -- Rather, get them via the [forBundleID](#forBundleID) function.
 --
 -- Parameters:
--- * bundleID       - The BundleID for the app
+--  * bundleID - The BundleID for the app
 --
 -- Returns:
--- * The new `cp.app`.
+--  * The new `cp.app`.
 function app:initialize(bundleID)
     self._bundleID = bundleID
     self._windowClasses = {}
@@ -668,7 +668,7 @@ function app.lazy.prop:currentLocale()
             local output, status = hs.execute("defaults read NSGlobalDomain AppleLanguages")
             if status then
                 local appleLanguages = tools.lines(output)
-                if next(appleLanguages) ~= nil then
+                if appleLanguages and next(appleLanguages) ~= nil then
                     if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
                         for i=2, #appleLanguages - 1 do
                             local line = appleLanguages[i]

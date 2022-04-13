@@ -8,6 +8,7 @@ local hs          = _G.hs
 local log         = require "hs.logger".new "prefsMgr"
 
 local inspect     = require "hs.inspect"
+local menubar     = require "hs.menubar"
 local mouse       = require "hs.mouse"
 local screen      = require "hs.screen"
 local timer       = require "hs.timer"
@@ -341,20 +342,78 @@ function mod.new()
     --------------------------------------------------------------------------------
     if not mod._toolbar then
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+            :toolbarStyle("preference")
+            :sizeMode("small")
             :canCustomize(true)
             :autosaves(true)
-            :sizeMode("small")
             :setCallback(function(_, _, id)
-                doAfter(0, function()
-                    mod.refresh(id)
-                end)
+                --------------------------------------------------------------------------------
+                -- Check to see if the supplied ID is part of a group:
+                --------------------------------------------------------------------------------
+                local group
+                for _,thePanel in ipairs(mod._panels) do
+                    if thePanel.id == id and thePanel.groupMaster then
+                        group = thePanel.group
+                        break
+                    end
+                end
+
+                if group then
+                    --------------------------------------------------------------------------------
+                    -- Display a popup for the group:
+                    --------------------------------------------------------------------------------
+                    local menu = {}
+
+                    for _, thePanel in ipairs(mod._panels) do
+                        if thePanel.group == group then
+                            table.insert(menu, {
+                                title = thePanel.label,
+                                fn = function()
+                                    doAfter(0, function()
+                                        mod.refresh(thePanel.id)
+                                    end)
+                                end
+                            })
+                        end
+                    end
+
+                    local popup = menubar.new()
+                    popup:setMenu(menu):removeFromMenuBar()
+                    popup:popupMenu(mouse.absolutePosition(), true)
+                else
+                    --------------------------------------------------------------------------------
+                    -- No popup required, load the correct panel:
+                    --------------------------------------------------------------------------------
+                    doAfter(0, function()
+                        mod.refresh(id)
+                    end)
+                end
             end)
+
+        --------------------------------------------------------------------------------
+        -- Add all the panels - unless they're part of a group, in which case, only
+        -- add the group master:
+        --------------------------------------------------------------------------------
         local theToolbar = mod._toolbar
         for _,thePanel in ipairs(mod._panels) do
-            local item = thePanel:getToolbarItem()
-            theToolbar:addItems(item)
-            if not theToolbar:selectedItem() then
-                theToolbar:selectedItem(item.id)
+            if thePanel.group and thePanel.groupMaster then
+                --------------------------------------------------------------------------------
+                -- The panel is a group master:
+                --------------------------------------------------------------------------------
+                local item = thePanel:getToolbarItem()
+                theToolbar:addItems(item)
+                if not theToolbar:selectedItem() then
+                    theToolbar:selectedItem(item.id)
+                end
+            elseif not thePanel.group then
+                --------------------------------------------------------------------------------
+                -- The panel is not part of a group:
+                --------------------------------------------------------------------------------
+                local item = thePanel:getToolbarItem()
+                theToolbar:addItems(item)
+                if not theToolbar:selectedItem() then
+                    theToolbar:selectedItem(item.id)
+                end
             end
         end
     end
@@ -518,38 +577,53 @@ function mod.selectPanel(id)
             end
 
             --------------------------------------------------------------------------------
-            -- Offset macOS Big Sur:
-            --------------------------------------------------------------------------------
-            local offset = 0
-            local macOSVersion = tools.macOSVersion()
-            if semver(macOSVersion) >= semver("10.16") then
-                offset = -20
-            end
-
-            --------------------------------------------------------------------------------
             -- Make sure the panel isn't bigger than the screen:
             --------------------------------------------------------------------------------
-            local heightWithOffset = height + offset
-
             local currentScreen = mouse.getCurrentScreen()
             local currentFrame = currentScreen and currentScreen:frame()
             local currentHeight = currentFrame and currentFrame.h
 
-            if heightWithOffset > currentHeight then
-                heightWithOffset = currentHeight - 10
+            if height > currentHeight then
+                height = currentHeight - 10
             end
 
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = heightWithOffset})
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height})
         end
 
     end
 
-    mod._toolbar:selectedItem(id)
-
     --------------------------------------------------------------------------------
-    -- Save Last Tab in Settings:
+    -- Save Last Tab in Settings (before we check the group):
     --------------------------------------------------------------------------------
     mod.lastTab(id)
+
+    --------------------------------------------------------------------------------
+    -- Check to see if the panel is part of a group:
+    --------------------------------------------------------------------------------
+    local group
+    for _,thePanel in ipairs(mod._panels) do
+        if thePanel.id == id and thePanel.group then
+            group = thePanel.group
+            break
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- If it's part of a group, find the group master:
+    --------------------------------------------------------------------------------
+    if group then
+        for _,thePanel in ipairs(mod._panels) do
+            if thePanel.group == group and thePanel.groupMaster then
+                id = thePanel.id
+                break
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Select the current toolbar item:
+    --------------------------------------------------------------------------------
+    mod._toolbar:selectedItem(id)
 
 end
 

@@ -6,12 +6,13 @@ local require           = require
 
 --local log               = require "hs.logger".new "gestures"
 
-local event             = require "hs.eventtap.event"
+local eventtap			= require "hs.eventtap"
 local image             = require "hs.image"
 
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 
+local event             = eventtap.event
 local imageFromPath     = image.imageFromPath
 
 local mod = {}

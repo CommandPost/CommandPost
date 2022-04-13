@@ -3,19 +3,22 @@
 --- Creates a bunch of commands that can be used to assign actions to.
 --- This allows you to assign any action to a shortcut key in CommandPost.
 
-local require           = require
+local require               = require
 
-local log               = require "hs.logger".new "customAction"
+local log                   = require "hs.logger".new "customAction"
 
-local config            = require "cp.config"
-local fcp               = require "cp.apple.finalcutpro"
-local i18n              = require "cp.i18n"
-local prop              = require "cp.prop"
-local tools             = require "cp.tools"
+local config                = require "cp.config"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local image                 = require "hs.image"
+local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
 
-local removeFromTable   = tools.removeFromTable
+local mergeTable            = tools.mergeTable
+local split                 = tools.split
+local imageFromAppBundle    = image.imageFromAppBundle
 
-local mod           = {}
+local mod                   = {}
 
 -- MAXIMUM -> number
 -- Constant
@@ -105,18 +108,43 @@ function mod.assign(id, completionFn)
         end)
 
     --------------------------------------------------------------------------------
-    -- Remove Final Cut Pro Commands & Global Menu Actions from Activator:
-    --------------------------------------------------------------------------------
-    local handlerIds = mod._actionmanager.handlerIds()
-    local allowedHandlers = removeFromTable(handlerIds, "fcpx_cmds")
-    allowedHandlers = removeFromTable(allowedHandlers, "global_menuactions")
-    allowedHandlers = removeFromTable(allowedHandlers, "global_shortcuts")
-    activator:allowHandlers(table.unpack(allowedHandlers))
-
-    --------------------------------------------------------------------------------
     -- Don't bother remembering the last query:
     --------------------------------------------------------------------------------
     activator:lastQueryRemembered(false)
+
+    --------------------------------------------------------------------------------
+    -- Don't include Touch Bar widgets, MIDI Controls or Global Menu Actions:
+    --------------------------------------------------------------------------------
+    local handlerIds = mod._actionmanager.handlerIds()
+    local allowedHandlers = {}
+    for _,v in pairs(handlerIds) do
+        local handlerTable = split(v, "_")
+        local partB = handlerTable[2]
+        if partB ~= "widgets" and partB ~= "midicontrols" and v ~= "global_menuactions" then
+            table.insert(allowedHandlers, v)
+        end
+    end
+    local unpack = table.unpack
+    activator:allowHandlers(unpack(allowedHandlers))
+
+    --------------------------------------------------------------------------------
+    -- Gather Toolbar Icons for Search Console:
+    --------------------------------------------------------------------------------
+    local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+    local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(fcp:bundleID())
+    local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+    activator:toolbarIcons(searchConsoleToolbar)
+
+    --------------------------------------------------------------------------------
+    -- Only enable handlers for Final Cut Pro:
+    --------------------------------------------------------------------------------
+    activator:enableHandlers("fcpx")
+
+    --------------------------------------------------------------------------------
+    -- Add Final Cut Pro Icon:
+    --------------------------------------------------------------------------------
+    local icon = imageFromAppBundle(fcp:bundleID())
+    activator:setBundleID("fcpx", icon, "Final Cut Pro")
 
     --------------------------------------------------------------------------------
     -- Show the activator:
@@ -130,6 +158,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.commands"]                        = "fcpxCmds",
         ["core.action.manager"]                         = "actionmanager",
+        ["core.application.manager"]                    = "appmanager",
     }
 }
 
@@ -143,6 +172,7 @@ function plugin.init(deps)
     -- Setup Action Manager:
     --------------------------------------------------------------------------------
     mod._actionmanager = deps.actionmanager
+    mod._appmanager = deps.appmanager
 
     --------------------------------------------------------------------------------
     -- Setup the plugin commands:

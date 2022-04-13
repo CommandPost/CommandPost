@@ -154,6 +154,7 @@ function mod.init()
         })
         :canCustomize(true)
         :autosaves(true)
+        :toolbarStyle("expanded")
     )
 
     --------------------------------------------------------------------------------

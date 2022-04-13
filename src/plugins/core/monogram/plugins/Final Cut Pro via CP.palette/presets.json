@@ -73,6 +73,114 @@
 				"step": 10
 			},
 			"turnSensitivity": 9
+		},
+		{
+			"name": "timeline-scroll",
+			"info": "Turn = Timeline Scroll (Horizontal)\nTilt = Timeline Scroll (Horizontal & Vertical)",
+			"label": "Timeline.Scroll",
+			"tiltMode": 0,
+			"tiltSensitivity": 2,
+			"tiltX": {
+				"invert": false,
+				"scroll": "horizontal",
+				"step": 50,
+				"virtual": true
+			},
+			"tiltY": {
+				"invert": true,
+				"scroll": "vertical",
+				"step": 50,
+				"virtual": true
+			},
+			"turn": {
+				"invert": true,
+				"scroll": "horizontal",
+				"virtual": false
+			},
+			"turnSensitivity": 8
+		},
+		{
+			"name": "timeline-scroll-zoom",
+			"label": "Timeline.Scroll & Zoom",
+			"info": "Turn = Timeline Zoom\nTilt = Timeline Scroll",
+			"leftTurn": {
+				"key": "-",
+				"localCharacter": "-",
+				"modifiers": [
+					"command"
+				],
+				"virtual": false
+			},
+			"rightTurn": {
+				"key": "=",
+				"localCharacter": "=",
+				"modifiers": [
+					"command"
+				],
+				"virtual": false
+			},
+			"tiltMode": 0,
+			"tiltSensitivity": 2,
+			"tiltX": {
+				"invert": false,
+				"scroll": "horizontal",
+				"step": 50,
+				"virtual": true
+			},
+			"tiltY": {
+				"invert": true,
+				"scroll": "vertical",
+				"step": 50,
+				"virtual": true
+			},
+			"turnSensitivity": 8
+		},
+		{
+			"name": "timeline-scroll-skim",
+			"info": "Turn & Tilt X = Scroll horizontally and skim\nTilt Y = Scroll vertically",
+			"label": "Timeline.Scroll & Skim",
+			"nudgeSpeedMs": 20,
+			"tiltMode": 0,
+			"tiltSensitivity": 2,
+			"tiltX": {
+				"interval": 10,
+				"macro": [
+					{
+						"cursor": "x",
+						"step": 1,
+						"virtual": true
+					},
+					{
+						"invert": false,
+						"scroll": "horizontal",
+						"step": 50,
+						"virtual": true
+					}
+				]
+			},
+			"tiltY": {
+				"invert": true,
+				"scroll": "vertical",
+				"step": 20,
+				"virtual": true
+			},
+			"turn": {
+				"interval": 10,
+				"macro": [
+					{
+						"cursor": "x",
+						"step": 1,
+						"virtual": true
+					},
+					{
+						"invert": false,
+						"scroll": "horizontal",
+						"step": 50,
+						"virtual": false
+					}
+				]
+			},
+			"turnSensitivity": 9
 		}
 	]
 }

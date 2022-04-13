@@ -6,13 +6,26 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.2.15</title>
+			<title>Version 1.3.9</title>
 			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
-			<pubDate>Thu,  4 Nov 2021 01:26:34 +1100</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.15/CommandPost_1.2.15.dmg"
-				sparkle:version="7002"
-                sparkle:shortVersionString="1.2.15"
-				sparkle:dsaSignature="MC0CFQC+4wGwA5/UH8d2Tc52m2e9s03juAIUdDqEwNhOq4voR7l8/cPcGaiuW0o="
+			<pubDate>Wed, 13 Apr 2022 08:41:31 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.3.9/CommandPost_1.3.9.dmg"
+				sparkle:version="7276"
+                sparkle:shortVersionString="1.3.9"
+				sparkle:dsaSignature="MC0CFQCZaLmbDHXuHlUqYf0zJOKtuqTx/QIUOWDErKzn4zU5jFLSbpyd5pV9opM="
+				sparkle:edSignature="JBabFgRPUxWlQRJYan4D+JaE/iwpgYDK0uT6NlOE++F3hg+Z3QkzGikX/ps4Y1XBIxQo+B2Hxf67HbZPJJ6xBA==" length="47009688"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.2.16</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>Sun, 14 Nov 2021 11:02:59 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.2.16/CommandPost_1.2.16.dmg"
+				sparkle:version="7028"
+                sparkle:shortVersionString="1.2.16"
+				sparkle:dsaSignature="MC0CFDAMSpWgItE1gI4ryohbQ6oidzQNAhUA6PIXAv4k0mWUtHKmaUviYO1DSJM="
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>

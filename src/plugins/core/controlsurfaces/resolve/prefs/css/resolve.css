@@ -1,0 +1,207 @@
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 21px;
+	height: 21px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
+.bottomButton {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	cursor: default;
+	text-align: center;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  	width: 146px;
+  	font-weight: normal;
+	font-family: -apple-system;
+	font-size: 13px;
+}
+
+.bottomButton:active {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.selected {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.disabled {
+	color: #999!important;
+	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+}
+
+
+
+.speedEditor thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.speedEditor thead tr, .speedEditor tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.speedEditor thead tr {
+	width: calc( 100% - 8px);
+}
+
+.speedEditor tbody {
+	display:block;
+	height: 430px;
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.speedEditorLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
+#speedEditorGroupControls {
+	min-height: 295px;
+}
+
+#speedEditorGroupControls .speedEditorGroup.selected {
+	display: block;
+}
+
+/* Speed Editor Panel */
+
+.speedEditor {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.speedEditor td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.speedEditor thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.speedEditor thead tr, .speedEditor tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.speedEditor thead tr {
+	width: calc( 100% - 8px);
+}
+
+.speedEditor tbody {
+	display:block;
+	/* height: 65px; */
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.speedEditorActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 186px;
+}
+
+.speedEditorActionButton {
+	padding: 5px 5px !important;
+}
+
+/* Speed Editor & Editor Keyboard User Interface */
+
+#editorKeyboardUI {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:447px;
+	height:482px;
+	font-size:0px;
+	background-image: url({* insertImage('images/keyboard.png') *});
+	background-repeat: no-repeat;
+	background-size: 447px 482px;
+	image-rendering: -webkit-optimize-contrast;
+}
+
+#speedEditorUI {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:447px;
+	height:482px;
+	font-size:0px;
+	background-image: url("{* insertImage('images/speededitor.png') *}");
+	background-repeat: no-repeat;
+	background-size: 447px 482px;
+	image-rendering: -webkit-optimize-contrast;
+}
+
+.seButton {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.seButtonSection {
+    display: none;
+}

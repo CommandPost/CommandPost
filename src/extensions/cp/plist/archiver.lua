@@ -4,7 +4,7 @@
 
 local require = require
 
-local plist	= require("cp.plist")
+local plist	= require "cp.plist"
 
 
 local mod = {}
@@ -15,31 +15,70 @@ mod.ARCHIVER_KEY = "$archiver"
 -- TODO: Add Documentation
 mod.ARCHIVER_VALUE = "NSKeyedArchiver"
 
--- TODO: Add Documentation
+-- The objects definition
 mod.OBJECTS_KEY = "$objects"
 
--- TODO: Add Documentation
+-- The key of the top-level object.
 mod.TOP_KEY	= "$top"
 
--- TODO: Add Documentation
+-- The key when referencing another object
 mod.CFUID	= "CF$UID"
 
--- TODO: Add Documentation
+-- checkArchiver(archive) -> boolean
+-- Function
+-- Checks if the given `archive` is an archiver.
+--
+-- Parameters:
+--  * archive - The archive to check.
+--
+-- Returns:
+--  * `true` if the `archive` is an archiver, `false` otherwise.
 local function checkArchiver(archive)
     return archive[mod.ARCHIVER_KEY] == mod.ARCHIVER_VALUE
 end
 
--- TODO: Add Documentation
+-- isReference(data) -> boolean
+-- Function
+-- Checks if the given `data` is a reference object (ie. it is a `table` with a `CF$UID` key).
+--
+-- Parameters:
+--  * data - The data to check.
+--
+-- Returns:
+--  * `true` if the `data` is a reference object, `false` otherwise.
 local function isReference(data)
     return type(data) == 'table' and data[mod.CFUID] ~= nil
 end
 
--- TODO: Add Documentation
+-- getReferenceID(data) -> number
+-- Function
+-- Gets the reference ID of the given `data` table.
+--
+-- Parameters:
+--  * data - The data to check.
+--
+-- Returns:
+
 local function getReferenceID(data)
     return data[mod.CFUID]
 end
 
--- TODO: Add Documentation
+-- defrostClass(data, defrostFn) -> table
+-- Function
+-- Defrosts the given `data` table using the given `defrostFn` (if provided).
+--
+-- Parameters:
+--  * data - The data to defrost.
+--  * defrostFn - The defrost function to use. (optional)
+--
+-- Returns:
+--  * The defrosted data.
+--
+-- Notes:
+-- * If the `defrostFn` is not provided, it will still support some basic classnames:
+--   * `NSArray`/`NSMutableArray`
+--   * `NSDictionary`/`NSMutableDictionary`
+--   * `NSSet`/`NSMutableSet`
 local function defrostClass(data, defrostFn)
     if data["$class"] then
         local classname = data["$class"]["$classname"]
@@ -71,6 +110,19 @@ end
 --------------------------------------------------------------------------------
 -- GETS THE SPECIFIED OBJECT, LOOKING UP THE REFERENCE OBJECT IF NECESSARY:
 --------------------------------------------------------------------------------
+
+-- get(data, objects, cache, defrostFn) -> table
+-- Function
+-- Gets the specified object from the given `data` table, using the given `objects` table and `cache` table if required.
+--
+-- Parameters:
+--  * data - The data `table` to get the object from.
+--  * objects - The list of objects stored in the plist
+--  * cache - The cache of defrosted objects we've already processed.
+--  * defrostFn - The defrost function to use. (optional)
+--
+-- Returns:
+--  * The object `table`.
 local function get(data, objects, cache, defrostFn)
     local result
     if isReference(data) then
@@ -107,7 +159,18 @@ local function get(data, objects, cache, defrostFn)
     return result
 end
 
---- cp.plist.archiver.unarchive(archive, defrostFn) -> table
+--- cp.plist.archiver.isPlist(data) -> boolean
+--- Function
+--- Checks if the given `data` is a supported plist.
+---
+--- Parameters:
+---  * data - The data to check.
+---
+--- Returns:
+---  * `true` if the `data` is a supported plist, `false` otherwise.
+mod.isPlist = plist.isPlist
+
+--- cp.plist.archiver.unarchive(archive, defrostFn) -> table | nil, string
 --- Function
 --- Unarchives a LUA table which was archived into a plist using the NSKeyedArchiver.
 ---
@@ -144,20 +207,19 @@ function mod.unarchive(archive, defrostFn)
     end
 end
 
-
---- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table
+--- cp.plist.archiver.unarchiveBase64(base64data, defrostFn) -> table | nil, string
 --- Function
---- Unarchives a plist file which was archived into a plist using the NSKeyedArchiver.
+--- Unarchives a Base64 encoded `string` which was archived into a plist using the `NSKeyedArchiver`.
 ---
 --- Parameters:
 ---  * `base64data`	- the file containing the archive plist
----  * `defrostFn`	- (optional) a function which will be passed an object with a '$class' entry
+---  * `defrostFn`	- (optional) a function which will be passed an object with a `'$class'` entry
 ---
 --- Returns:
 ---  * The unarchived plist.
 ---
 --- Notes:
----  * A 'defrost' function can be provided, which will be called whenever a table with a '$class'
+---  * A 'defrost' function can be provided, which will be called whenever a table with a `'$class'`
 ---    structure is present. It will receive the table and the classname and should either return a modified value
 ---    if the class was handled, or `nil` if it was unable to handle the class. Eg:
 ---
@@ -178,7 +240,7 @@ function mod.unarchiveBase64(base64data, defrostFn)
     end
 end
 
---- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table
+--- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table | nil, string
 --- Function
 --- Unarchives a plist file which was archived into a plist using the NSKeyedArchiver.
 ---

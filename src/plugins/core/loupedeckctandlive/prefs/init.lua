@@ -133,7 +133,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
-        o.height            = 1120
+        o.height            = 1150
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -144,7 +144,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
-        o.height            = 1120
+        o.height            = 1140
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -183,12 +183,16 @@ function mod.new(deviceType)
     --- plugins.core.loupedeckctandlive.prefs.lastApplication <cp.prop: string>
     --- Field
     --- Last Application used in the Preferences Panel.
-    o.lastApplication = config.prop(o.id .. ".preferences.lastApplication", "All Applications")
+    o.lastApplication = config.prop(o.id .. ".preferences.lastApplication", "All Applications"):watch(function(value)
+        mod._deviceManager.lastApplication(value)
+    end)
 
-    --- plugins.core.loupedeckctandlive.prefs.lastApplication <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastBank <cp.prop: string>
     --- Field
     --- Last Bank used in the Preferences Panel.
-    o.lastBank = config.prop(o.id .. ".preferences.lastBank", "1")
+    o.lastBank = config.prop(o.id .. ".preferences.lastBank", "1"):watch(function(value)
+        mod._deviceManager.lastBank(value)
+    end)
 
     --- plugins.core.loupedeckctandlive.prefs.lastSelectedControl <cp.prop: string>
     --- Field
@@ -255,6 +259,7 @@ function mod.new(deviceType)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     o.panel             =  mod._manager.addPanel({
+        group           = "loupedeck",
         priority        = o.priority,
         id              = o.id,
         label           = o.label,
@@ -350,6 +355,39 @@ function mod.new(deviceType)
                 }
             )
     end
+
+    o.panel
+        :addCheckbox(9.1,
+            {
+                label       = i18n("previewSelectedApplicationAndBankOnHardware"),
+                checked     = mod._deviceManager.previewSelectedApplicationAndBankOnHardware,
+                onchange    = function(_, params)
+                    --------------------------------------------------------------------------------
+                    -- Update preferences:
+                    --------------------------------------------------------------------------------
+                    mod._deviceManager.previewSelectedApplicationAndBankOnHardware(params.checked)
+
+                    --------------------------------------------------------------------------------
+                    -- Update last application & bank:
+                    --------------------------------------------------------------------------------
+                    local lastApplication = o.lastApplication()
+                    local lastBank = o.lastBank()
+
+                    mod._deviceManager.lastApplication(lastApplication)
+                    mod._deviceManager.lastBank(lastBank)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh all devices:
+                    --------------------------------------------------------------------------------
+                    for _, device in pairs(mod._deviceManager.devices) do
+                        for deviceNumber=1, mod._deviceManager.NUMBER_OF_DEVICES do
+                            device:clearCache(deviceNumber)
+                            device:refresh(deviceNumber)
+                        end
+                    end
+                end,
+            }
+        )
 
     o.panel
         :addContent(11, [[
@@ -713,9 +751,6 @@ function mod.mt:generateKnobImages(app, bank, bid)
 
                         local fixedImage = v:imageFromCanvas()
 
-                        v:delete()
-                        v = nil -- luacheck: ignore
-
                         return fixedImage:encodeAsURLString(true)
                     end
                 end
@@ -816,9 +851,6 @@ function mod.mt:generateKnobImages(app, bank, bid)
         end
 
         local knobImage = v:imageFromCanvas()
-
-        v:delete()
-        v = nil -- luacheck: ignore
 
         encodedKnobIcon = knobImage:encodeAsURLString(true)
     else
@@ -975,9 +1007,6 @@ function mod.mt:updateUI(params)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             currentEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
                     end
@@ -1079,9 +1108,6 @@ function mod.mt:updateUI(params)
                             }
 
                             local fixedImage = v:imageFromCanvas()
-
-                            v:delete()
-                            v = nil -- luacheck: ignore
 
                             newEncodedIcon = fixedImage:encodeAsURLString(true)
                         end
@@ -1212,9 +1238,6 @@ function mod.mt:processEncodedIcon(icon, controlType)
 
     local fixedImage = v:imageFromCanvas()
 
-    v:delete()
-    v = nil -- luacheck: ignore
-
     return fixedImage:encodeAsURLString(true)
 end
 
@@ -1272,9 +1295,6 @@ function mod.mt:buildIconFromLabel(params)
     }
 
     local img = v:imageFromCanvas()
-
-    v:delete()
-    v = nil -- luacheck: ignore
 
     return img:encodeAsURLString(true)
 end
@@ -1690,7 +1710,22 @@ function mod.mt:panelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                self:refreshDevice()
+                if mod._deviceManager.previewSelectedApplicationAndBankOnHardware() then
+                    --------------------------------------------------------------------------------
+                    -- Refresh all devices:
+                    --------------------------------------------------------------------------------
+                    for _, device in pairs(mod._deviceManager.devices) do
+                        for deviceNumber=1, mod._deviceManager.NUMBER_OF_DEVICES do
+                            device:clearCache(deviceNumber)
+                            device:refresh(deviceNumber)
+                        end
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Just refresh the active device:
+                    --------------------------------------------------------------------------------
+                    self:refreshDevice()
+                end
             end
         elseif callbackType == "updateUI" then
             self:updateUI(params)
@@ -2558,6 +2593,16 @@ function mod.mt:panelCallback(id, params)
             table.insert(menu, {
                 title = string.upper(i18n("copyActiveApplicationTo")) .. ":",
                 disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = i18n("unlistedAndIgnoredApplications"),
+                fn = function() copyApplication("All Applications") end
             })
 
             table.insert(menu, {
