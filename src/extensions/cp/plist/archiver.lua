@@ -159,6 +159,17 @@ local function get(data, objects, cache, defrostFn)
     return result
 end
 
+--- cp.plist.archiver.isPlist(data) -> boolean
+--- Function
+--- Checks if the given `data` is a supported plist.
+---
+--- Parameters:
+---  * data - The data to check.
+---
+--- Returns:
+---  * `true` if the `data` is a supported plist, `false` otherwise.
+mod.isPlist = plist.isPlist
+
 --- cp.plist.archiver.unarchive(archive, defrostFn) -> table | nil, string
 --- Function
 --- Unarchives a LUA table which was archived into a plist using the NSKeyedArchiver.

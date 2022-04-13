@@ -93,7 +93,7 @@ local function stringValue(value)
 end
 
 local function stringKey(value)
-    return isLocalizableString(value) and value.NSKey or nil
+    return isLocalizableString(value) and stringValue(value.NSKey) or nil
 end
 
 -- findLocaleFilePath(app, fileName) -> string
@@ -175,7 +175,7 @@ local function processMenu(menuData, localeCode, menuCache)
     if menuData.NSMenuItems then
         for i, itemData in ipairs(menuData.NSMenuItems) do
             local item = menuCache[i] or {}
-            local value = tostring(itemData.NSTitle)
+            local value = stringValue(itemData.NSTitle)
             local key = nil
 
             if isLocalizableString(value) then
@@ -234,16 +234,11 @@ end
 local function readMenuNib(path, localeCode, menuCache)
     if path then
         local data = readFromFile(path)
-        local menuNib
+        local menuNib, err
         if nibArchiver.isSupported(data) then
             menuNib = nibArchiver.fromBytes(data)
-        elseif plist.isSupported(data) then
-            local archive, err = plist.binaryToTable(data)
-            if not archive then
-                log.ef("Unable to read plist file: %s", err)
-                return false
-            end
-            menuNib, err = archiver.unarchive(archive)
+        elseif archiver.isPlist(data) then
+            menuNib, err = archiver.unarchiveFile(path)
             if not menuNib then
                 log.ef("Unable to unarchive plist file: %s", err)
                 return false
@@ -406,22 +401,19 @@ function menu.static.matches(element)
     return element and element:attributeValue("AXRole") == menu.ROLE and #element > 0
 end
 
---- cp.app.menu(app, mainMenuNibOverridePath) -> menu
+--- cp.app.menu(app) -> menu
 --- Constructor
 --- Constructs a new menu for the specified App.
 ---
 --- Parameters:
 ---  * app - The `cp.app` instance the menu belongs to.
----  * mainMenuNibOverridePath - An optional path to an alternative MainMenu.nib file.
 ---
 --- Returns:
 ---  * a new menu instance
-function menu:initialize(app, mainMenuNibOverridePath)
+function menu:initialize(app)
     self._app = app
     self._menuTitles = {}
     self._itemFinders = {}
-
-    self.mainMenuNibOverridePath = mainMenuNibOverridePath
 
     -- load default locale for the menu when the local changes.
     app.currentLocale:watch(function(newLocale)
@@ -922,6 +914,7 @@ function menu:findMenuUI(path, options)
                 --------------------------------------------------------------------------------
                 for _, item in ipairs(menuTitles) do
                     local pathItemTitle = item[pathLocale.code]
+                    log.df("findMenuUI: pathItemTitle: %s", hs.inspect(pathItemTitle))
                     if exactMatch(pathItemTitle, step, options.plain) then
                         menuItemUI = item.ui
                         if not axutils.isValid(menuItemUI) then
