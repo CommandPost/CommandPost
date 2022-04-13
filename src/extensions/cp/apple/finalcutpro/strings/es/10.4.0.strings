@@ -3,8 +3,6 @@
 <!-- Missing I18N keys values for FCPX. Generally prefixed with "CP" to avoid clashes with existing keys.  -->
 <plist version="1.0">
 <dict>
-    <key>CPCodecs</key>
-    <string>Códecs</string>
     <key>CPShowHorizon</key>
     <string>Mostrar horizonte</string>
 </dict>

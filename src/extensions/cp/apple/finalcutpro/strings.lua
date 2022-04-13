@@ -118,7 +118,7 @@ function mod:_bestVersion(locale, version)
     local prev = nil
 
     for _,ver in ipairs(versions) do
-        if ver < version then
+        if ver <= version then
             prev = ver
         end
         if ver > version then
