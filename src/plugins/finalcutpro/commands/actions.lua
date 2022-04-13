@@ -29,11 +29,6 @@ local ID = "cmds"
 -- Group ID
 local GROUP = "fcpx"
 
--- FINAL_CUT_PRO_ICON -> hs.image
--- Constant
--- The Final Cut Pro Icon
-local FINAL_CUT_PRO_ICON = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns"))
-
 --- plugins.finalcutpro.commands.actions.init(actionmanager, cmds) -> none
 --- Function
 --- Initialises the module.
@@ -72,6 +67,7 @@ end
 --- Returns:
 --- * None
 function mod.onChoices(choices)
+    local icon = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns"))
     for _,cmd in pairs(mod._cmds:getAll()) do
         local title = cmd:getTitle()
         if title then
@@ -93,7 +89,7 @@ function mod.onChoices(choices)
                 :subText(subtext)
                 :params(action)
                 :id(mod.getId(action))
-                :image(cmd:getImage() or FINAL_CUT_PRO_ICON) -- Default to the FCPX icon if nothing else supplied.
+                :image(cmd:getImage() or icon) -- Default to the FCPX icon if nothing else supplied.
         end
     end
 end
