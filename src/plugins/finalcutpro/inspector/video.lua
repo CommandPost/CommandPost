@@ -30,12 +30,13 @@ local displayMessage        = dialog.displayMessage
 --  * None
 local function doSpatialConformType(value)
     local timeline = fcp.timeline
+    local browser = fcp.browser
     local timelineContents = timeline.contents
-    local libraries = fcp.browser.libraries
+    local libraries = browser.libraries
     local spatialConformType = fcp.inspector.video:spatialConform():type()
 
     return Do(function()
-        if timeline:isFocused() then
+        if timeline:isFocused() or (timeline:isFocused() == false and browser:isFocused() == false) then
             --------------------------------------------------------------------------------
             -- Make sure at least one clip is selected in the timeline:
             --------------------------------------------------------------------------------

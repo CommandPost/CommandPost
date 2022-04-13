@@ -4,6 +4,6 @@
 <plist version="1.0">
 <dict>
     <key>CPShowHorizon</key>
-    <string>显示水平</string>
+    <string>가로 보기</string>
 </dict>
 </plist>
