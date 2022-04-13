@@ -17,6 +17,7 @@ local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
 local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
+local nibArchiver       = require "cp.nib.archiver"
 local rx                = require "cp.rx"
 local tools             = require "cp.tools"
 
@@ -70,9 +71,14 @@ local STORYBOARD_EXT = "storyboardc"
 --- Main Storyboard name.
 menu.static.STORYBOARD_FILE = "NSMainStoryboardFile"
 
+local function getClassname(value)
+    local valueClass = value["$class"]
+    return valueClass and valueClass["$classname"] or nil
+end
+
 local function isLocalizableString(value)
     if type(value) == "table" then
-        local classname = value["$class"] and value["$class"]["$classname"] or nil
+        local classname = getClassname(value)
         return classname == "NSLocalizableString"
     end
     return false
@@ -82,12 +88,12 @@ local function stringValue(value)
     if type(value) == "string" then
         return value
     elseif isLocalizableString(value) then
-        return value["NS.string"]
+        return value["NS.string"] or tostring(value)
     end
 end
 
 local function stringKey(value)
-    return isLocalizableString(value) and value.NSKey or nil
+    return isLocalizableString(value) and stringValue(value.NSKey) or nil
 end
 
 -- findLocaleFilePath(app, fileName) -> string
@@ -169,7 +175,7 @@ local function processMenu(menuData, localeCode, menuCache)
     if menuData.NSMenuItems then
         for i, itemData in ipairs(menuData.NSMenuItems) do
             local item = menuCache[i] or {}
-            local value = itemData.NSTitle
+            local value = stringValue(itemData.NSTitle)
             local key = nil
 
             if isLocalizableString(value) then
@@ -197,7 +203,8 @@ local function processNib(menuNib, localeCode, menuCache)
     --------------------------------------------------------------------------------
     local menuTitles = nil
     for _, item in ipairs(menuNib["IB.objectdata"].NSObjectsKeys) do
-        if item.NSName == "_NSMainMenu" and item["$class"] and item["$class"]["$classname"] == "NSMenu" then
+        local name = tostring(item.NSName)
+        if name == "_NSMainMenu" and getClassname(item) == "NSMenu" then
             menuTitles = item
             break
         end
@@ -212,51 +219,7 @@ local function processNib(menuNib, localeCode, menuCache)
     end
 end
 
--- validateNib -> boolean
--- Function
--- Make sure the NIB is a valid binary or plain text plist.
---
--- Parameters:
---  * path - The path to the NIB
---  * mainMenuNibOverridePath - A MainMenu.nib fallback path
---
--- Returns:
---  * `true` if valid otherwise `false`
-local function validateNib(path, mainMenuNibOverridePath)
-    local data = readFromFile(path)
-    if not data then
-        log.ef("[cp.app.menu] NIB file could not be read: %s", path)
-        return false
-    end
-    if mainMenuNibOverridePath then
-        --------------------------------------------------------------------------------
-        -- We're using an override NIB:
-        --------------------------------------------------------------------------------
-        --log.df("[cp.app.menu] We're using an override NIB: %s", mainMenuNibOverridePath)
-        return true
-    elseif data:sub(1, 6) == "bplist" then
-        --------------------------------------------------------------------------------
-        -- It's a binary plist:
-        --------------------------------------------------------------------------------
-        return true
-    elseif data:sub(1, 5) == "<?xml" then
-        --------------------------------------------------------------------------------
-        -- It's a plain text plist:
-        --------------------------------------------------------------------------------
-        return true
-    elseif data:sub(1, 10) == "NIBArchive" then
-        --------------------------------------------------------------------------------
-        -- It's a NIBArchive we can't read:
-        --------------------------------------------------------------------------------
-        log.ef("[cp.app.menu] NIB file is a NIBArchive (which we don't support yet): %s", path)
-        return false
-    end
-
-    log.ef("[cp.app.menu] NIB file is not a valid plist: %s", path)
-    return false
-end
-
--- readMenuNib(path, theLocale, menuCache, mainMenuNibOverridePath) -> boolean
+-- readMenuNib(path, theLocale, menuCache) -> boolean
 -- Function
 -- Reads the menu `.nib` file at the specified path, if it exists, then processes it to build out
 -- the items inclosed into the `menuCache` table.
@@ -265,25 +228,32 @@ end
 --  * path       - the path to the menu `.nib` file
 --  * locale     - The `localeID` being processed.
 --  * menuCache  - The `table` containing the cached menu items for all languages.
---  * mainMenuNibOverridePath - A MainMenu.nib fallback path
 --
 -- Returns:
 --  * `true` if the `.nib` could be read and was processed, otherwise `false`.
-local function readMenuNib(path, localeCode, menuCache, mainMenuNibOverridePath)
+local function readMenuNib(path, localeCode, menuCache)
     if path then
-        local valid = validateNib(path, mainMenuNibOverridePath)
-        if valid then
-            if mainMenuNibOverridePath then
-                path = mainMenuNibOverridePath
-            end
-            local menuNib = archiver.unarchiveFile(path)
-            if menuNib then
-                processNib(menuNib, localeCode, menuCache)
-                return true
-            else
-                log.ef("Unable to process the menu .nib file in: %s", path)
+        local data = readFromFile(path)
+        local menuNib, err
+        if nibArchiver.isSupported(data) then
+            menuNib = nibArchiver.fromBytes(data)
+        elseif archiver.isPlist(data) then
+            menuNib, err = archiver.unarchiveFile(path)
+            if not menuNib then
+                log.ef("Unable to unarchive plist file: %s", err)
                 return false
             end
+        else
+            log.ef("Unable to process the menu .nib file in: %s", path)
+            return false
+        end
+
+        if menuNib then
+            processNib(menuNib, localeCode, menuCache)
+            return true
+        else
+            log.ef("Unable to process the menu .nib file in: %s", path)
+            return false
         end
     end
     return false
@@ -312,18 +282,18 @@ local function readStringsFile(app, locale, stringsName)
     end
 end
 
-local function loadMenuTitlesFromNib(app, locale, menuCache, mainMenuNibOverridePath)
+local function loadMenuTitlesFromNib(app, locale, menuCache)
     local nibName = app:info()[menu.NIB_FILE]
     if not nibName then
         return false
     end
 
     local nibPath = findMenuNibPath(app, locale, nibName)
-    if not nibPath or not readMenuNib(nibPath, locale.code, menuCache, mainMenuNibOverridePath) then
+    if not nibPath or not readMenuNib(nibPath, locale.code, menuCache) then
         local baseLocale = app:baseLocale()
         if not menuCache[BASE_LOCALE] then
             local baseNibPath = findBaseMenuNibPath(app, nibName)
-            readMenuNib(baseNibPath, baseLocale.code, menuCache, mainMenuNibOverridePath)
+            readMenuNib(baseNibPath, baseLocale.code, menuCache)
         end
 
         -- 1. If currently in the app's `baseLocale` then apply the strings from the NSLocalizableStrings
@@ -403,11 +373,10 @@ end
 --  * app       - The `cp.app` we're loading for.
 --  * locale    - The `localeID`.
 --  * menuCache - The menu table containing the main menu structure.
---  * mainMenuNibOverridePath - A MainMenu.nib fallback path
 --
 -- Returns:
 --  * The menu table.
-local function loadMenuTitlesLocale(app, locale, menuCache, mainMenuNibOverridePath)
+local function loadMenuTitlesLocale(app, locale, menuCache)
     locale = localeID(locale)
     if not locale then
         -- it's not a real locale (according to our records...)
@@ -425,29 +394,26 @@ local function loadMenuTitlesLocale(app, locale, menuCache, mainMenuNibOverrideP
         return true
     end
 
-    return loadMenuTitlesFromNib(app, locale, menuCache, mainMenuNibOverridePath) or loadMenuTitlesFromStoryboard(app, locale, menuCache)
+    return loadMenuTitlesFromNib(app, locale, menuCache) or loadMenuTitlesFromStoryboard(app, locale, menuCache)
 end
 
 function menu.static.matches(element)
     return element and element:attributeValue("AXRole") == menu.ROLE and #element > 0
 end
 
---- cp.app.menu(app, mainMenuNibOverridePath) -> menu
+--- cp.app.menu(app) -> menu
 --- Constructor
 --- Constructs a new menu for the specified App.
 ---
 --- Parameters:
 ---  * app - The `cp.app` instance the menu belongs to.
----  * mainMenuNibOverridePath - An optional path to an alternative MainMenu.nib file.
 ---
 --- Returns:
 ---  * a new menu instance
-function menu:initialize(app, mainMenuNibOverridePath)
+function menu:initialize(app)
     self._app = app
     self._menuTitles = {}
     self._itemFinders = {}
-
-    self.mainMenuNibOverridePath = mainMenuNibOverridePath
 
     -- load default locale for the menu when the local changes.
     app.currentLocale:watch(function(newLocale)
@@ -509,7 +475,7 @@ function menu:getMenuTitles(locales)
     local menuCache = self._menuTitles
     --log.df("getMenuTitles: before: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
     for _, locale in ipairs(locales) do
-        loadMenuTitlesLocale(app, locale, menuCache, self.mainMenuNibOverridePath)
+        loadMenuTitlesLocale(app, locale, menuCache)
     end
     --log.df("getMenuTitles: after: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
 
