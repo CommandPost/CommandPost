@@ -26,6 +26,7 @@ local If                                = require "cp.rx.go.If"
 local WaitUntil                         = require "cp.rx.go.WaitUntil"
 
 local ninjaDoubleClick                  = tools.ninjaDoubleClick
+local upper                             = tools.upper
 
 local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
 
@@ -378,8 +379,15 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function EffectsBrowser:videoCategoryRowsUI()
-    local video = self:app():string("FFVideo"):upper()
-    local audio = self:app():string("FFAudio"):upper()
+    --------------------------------------------------------------------------------
+    -- NOTE: We have to use cp.tools.upper, because the built-in Lua :upper()
+    --       doesn't handle non-English characters very well. For example:
+    --
+    -- cp.apple.finalcutpro:string("FFVideo") = Vídeo
+    -- cp.tools.upper(cp.apple.finalcutpro:string("FFVideo")) = VÍDEO
+    --------------------------------------------------------------------------------
+    local video = upper(self:app():string("FFVideo"))
+    local audio = upper(self:app():string("FFAudio"))
 
     return self:_startEndRowsUI(video, audio)
 end

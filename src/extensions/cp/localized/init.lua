@@ -63,7 +63,8 @@ local function readLocalizedStrings(stringsFile, name)
         --------------------------------------------------------------------------------
         -- PROPERTY LIST
         --
-        -- Example:
+        -- Examples:
+        --
         -- <?xml version="1.0" encoding="UTF-8"?>
         -- <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         -- <plist version="1.0">
@@ -72,10 +73,23 @@ local function readLocalizedStrings(stringsFile, name)
         --  <string>Standardtitel</string>
         -- </dict>
         -- </plist>
+        --
+        -- <?xml version="1.0" encoding="UTF-8"?>
+        -- <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        -- <plist version="1.0">
+        -- <dict>
+        -- 	<key>Black &amp; White</key>
+        -- 	<string>Blanco y negro</string>
+        -- </dict>
+        -- </plist>
         --------------------------------------------------------------------------------
         local contents = plist.read(stringsPath)
         if contents then
-            local localName = contents[escapeXML(name)]
+            --------------------------------------------------------------------------------
+            -- NOTE: hs.plist.read seems to already unescape the key, so first we'll try
+            --       a plain text version, then we'll try the escapeXML version.
+            --------------------------------------------------------------------------------
+            local localName = contents[name] or contents[escapeXML(name)]
             return localName and unescapeXML(localName)
         --------------------------------------------------------------------------------
         -- PLAIN TEXT
