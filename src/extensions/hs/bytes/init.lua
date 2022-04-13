@@ -1178,6 +1178,26 @@ function bytes.float64be(value, index)
     return doFloat(value, index, 64, readFloat64be, writeFloat64be)
 end
 
+--- hs.bytes.float64le(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to a 64-bit float or a `number` to a 8-byte `string`, using little-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve a 64-bit float from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the 64-bit float at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 8-byte `string` containing the float value.
+---
+--- Notes:
+---  * this function reads/writes as 'little-endian', so the less significant bytes are read/written first, then the more significant byte.
+---  * if the `value` `number` is larger than can fit in a 64-bit float, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.float64le(value, index)
+    return doFloat(value, index, 64, readFloat64le, writeFloat64le)
+end
+
 --- hs.bytes.remainder(value[, index]) -> string
 --- Function
 --- Returns the remainder of the byte string as a `string`, starting at the specified `index`.
