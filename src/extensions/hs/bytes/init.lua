@@ -731,6 +731,35 @@ local function doInt(value, index, bits, unsigned, read, write)
     end
 end
 
+-- doFloat(value, index, bits, read, write) -> number, number | string
+-- Function
+-- Converts a byte `string` value to a floating point number of the specified `bits` in length, or a `number` to a `string` of the specified bit size.
+--
+-- Parameters:
+-- * value      - either a `string` to retrieve an integer from, or a `number` to convert to a byte string.
+-- * index      - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+-- * bits       - the number of bits in the integer. Typically 32/64.
+-- * read       - the function which will read the bytes from the string.
+-- * write      - the function which will output a series of number bytes to combine into a string.
+--
+-- Returns:
+-- * if `value` is a `string`, returns the floating point number provided by the `read` function, followed by the next index.
+-- * if `value` is a `number`, returns a `string` containing the floating point number value in the order provided by the `write` function.
+local function doFloat(value, index, bits, read, write)
+    if type(value) == "string" then
+        index = index or 1
+        if value:len() < (index + (bits/8) - 1) then
+            error(format("need %d bytes but %d are available from index %d", bits/8, value:len()-index+1, index), 2)
+        end
+        local float, offset = read(value, index)
+        return float, offset
+    elseif type(value) == "number" then
+        return char(write(value))
+    else
+        error(format("unsupported value type: %s", type(value)), 2)
+    end
+end
+
 --- hs.bytes.int8(value[, index]) -> number, number | string
 --- Function
 --- Converts a byte `string` value to a signed 8-bit integer or a `number` to a 1-byte `string`.
@@ -1087,6 +1116,66 @@ end
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.uint64le(value, index)
     return doInt(value, index, 64, true, readInt64le, writeInt64le)
+end
+
+--- hs.bytes.float32be(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to a 32-bit float or a `number` to a 4-byte `string`, using big-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve a 32-bit float from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the 32-bit float at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 4-byte `string` containing the float value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant bytes are read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in a 32-bit float, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.float32be(value, index)
+    return doFloat(value, index, 32, readFloat32be, writeFloat32be)
+end
+
+--- hs.bytes.float32le(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to a 32-bit float or a `number` to a 4-byte `string`, using little-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve a 32-bit float from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the 32-bit float at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 4-byte `string` containing the float value.
+---
+--- Notes:
+---  * this function reads/writes as 'little-endian', so the less significant bytes are read/written first, then the more significant byte.
+---  * if the `value` `number` is larger than can fit in a 32-bit float, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.float32le(value, index)
+    return doFloat(value, index, 32, readFloat32le, writeFloat32le)
+end
+
+--- hs.bytes.float64be(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to a 64-bit float or a `number` to a 8-byte `string`, using big-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve a 64-bit float from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the 64-bit float at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 8-byte `string` containing the float value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant bytes are read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in a 64-bit float, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.float64be(value, index)
+    return doFloat(value, index, 64, readFloat64be, writeFloat64be)
 end
 
 --- hs.bytes.remainder(value[, index]) -> string

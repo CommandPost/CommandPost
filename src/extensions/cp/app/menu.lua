@@ -72,8 +72,8 @@ local STORYBOARD_EXT = "storyboardc"
 menu.static.STORYBOARD_FILE = "NSMainStoryboardFile"
 
 local function getClassname(value)
-    local class = value["$class"]
-    return class and class["$classname"] or nil
+    local valueClass = value["$class"]
+    return valueClass and valueClass["$classname"] or nil
 end
 
 local function isLocalizableString(value)

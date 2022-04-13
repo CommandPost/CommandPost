@@ -8,7 +8,7 @@
 
 local require                               = require
 
-local log                                   = require "hs.logger" .new "nibarch"
+-- local log                                   = require "hs.logger" .new "nibarch"
 local bytes                                 = require "hs.bytes"
 local fs                                    = require "hs.fs"
 
