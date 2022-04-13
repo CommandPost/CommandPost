@@ -176,6 +176,13 @@ function Timeline.lazy.prop:isPlaying()
     return self:app().viewer.isPlaying
 end
 
+--- cp.apple.finalcutpro.timeline.Timeline.isFocused <cp.prop: boolean>
+--- Field
+--- Is the timeline focused?
+function Timeline.lazy.prop:isFocused()
+    return self.contents.isFocused
+end
+
 --- cp.apple.finalcutpro.timeline.Timeline:app() -> App
 --- Method
 --- Returns the app instance representing Final Cut Pro.
