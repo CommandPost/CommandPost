@@ -17,6 +17,7 @@ local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
 local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
+local nibArchiver       = require "cp.nib.archiver"
 local rx                = require "cp.rx"
 local tools             = require "cp.tools"
 
@@ -70,9 +71,14 @@ local STORYBOARD_EXT = "storyboardc"
 --- Main Storyboard name.
 menu.static.STORYBOARD_FILE = "NSMainStoryboardFile"
 
+local function getClassname(value)
+    local class = value["$class"]
+    return class and class["$classname"] or nil
+end
+
 local function isLocalizableString(value)
     if type(value) == "table" then
-        local classname = value["$class"] and value["$class"]["$classname"] or nil
+        local classname = getClassname(value)
         return classname == "NSLocalizableString"
     end
     return false
@@ -82,7 +88,7 @@ local function stringValue(value)
     if type(value) == "string" then
         return value
     elseif isLocalizableString(value) then
-        return value["NS.string"]
+        return value["NS.string"] or tostring(value)
     end
 end
 
@@ -197,7 +203,8 @@ local function processNib(menuNib, localeCode, menuCache)
     --------------------------------------------------------------------------------
     local menuTitles = nil
     for _, item in ipairs(menuNib["IB.objectdata"].NSObjectsKeys) do
-        if item.NSName == "_NSMainMenu" and item["$class"] and item["$class"]["$classname"] == "NSMenu" then
+        local name = tostring(item.NSName)
+        if name == "_NSMainMenu" and getClassname(item) == "NSMenu" then
             menuTitles = item
             break
         end
@@ -210,44 +217,6 @@ local function processNib(menuNib, localeCode, menuCache)
         log.ef("Unable to locate Main .nib file for %s.", localeCode)
         return nil
     end
-end
-
--- validateNib -> boolean
--- Function
--- Make sure the NIB is a valid binary or plain text plist.
---
--- Parameters:
---  * path - The path to the NIB
---
--- Returns:
---  * `true` if valid otherwise `false`
-local function validateNib(path)
-    local data = readFromFile(path)
-    if not data then
-        log.ef("[cp.app.menu] NIB file could not be read: %s", path)
-        return false
-    end
-
-    if data:sub(1, 6) == "bplist" then
-        --------------------------------------------------------------------------------
-        -- It's a binary plist:
-        --------------------------------------------------------------------------------
-        return true
-    elseif data:sub(1, 5) == "<?xml" then
-        --------------------------------------------------------------------------------
-        -- It's a plain text plist:
-        --------------------------------------------------------------------------------
-        return true
-    elseif data:sub(1, 10) == "NIBArchive" then
-        --------------------------------------------------------------------------------
-        -- It's a NIBArchive we can't read:
-        --------------------------------------------------------------------------------
-        log.ef("[cp.app.menu] NIB file is a NIBArchive (which we don't support yet): %s", path)
-        return false
-    end
-
-    log.ef("[cp.app.menu] NIB file is not a valid plist: %s", path)
-    return false
 end
 
 -- readMenuNib(path, theLocale, menuCache) -> boolean
@@ -264,16 +233,32 @@ end
 --  * `true` if the `.nib` could be read and was processed, otherwise `false`.
 local function readMenuNib(path, localeCode, menuCache)
     if path then
-        local valid = validateNib(path)
-        if valid then
-            local menuNib = archiver.unarchiveFile(path)
-            if menuNib then
-                processNib(menuNib, localeCode, menuCache)
-                return true
-            else
-                log.ef("Unable to process the menu .nib file in: %s", path)
+        local data = readFromFile(path)
+        local menuNib
+        if nibArchiver.isSupported(data) then
+            menuNib = nibArchiver.fromBytes(data)
+        elseif plist.isSupported(data) then
+            local archive, err = plist.binaryToTable(data)
+            if not archive then
+                log.ef("Unable to read plist file: %s", err)
                 return false
             end
+            menuNib, err = archiver.unarchive(archive)
+            if not menuNib then
+                log.ef("Unable to unarchive plist file: %s", err)
+                return false
+            end
+        else
+            log.ef("Unable to process the menu .nib file in: %s", path)
+            return false
+        end
+
+        if menuNib then
+            processNib(menuNib, localeCode, menuCache)
+            return true
+        else
+            log.ef("Unable to process the menu .nib file in: %s", path)
+            return false
         end
     end
     return false

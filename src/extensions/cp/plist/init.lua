@@ -231,7 +231,7 @@ function plist.fileToTable(plistFileName)
         return nil, string.format("Unable to find '%s'", plistFileName)
     end
 
-    if plist.isBinaryPlist(absoluteFilename) then
+    if plist.isBinaryPlistFile(absoluteFilename) then
         -- it's a binary plist
         return plist.binaryFileToTable(absoluteFilename)
     else
@@ -239,16 +239,88 @@ function plist.fileToTable(plistFileName)
     end
 end
 
---- cp.plist.isBinaryPlist(plistList) -> boolean
+--- cp.plist.isPlist(data) -> boolean
 --- Function
---- Returns true if plistList is a binary plist file otherwise false
+--- Checks if the data is either a binary or XML plist data `string`.
+---
+--- Parameters:
+---  * data             - The data to check
+---
+--- Returns:
+---  * `true` if the data is a plist, `false` otherwise.
+function plist.isPlist(data)
+    if type(data) ~= "string" then
+        return false
+    end
+    return plist.isBinaryPlist(data) or plist.isXMLPlist(data)
+end
+
+
+--- cp.plist.isBinaryPlist(data) -> boolean
+--- Function
+--- Checks if the provided data is a binary plist.
+---
+--- Parameters:
+---  * data - The data to check
+---
+--- Returns:
+---  * `true` if it is a binary plist, `false` otherwise.
+function plist.isBinaryPlist(data)
+    return data:sub(1, 6) == "bplist"
+end
+
+--- cp.plist.isXMLPlist(data) -> boolean
+--- Function
+--- Checks if the provided data is an XML plist.
+---
+--- Parameters:
+---  * data - The data to check
+---
+--- Returns:
+---  * `true` if it is an XML plist, `false` otherwise.
+---
+--- Notes:
+---  * This will only check if it is an XML file, it does not check the actual format is correct.
+function plist.isXMLPlist(data)
+    return data:sub(1, 5) == "<?xml"
+end
+
+--- cp.plist.isPlistFile(plistFileName) -> boolean
+--- Function
+--- Checks if the provided file is a binary or XML plist file.
+---
+--- Parameters:
+---  * plistFileName    - Path & Filename of the XML File
+---
+--- Returns:
+---  * `true` if it is a binary or XML plist file, `false` otherwise.
+function plist.isPlistFile(plistFileName)
+    if not plistFileName then
+        return false
+    end
+
+    -- find it
+    local file = io.open(plistFileName, "r")         -- r read mode
+    if not file then
+        return false
+    end
+    local content = file:read(6)
+    file:close()
+
+    -- check it
+    return plist.isPlist(content)
+end
+
+--- cp.plist.isBinaryPlistFile(plistList) -> boolean
+--- Function
+--- Returns `true` if plistList is a binary plist file otherwise `false`.
 ---
 --- Parameters:
 ---  * plistList - Path to the file
 ---
 --- Returns:
 ---  * Boolean
-function plist.isBinaryPlist(plistFileName)
+function plist.isBinaryPlistFile(plistFileName)
 
     if not plistFileName then
         return false
@@ -263,7 +335,35 @@ function plist.isBinaryPlist(plistFileName)
     local marker = file:read(6)
     file:close()
 
-    return marker == "bplist"
+    return plist.isBinaryPlist(marker)
 end
+
+--- cp.plist.isXMLPlistFile(plistList) -> boolean
+--- Function
+--- Returns `true` if plistList is (probably) an XML plist file otherwise `false`.
+---
+--- Parameters:
+---  * plistList - Path to the file
+---
+--- Returns:
+---  * Boolean
+function plist.isXMLPlistFile(plistFileName)
+
+    if not plistFileName then
+        return false
+    end
+
+    local file = io.open(plistFileName, "r")
+    if not file then
+        return false
+    end
+
+    -- Check for the marker
+    local marker = file:read(5)
+    file:close()
+
+    return plist.isXMLPlist(marker)
+end
+
 
 return plist

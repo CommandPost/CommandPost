@@ -4,7 +4,7 @@
 
 local require = require
 
-local plist	= require("cp.plist")
+local plist	= require "cp.plist"
 
 
 local mod = {}
@@ -159,7 +159,7 @@ local function get(data, objects, cache, defrostFn)
     return result
 end
 
---- cp.plist.archiver.unarchive(archive, defrostFn) -> table
+--- cp.plist.archiver.unarchive(archive, defrostFn) -> table | nil, string
 --- Function
 --- Unarchives a LUA table which was archived into a plist using the NSKeyedArchiver.
 ---
@@ -196,7 +196,7 @@ function mod.unarchive(archive, defrostFn)
     end
 end
 
---- cp.plist.archiver.unarchiveBase64(base64data, defrostFn) -> table
+--- cp.plist.archiver.unarchiveBase64(base64data, defrostFn) -> table | nil, string
 --- Function
 --- Unarchives a Base64 encoded `string` which was archived into a plist using the `NSKeyedArchiver`.
 ---
@@ -229,7 +229,7 @@ function mod.unarchiveBase64(base64data, defrostFn)
     end
 end
 
---- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table
+--- cp.plist.archiver.unarchiveFile(filename, defrostFn) -> table | nil, string
 --- Function
 --- Unarchives a plist file which was archived into a plist using the NSKeyedArchiver.
 ---

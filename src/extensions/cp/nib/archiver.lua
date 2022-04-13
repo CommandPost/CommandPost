@@ -12,10 +12,9 @@ local log                                   = require "hs.logger" .new "nibarch"
 local bytes                                 = require "hs.bytes"
 local fs                                    = require "hs.fs"
 
-local Array                                 = require "cp.nib.decoder.Array"
-local Dictionary                            = require "cp.nib.decoder.Dictionary"
-local Set                                   = require "cp.nib.decoder.Set"
+local types                                 = require "cp.nib.types"
 local varint                                = require "cp.nib.varint"
+
 
 local exactly                               = bytes.exactly
 local uint8, uint32le                       = bytes.uint8, bytes.uint32le
@@ -25,7 +24,7 @@ local float32le, float64le                  = bytes.float32le, bytes.float64le
 local format                                = string.format
 local insert                                = table.insert
 
-
+-- list of handler functions for the specified value type.
 local VALUE_HANDLERS = {
     [0] = int8,
     [1] = int16le,
@@ -50,17 +49,24 @@ local REFERENCE_TYPE = 10
 -- The index where the NIBArchive header starts
 local HEADER_INDEX = 1 + 10 + 4 + 4
 
---- cp.nib.archiver.defaultDecoders() -> decoder, ...
---- Function
---- Returns the default decoders.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The default decoders.
-local function defaultDecoders()
-    return Array, Dictionary, Set
+-- Used when the value has no key should be accessed via index (ie. it's an array element).
+local EMPTY_KEY = "UINibEncoderEmptyKey"
+
+-- cleanString(value) -> string
+-- Function
+-- Ensures the last byte is not a null terminator, dropping it if present.
+--
+-- Parameters:
+--  * value - The string to clean.
+--
+-- Returns:
+--  * The cleaned string.
+local function cleanString(value)
+    if value:sub(-1) == "\0" then
+        return value:sub(1, -2)
+    else
+        return value
+    end
 end
 
 -- newArchiveHeader(objectCount, objectStart, keyCount, keyStart, valueCount, valueStart, classCount, classStart) -> table
@@ -163,15 +169,14 @@ local function processValues(data, header, keys)
     return values
 end
 
--- processClasses(data, classCount, firstClass) -> table
+-- processClasses(data, header) -> table
 -- Function
 -- Processes the given `data` string, with the specified class count and offset.
 -- All class records are processed and added to the `class` table.
 --
 -- Parameters:
 --  * data - The `string` of bytes to process.
---  * classCount - The number of classes in the archive.
---  * firstClass - The offset of the first class.
+--  * header - The archive header `table`.
 --
 -- Returns:
 --  * A table containing the processed `class` table.
@@ -182,11 +187,11 @@ end
 --    * Number of extra int32 LE values, as a `varint`. Only values `0` and `1` have been observed.
 --    * The extra int32 LE values (if present)
 --    * The class name, as a `string`, with the length specified by the class name length `varint`.
-local function processClasses(data, classCount, firstClass)
+local function processClasses(data, header)
     -- log.df("processClasses")
     local classes = {}
-    local index = firstClass
-    for _ = 1, classCount do
+    local index = header.classStart
+    for _ = 1, header.classCount do
         local classnameLength, extraInt32leCount, extraInts, classname
         classnameLength, extraInt32leCount, index = bytes.read(data, index, varint, varint)
         extraInts = {}
@@ -195,8 +200,8 @@ local function processClasses(data, classCount, firstClass)
         end
         classname, index = bytes.read(data, index, exactly(classnameLength))
         insert(classes, {
-            classname = classname,
-            extraInts = extraInts,
+            ["$classname"] = cleanString(classname), -- for some reason, the classname has a trailing null byte
+            ["$data"] = extraInts,
         })
     end
     return classes
@@ -204,7 +209,7 @@ end
 
 -- processObjects(data, header, classes, values[, defrostFn]) -> table | nil, string
 -- Function
--- Process the given data string, given the `objectCount` and `firstObject` in the `header` table.
+-- Process the given data string, given the `objectCount` and `objectStart` in the `header` table.
 -- It uses the `classes` and `values` tables to lookup the class and values for each object.
 -- If provided, the `defrostFn` is passed the empty instance table, the class table, and the values for the object, as a list.
 --
@@ -230,7 +235,7 @@ end
 --  * If a `value` is a reference to another object (ie. `type` is `10`), the `reference` property will contain the referenced object.
 local function processObjects(data, header, classes, values)
     local objects = {}
-    local index = header.firstObject
+    local index = header.objectStart
     -- read the objects from the data stream
     for i = 1, header.objectCount do
         local classIndex, valuesStart, valuesCount
@@ -242,35 +247,74 @@ local function processObjects(data, header, classes, values)
         end
 
         objects[i] = {
-            class = class,
-            valuesStart = valuesStart,
-            valuesCount = valuesCount,
+            ["$class"] = {
+                ["$classname"] = class["$classname"],
+                ["$data"] = class["$data"],
+                ["$values"] = {
+                    ["$start"] = valuesStart,
+                    ["$count"] = valuesCount,
+                },
+            },
         }
     end
 
     -- store the values for each object
     for i, object in ipairs(objects) do
-        local objectValues = {}
-        local valuesStart = object.valuesStart
-        for j = 1, object.valuesCount do
+        local class = object["$class"]
+        local classname = class["$classname"]
+        -- log.df("processObjects: object #%d classname: %s", i, classname)
+        local mt = types[classname]
+        if mt then
+            -- log.df("processObjects: setting object #%d metatable to %s", i, classname)
+            setmetatable(object, mt)
+        end
+        local objectValues = class["$values"]
+        local valuesStart = objectValues["$start"]
+        for j = 1, objectValues["$count"] do
             local value = values[valuesStart+j]
             if not value then
                 return nil, format("Invalid value index: %d for object #%d", valuesStart+j, i)
             end
-            local reference
+            objectValues[j] = value
+            local actualValue = value.value
             if value.type == REFERENCE_TYPE then -- link to the referenced object
-                reference = objects[value.value+1]
+                actualValue = objects[value.value+1]
             end
-            objectValues[value.key] = {
-                type = value.type,
-                value = value.value,
-                reference = reference,
-            }
+            if value.key == EMPTY_KEY then
+                insert(object, actualValue)
+            else
+                object[value.key] = actualValue
+            end
         end
-        object.values = objectValues
     end
 
     return objects
+end
+
+
+-- processArchive(data, header) -> table
+-- Function
+-- Processes the given `data` string, with the specified archive header providing counts and offsets.
+-- All object, key, value, and class records are processed and added to the `object`, `key`, `value`, and `class` tables, respectively.
+--
+-- Parameters:
+--  * data - The `string` of bytes to process.
+--  * header - The `NIBArchive` header table.
+--
+-- Returns:
+--  * A table containing the processed `object`, `key`, `value`, and `class` tables.
+local function processArchive(data, header)
+    -- 1. Process the keys.
+    local keys = processKeys(data, header)
+    -- 2. Process the values.
+    local values = processValues(data, header, keys)
+    -- 3. Process the classes.
+    local classes = processClasses(data, header)
+    -- 4. Process the objects.
+    local objects = processObjects(data, header, classes, values)
+
+    -- return root object
+    return objects[1]
 end
 
 local mod = {}
@@ -311,7 +355,7 @@ function mod.new(decoders)
     return self
 end
 
---- cp.nib.archiver:fromBytes(data) -> table | nil, string
+--- cp.nib.fromBytes(data) -> table | nil, string
 --- Method
 --- Unarchives the given `string` of bytes into a `table`, if it is a valid `NIBArchive`.
 ---
@@ -321,7 +365,7 @@ end
 --- Returns:
 ---  * The `table` containing the unarchived data, or `nil` if the `archive` is not a valid `NIBArchive`.
 ---  * The `string` error message, if any.
-function mod.mt:fromBytes(data)
+function mod.fromBytes(data)
     if not mod.isSupported(data) then
         return nil, string.format("Provided data is not an NIBArchive.")
     end
@@ -331,11 +375,10 @@ function mod.mt:fromBytes(data)
         uint32le, uint32le, -- valueCount, valueStart
         uint32le, uint32le  -- classCount, classStart
     ))
-    -- log.df("unarchive: header: %s", hs.inspect(header))
-    return self:_processArchive(data, header)
+    return processArchive(data, header)
 end
 
---- cp.nib.archiver:unarchiveFile(filename) -> table | nil, string
+--- cp.nib.archiver.fromFile(filename) -> table | nil, string
 --- Method
 --- Attempts to read the specified `filename` and unarchives it into a `table`, if it is a valid NIBArchive.
 ---
@@ -345,7 +388,7 @@ end
 --- Returns:
 ---  * A `table` containing the archive data, or `nil` if the file could not be read.
 --- * The `string` error message, if any.
-function mod.mt:fromFile(filename)
+function mod.fromFile(filename)
     if not filename then
         return nil, "No filename was provided"
     end
@@ -361,79 +404,7 @@ function mod.mt:fromFile(filename)
     local data = file:read "*a"                 -- *a or *all reads the whole file
     file:close()
 
-    return self:fromBytes(data)
-end
-
-
--- cp.nib.archiver:_processArchive(data, header) -> table
--- Method
--- Processes the given `data` string, with the specified archive header providing counts and offsets.
--- All object, key, value, and class records are processed and added to the `object`, `key`, `value`, and `class` tables, respectively.
---
--- Parameters:
---  * data - The `string` of bytes to process.
---  * header - The `NIBArchive` header table.
---
--- Returns:
---  * A table containing the processed `object`, `key`, `value`, and `class` tables.
-function mod.mt:_processArchive(data, header)
-    -- 1. Process the keys.
-    local keys = processKeys(data, header)
-    -- 2. Process the values.
-    local values = processValues(data, header, keys)
-    -- 3. Process the classes.
-    local classes = processClasses(data, header)
-    -- 4. Process the objects.
-    local objects = processObjects(data, header, classes, values)
-
-    -- 5. Decode the objects.
-    for i = 1, #objects do
-        self:_getObject(i, objects)
-    end
-    
-    return foo
-end
-
--- cp.nib.archiver:_getObject(i, objects) -> table
--- Method
--- Gets the object at the given `i` index, either retrieving it from the `cache` table or
--- decoding it from the `objects` table and storing it in the `cache` table.
---
--- Parameters:
---  * i - The index of the object to get.
---  * objects - The `objects` table to get the object from.
---
--- Returns:
---  * The decoded object.
-function mod.mt:_getObject(i, objects)
-    local object = objects[i]
-    if not object then
-        return nil
-    end
-
-    local instance = object.instance
-    if not instance then
-        object.instance = self:_decodeObject(object)
-    end
-    return instance
-end
-
--- cp.nib.archiver:_decodeObject(object) -> any
--- Method
--- Decodes the given `object` into the `instance` table, using the `cache` table to look up referenced objects.
---
--- Parameters:
---  * object - The `object` table to decode.
---
--- Returns:
---  * The decoded instance, or `nil` if no decoder matches.
-function mod.mt:_decodeObject(object)
-    for _, decoder in ipairs(self.decoders) do
-        local instance = decoder(object)
-        if instance then
-            return instance
-        end
-    end
+    return mod.fromBytes(data)
 end
 
 mod._varint = varint
