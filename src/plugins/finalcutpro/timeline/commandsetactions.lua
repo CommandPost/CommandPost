@@ -79,7 +79,9 @@ function plugin.init(deps)
             local fcpPath = fcp:getPath()
             local currentLocale = fcp:currentLocale()
             if fcpPath and currentLocale then
-
+                --------------------------------------------------------------------------------
+                -- Process the regular commands:
+                --------------------------------------------------------------------------------
                 local namePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
                 local descriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
 
@@ -89,6 +91,27 @@ function plugin.init(deps)
                 if nameData and descriptionData then
                     for id, name in pairs(nameData) do
                         local subText = descriptionData[id] or i18n("commandEditorShortcut")
+                        choices
+                            :add(convertHtmlEntities(name))
+                            :subText(convertHtmlEntities(subText))
+                            :params(id)
+                            :image(ICON)
+                            :id(id)
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Process the "Additional" commands:
+                --------------------------------------------------------------------------------
+                local additionalNamePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNamesAdditional.strings"
+                local additionalDescriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptionsAdditional.strings"
+
+                local additionalNameData          = fileToTable(additionalNamePath)
+                local additionalDescriptionData   = fileToTable(additionalDescriptionPath)
+
+                if additionalNameData and additionalDescriptionData then
+                    for id, name in pairs(additionalNameData) do
+                        local subText = additionalDescriptionData[id] or i18n("commandEditorShortcut")
                         choices
                             :add(convertHtmlEntities(name))
                             :subText(convertHtmlEntities(subText))

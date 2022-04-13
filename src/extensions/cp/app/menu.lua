@@ -228,10 +228,11 @@ end
 --  * path       - the path to the menu `.nib` file
 --  * locale     - The `localeID` being processed.
 --  * menuCache  - The `table` containing the cached menu items for all languages.
+--  * mainMenuNibOverridePath - A MainMenu.nib fallback path
 --
 -- Returns:
 --  * `true` if the `.nib` could be read and was processed, otherwise `false`.
-local function readMenuNib(path, localeCode, menuCache)
+local function readMenuNib(path, localeCode, menuCache, mainMenuNibOverridePath)
     if path then
         local data = readFromFile(path)
         local menuNib
@@ -287,18 +288,18 @@ local function readStringsFile(app, locale, stringsName)
     end
 end
 
-local function loadMenuTitlesFromNib(app, locale, menuCache)
+local function loadMenuTitlesFromNib(app, locale, menuCache, mainMenuNibOverridePath)
     local nibName = app:info()[menu.NIB_FILE]
     if not nibName then
         return false
     end
 
     local nibPath = findMenuNibPath(app, locale, nibName)
-    if not nibPath or not readMenuNib(nibPath, locale.code, menuCache) then
+    if not nibPath or not readMenuNib(nibPath, locale.code, menuCache, mainMenuNibOverridePath) then
         local baseLocale = app:baseLocale()
         if not menuCache[BASE_LOCALE] then
             local baseNibPath = findBaseMenuNibPath(app, nibName)
-            readMenuNib(baseNibPath, baseLocale.code, menuCache)
+            readMenuNib(baseNibPath, baseLocale.code, menuCache, mainMenuNibOverridePath)
         end
 
         -- 1. If currently in the app's `baseLocale` then apply the strings from the NSLocalizableStrings
@@ -378,10 +379,11 @@ end
 --  * app       - The `cp.app` we're loading for.
 --  * locale    - The `localeID`.
 --  * menuCache - The menu table containing the main menu structure.
+--  * mainMenuNibOverridePath - A MainMenu.nib fallback path
 --
 -- Returns:
 --  * The menu table.
-local function loadMenuTitlesLocale(app, locale, menuCache)
+local function loadMenuTitlesLocale(app, locale, menuCache, mainMenuNibOverridePath)
     locale = localeID(locale)
     if not locale then
         -- it's not a real locale (according to our records...)
@@ -399,26 +401,29 @@ local function loadMenuTitlesLocale(app, locale, menuCache)
         return true
     end
 
-    return loadMenuTitlesFromNib(app, locale, menuCache) or loadMenuTitlesFromStoryboard(app, locale, menuCache)
+    return loadMenuTitlesFromNib(app, locale, menuCache, mainMenuNibOverridePath) or loadMenuTitlesFromStoryboard(app, locale, menuCache)
 end
 
 function menu.static.matches(element)
     return element and element:attributeValue("AXRole") == menu.ROLE and #element > 0
 end
 
---- cp.app.menu(app) -> menu
+--- cp.app.menu(app, mainMenuNibOverridePath) -> menu
 --- Constructor
 --- Constructs a new menu for the specified App.
 ---
 --- Parameters:
 ---  * app - The `cp.app` instance the menu belongs to.
+---  * mainMenuNibOverridePath - An optional path to an alternative MainMenu.nib file.
 ---
 --- Returns:
 ---  * a new menu instance
-function menu:initialize(app)
+function menu:initialize(app, mainMenuNibOverridePath)
     self._app = app
     self._menuTitles = {}
     self._itemFinders = {}
+
+    self.mainMenuNibOverridePath = mainMenuNibOverridePath
 
     -- load default locale for the menu when the local changes.
     app.currentLocale:watch(function(newLocale)
@@ -480,7 +485,7 @@ function menu:getMenuTitles(locales)
     local menuCache = self._menuTitles
     --log.df("getMenuTitles: before: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
     for _, locale in ipairs(locales) do
-        loadMenuTitlesLocale(app, locale, menuCache)
+        loadMenuTitlesLocale(app, locale, menuCache, self.mainMenuNibOverridePath)
     end
     --log.df("getMenuTitles: after: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
 

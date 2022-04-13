@@ -17,6 +17,7 @@ local timer             = require "hs.timer"
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local json              = require "cp.json"
+local tools             = require "cp.tools"
 
 local template          = require "resty.template"
 
@@ -25,6 +26,7 @@ local allowAppleScript  = hs.allowAppleScript
 
 local blockAlert        = dialog.blockAlert
 local encode            = base64.encode
+local encodeURI         = tools.encodeURI
 local htmlEscape        = template.escape
 local imageFromPath     = image.imageFromPath
 local webviewAlert      = dialog.webviewAlert
@@ -388,11 +390,14 @@ function plugin.init(deps, env)
                     return s
                 end
 
+                local actionString = [[cp.triggerAction("]] .. handler:id()  .. [[",]] .. processTable(action) .. ")"
+
                 --------------------------------------------------------------------------------
-                -- Base64 Encode the String to Avoid JavaScript Escaping Weirdness:
+                -- URI Encode then Base64 Encode the String to Avoid Non-Standard Character
+                -- and JavaScript Escaping Weirdness:
                 --------------------------------------------------------------------------------
-                local result = encode([[cp.triggerAction("]] .. handler:id()  .. [[",]] .. processTable(action) .. ")")
-                mod._manager.injectScript("insertTextAtCursor(`" .. result .. "`);")
+                local encodedActionString = encode(encodeURI(actionString))
+                mod._manager.injectScript("insertTextAtCursor(`" .. encodedActionString .. "`);")
             end):show()
         elseif params["type"] == "execute" then
             --------------------------------------------------------------------------------

@@ -150,13 +150,15 @@ local plugin = {
     id              = "core.menu.menuaction",
     group           = "core",
     dependencies    = {
-        ["core.action.manager"]                 = "actionmanager",
-        ["core.application.manager"]            = "applicationmanager",
-        ["core.loupedeckctandlive.manager"]     = "loupedeckctmanager",
-        ["core.midi.manager"]                   = "midimanager",
-        ["core.streamdeck.manager"]             = "streamdeckmanager",
-        ["core.tourbox.manager"]                = "tourboxmanager",
-        ["core.razer.manager"]                  = "razermanager",
+        ["core.action.manager"]                     = "actionmanager",
+        ["core.application.manager"]                = "applicationmanager",
+        ["core.loupedeckctandlive.manager"]         = "loupedeckctmanager",
+        ["core.midi.manager"]                       = "midimanager",
+        ["core.streamdeck.manager"]                 = "streamdeckmanager",
+        ["core.tourbox.manager"]                    = "tourboxmanager",
+        ["core.razer.manager"]                      = "razermanager",
+        ["core.controlsurfaces.resolve.manager"]    = "resolvemanager",
+
     }
 }
 
@@ -244,6 +246,7 @@ function plugin.postInit(deps)
     local streamDeckItems       = deps.streamdeckmanager.items
     local tourBoxItems          = deps.tourboxmanager.items
     local razerItems            = deps.razermanager.items
+    local resolveItems          = deps.resolvemanager.items
 
     local registeredApps        = appManager.getApplications()
 
@@ -303,6 +306,7 @@ function plugin.postInit(deps)
             streamDeckItems,
             tourBoxItems,
             razerItems,
+            resolveItems,
         }
         for _, item in pairs(items) do
             --------------------------------------------------------------------------------
@@ -369,6 +373,7 @@ function plugin.postInit(deps)
     streamDeckItems:watch(function() scanPreferences() end)
     tourBoxItems:watch(function() scanPreferences() end)
     razerItems:watch(function() scanPreferences() end)
+    resolveItems:watch(function() scanPreferences() end)
 
     --------------------------------------------------------------------------------
     -- Scan preferences:

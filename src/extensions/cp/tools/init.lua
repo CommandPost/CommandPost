@@ -2336,4 +2336,49 @@ function tools.isColor(object)
     return object and getmetatable(object) == getObjectMetatable("hs.drawing.color") or false
 end
 
+--- cp.tools.characterToPercentEncodedString(input) -> string
+--- Function
+--- Encodes a character as a percent encoded string.
+---
+--- Parameters:
+---  * input - The string to process
+---
+--- Returns:
+---  * A string
+function tools.characterToPercentEncodedString(c)
+	return string.format("%%%02X", c:byte(1,1))
+end
+
+--- cp.tools.encodeURI(input) -> string
+--- Function
+--- Replaces all characters (except for those listed in the notes) with the appropriate UTF-8 escape sequences.
+---
+--- Parameters:
+---  * input - The string to process
+---
+--- Returns:
+---  * A string
+---
+--- Notes:
+---  * Except these characters: ; , / ? : @ & = + $ # alphabetic, decimal digits, - _ . ! ~ * ' ( )
+function tools.encodeURI(str)
+	return (str:gsub("[^%;%,%/%?%:%@%&%=%+%$%w%-%_%.%!%~%*%'%(%)%#]", tools.characterToPercentEncodedString))
+end
+
+--- cp.tools.encodeURIComponent(input) -> string
+--- Function
+--- Escapes all characters (except for those listed in the notes) with the appropriate UTF-8 escape sequences.
+---
+--- Parameters:
+---  * input - The string to process
+---
+--- Returns:
+---  * A string
+---
+--- Notes:
+---  * Except these characters: alphabetic, decimal digits, - _ . ! ~ * ' ( )
+function tools.encodeURIComponent(str)
+	return (str:gsub("[^%w%-_%.%!%~%*%'%(%)]", tools.characterToPercentEncodedString))
+end
+
 return tools

@@ -157,14 +157,15 @@ end
 ---
 --- Parameters:
 ---  * bundleID      - The application bundle ID to find the app for.
+--   * mainMenuNibOverridePath - A MainMenu.nib fallback path
 ---
 --- Returns:
 ---  * The `cp.app` for the bundle.
-function app.static.forBundleID(bundleID)
+function app.static.forBundleID(bundleID, mainMenuNibOverridePath)
     assert(type(bundleID) == "string", "`bundleID` must be a string")
     local theApp = apps[bundleID]
     if not theApp then
-        theApp = app:new(bundleID)
+        theApp = app:new(bundleID, mainMenuNibOverridePath)
         apps[bundleID] = theApp
     end
 
@@ -181,14 +182,17 @@ end
 -- Rather, get them via the [forBundleID](#forBundleID) function.
 --
 -- Parameters:
--- * bundleID       - The BundleID for the app
+--  * bundleID - The BundleID for the app
+--  * mainMenuNibOverridePath - A MainMenu.nib fallback path
 --
 -- Returns:
--- * The new `cp.app`.
-function app:initialize(bundleID)
+--  * The new `cp.app`.
+function app:initialize(bundleID, mainMenuNibOverridePath)
     self._bundleID = bundleID
     self._windowClasses = {}
     self._windowCache = {}
+
+    self.mainMenuNibOverridePath = mainMenuNibOverridePath
 
     self:registerWindowType(Window)
     self:registerWindowType(Dialog)
@@ -774,7 +778,7 @@ end
 --- Field
 --- The main [menu](cp.app.menu.md) for the application.
 function app.lazy.value:menu()
-    return menu(self)
+    return menu(self, self.mainMenuNibOverridePath)
 end
 
 --- cp.app:launch([waitSeconds], [path]) -> self
