@@ -222,7 +222,7 @@ fcp.EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Re
 --- cp.apple.finalcutpro.FLEXO_LANGUAGES -> table
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
-fcp.FLEXO_LANGUAGES	= Set("de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN")
+fcp.FLEXO_LANGUAGES	= Set("de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN", "ko")
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS -> table
 --- Constant
