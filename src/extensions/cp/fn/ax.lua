@@ -569,12 +569,13 @@ end
 ---
 --- Parameters:
 ---  * parent - The parent `cp.ui.Element` to use for the created `cp.ui.Element`s.
----  * elementsUiFinder - A `function` that will return a table of `axuielement`s to use as the elements for the created `cp.ui.Element`s.
+---  * elementsUiFinder - A `function` or `cp.prop` that will return a table of `axuielement`s to use as the elements for the created `cp.ui.Element`s.
 ---  * elementInits - A table of `function`s that will create `cp.ui.Element`s.
 ---
 --- Returns:
 ---  * A table of `cp.ui.Element`s.
 function mod.initElements(parent, elementsUiFinder, elementInits)
+    elementsUiFinder = prop.FROM(elementsUiFinder)
     if not elementInits or #elementInits == 0 then return nil end
     return imap(function(init, index)
         return init(parent, elementsUiFinder:mutate(chain // fn.call >> get(index)))

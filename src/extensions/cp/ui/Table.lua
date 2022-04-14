@@ -8,9 +8,7 @@ local require = require
 
 local ax                                    = require "cp.fn.ax"
 -- local Column                                = require "cp.ui.Column"
-local Element                               = require "cp.ui.Element"
 local GridElement                           = require "cp.ui.GridElement"
-local Row                                   = require "cp.ui.Row"
 
 local Table = GridElement:subclass("cp.ui.Table")
 
@@ -32,18 +30,12 @@ Table.static.matches = ax.matchesIf(GridElement.matches, ax.hasRole "AXTable")
 -- Parameters:
 --  * parent - The parent `Element` instance.
 --  * uiFinder - A `hs.uielement` or `axuielementObject` that will be used to find this element.
---  * cellTypes - A table of `cp.ui.Element` initialisers which will be the content of the [Cell](cp.ui.Cell.md) instances.
+--  * factory - A row/cell factory.
 --
 -- Returns:
 --  * A new `Table` instance.
 function Table:initialize(parent, uiFinder, factory)
-    GridElement.initialize(self, parent, uiFinder)
-
-    self._factory = factory
-
-    self._headerType = Element
-    self._rowType = Row
-    -- self._columnType = Column
+    GridElement.initialize(self, parent, uiFinder, factory)
 end
 
 return Table

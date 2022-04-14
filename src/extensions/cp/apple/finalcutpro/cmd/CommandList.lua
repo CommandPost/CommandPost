@@ -55,11 +55,9 @@ end
 -- Field
 -- The [SplitGroup](cp.ui.SplitGroup.md) containing the commands.
 function CommandList.lazy.value:_commandsSplitGroup()
-    return SplitGroup(
-        self,
-        self.UI:mutate(ax.childMatching(SplitGroup.matches)),
-        { CommandGroups, Splitter, CommandMap }
-    )
+    return SplitGroup(self, self.UI:mutate(ax.childMatching(SplitGroup.matches)), {
+        CommandGroups, Splitter, CommandMap
+    })
 end
 
 --- cp.apple.finalcutpro.cmd.CommandList.groups <cp.apple.finalcutpro.cmd.CommandGroups>

@@ -78,10 +78,13 @@ end
 function GridElement:initialize(parent, uiFinder, factory)
     Element.initialize(self, parent, uiFinder)
 
+    if not GridElement.Factory:isTypeOf(factory) then
+        error("Invalid factory: " .. tostring(factory))
+    end
     self._factory = factory
 
-    self._headerType = Element
-    self._rowType = Row
+    -- self._headerType = Element
+    -- self._rowType = Row
     -- self._columnType = Column
 end
 
