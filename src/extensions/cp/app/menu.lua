@@ -181,12 +181,12 @@ local function processMenu(menuData, localeCode, menuCache)
             if isLocalizableString(value) then
                 item.key = stringKey(value)
             end
-            
+
             item[localeCode] = stringValue(value)
             item.separator = itemData.NSIsSeparator
             --------------------------------------------------------------------------------
             -- Check if there is a submenu:
---------------------------------------------------------------------------------
+            --------------------------------------------------------------------------------
             if itemData.NSSubmenu then
                 item.submenu = processMenu(itemData.NSSubmenu, localeCode, item.submenu)
             end
