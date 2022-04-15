@@ -85,9 +85,10 @@ local function isLocalizableString(value)
 end
 
 local function stringValue(value)
-    if type(value) == "string" then
+    local valueType = type(value)
+    if valueType == "string" then
         return value
-    elseif isLocalizableString(value) then
+    elseif valueType == "table" then
         return value["NS.string"] or tostring(value)
     end
 end
@@ -175,19 +176,17 @@ local function processMenu(menuData, localeCode, menuCache)
     if menuData.NSMenuItems then
         for i, itemData in ipairs(menuData.NSMenuItems) do
             local item = menuCache[i] or {}
-            local value = stringValue(itemData.NSTitle)
-            local key = nil
+            local value = itemData.NSTitle
 
             if isLocalizableString(value) then
-                key = stringKey(value)
-                value = stringValue(value)
+                item.key = stringKey(value)
             end
-            item[localeCode] = value
-            item.key = key
+            
+            item[localeCode] = stringValue(value)
             item.separator = itemData.NSIsSeparator
             --------------------------------------------------------------------------------
             -- Check if there is a submenu:
-            --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
             if itemData.NSSubmenu then
                 item.submenu = processMenu(itemData.NSSubmenu, localeCode, item.submenu)
             end
