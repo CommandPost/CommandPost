@@ -11,6 +11,7 @@ local require           = require
 -- local log               = require "hs.logger".new("Element")
 
 local axutils           = require "cp.ui.axutils"
+local Builder = require "cp.ui.Builder"
 local go	            = require "cp.rx.go"
 local is                = require "cp.is"
 local lazy              = require "cp.lazy"
@@ -22,8 +23,61 @@ local cache             = axutils.cache
 local Do, Given, If     = go.Do, go.Given, go.If
 local isFunction        = is.fn
 local isCallable        = is.callable
+local pack, unpack      = table.pack, table.unpack
 
 local Element = class("cp.ui.Element"):include(lazy)
+
+--- cp.ui.Element:defineBuilder(...) -> cp.ui.Element
+--- Method
+--- Defines a new [Builder](cp.ui.Builder.md) class on this `Element` with the specified additional argument names.
+---
+--- Parameters:
+---  * ... - The names for the methods which will collect extra arguments to pass to the `Element` constructor.
+---
+--- Returns:
+---  * The same `Element` class instance.
+---
+--- Notes:
+---  * The order of the argument names here is the order in which they will be passed to the `Element` constructor, no matter what
+---    order they are called on the `Builder` itself.
+---  * Once defined, the class can be accessed via the static `<Element Name>.Builder` of the `Element` subclass.
+---  * For example, if you have a `cp.ui.Element` subclass named `MyElement`, with an extra `alpha` and `beta` constructor argument, you can do this:
+---    ```lua
+---    -- The class definition
+---    local MyElement = Element:subclass("cp.ui.MyElement"):defineBuilder("withAlpha", "withBeta")
+---    -- The constructor
+---    function MyElement.Builder:initialize(parent, uiFinder, alpha, beta)
+---        Element.initialize(self, parent, uiFinder)
+---        self.alpha = alpha
+---        self.beta = beta
+---    end
+---    -- Create a callable `MyClass.Builder` instance
+---    local myElementBuilder = MyElement:withAlpha(1):withBeta(2)
+---    -- alternately, same result:
+---    local myElementBuilder = MyElement:withBeta(2):withAlpha(1)
+---    -- Alternately, same result:
+---    local myElementBuilder = MyElement.Builder():withAlpha(1):withBeta(2)
+---    -- Create an instance of `MyClass`:
+---    local myElement = myElementBuilder(parent, uiFinder)
+---    ```
+function Element.static:defineBuilder(...)
+    local args = pack(...)
+    local thisType = self
+    local builderClass = Builder:subclass(self.name .. ".Builder")
+    self.Builder = builderClass
+
+    function builderClass:initialize(elementType)
+        elementType = elementType or thisType
+        Builder.initialize(self, elementType, unpack(args))
+    end
+
+    for _, arg in ipairs(args) do
+        self[arg] = function(elementType, value)
+            return builderClass(elementType)[arg](value)
+        end
+    end
+    return self
+end
 
 --- cp.ui.Element:isTypeOf(thing) -> boolean
 --- Function
@@ -423,7 +477,7 @@ end
 ---        return layout
 ---    end
 ---    ```
-function Element.saveLayout()
+function Element.saveLayout(_)
     return {}
 end
 
@@ -447,7 +501,7 @@ end
 ---        self.myConfig = layout.myConfig
 ---    end
 ---    ```
-function Element.loadLayout(_)
+function Element.loadLayout(_, _)
 end
 
 function Element.lazy.method:doSaveLayout()

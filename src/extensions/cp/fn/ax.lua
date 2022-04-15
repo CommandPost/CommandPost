@@ -598,12 +598,11 @@ end
 --- Notes:
 ---  * If the `uiFinder` is a `cp.prop`, it will be monitored for changes, making the resulting `prop` "live".
 function mod.prop(uiFinder, attributeName, settable)
-    if prop.is(uiFinder) then
-        return uiFinder:mutate(
-            mod.attribute(attributeName),
-            settable and mod.setAttribute(attributeName)
-        )
-    end
+    uiFinder = prop.FROM(uiFinder)
+    return uiFinder:mutate(
+        mod.attribute(attributeName),
+        settable and mod.setAttribute(attributeName)
+    )
 end
 
 --- cp.fn.ax.matchesIf(...) -> function(value) -> boolean

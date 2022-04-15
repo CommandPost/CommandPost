@@ -46,7 +46,6 @@ GridElement.static.matches = ax.matchesIf(
     )
 )
 
-
 --- cp.ui.GridElement:withRowsOf(...) -> function(parent, uiFinder) -> GridElement
 --- Function
 --- A combinator that returns a function expecting a `parent` and `uiFinder` and returns a `GridElement` instance, with

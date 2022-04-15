@@ -53,23 +53,32 @@ function CommandDetail.lazy.prop:_contentGroupUI()
     return self.UI:mutate(ax.childMatching(Group.matches))
 end
 
+-- cp.apple.finalcutpro.cmd.CommandDetail._labelUI <cp.prop: axuielement>
+-- Field
+-- The [axuielement](cp.prop.axuielement) for the label.
+function CommandDetail.lazy.prop:_labelUI()
+    return self._contentGroupUI:mutate(ax.childMatching(StaticText.matches))
+end
+
 --- cp.apple.finalcutpro.cmd.CommandDetail.label <cp.ui.StaticText>
 --- Field
 --- The StaticText that displays the label.
 function CommandDetail.lazy.value:label()
-    return StaticText(self, self._contentGroupUI:mutate(
-        ax.childMatching(StaticText.matches)
-    ))
+    return StaticText(self, self._labelUI)
+end
+
+-- cp.apple.finalcutpro.cmd.CommandDetail._detailUI <cp.prop: axuielement>
+-- Field
+-- The [axuielement](cp.prop.axuielement) for the detail `AXScrollArea`.
+function CommandDetail.lazy.prop:_detailUI()
+    return self._contentGroupUI:mutate(ax.childMatching(ScrollArea.matches))
 end
 
 --- cp.apple.finalcutpro.cmd.CommandDetail.detail <cp.ui.ScrollArea>
 --- Field
---- The ScrollArea that displays the contained [TextArea].
+--- The [ScrollArea](cp.ui.ScrollArea.md) that displays the contained [TextArea](cp.ui.TextArea.md).
 function CommandDetail.lazy.value:detail()
-    return ScrollArea(self,
-        self._contentGroupUI:mutate(ax.childMatching(ScrollArea.matches)),
-        TextArea
-    )
+    return ScrollArea:containing(TextArea)(self, self._detailUI)
 end
 
 --- cp.apple.finalcutpro.cmd.CommandDetail.contents <cp.ui.TextArea>

@@ -1,7 +1,3 @@
---- === cp.ui.ScrollArea ===
----
---- Scroll Area Module.
-
 local require                           = require
 
 local fn                                = require "cp.fn"
@@ -13,7 +9,33 @@ local ScrollBar                         = require "cp.ui.ScrollBar"
 local chain                             = fn.chain
 local ifilter, sort                     = fn.table.ifilter, fn.table.sort
 
-local ScrollArea = Element:subclass("cp.ui.ScrollArea")
+local ScrollArea = Element:subclass("cp.ui.ScrollArea"):defineBuilder("containing")
+
+--- === cp.ui.ScrollArea.Builder ===
+---
+--- [Builder](cp.ui.Builder.md) class for [ScrollArea](cp.ui.ScrollArea.lua).
+
+--- cp.ui.ScrollArea.Builder:containing(contentBuilder) -> cp.ui.ScrollArea.Builder
+--- Method
+--- Sets the content `Element` type/builder to the specified value.
+---
+--- Parameters:
+---  * contentBuilder - A `callable` that accepts a `parent` and `uiFinder` parameter, and returns an `Element` instance.
+---
+--- Returns:
+---  * The `Builder` instance.
+
+--- cp.ui.ScrollArea:containing(element) -> cp.ui.ScrollArea.Builder
+--- Function
+--- A static method that returns a new `ScrollArea.Builder`.
+
+-----------------------------------------------------------------------
+-- cp.ui.ScrollArea
+-----------------------------------------------------------------------
+
+--- === cp.ui.ScrollArea ===
+---
+--- Scroll Area Module.
 
 --- cp.ui.ScrollArea.matches(element) -> boolean
 --- Function
@@ -83,26 +105,6 @@ end
 --
 -----------------------------------------------------------------------
 
-local function compareChildren(a, b)
-    if a and b then -- Added in this to try and solve issue #950
-        local aFrame = a:attributeValue("AXFrame")
-        local bFrame = b:attributeValue("AXFrame")
-        if aFrame and bFrame then
-            if aFrame.y < bFrame.y then -- a is above b
-                return true
-            elseif aFrame.y == bFrame.y then
-                if aFrame.x < bFrame.x then -- a is left of b
-                    return true
-                elseif aFrame.x == bFrame.x
-                   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
-                    return true
-                end
-            end
-        end
-    end
-    return false -- b is first
-end
-
 --- cp.ui.ScrollArea:childrenUI(filterFn) -> hs.axuielement | nil
 --- Method
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
@@ -117,7 +119,7 @@ function ScrollArea:childrenUI(filterFn)
         fn.constant(self.contentsUI) >>
         ax.children >>
         ifilter(filterFn) >>
-        sort(compareChildren)
+        sort(ax.topDown)
 end
 
 --- cp.ui.ScrollArea.viewFrame <cp.prop:table; read-only>

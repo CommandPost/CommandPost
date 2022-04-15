@@ -131,6 +131,16 @@ function mod.get(key)
     end
 end
 
+--- cp.fn.table.this -> table
+--- Constant
+--- A `table` which can have any named property key, which will be a function combinator that expects to receive a `table`
+--- and returns the value at the specified key. These are essentially equivalent statements: `cp.fn.table.this.key` and `cp.fn.table.get "key"`.
+mod.this = setmetatable({}, {
+    __index = function(_, key)
+        return mod.get(key)
+    end,
+})
+
 --- cp.fn.ifilter([predicate]) -> function(table) -> table
 --- Function
 --- Returns a function that filters a table using the given predicate, in index order.

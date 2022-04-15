@@ -31,7 +31,7 @@ local packArgs, unpackArgs  = fnargs.pack, fnargs.unpack
 local hasNone               = fnargs.hasNone
 
 -- the list of submodules that can be loaded dynamically.
-local submodules = {"args", "ax", "table", "string", "value"}
+local submodules = {"args", "ax", "prop", "string", "table", "value"}
 
 local mod = {}
 setmetatable(mod, {

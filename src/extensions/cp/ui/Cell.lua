@@ -1,8 +1,23 @@
 --- === cp.ui.Cell ===
 ---
---- Represents an `AXCell` `axuielement`.
+--- Represents an `AXCell` `axuielement`. This can be used directly, or can be subclassed to provide more specific access to the cell contents.
+--- It is typically used in conjunction with a container type such as [Table](cp.ui.Table.md), something like this:
+---
+--- ```lua
+--- function MyPanel.lazy.value:tableOfStuff()
+---     return Table:withRowsOf(Cell:with(TextField), Cell:with(Button))(self, self.UI:mutate(chain // uielement >> attribute "AXContents"))
+--- end
+--- ```
+---
+--- For example, you can 
+---
+--- This is a subclass of [Element](cp.ui.Element.md).
 
+local require                       = require
+
+local fn                            = require "cp.fn"
 local ax	                        = require "cp.fn.ax"
+local is                            = require "cp.is"
 local Element	                    = require "cp.ui.Element"
 
 local pack                          = table.pack
@@ -29,6 +44,12 @@ Cell.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXCell")
 ---
 --- Returns:
 ---  * A function that will return a new `Cell` instance.
+---
+--- Notes:
+---  * For example, if a cell contains a [Button](cp.ui.Button.md), you can use `cp.ui.Cell:with(Button)`, and it will return a `Cell`
+---    constructor that accepts the `parent` and `uiFinder` parameters, and whose contents is expected to be a `Button`.
+---    That `Button` instance can be accessed via the `children[1]` value.
+---    ```
 function Cell.static:with(...)
     local childInits = pack(...)
     return function(parent, uiFinder)
@@ -43,7 +64,7 @@ end
 --- Parameters:
 ---  * parent - The parent `Element`.
 ---  * uiFinder - A `cp.prop` or `axuielement` that will be used to find this `Cell`'s `axuielement`.
----  * childInits - A table of child `Element` constructors to initialize.
+---  * childInits - A `table` of child `Element` constructors to initialize.
 ---
 --- Returns:
 ---  * A new `Cell` instance.
@@ -98,10 +119,7 @@ end
 --- Field
 --- The cell value, if it is a string.
 function Cell.lazy.prop:textValue()
-    return self.value:mutate(function(original)
-        local value = original()
-        return type(value) == "string" and value or nil
-    end)
+    return self.value:mutate(fn.value.filter(is.string))
 end
 
 --- cp.ui.Cell.textValueIs(value) -> boolean
