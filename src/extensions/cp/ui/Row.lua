@@ -18,7 +18,7 @@ local Row = Element:subclass("cp.ui.Row")
 ---  * `true` if it matches, otherwise `false`.
 Row.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXRow")
 
---- cp.ui.Row(parent, uiFinder) -> cp.ui.Row
+--- cp.ui.Row(parent, uiFinder, ...) -> cp.ui.Row
 --- Constructor
 --- Creates a new `Row` instance with the specified `parent` and `uiFinder`.
 ---
