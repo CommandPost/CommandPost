@@ -2,6 +2,7 @@
 ---
 --- Abstract base class for `AX` elements which form a grid, such as [GridElement](cp.ui.GridElement.md) and [Outline](cp.ui.Outline.md).
 
+local require                   = require
 -- local log                       = require "hs.logger" .new "GridElement"
 
 local fnutils	                = require "hs.fnutils"
@@ -25,7 +26,79 @@ local get                       = fn.table.get
 
 local Do                        = require "cp.rx.go.Do"
 
-local GridElement = Element:subclass("cp.ui.GridElement")
+local GridElement = Element:subclass("cp.ui.GridElement"):defineBuilder("withHeaderOf", "withRowsOf", "withColumnsOf")
+
+-----------------------------------------------------------------------
+-- GridElement.Builder Methods, created by `defineBuilder`.
+-----------------------------------------------------------------------
+
+--- === cp.ui.GridElement.Builder ===
+---
+--- A `Builder` for `GridElement`s.
+
+--- cp.ui.GridElement.Builder:withHeaderOf(headerInit) -> cp.ui.GridElement.Builder
+--- Method
+--- Adds a `Header` initializer to the `GridElement` builder.
+---
+--- Parameters:
+---  * headerInit - A `Header` initializer.
+---
+--- Returns:
+---  * The `GridElement` builder.
+
+--- cp.ui.GridElement.Builder:withRowsOf(rowInit) -> cp.ui.GridElement.Builder
+--- Method
+--- Adds a `Row` initializer to the `GridElement` builder.
+---
+--- Parameters:
+---  * rowInit - A `Row` initializer.
+---
+--- Returns:
+---  * The `GridElement` builder.
+
+--- cp.ui.GridElement.Builder:withColumnsOf(columnInit) -> cp.ui.GridElement.Builder
+--- Method
+--- Adds a `Column` initializer to the `GridElement` builder.
+---
+--- Parameters:
+---  * columnInit - A `Column` initializer.
+---
+--- Returns:
+---  * The `GridElement` builder.
+
+-----------------------------------------------------------------------
+-- GridElement
+-----------------------------------------------------------------------
+
+--- cp.ui.GridElement:withHeaderOf(headerInit) -> cp.ui.GridElement.Builder
+--- Function
+--- Returns a new `Builder` for `GridElement`s with the specified `headerInit`.
+---
+--- Parameters:
+---  * headerInit - A `Header` initializer.
+---
+--- Returns:
+---  * A new `Builder` for `GridElement`s.
+
+--- cp.ui.GridElement:withRowsOf(rowInit) -> cp.ui.GridElement.Builder
+--- Function
+--- Returns a new `Builder` for `GridElement`s with the specified `rowInit`.
+---
+--- Parameters:
+---  * rowInit - A `Row` initializer.
+---
+--- Returns:
+---  * A new `Builder` for `GridElement`s.
+
+--- cp.ui.GridElement:withColumnsOf(columnInit) -> cp.ui.GridElement.Builder
+--- Function
+--- Returns a new `Builder` for `GridElement`s with the specified `columnInit`.
+---
+--- Parameters:
+---  * columnInit - A `Column` initializer.
+---
+--- Returns:
+---  * A new `Builder` for `GridElement`s.
 
 --- cp.ui.GridElement.matches(element) -> boolean
 --- Function
@@ -63,74 +136,31 @@ function GridElement.static:withRowsOf(...)
     end
 end
 
--- cp.ui.GridElement(parent, uiFinder, factory) -> cp.ui.GridElement
--- Constructor
--- Creates a new `GridElement` instance.
---
--- Parameters:
---  * parent - The parent `Element` instance.
---  * uiFinder - A `hs.uielement` or `axuielementObject` that will be used to find this element.
---  * cellTypes - A table of `cp.ui.Element` initialisers which will be the content of the [Cell](cp.ui.Cell.md) instances.
---
--- Returns:
---  * A new `GridElement` instance.
-function GridElement:initialize(parent, uiFinder, factory)
+--- cp.ui.GridElement(parent, uiFinder, headerInit, rowInit, columnInit) -> cp.ui.GridElement
+--- Constructor
+--- Creates a new `GridElement` instance.
+---
+--- Parameters:
+---  * parent - The parent `Element` instance.
+---  * uiFinder - A `hs.uielement` or `axuielementObject` that will be used to find this element.
+---  * headerInit - An initializer function that will be called to create the header `Element` instance.
+---  * rowInit - An initializer function that will be called to create each row element.
+---  * columnInit - An initializer function that will be called to create each column element.
+---
+--- Returns:
+---  * A new `GridElement` instance.
+---
+--- Notes:
+---  * The `headerType`, `rowType` arguments are optional.
+function GridElement:initialize(parent, uiFinder, headerInit, rowInit, columnInit)
     Element.initialize(self, parent, uiFinder)
-
-    if not GridElement.Factory:isTypeOf(factory) then
-        error("Invalid factory: " .. tostring(factory))
-    end
-    self._factory = factory
-
-    -- self._headerType = Element
-    -- self._rowType = Row
-    -- self._columnType = Column
-end
-
---- cp.ui.GridElement:headerType(elementType) -> cp.ui.GridElement
---- Method
---- Sets the `headerType` for the header.
----
---- Parameters:
----  * `elementType`	- The `Element` type to use for the header, or a function that accepts `parent` and `uiFinder` and returns an `Element`.
----
---- Returns:
----  * The `GridElement` instance (for chaining).
-function GridElement:headerType(elementType)
-    self._headerType = elementType
-    return self
-end
-
---- cp.ui.GridElement:rowType(rowType) -> cp.ui.GridElement
---- Method
---- Sets the `rowType` for the rows.
----
---- Parameters:
----  * `rowType`	- The `Row` type to use for the rows, or a function that accepts `parent` and `uiFinder` and returns a `Row`.
----
---- Returns:
----  * The `GridElement` instance (for chaining).
-function GridElement:rowType(rowType)
-    self._rowType = rowType
-    return self
-end
-
--- cp.ui.GridElement:columnType(columnType) -> cp.ui.GridElement
--- Method
--- Sets the `columnType` for the columns.
---
--- Parameters:
---  * `columnType`	- The `Column` type to use for the columns, or a function that accepts `parent` and `uiFinder` and returns a `Column`.
---
--- Returns:
---  * The `GridElement` instance (for chaining).
-function GridElement:columnType(columnType)
-    self._columnType = columnType
-    return self
+    self._headerInit = headerInit or Element
+    self._rowInit = rowInit or Row
+    self._columnInit = columnInit or Column
 end
 
 --- cp.ui.GridElement.headerUI <cp.prop: axuielement; read-only; live>
---- Method
+--- Field
 --- Returns the header UI element.
 ---
 --- Parameters:
@@ -146,7 +176,7 @@ end
 --- Field
 --- The `Element` representing the `AXHeader` of the `GridElement`.
 function GridElement.lazy.value:header()
-    return self._headerType(self, self.headerUI)
+    return self._headerInit(self, self.headerUI)
 end
 
 --- cp.ui.GridElement.rowsUI <cp.prop: table of axuielement; live?; read-only>
@@ -349,11 +379,11 @@ function GridElement:selectRows(rows)
     local rowsUI = {}
     for _,row in ipairs(rows) do
         -- check it's a supported row type
-        if not self._rowType:isTypeOf(row) then
+        if not self._rowInit:isTypeOf(row) then
             error("Unsupported row type: " .. tostring(row))
         end
         local rowUI = row:UI()
-        if self._rowType.matches(rowUI) then
+        if self._rowInit.matches(rowUI) then
             table.insert(rowsUI, rowUI)
         end
     end
@@ -372,7 +402,7 @@ end
 ---  * `nil`
 function GridElement:selectRow(row)
     -- check it's a supported row type
-    if not self._rowType:isTypeOf(row) then
+    if not self._rowInit:isTypeOf(row) then
         error("Unsupported row type: " .. tostring(row))
     end
     -- select the row
@@ -469,7 +499,7 @@ end
 --- Returns:
 ---  * The new `Row` instance.
 function GridElement.OfRows:createRow(tbl, rowFinder)
-    return tbl._rowType(tbl, rowFinder, self._cellInitialisers)
+    return tbl._rowInit(tbl, rowFinder, self._cellInitialisers)
 end
 
 --- cp.ui.GridElement.OfRows:createRows(tbl, rowsFinder) -> table of cp.ui.Row
