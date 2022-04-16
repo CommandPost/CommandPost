@@ -76,11 +76,18 @@ local log                       = require "hs.logger" .new "Builder"
 
 local class                     = require "middleclass"
 
-local unpack                    = table.unpack
+local pack, unpack              = table.pack, table.unpack
 
 local ELEMENT_TYPE = {}
 local EXTRA_ARGS = {}
 local EXTRA_VALUES = {}
+
+local function _extraArgsFor(index, extraValues)
+    if index > extraValues.n then
+        return
+    end
+    return unpack(extraValues[index]), _extraArgsFor(index+1, extraValues) 
+end
 
 local function _extraArgs(builder)
     local extraValues = builder[EXTRA_VALUES]
@@ -121,8 +128,9 @@ function Builder:__index(key)
     local index = args[key]
     if index then
         local extraValues = self[EXTRA_VALUES]
-        return function(builder, value)
-            extraValues[index] = value
+        return function(builder, ...)
+            local values = pack(...)
+            extraValues[index] = values
             return self
         end
     end

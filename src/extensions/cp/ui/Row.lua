@@ -2,10 +2,28 @@
 ---
 --- Represents an `AXRow` `axuielement`.
 
+local fn                        = require "cp.fn"
 local ax                        = require "cp.fn.ax"
-local Element	                = require "cp.ui.Element"
+local Element                   = require "cp.ui.Element"
+
+local pack                      = table.pack
 
 local Row = Element:subclass("cp.ui.Row")
+    :defineBuilder("containing")
+
+--- === cp.ui.Row.Builder ===
+-—-
+-—- Defines a `Row` builder.
+
+--- cp.ui.Row:containing(...) -> cp.ui.Row.Builder
+--- Function
+--- Returns a `Builder` with the `Element` initializers for the items in the row.
+---
+--- Parameters:
+---  * ... - A variable list of `Element` initializers, one for each item.
+---
+--- Returns:
+----  * The `Row.Builder`
 
 --- cp.ui.Row.matches(element) -> boolean
 --- Method
@@ -28,6 +46,24 @@ Row.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXRow")
 ---
 --- Returns:
 ---  * The new `Row`.
+function Row:initializer(parent, uiFinder, ...)
+    Element.initialize(parent, uiFinder)
+    self.childInits = pack(...)
+end
+
+-—- cp.ui.Row.childrenUI <cp.prop: table of axuielement>
+-—- Field
+-—- Contains the list of `axuielement` children of the row.
+function Row.lazy.prop:childrenUI()
+    return ax.prop(self.UI, "AXChildren")
+end
+
+--— cp.ui.Row.children <table of cp.ui.Element>
+--— Field
+--— A table of child `Element`s for the `Row`.
+function Row.lazy.value:children()
+    return ax.initElements(self, self.childrenUI, self.childInits)
+end
 
 --- cp.ui.Row.disclosing <cp.prop: boolean>
 --- Field
