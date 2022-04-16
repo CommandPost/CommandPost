@@ -72,6 +72,8 @@
 
 local require                   = require
 
+local log                       = require "hs.logger" .new "Builder"
+
 local class                     = require "middleclass"
 
 local unpack                    = table.unpack
@@ -118,15 +120,16 @@ function Builder:__index(key)
     local args = self[EXTRA_ARGS]
     local index = args[key]
     if index then
-        return function(value)
-            self[EXTRA_VALUES][index] = value
+        local extraValues = self[EXTRA_VALUES]
+        return function(builder, value)
+            extraValues[index] = value
             return self
         end
     end
 end
 
 function Builder:__call(parent, uiFinder)
-    return Builder:build(parent, uiFinder)
+    return self:build(parent, uiFinder)
 end
 
 return Builder

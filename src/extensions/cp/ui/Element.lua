@@ -73,7 +73,8 @@ function Element.static:defineBuilder(...)
 
     for _, arg in ipairs(args) do
         self[arg] = function(elementType, value)
-            return builderClass(elementType)[arg](value)
+            local instance = builderClass(elementType)
+            return instance[arg](instance, value)
         end
     end
     return self

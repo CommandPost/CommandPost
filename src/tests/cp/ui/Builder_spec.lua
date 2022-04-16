@@ -22,8 +22,7 @@ return describe "cp.ui.Builder" {
             self.alpha = alpha
         end
 
-        local a = MyElement:withAlpha("alpha")(nil, function() end)
-        expect(a.parent):is(nil)
+        local a = MyElement:withAlpha("alpha")({}, function() end)
         expect(a.alpha):is("alpha")
     end),
 
@@ -37,13 +36,11 @@ return describe "cp.ui.Builder" {
             self.beta = beta
         end
 
-        local a = MyElement:withAlpha("alpha"):withBeta("beta")(nil, function() end)
-        expect(a.parent):is(nil)
+        local a = MyElement:withAlpha("alpha"):withBeta("beta")({}, function() end)
         expect(a.alpha):is("alpha")
         expect(a.beta):is("beta")
 
-        local b = MyElement:withBeta("beta"):withAlpha("alpha")(nil, function() end)
-        expect(b.parent):is(nil)
+        local b = MyElement:withBeta("beta"):withAlpha("alpha")({}, function() end)
         expect(b.alpha):is("alpha")
         expect(b.beta):is("beta")
     end),
