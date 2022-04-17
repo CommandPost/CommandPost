@@ -2,7 +2,7 @@
 ---
 --- A module of free-standing functions for working with [cp.prop](cp.prop.md) values.
 
-local require                       = require
+-- local require                       = require
 
 local mod = {}
 

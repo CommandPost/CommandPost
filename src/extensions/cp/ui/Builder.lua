@@ -72,7 +72,7 @@
 
 local require                   = require
 
-local log                       = require "hs.logger" .new "Builder"
+-- local log                       = require "hs.logger" .new "Builder"
 
 local class                     = require "middleclass"
 

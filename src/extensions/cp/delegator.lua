@@ -82,7 +82,7 @@
 --- The easy way to remember is to read them together - "lazy delegator" sounds better than "delegator lazy".
 
 local require       = require
-local log           = require "hs.logger" .new "delegator"
+-- local log           = require "hs.logger" .new "delegator"
 
 local prop          = require "cp.prop"
 local insert        = table.insert
