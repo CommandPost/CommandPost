@@ -49,27 +49,6 @@ function CommandMap:initialize(parent, uiFinder)
     )
 end
 
---- cp.apple.finalcutpro.cmd.CommandMap.byCommand <cp.ui.Button>
---- Field
---- The `Button` that toggles sort order by "Command".
-function CommandMap.lazy.value:byCommand()
-    return self.contents.header.byCommand
-end
-
---- cp.apple.finalcutpro.cmd.CommandMap.byModifiers <cp.ui.Button>
---- Field
---- The `Button` that toggles sort order by "Modifiers".
-function CommandMap.lazy.value:byModifiers()
-    return self.contents.header.byModifiers
-end
-
---- cp.apple.finalcutpro.cmd.CommandMap.byKey <cp.ui.Button>
---- Field
---- The `Button` that toggles sort order by "Key".
-function CommandMap.lazy.value:byKey()
-    return self.contents.header.byKey
-end
-
 --- === cp.apple.finalcutpro.cmd.CommandMap.Header ===
 ---
 --- The header of the CommandMap.
@@ -80,27 +59,27 @@ function CommandMap.Header:initialize(parent, uiFinder)
     Group.initialize(self, parent, uiFinder, Button, Button, Button)
 end
 
---- cp.apple.finalcutpro.cmd.CommandMap.Header.byCommand <cp.ui.Button>
+--- cp.apple.finalcutpro.cmd.CommandMap.Header.command <cp.ui.Button>
 --- Field
---- The `Button` that can be pressed to sort by command. Pressing more than
+--- The `Button` that can be pressed to sort by "Command". Pressing more than
 --- once will alternate between ascending and descending.
-function CommandMap.Header.lazy.value:byCommand()
+function CommandMap.Header.lazy.value:command()
     return self.children[1]
 end
 
---- cp.apple.finalcutpro.cmd.CommandMap.Header.byModifiers <cp.ui.Button>
+--- cp.apple.finalcutpro.cmd.CommandMap.Header.modifiers <cp.ui.Button>
 --- Field
---- The `Button` that can be pressed to sort by modifiers. Pressing more than
+--- The `Button` that can be pressed to sort by "Modifiers". Pressing more than
 --- once will alternate between ascending and descending.
-function CommandMap.Header.lazy.value:byModifiers()
+function CommandMap.Header.lazy.value:modifiers()
     return self.children[2]
 end
 
---- cp.apple.finalcutpro.cmd.CommandMap.Header.byKey <cp.ui.Button>
+--- cp.apple.finalcutpro.cmd.CommandMap.Header.key <cp.ui.Button>
 --- Field
---- The `Button` that can be pressed to sort by key. Pressing more than
+--- The `Button` that can be pressed to sort by "Key". Pressing more than
 --- once will alternate between ascending and descending.
-function CommandMap.Header.lazy.value:byKey()
+function CommandMap.Header.lazy.value:key()
     return self.children[3]
 end
 

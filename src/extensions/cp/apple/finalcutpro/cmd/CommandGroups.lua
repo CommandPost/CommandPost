@@ -6,10 +6,13 @@ local require                       = require
 
 -- local log                           = require "hs.logger".new "CommandGroups"
 
-local fn                            = require "cp.fn"
 local ax                            = require "cp.fn.ax"
-
+local Button                        = require "cp.ui.Button"
+local Group                         = require "cp.ui.Group"
+local Outline                       = require "cp.ui.Outline"
+local Row                           = require "cp.ui.Row"
 local ScrollArea                    = require "cp.ui.ScrollArea"
+local StaticText                    = require "cp.ui.StaticText"
 
 local CommandGroups = ScrollArea:subclass("cp.apple.finalcutpro.cmd.CommandGroups")
 
@@ -22,6 +25,19 @@ local CommandGroups = ScrollArea:subclass("cp.apple.finalcutpro.cmd.CommandGroup
 ---
 --- Returns:
 ---  * `true` if the element matches, `false` otherwise.
-CommandGroups.static.matches = ax.matchesIf(ScrollArea.matches)
+CommandGroups.static.matches = ax.matchesIf(
+    ScrollArea.matches,
+    ax.childMatching(Outline.matches)
+)
+
+function CommandGroups:initialize(parent, uiFinder)
+    ScrollArea.initialize(self, parent, uiFinder,
+        Outline:withHeaderOf(
+            Group:containing(Button)
+        ):withRowsOf(
+            Row:containing(StaticText)
+        )
+    )
+end
 
 return CommandGroups
