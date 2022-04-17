@@ -79,6 +79,56 @@ return describe "cp.fn.table" {
         end),
     },
 
+    context "flatten" {
+        it "can flatten a table"
+        :doing(function()
+            local t = {
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9},
+            }
+            local result = fntable.flatten(t)
+            expect(result):is({1, 2, 3, 4, 5, 6, 7, 8, 9})
+        end),
+
+        it "can flatten a mix of tables and values"
+        :doing(function()
+            local t = {
+                {1, 2, 3},
+                {4, 5, 6},
+                7,
+                {8, 9, 10},
+                11,
+                12,
+            }
+            local result = fntable.flatten(t)
+            expect(result):is({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+        end),
+
+        it "can flatten a mix of tables and nil"
+        :doing(function()
+            local t = {
+                {1, 2, 3},
+                {4, 5, 6},
+                nil,
+                {8, 9, 10},
+            }
+            local result = fntable.flatten(t)
+            expect(result):is({1, 2, 3, 4, 5, 6, nil, 8, 9, 10})
+        end),
+
+        it "can flatten tables with nil values but an n index"
+        :doing(function()
+            local t = {
+                {1, 2, 3},
+                {n = 4},
+                {8, 9, 10},
+            }
+            local result = fntable.flatten(t)
+            expect(result):is({1, 2, 3, nil, nil, nil, nil, 8, 9, 10})
+        end),
+    },
+
     context "get" {
         it "can get a value from a table"
         :doing(function()

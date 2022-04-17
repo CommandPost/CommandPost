@@ -5,11 +5,14 @@ local ax                                = require "cp.fn.ax"
 
 local Element                           = require "cp.ui.Element"
 local ScrollBar                         = require "cp.ui.ScrollBar"
+local delegator                         = require "cp.delegator"
 
 local chain                             = fn.chain
 local ifilter, sort                     = fn.table.ifilter, fn.table.sort
 
-local ScrollArea = Element:subclass("cp.ui.ScrollArea"):defineBuilder("containing")
+local ScrollArea = Element:subclass("cp.ui.ScrollArea")
+    :include(delegator):delegateTo("contents")
+    :defineBuilder("containing")
 
 --- === cp.ui.ScrollArea.Builder ===
 ---
@@ -25,9 +28,15 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea"):defineBuilder("containin
 --- Returns:
 ---  * The `Builder` instance.
 
---- cp.ui.ScrollArea:containing(element) -> cp.ui.ScrollArea.Builder
+--- cp.ui.ScrollArea:containing(elementInit) -> cp.ui.ScrollArea.Builder
 --- Function
 --- A static method that returns a new `ScrollArea.Builder`.
+---
+--- Parameters:
+---  * elementInit - An `Element` initializer.
+---
+--- Returns:
+---  * A new `ScrollArea.Builder` instance.
 
 -----------------------------------------------------------------------
 -- cp.ui.ScrollArea
@@ -60,8 +69,8 @@ ScrollArea.static.matches = fn.all(Element.matches, ax.hasRole "AXScrollArea")
 --- Returns:
 ---  * The new `ScrollArea`.
 function ScrollArea:initialize(parent, uiFinder, contentsInit)
-    self.contentsInit = contentsInit or Element
     Element.initialize(self, parent, uiFinder)
+    self.contentsInit = contentsInit or Element
 end
 
 --- cp.ui.ScrollArea.contentsUI <cp.prop: hs.axuielement; read-only; live?>

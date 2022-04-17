@@ -12,8 +12,8 @@ local Row = Element:subclass("cp.ui.Row")
     :defineBuilder("containing")
 
 --- === cp.ui.Row.Builder ===
--—-
--—- Defines a `Row` builder.
+---
+--- Defines a `Row` builder.
 
 --- cp.ui.Row:containing(...) -> cp.ui.Row.Builder
 --- Function
@@ -23,7 +23,7 @@ local Row = Element:subclass("cp.ui.Row")
 ---  * ... - A variable list of `Element` initializers, one for each item.
 ---
 --- Returns:
-----  * The `Row.Builder`
+---  * The `Row.Builder`
 
 --- cp.ui.Row.matches(element) -> boolean
 --- Method
@@ -43,17 +43,18 @@ Row.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXRow")
 --- Parameters:
 ---  * parent - the parent `Element`.
 ---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * ... - a variable list of `Element` initializers, one for each item in the row.
 ---
 --- Returns:
 ---  * The new `Row`.
-function Row:initializer(parent, uiFinder, ...)
-    Element.initialize(parent, uiFinder)
+function Row:initialize(parent, uiFinder, ...)
+    Element.initialize(self, parent, uiFinder)
     self.childInits = pack(...)
 end
 
--—- cp.ui.Row.childrenUI <cp.prop: table of axuielement>
--—- Field
--—- Contains the list of `axuielement` children of the row.
+--- cp.ui.Row.childrenUI <cp.prop: table of axuielement>
+--- Field
+--- Contains the list of `axuielement` children of the row.
 function Row.lazy.prop:childrenUI()
     return ax.prop(self.UI, "AXChildren")
 end

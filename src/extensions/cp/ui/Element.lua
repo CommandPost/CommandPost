@@ -11,7 +11,7 @@ local require           = require
 -- local log               = require "hs.logger".new("Element")
 
 local axutils           = require "cp.ui.axutils"
-local Builder = require "cp.ui.Builder"
+local Builder           = require "cp.ui.Builder"
 local go	            = require "cp.rx.go"
 local is                = require "cp.is"
 local lazy              = require "cp.lazy"
@@ -72,9 +72,9 @@ function Element.static:defineBuilder(...)
     end
 
     for _, arg in ipairs(args) do
-        self[arg] = function(elementType, value)
+        self[arg] = function(elementType, ...)
             local instance = builderClass(elementType)
-            return instance[arg](instance, value)
+            return instance[arg](instance, ...)
         end
     end
     return self

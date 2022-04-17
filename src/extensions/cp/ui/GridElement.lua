@@ -5,28 +5,21 @@
 local require                   = require
 -- local log                       = require "hs.logger" .new "GridElement"
 
-local fnutils	                = require "hs.fnutils"
-
 local LazyList                  = require "cp.collect.LazyList"
 local fn                        = require "cp.fn"
 local ax                        = require "cp.fn.ax"
 local prop	                    = require "cp.prop"
-local axutils	                = require "cp.ui.axutils"
-local Column                    = require "cp.ui.Column"
 local Element	                = require "cp.ui.Element"
-local Row                       = require "cp.ui.Row"
 
 local class                     = require "middleclass"
-
-local valueOf                   = axutils.valueOf
-local ifilter, find, map        = fnutils.ifilter, fnutils.find, fnutils.map
 
 local chain                     = fn.chain
 local get                       = fn.table.get
 
 local Do                        = require "cp.rx.go.Do"
 
-local GridElement = Element:subclass("cp.ui.GridElement"):defineBuilder("withHeaderOf", "withRowsOf", "withColumnsOf")
+local GridElement = Element:subclass("cp.ui.GridElement")
+    :defineBuilder("withHeaderOf", "withRowsOf", "withColumnsOf")
 
 -----------------------------------------------------------------------
 -- GridElement.Builder Methods, created by `defineBuilder`.
@@ -155,8 +148,8 @@ end
 function GridElement:initialize(parent, uiFinder, headerInit, rowInit, columnInit)
     Element.initialize(self, parent, uiFinder)
     self._headerInit = headerInit or Element
-    self._rowInit = rowInit or Row
-    self._columnInit = columnInit or Column
+    self._rowInit = rowInit or Element
+    self._columnInit = columnInit or Element
 end
 
 --- cp.ui.GridElement.headerUI <cp.prop: axuielement; read-only; live>
@@ -186,11 +179,46 @@ function GridElement.lazy.prop:rowsUI()
     return ax.prop(self.UI, "AXRows")
 end
 
---- cp.ui.GridElement.rows <table of cp.ui.Row; live?; read-only>
+--- cp.ui.GridElement.firstRow <cp.ui.Element>
 --- Field
---- The list of `Row`s which are children of this `GridElement`.
-function GridElement.lazy.value:rows()
-    return self._factory:createRows(self, self.rowsUI)
+--- An `Element` of the `rowInit` type that will always point at the first row (if available).
+function GridElement.lazy.value:firstRow()
+    return self._rowInit(self, self.rowsUI:mutate(function(original)
+        local rows = original()
+        if rows then
+            return rows[1]
+        end
+    end))
+end
+
+--- cp.ui.GridElement.lastRow <cp.ui.Element>
+--- Field
+--- An `Element` of the `rowInit` type that will always point at the last row (if available).
+function GridElement.lazy.value:lastRow()
+    return self._rowInit(self, self.rowsUI:mutate(function(original)
+        local rows = original()
+        if rows then
+            return rows[#rows]
+        end
+    end))
+end
+
+--- cp.ui.GridElement:row(index) -> cp.ui.Element | nil
+--- Method
+--- Returns an `Element` at the specified `index`.
+---
+--- Parameters:
+---  * index - The index of the `Element` to return.
+---
+--- Returns:
+---  * The `Element` at the specified `index`.
+function GridElement:row(index)
+    return self._rowInit(self, self.rowsUI:mutate(function(original)
+        local rows = original()
+        if rows then
+            return rows[index]
+        end
+    end))
 end
 
 --- cp.ui.GridElement.selectedRowsUI <cp.prop: table of cp.ui.Row; live?>
@@ -199,6 +227,8 @@ end
 function GridElement.lazy.prop:selectedRowsUI()
     return ax.prop(self.UI, "AXSelectedRows", true)
 end
+
+
 
 --- cp.ui.GridElement.selectedRows <table of cp.ui.Row; live?; read-only>
 --- Field

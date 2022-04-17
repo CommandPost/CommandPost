@@ -12,7 +12,8 @@ local ax                        = require "cp.fn.ax"
 
 local chain                     = fn.chain
 
-local Cell                      = require "cp.ui.Cell"
+local Button                    = require "cp.ui.Button"
+local Group                     = require "cp.ui.Group"
 local Row                       = require "cp.ui.Row"
 local ScrollArea                = require "cp.ui.ScrollArea"
 local Table                     = require "cp.ui.Table"
@@ -34,8 +35,73 @@ CommandMap.static.matches = ax.matchesIf(ScrollArea.matches, chain // ax.childMa
 function CommandMap:initialize(parent, uiFinder)
     ScrollArea.initialize(
         self, parent, uiFinder,
-        Table:withRowsOf(TextField, TextField, TextField)
+        Table:withHeaderOf(
+            -- Example of using a basic cp.ui.Group:
+            -- Group:containing(Button, Button, Button)
+            -- Using the custom `CommandMap.Header`
+            CommandMap.Header
+        ):withRowsOf(
+            -- Example of using cp.ui.Row:
+            -- Row:containing(TextField, TextField, TextField)
+            -- Using the custom `CommandMap.Row`
+            CommandMap.Row
+        )
     )
+end
+
+--- cp.apple.finalcutpro.cmd.CommandMap.byCommand <cp.ui.Button>
+--- Field
+--- The `Button` that toggles sort order by "Command".
+function CommandMap.lazy.value:byCommand()
+    return self.contents.header.byCommand
+end
+
+--- cp.apple.finalcutpro.cmd.CommandMap.byModifiers <cp.ui.Button>
+--- Field
+--- The `Button` that toggles sort order by "Modifiers".
+function CommandMap.lazy.value:byModifiers()
+    return self.contents.header.byModifiers
+end
+
+--- cp.apple.finalcutpro.cmd.CommandMap.byKey <cp.ui.Button>
+--- Field
+--- The `Button` that toggles sort order by "Key".
+function CommandMap.lazy.value:byKey()
+    return self.contents.header.byKey
+end
+
+--- === cp.apple.finalcutpro.cmd.CommandMap.Header ===
+---
+--- The header of the CommandMap.
+
+CommandMap.Header = Group:subclass("cp.apple.finalcutpro.cmd.CommandMap.Header")
+
+function CommandMap.Header:initialize(parent, uiFinder)
+    Group.initialize(self, parent, uiFinder, Button, Button, Button)
+end
+
+--- cp.apple.finalcutpro.cmd.CommandMap.Header.byCommand <cp.ui.Button>
+--- Field
+--- The `Button` that can be pressed to sort by command. Pressing more than
+--- once will alternate between ascending and descending.
+function CommandMap.Header.lazy.value:byCommand()
+    return self.children[1]
+end
+
+--- cp.apple.finalcutpro.cmd.CommandMap.Header.byModifiers <cp.ui.Button>
+--- Field
+--- The `Button` that can be pressed to sort by modifiers. Pressing more than
+--- once will alternate between ascending and descending.
+function CommandMap.Header.lazy.value:byModifiers()
+    return self.children[2]
+end
+
+--- cp.apple.finalcutpro.cmd.CommandMap.Header.byKey <cp.ui.Button>
+--- Field
+--- The `Button` that can be pressed to sort by key. Pressing more than
+--- once will alternate between ascending and descending.
+function CommandMap.Header.lazy.value:byKey()
+    return self.children[3]
 end
 
 --- === cp.apple.finalcutpro.cmd.CommandMap.Row ===
@@ -43,7 +109,7 @@ end
 CommandMap.Row = Row:subclass("cp.apple.finalcutpro.cmd.CommandMap.Row")
 
 function CommandMap.Row:initialize(parent, uiFinder)
-    Row.initialize(self, parent, {TextField, TextField, TextField})
+    Row.initialize(self, parent, uiFinder, TextField, TextField, TextField)
 end
 
 --- cp.apple.finalcutpro.cmd.CommandMap.Row.command <cp.ui.TextField>
@@ -55,14 +121,14 @@ end
 
 --- cp.apple.finalcutpro.cmd.CommandMap.Row.modifiers <cp.ui.TextField>
 --- Field
---- The modifiers [TextField](cp.ui.TextField.md).
+--- The modifiers [TextField](cp.ui.TextField.md) (read-only)
 function CommandMap.Row.lazy.value:modifiers()
     return self.children[2]
 end
 
 --- cp.apple.finalcutpro.cmd.CommandMap.Row.key <cp.ui.TextField>
 --- Field
---- The key [TextField](cp.ui.TextField.md).
+--- The key [TextField](cp.ui.TextField.md) (read-only).
 function CommandMap.Row.lazy.value:key()
     return self.children[3]
 end

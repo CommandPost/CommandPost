@@ -16,7 +16,7 @@ local packArgs          = cpfnargs.pack
 local unpackArgs        = cpfnargs.unpack
 
 local insert            = table.insert
-local pack, unpack     = table.pack, table.unpack
+local pack, unpack      = table.pack, table.unpack
 
 local mod = {}
 
@@ -114,6 +114,38 @@ function mod.firstMatching(predicate)
             end
         end
     end
+end
+
+--- cp.fn.table.flatten(t) -> table
+--- Function
+--- Flattens a table.
+---
+--- Parameters:
+---  * t - The table to flatten.
+---
+--- Returns:
+---  * A new table with all values flattened.
+---
+--- Notes:
+---  * This function will not flatten nested tables.
+---  * If the table has an `n` field, it will be used as the length, instead of `#t`.
+function mod.flatten(t)
+    local len = t.n or #t
+    local result = { n = 0 }
+    for i = 1, len do
+        local v = t[i]
+        if is.table(v) then
+            local vlen = v.n or #v
+            for j = 1, vlen do
+                result.n = result.n + 1
+                result[result.n] = v[j]
+            end
+        else
+            result.n = result.n + 1
+            result[result.n] = v
+        end
+    end
+    return result
 end
 
 --- cp.fn.table.get(key) -> function(table) -> any

@@ -23,19 +23,4 @@ local Table = GridElement:subclass("cp.ui.Table")
 ---  * A boolean
 Table.static.matches = ax.matchesIf(GridElement.matches, ax.hasRole "AXTable")
 
--- cp.ui.Table(parent, uiFinder, factory) -> cp.ui.Table
--- Constructor
--- Creates a new `Table` instance.
---
--- Parameters:
---  * parent - The parent `Element` instance.
---  * uiFinder - A `hs.uielement` or `axuielementObject` that will be used to find this element.
---  * factory - A row/cell factory.
---
--- Returns:
---  * A new `Table` instance.
-function Table:initialize(parent, uiFinder, factory)
-    GridElement.initialize(self, parent, uiFinder, factory)
-end
-
 return Table
