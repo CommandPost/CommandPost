@@ -81,7 +81,8 @@
 ---
 --- The easy way to remember is to read them together - "lazy delegator" sounds better than "delegator lazy".
 
--- local log           = require "hs.logger" .new("delegator")
+local require       = require
+local log           = require "hs.logger" .new "delegator"
 
 local prop          = require "cp.prop"
 local insert        = table.insert
@@ -191,11 +192,11 @@ local function _getDelegatedResult(instance, name, klass)
                 end
             end
         end
+    end
 
-        if klass.super then
-            -- check the super-class hierarchy.
-            value = _getDelegatedResult(instance, name, klass.super)
-        end
+    if klass.super then
+        -- check the super-class hierarchy.
+        value = _getDelegatedResult(instance, name, klass.super)
     end
 
     return value
