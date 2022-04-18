@@ -14,7 +14,7 @@ local Splitter                              = require "cp.ui.Splitter"
 local StaticText                            = require "cp.ui.StaticText"
 
 local CommandGroups                         = require "cp.apple.finalcutpro.cmd.CommandGroups"
-local CommandMap                            = require "cp.apple.finalcutpro.cmd.CommandMap"
+local Commands                            = require "cp.apple.finalcutpro.cmd.Commands"
 
 local chain                                 = fn.chain
 local matchesExactItems                     = fn.table.matchesExactItems
@@ -56,7 +56,7 @@ end
 -- The [SplitGroup](cp.ui.SplitGroup.md) containing the commands.
 function CommandList.lazy.value:_commandsSplitGroup()
     return SplitGroup(self, self.UI:mutate(ax.childMatching(SplitGroup.matches)), {
-        CommandGroups, Splitter, CommandMap
+        CommandGroups, Splitter, Commands
     })
 end
 
@@ -74,9 +74,9 @@ function CommandList.lazy.value:splitter()
     return self._commandsSplitGroup.children[2]
 end
 
---- cp.apple.finalcutpro.cmd.CommandList.commands <cp.apple.finalcutpro.cmd.CommandMap>
+--- cp.apple.finalcutpro.cmd.CommandList.commands <cp.apple.finalcutpro.cmd.Commands>
 --- Field
---- The [CommandMap](cp.apple.finalcutpro.cmd.CommandMap.md) for this CommandList.
+--- The [Commands](cp.apple.finalcutpro.cmd.Commands.md) for this CommandList.
 function CommandList.lazy.value:commands()
     return self._commandsSplitGroup.children[3]
 end
