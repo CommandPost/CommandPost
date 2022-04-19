@@ -1,3 +1,7 @@
+--- === cp.ui.ScrollArea ===
+---
+--- Scroll Area Module.
+
 local require                           = require
 
 local fn                                = require "cp.fn"
@@ -41,10 +45,6 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 -----------------------------------------------------------------------
 -- cp.ui.ScrollArea
 -----------------------------------------------------------------------
-
---- === cp.ui.ScrollArea ===
----
---- Scroll Area Module.
 
 --- cp.ui.ScrollArea.matches(element) -> boolean
 --- Function
