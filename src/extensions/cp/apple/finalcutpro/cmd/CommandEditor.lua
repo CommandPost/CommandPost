@@ -322,6 +322,20 @@ function CommandEditor.lazy.value:commandList()
     ))
 end
 
+--- cp.apple.finalcutpro.cmd.CommandEditor.commands <cp.apple.finalcutpro.cmd.Commands>
+--- Field
+--- The [Commands](cp.apple.finalcutpro.cmd.Commands.md).
+function CommandEditor.lazy.value:commands()
+    return self.commandList.commands
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandGroups <cp.apple.finalcutpro.cmd.CommandGroups>
+--- Field
+--- The [CommandGroups](cp.apple.finalcutpro.cmd.CommandGroups.md).
+function CommandEditor.lazy.value:commandGroups()
+    return self.commandList.groups
+end
+
 --- cp.apple.finalcutpro.cmd.CommandEditor.keyDetail <cp.appple.finalcutpro.cmd.KeyDetail>
 --- Field
 --- The [KeyDetail](cp.apple.finalcutpro.cmd.KeyDetail.md) section.

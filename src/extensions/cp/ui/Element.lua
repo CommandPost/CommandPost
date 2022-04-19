@@ -66,9 +66,9 @@ function Element.static:defineBuilder(...)
     local builderClass = Builder:subclass(self.name .. ".Builder")
     self.Builder = builderClass
 
-    function builderClass:initialize(elementType)
+    function builderClass.initialize(builderType, elementType)
         elementType = elementType or thisType
-        Builder.initialize(self, elementType, unpack(args))
+        Builder.initialize(builderType, elementType, unpack(args))
     end
 
     for _, arg in ipairs(args) do

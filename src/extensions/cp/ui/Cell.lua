@@ -5,11 +5,13 @@
 ---
 --- ```lua
 --- function MyPanel.lazy.value:tableOfStuff()
----     return Table:withRowsOf(Cell:with(TextField), Cell:with(Button))(self, self.UI:mutate(chain // uielement >> attribute "AXContents"))
+---     return Table:withRowsOf(
+---         Row:containing(
+---             Cell:with(TextField), Cell:with(Button)
+---         )
+---     )(self, self.UI:mutate(chain // uielement >> attribute "AXContents"))
 --- end
 --- ```
----
---- For example, you can 
 ---
 --- This is a subclass of [Element](cp.ui.Element.md).
 
@@ -23,6 +25,7 @@ local Element	                    = require "cp.ui.Element"
 local pack                          = table.pack
 
 local Cell = Element:subclass("cp.ui.Cell")
+    :defineBuilder("with")
 
 --- cp.ui.Cell.matches(element) ->  boolean
 --- Function
@@ -35,27 +38,21 @@ local Cell = Element:subclass("cp.ui.Cell")
 ---  * A boolean
 Cell.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXCell")
 
---- cp.ui.Cell:with(...) -> function(parent, uiFinder) -> Cell
+--- cp.ui.Cell:with(...) -> function(parent, uiFinder) -> cp.ui.Cell.Builder
 --- Function
---- A combinator function that returns a `Cell` constructor function that accepts the `parent` and `uiFinder`.
+--- A combinator function that returns a `Cell.Builder` that accepts the `parent` and `uiFinder` to construct a new `Cell`.
 ---
 --- Parameters:
 ---  * ... - One or more arguments to pass to the constructor.
 ---
 --- Returns:
----  * A function that will return a new `Cell` instance.
+---  * A [Cell.Builder](cp.ui.Cell.Builder.md)
 ---
 --- Notes:
 ---  * For example, if a cell contains a [Button](cp.ui.Button.md), you can use `cp.ui.Cell:with(Button)`, and it will return a `Cell`
----    constructor that accepts the `parent` and `uiFinder` parameters, and whose contents is expected to be a `Button`.
+---    `Builder` that accepts the `parent` and `uiFinder` parameters, and whose contents is expected to be a `Button`.
 ---    That `Button` instance can be accessed via the `children[1]` value.
 ---    ```
-function Cell.static:with(...)
-    local childInits = pack(...)
-    return function(parent, uiFinder)
-        return self(parent, uiFinder, childInits)
-    end
-end
 
 --- cp.ui.Cell(parent, uiFinder[, childInits]) -> Cell
 --- Constructor
@@ -64,13 +61,13 @@ end
 --- Parameters:
 ---  * parent - The parent `Element`.
 ---  * uiFinder - A `cp.prop` or `axuielement` that will be used to find this `Cell`'s `axuielement`.
----  * childInits - A `table` of child `Element` constructors to initialize.
+---  * ... - The list of child `Element` builders to initialize.
 ---
 --- Returns:
 ---  * A new `Cell` instance.
-function Cell:initialize(parent, uiFinder, childInits)
-    self.childInits = childInits
+function Cell:initialize(parent, uiFinder, ...)
     Element.initialize(self, parent, uiFinder)
+    self.childInits = pack(...)
 end
 
 --- cp.ui.Cell.columnIndexRange <cp.prop: table; read-only>
