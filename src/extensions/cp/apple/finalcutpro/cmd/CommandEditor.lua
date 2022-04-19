@@ -301,7 +301,7 @@ end
 function CommandEditor.lazy.value:search()
     return TextField(self, self.UI:mutate(
         ax.childMatching(TextField.matches)
-    ))
+    )):forceFocus()
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.keyboard <cp.ui.Group>

@@ -1,6 +1,42 @@
 --- === cp.ui.ScrollArea ===
 ---
---- Scroll Area Module.
+--- A `ScrollArea` represents an `AXScrollArea`. They primarily function as a "portal"
+--- to view a larger area of the contained `axuielement` within (accessed via the `AXContents` attribute),
+--- and also provide access to the vertical and horizontal scroll bars (accessed via the
+--- `verticalScrollBar` and `horizontalScrollBar` properties).
+---
+--- The class that wraps the `AXContents` attribute can be provided via the `contentsInit` parameter in the
+--- constructor. If not provided it defaults to [Element](cp.ui.Element.md).
+---
+--- The `ScrollArea` also delegates to the `contents` property, so you can access
+--- any properties of the contained [Element](cp.ui.Element.md) directly.
+---
+--- For example, if you have a `ScrollArea` with a `contents` of a [TextField](cp.ui.TextField.md),
+--- you can normally access the text value via the [TextField.value](cp.ui.TextField.md#value) property.
+--- However, if you want to access the text value via the `ScrollArea` itself, you can do so
+--- via the `ScrollArea.value` property, like so:
+---
+--- ```lua
+--- local scrollArea = ScrollArea(parent, ui, TextArea)
+--- -- via `contents`:
+--- local value = scrollArea.contents:value()
+--- --- via delegation:
+--- local value = scrollArea:value()
+--- ```
+---
+--- It also has a [Builder](cp.ui.ScrollArea.Builder.md) that supports customising an `Element` [Builder](cp.ui.Builder.md)
+--- to create a `ScrollArea` with a specified `contents` `Element` type. For example, another way to
+--- define our `ScrollArea` that contains a `TextField` is:
+---
+--- ```lua
+--- local scrollAreaWithTextField = ScrollArea:containing(TextField)
+--- local scrollArea = scrollAreaWithTextField(parent, ui)
+--- ```
+---
+--- The main advantage of this style is that you can pass the `Builder` in to other `Element` types
+--- that require an "`Element` init" that will only be provided a parent and UI finder.
+---
+--- This is a subclass of [Element](cp.ui.Element.md).
 
 local require                           = require
 
