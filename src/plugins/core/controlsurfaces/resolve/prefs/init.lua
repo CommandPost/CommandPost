@@ -1085,7 +1085,6 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                             end
                         end
 
-                        local userApps = {}
                         local items = mod.items()
                         for _, device in pairs(items) do
                             for _, unit in pairs(device) do
@@ -1164,10 +1163,9 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                             end
                         end
 
-                        local userApps = {}
-                        local items = mod.items()
-                        for _, device in pairs(items) do
-                            for _, unit in pairs(device) do
+                        local i = mod.items()
+                        for _, d in pairs(i) do
+                            for _, unit in pairs(d) do
                                 for bundleID, v in pairs(unit) do
                                     if v.displayName then
                                         if lastApplication == bundleID then
@@ -1248,11 +1246,10 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                             end
                         end
 
-                        local userApps = {}
-                        local items = mod.items()
-                        for _, device in pairs(items) do
-                            for _, unit in pairs(device) do
-                                for bundleID, v in pairs(unit) do
+                        local i = mod.items()
+                        for _, d in pairs(i) do
+                            for _, u in pairs(d) do
+                                for bundleID, v in pairs(u) do
                                     if v.displayName then
                                         if lastApplication == bundleID then
                                             validApp = true
@@ -1333,11 +1330,10 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                             end
                         end
 
-                        local userApps = {}
-                        local items = mod.items()
-                        for _, device in pairs(items) do
-                            for _, unit in pairs(device) do
-                                for bundleID, v in pairs(unit) do
+                        local i = mod.items()
+                        for _, d in pairs(i) do
+                            for _, u in pairs(d) do
+                                for bundleID, v in pairs(u) do
                                     if v.displayName then
                                         if lastApplication == bundleID then
                                             validApp = true
