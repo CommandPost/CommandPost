@@ -53,7 +53,6 @@ local JOG_WHEEL_ABSOLUTE_TWO = {
 -- JOG_WHEEL_ABSOLUTE_THREE -> table
 -- Constant
 -- Jog Wheel Trigger
-
 local JOG_WHEEL_ABSOLUTE_THREE = {
     ["Speed Editor"]    = 2040,
     ["Editor Keyboard"] = 2040,
@@ -230,6 +229,11 @@ local shouldKillLEDCacheDueToResolve = false
 -- Jog Wheel Cache
 local speedEditorJogWheelCache = {}
 
+-- jogModeOnDeviceCache -> table
+-- Variable
+-- Jog Mode Cache
+local jogModeOnDeviceCache = {}
+
 --- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
 --- Control Surface Button Callback
@@ -261,6 +265,14 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     local serialNumber = object:serialNumber()
     local deviceType = object:deviceType()
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
+
+    --------------------------------------------------------------------------------
+    -- Update the Jog Mode Cache if required:
+    --------------------------------------------------------------------------------
+    local jogModeOnDeviceCacheID = deviceType .. deviceID
+    if jogWheelMode then
+        jogModeOnDeviceCache[jogModeOnDeviceCacheID] = jogWheelMode
+    end
 
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -613,8 +625,6 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
 
 end
 
-local jogModeOnDeviceCache = {}
-
 --- plugins.core.resolve.manager.update() -> none
 --- Function
 --- Updates all the control surface LEDs.
@@ -720,6 +730,8 @@ function mod.update()
                 device:jogMode(jogMode)
                 jogModeOnDeviceCache[jogModeOnDeviceCacheID] = jogMode
                 --log.df("CHANGING JOG MODE TO: %s", jogMode)
+            --else
+                --log.df("ALREADY IN JOG MODE: %s", jogMode)
             end
 
             --------------------------------------------------------------------------------
@@ -895,6 +907,11 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
+    --------------------------------------------------------------------------------
+    -- Kill the Jog Mode Cache:
+    --------------------------------------------------------------------------------
+    jogModeOnDeviceCache = {}
+
     --------------------------------------------------------------------------------
     -- Kill the LED cache:
     --------------------------------------------------------------------------------

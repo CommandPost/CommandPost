@@ -97,6 +97,11 @@ local function renderPanel(context)
     return mod._renderPanel(context)
 end
 
+-- imageCache -> table
+-- Variable
+-- An image cache for objects we encode as URL strings
+local imageCache = {}
+
 -- insertImage(path)
 -- Function
 -- Encodes an image as a PNG URL String
@@ -107,9 +112,15 @@ end
 -- Returns:
 --  * The encoded URL string
 local function insertImage(path)
-    local p = mod._env:pathToAbsolute(path)
-    local i = imageFromPath(p)
-    return i:encodeAsURLString(false, "PNG")
+    if not imageCache[path] then
+        local p = mod._env:pathToAbsolute(path)
+        local i = imageFromPath(p)
+        local data = i:encodeAsURLString(false, "PNG")
+        imageCache[path] = data
+        return data
+    else
+        return imageCache[path]
+    end
 end
 
 -- generateContent() -> string
