@@ -6,6 +6,7 @@ local require                       = require
 
 -- local log                           = require "hs.logger" .new "CmdEditor"
 
+local i18n                          = require "cp.i18n"
 local just                          = require "cp.just"
 
 local Button                        = require "cp.ui.Button"
@@ -31,6 +32,8 @@ local chain                         = fn.chain
 local get, sort                     = fn.table.get, fn.table.sort
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
+
+local COMMAND_NAMES_STRINGS_PATH = "/Contents/Resources/en.lproj/NSProCommandNames.strings"
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.matches(element) -> boolean
 --- Function
@@ -67,8 +70,6 @@ CommandEditor.static.matches = ax.matchesIf(
 --- Returns:
 ---  * A new `CommandEditor` object.
 function CommandEditor:initialize(app)
-    self._app = app
-
 --- cp.apple.finalcutpro.cmd.CommandEditor.UI <cp.prop: axuielement; read-only>
 --- Field
 --- The `axuielement` for the window.
@@ -79,6 +80,7 @@ function CommandEditor:initialize(app)
     )
 
     Dialog.initialize(self, app.app, UI)
+    self.__app = app
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:app() -> App
@@ -91,7 +93,7 @@ end
 --- Returns:
 ---  * App
 function CommandEditor:app()
-    return self._app
+    return self.__app
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:show() -> cp.apple.finalcutpro.cmd.CommandEditor
@@ -126,7 +128,7 @@ end
 function CommandEditor.lazy.method:doShow()
     return If(self:app().isRunning):Then(
         If(self.isShowing):Is(false):Then(
-            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+            self:app().menu:doSelectMenu({"Final Cut Pro", "Commands", "Customize…"})
         ):Then(
             WaitUntil(self.isShowing)
         ):Otherwise(true)
@@ -355,5 +357,30 @@ function CommandEditor.lazy.value:commandDetail()
         ax.childMatching(CommandDetail.matches)
     ))
 end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommand(commandName) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given name,
+--- revealing it at the top of the [commands](#commands) list.
+---
+--- Parameters:
+---  * commandName - The name of the command to find.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md).
+function CommandEditor:doFindCommand(commandName)
+    return If(self:doShow()):Then(function()
+        self.search.value:set(commandName)
+        if self.commands.firstRow:isShowing() then
+            self.commands.firstRow:selected(true)
+            return true
+        else
+            return false
+        end
+    end)
+    :Otherwise(false)
+    :Label("CommandEditor:doFindCommand")
+end
+
 
 return CommandEditor
