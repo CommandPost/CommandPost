@@ -53,7 +53,6 @@ local JOG_WHEEL_ABSOLUTE_TWO = {
 -- JOG_WHEEL_ABSOLUTE_THREE -> table
 -- Constant
 -- Jog Wheel Trigger
-
 local JOG_WHEEL_ABSOLUTE_THREE = {
     ["Speed Editor"]    = 2040,
     ["Editor Keyboard"] = 2040,
@@ -613,8 +612,6 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
 
 end
 
-local jogModeOnDeviceCache = {}
-
 --- plugins.core.resolve.manager.update() -> none
 --- Function
 --- Updates all the control surface LEDs.
@@ -714,12 +711,10 @@ function mod.update()
             --------------------------------------------------------------------------------
             -- Update Jog Wheel Mode (only if needed):
             --------------------------------------------------------------------------------
-            local jogModeOnDeviceCacheID = deviceType .. deviceID
+            local _, currentJogMode = device:jogMode()
             local jogMode = (bankData and bankData.jogMode) or mod.DEFAULT_JOG_MODE
-            if jogModeOnDeviceCache[jogModeOnDeviceCacheID] ~= jogMode then
+            if currentJogMode ~= jogMode then
                 device:jogMode(jogMode)
-                jogModeOnDeviceCache[jogModeOnDeviceCacheID] = jogMode
-                --log.df("CHANGING JOG MODE TO: %s", jogMode)
             end
 
             --------------------------------------------------------------------------------

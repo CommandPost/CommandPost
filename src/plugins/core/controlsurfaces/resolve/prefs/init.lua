@@ -105,6 +105,11 @@ local function renderPanel(context)
     return mod._renderPanel(context)
 end
 
+-- imageCache -> table
+-- Variable
+-- An image cache for objects we encode as URL strings
+local imageCache = {}
+
 -- insertImage(path)
 -- Function
 -- Encodes an image as a PNG URL String
@@ -115,9 +120,15 @@ end
 -- Returns:
 --  * The encoded URL string
 local function insertImage(path)
-    local p = mod._env:pathToAbsolute(path)
-    local i = imageFromPath(p)
-    return i:encodeAsURLString(false, "PNG")
+    if not imageCache[path] then
+        local p = mod._env:pathToAbsolute(path)
+        local i = imageFromPath(p)
+        local data = i:encodeAsURLString(false, "PNG")
+        imageCache[path] = data
+        return data
+    else
+        return imageCache[path]
+    end
 end
 
 -- generateContent() -> string
@@ -186,7 +197,6 @@ end
 -- Returns:
 --  * None
 local function updateUI(params)
-
     --------------------------------------------------------------------------------
     -- Get parameters from table or from saved data:
     --------------------------------------------------------------------------------
@@ -835,6 +845,8 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                     local info = path and infoForBundlePath(path)
                     local displayName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
                     local bundleID = info and info.CFBundleIdentifier
+                    local applicationAdded = false
+
                     if displayName and bundleID then
                         local items = mod.items()
 
@@ -868,15 +880,29 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                             end
                         end
 
-                        if not items["Original"] then items["Original"] = {} end
-                        if not items["Original"]["1"] then items["Original"]["1"] = {} end
-                        if not items["Original"]["1"][bundleID] then items["Original"]["1"][bundleID] = {} end
+                        if not items[device] then items[device] = {} end
+                        if not items[device]["1"] then items[device]["1"] = {} end
+                        if not items[device]["1"][bundleID] then items[device]["1"][bundleID] = {} end
 
-                        items["Original"]["1"][bundleID].displayName = displayName
+                        items[device]["1"][bundleID].displayName = displayName
 
                         mod.items(items)
-                    else
-                        webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToAddCustomApplication"), i18n("failedToAddCustomApplicationDescription"), i18n("ok"))
+
+                        --------------------------------------------------------------------------------
+                        -- Change last application:
+                        --------------------------------------------------------------------------------
+                        mod.lastApplication(bundleID)
+
+                        applicationAdded = true
+                    end
+
+                    if not applicationAdded then
+                        webviewAlert(mod._manager.getWebview(), function()
+                            --------------------------------------------------------------------------------
+                            -- Update the UI:
+                            --------------------------------------------------------------------------------
+                            mod._manager.refresh()
+                        end, i18n("failedToAddCustomApplication"), i18n("failedToAddCustomApplicationDescription"), i18n("ok"))
                         log.ef("Something went wrong trying to add a custom application.\n\nPath: '%s'\nbundleID: '%s'\ndisplayName: '%s'",path, bundleID, displayName)
                     end
 
@@ -1044,6 +1070,40 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                         end
 
                         --------------------------------------------------------------------------------
+                        -- Make sure the application is still valid:
+                        --------------------------------------------------------------------------------
+                        local lastApplication = mod.lastApplication()
+                        local validApp = false
+
+                        local registeredApps = mod._appmanager.getApplications()
+                        for bundleID, v in pairs(registeredApps) do
+                            if v.displayName then
+                                if lastApplication == bundleID then
+                                    validApp = true
+                                    break
+                                end
+                            end
+                        end
+
+                        local items = mod.items()
+                        for _, device in pairs(items) do
+                            for _, unit in pairs(device) do
+                                for bundleID, v in pairs(unit) do
+                                    if v.displayName then
+                                        if lastApplication == bundleID then
+                                            validApp = true
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
+
+                        if not validApp then
+                            mod.lastApplication("All Applications")
+                        end
+
+                        --------------------------------------------------------------------------------
                         -- Refresh the entire UI, as Custom Apps will now be gone:
                         --------------------------------------------------------------------------------
                         mod._manager.refresh()
@@ -1086,7 +1146,45 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                         end
 
                         mod.items(items)
-                        updateUI(params)
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the application is still valid:
+                        --------------------------------------------------------------------------------
+                        local lastApplication = mod.lastApplication()
+                        local validApp = false
+
+                        local registeredApps = mod._appmanager.getApplications()
+                        for bundleID, v in pairs(registeredApps) do
+                            if v.displayName then
+                                if lastApplication == bundleID then
+                                    validApp = true
+                                    break
+                                end
+                            end
+                        end
+
+                        local i = mod.items()
+                        for _, d in pairs(i) do
+                            for _, unit in pairs(d) do
+                                for bundleID, v in pairs(unit) do
+                                    if v.displayName then
+                                        if lastApplication == bundleID then
+                                            validApp = true
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
+
+                        if not validApp then
+                            mod.lastApplication("All Applications")
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the entire UI, as Custom Apps may now be gone:
+                        --------------------------------------------------------------------------------
+                        mod._manager.refresh()
                     end
                 end, i18n("daVinciResolveControlSurfaceResetDeviceConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
             end
@@ -1131,7 +1229,45 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                         end
 
                         mod.items(items)
-                        updateUI(params)
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the application is still valid:
+                        --------------------------------------------------------------------------------
+                        local lastApplication = mod.lastApplication()
+                        local validApp = false
+
+                        local registeredApps = mod._appmanager.getApplications()
+                        for bundleID, v in pairs(registeredApps) do
+                            if v.displayName then
+                                if lastApplication == bundleID then
+                                    validApp = true
+                                    break
+                                end
+                            end
+                        end
+
+                        local i = mod.items()
+                        for _, d in pairs(i) do
+                            for _, u in pairs(d) do
+                                for bundleID, v in pairs(u) do
+                                    if v.displayName then
+                                        if lastApplication == bundleID then
+                                            validApp = true
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
+
+                        if not validApp then
+                            mod.lastApplication("All Applications")
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the entire UI, as Custom Apps may now be gone:
+                        --------------------------------------------------------------------------------
+                        mod._manager.refresh()
                     end
                 end, i18n("daVinciResolveControlSurfaceResetUnitConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
             end
@@ -1177,7 +1313,45 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
                         end
 
                         mod.items(items)
-                        updateUI(params)
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the application is still valid:
+                        --------------------------------------------------------------------------------
+                        local lastApplication = mod.lastApplication()
+                        local validApp = false
+
+                        local registeredApps = mod._appmanager.getApplications()
+                        for bundleID, v in pairs(registeredApps) do
+                            if v.displayName then
+                                if lastApplication == bundleID then
+                                    validApp = true
+                                    break
+                                end
+                            end
+                        end
+
+                        local i = mod.items()
+                        for _, d in pairs(i) do
+                            for _, u in pairs(d) do
+                                for bundleID, v in pairs(u) do
+                                    if v.displayName then
+                                        if lastApplication == bundleID then
+                                            validApp = true
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
+
+                        if not validApp then
+                            mod.lastApplication("All Applications")
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the entire UI, as Custom Apps may now be gone:
+                        --------------------------------------------------------------------------------
+                        mod._manager.refresh()
                     end
                 end, i18n("daVinciResolveControlSurfaceResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
             end
