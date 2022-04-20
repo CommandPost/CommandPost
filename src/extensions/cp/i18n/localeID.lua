@@ -1,7 +1,7 @@
 --- === cp.i18n.localeID ===
 ---
 --- As per [Apple's documentation](https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPInternational/LanguageandLocaleIDs/LanguageandLocaleIDs.html#//apple_ref/doc/uid/10000171i-CH15-SW6),
---- a `local ID` is a code which identifies either a language used across multiple regions,
+--- a `locale ID` is a code which identifies either a language used across multiple regions,
 --- a dialect from a specific region, a script used in multiple regions, or a combination of all three.
 --- See the [parse](#parse) function for details.
 ---

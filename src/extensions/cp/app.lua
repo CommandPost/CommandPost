@@ -652,8 +652,9 @@ function app.lazy.prop:currentLocale()
             local appLanguages = self.preferences.AppleLanguages
             if appLanguages then
                 for _,lang in ipairs(appLanguages) do
-                    if self:isSupportedLocale(lang) then
-                        local currentLocale = localeID.forCode(lang)
+                    local currentLanguage = languageID.forCode(lang)
+                    local currentLocale = currentLanguage and currentLanguage:toLocaleID()
+                    if self:isSupportedLocale(currentLocale) then
                         local bestLocale = currentLocale and self:bestSupportedLocale(currentLocale)
                         if bestLocale then
                             return bestLocale
@@ -709,7 +710,8 @@ function app.lazy.prop:currentLocale()
             else
                 local bestLocale = self:bestSupportedLocale(value)
                 if bestLocale then
-                    thePrefs.AppleLanguages = {bestLocale.code}
+                    local bestLanguage = languageID.forLocaleID(bestLocale)
+                    thePrefs.AppleLanguages = {bestLanguage.code}
                 else
                     error("Unsupported language: "..value.code)
                 end
