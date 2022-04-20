@@ -19,6 +19,7 @@ local application               = require "hs.application"
 local applicationwatcher        = require "hs.application.watcher"
 local ax                        = require "hs.axuielement"
 local fs                        = require "hs.fs"
+local hostLocale                = require "hs.host.locale"
 local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
 local timer                     = require "hs.timer"
@@ -652,7 +653,9 @@ function app.lazy.prop:currentLocale()
             local appLanguages = self.preferences.AppleLanguages
             if appLanguages then
                 for _,lang in ipairs(appLanguages) do
-                    local currentLanguage = languageID.forCode(lang)
+                    local langDetails = hostLocale.details(lang)
+                    local languageCode = langDetails and langDetails.languageCode
+                    local currentLanguage = languageID.forCode(languageCode)
                     local currentLocale = currentLanguage and currentLanguage:toLocaleID()
                     if self:isSupportedLocale(currentLocale) then
                         local bestLocale = currentLocale and self:bestSupportedLocale(currentLocale)
