@@ -11,7 +11,7 @@
 
 local require                   = require
 
-local hs                        = _G.hs
+local hs                        = _G["hs"]
 
 local log                       = require "hs.logger".new "app"
 
@@ -652,8 +652,8 @@ function app.lazy.prop:currentLocale()
             local appLanguages = self.preferences.AppleLanguages
             if appLanguages then
                 for _,lang in ipairs(appLanguages) do
-                    if self:isSupportedLocale(lang) then
-                        local currentLocale = localeID.forCode(lang)
+                    local currentLocale = localeID.forCode(lang)
+                    if self:isSupportedLocale(currentLocale) then
                         local bestLocale = currentLocale and self:bestSupportedLocale(currentLocale)
                         if bestLocale then
                             return bestLocale
@@ -709,7 +709,8 @@ function app.lazy.prop:currentLocale()
             else
                 local bestLocale = self:bestSupportedLocale(value)
                 if bestLocale then
-                    thePrefs.AppleLanguages = {bestLocale.code}
+                    local bestLanguage = languageID.forLocaleID(bestLocale)
+                    thePrefs.AppleLanguages = {bestLanguage.code}
                 else
                     error("Unsupported language: "..value.code)
                 end
