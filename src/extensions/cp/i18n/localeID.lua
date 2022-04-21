@@ -13,6 +13,8 @@
 
 local require = require
 
+local hostLocale        = require "hs.host.locale"
+
 local language          = require "cp.i18n.language"
 local region            = require "cp.i18n.region"
 local script            = require "cp.i18n.script"
@@ -70,9 +72,24 @@ end
 ---
 --- Returns:
 ---  * language  - The two-character lower-case alpha language code.
----  * script    - the four-character mixed-case alpha script code.
 ---  * region    - The two-character upper-case alpha region code.
+---  * script    - the four-character mixed-case alpha script code.
+---
+--- Notes:
+---  * This function will first attempt to determine the language, script and region by
+---    using `hs.host.locale.details()`.
 function mod.parse(code)
+    --------------------------------------------------------------
+    -- First let macOS determine the locale ID:
+    --------------------------------------------------------------
+    local langDetails = hostLocale.details(code)
+    if langDetails and langDetails.languageCode then
+       return langDetails.languageCode, langDetails.countryCode, langDetails.scriptCode
+    end
+
+    --------------------------------------------------------------
+    -- Failing that, use patterns:
+    --------------------------------------------------------------
     local l
     local r, s = nil, nil
     l = match(code, LANG_PATTERN)
