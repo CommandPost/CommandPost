@@ -14,6 +14,11 @@ local tools             = require "cp.tools"
 
 local mod = {}
 
+--- plugins.core.accessibility.shouldWeTryCloseSystemPreferences -> boolean
+--- Variable
+--- Should we try and close system preferences?
+mod.shouldWeTryCloseSystemPreferences = false
+
 --- plugins.core.accessibility.systemPreferencesAlreadyOpen -> boolean
 --- Variable
 --- Was System Preferences already open?
@@ -29,7 +34,7 @@ mod.enabled = prop.new(hs.accessibilityState):watch(function(enabled)
         --------------------------------------------------------------------------------
         -- Close System Preferences, unless it was already open:
         --------------------------------------------------------------------------------
-        if not mod.systemPreferencesAlreadyOpen then
+        if mod.shouldWeTryCloseSystemPreferences and not mod.systemPreferencesAlreadyOpen then
             local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
             if systemPrefs and next(systemPrefs) ~= nil then
                 systemPrefs[1]:kill()
@@ -38,6 +43,7 @@ mod.enabled = prop.new(hs.accessibilityState):watch(function(enabled)
                 --------------------------------------------------------------------------------
                 mod.setup:focus()
             end
+            mod.shouldWeTryCloseSystemPreferences = false
         end
         mod.completeSetupPanel()
     else
@@ -93,6 +99,7 @@ function mod.init(setup)
         :addButton({
             label       = i18n("allowAccessibility"),
             onclick     = function()
+                mod.shouldWeTryCloseSystemPreferences = true
                 local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
                 if systemPrefs and next(systemPrefs) ~= nil then
                     mod.systemPreferencesAlreadyOpen = true
@@ -109,6 +116,13 @@ function mod.init(setup)
     -- Get updated when the accessibility state changes:
     --------------------------------------------------------------------------------
     hs.accessibilityStateCallback = function()
+        if not hs.accessibilityState() then
+            mod.shouldWeTryCloseSystemPreferences = true
+            local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
+            if systemPrefs and next(systemPrefs) ~= nil then
+                mod.systemPreferencesAlreadyOpen = true
+            end
+        end
         mod.enabled:update()
     end
 
