@@ -77,7 +77,8 @@ end
 ---
 --- Notes:
 ---  * This function will first attempt to determine the language, script and region by
----    using `hs.host.locale.details()`.
+---    using `hs.host.locale.details()`. If that fails, it will use Lua patterns
+---    as described above.
 function mod.parse(code)
     --------------------------------------------------------------
     -- First let macOS determine the locale ID:
