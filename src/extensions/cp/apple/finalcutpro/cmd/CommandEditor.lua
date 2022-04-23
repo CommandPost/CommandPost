@@ -4,9 +4,8 @@
 
 local require                       = require
 
--- local log                           = require "hs.logger" .new "CmdEditor"
+local log                           = require "hs.logger" .new "CmdEditor"
 
-local i18n                          = require "cp.i18n"
 local just                          = require "cp.just"
 
 local Button                        = require "cp.ui.Button"
@@ -22,6 +21,7 @@ local KeyDetail                     = require "cp.apple.finalcutpro.cmd.KeyDetai
 
 local strings                       = require "cp.apple.finalcutpro.strings"
 
+local Do                            = require "cp.rx.go.Do"
 local If                            = require "cp.rx.go.If"
 local Throw                         = require "cp.rx.go.Throw"
 local WaitUntil                     = require "cp.rx.go.WaitUntil"
@@ -32,8 +32,6 @@ local chain                         = fn.chain
 local get, sort                     = fn.table.get, fn.table.sort
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
-
-local COMMAND_NAMES_STRINGS_PATH = "/Contents/Resources/en.lproj/NSProCommandNames.strings"
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.matches(element) -> boolean
 --- Function
@@ -358,29 +356,57 @@ function CommandEditor.lazy.value:commandDetail()
     ))
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommand(commandName) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given name,
+--- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
 --- revealing it at the top of the [commands](#commands) list.
 ---
 --- Parameters:
----  * commandName - The name of the command to find.
+---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)
 ---
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md).
-function CommandEditor:doFindCommand(commandName)
-    return If(self:doShow()):Then(function()
-        self.search.value:set(commandName)
-        if self.commands.firstRow:isShowing() then
-            self.commands.firstRow:selected(true)
-            return true
-        else
+function CommandEditor:doFindCommandID(commandID)
+    return Do(function()
+        local commandName = self:app().commandNames:find(commandID)
+        if commandName == nil then
+            log.wf("Unable to find command with ID: %s", commandID)
             return false
         end
+        return self:doFindCommandName(commandName)
+    end)
+    :Label("CommandEditor:doFindCommandID")
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
+--- revealing it at the top of the [commands](#commands) list.
+---
+--- Parameters:
+---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md).
+function CommandEditor:doFindCommandName(commandName)
+    return If(self:doShow()):Then(function()
+        self.search.value:set(commandName)
+        local rowNumber = 1
+        local row = self.commands:row(rowNumber)
+        while row:isShowing() do
+            if row:command() == commandName then
+                row:selected(true)
+                return true
+            end
+            rowNumber = rowNumber + 1
+            row = self.commands:row(rowNumber)
+        end
+        return false
     end)
     :Otherwise(false)
-    :Label("CommandEditor:doFindCommand")
+    :Label("CommandEditor:doFindCommandName")
 end
+
 
 
 return CommandEditor

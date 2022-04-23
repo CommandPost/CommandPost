@@ -76,49 +76,19 @@ function plugin.init(deps)
     local actionmanager = deps.actionmanager
     mod._handler = actionmanager.addHandler(GROUP .. "_shortcuts", GROUP)
         :onChoices(function(choices)
-            local fcpPath = fcp:getPath()
-            local currentLocale = fcp:currentLocale()
-            if fcpPath and currentLocale then
-                --------------------------------------------------------------------------------
-                -- Process the regular commands:
-                --------------------------------------------------------------------------------
-                local namePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
-                local descriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
+            local nameData          = fcp.commandNames
+            local descriptionData   = fcp.commandDescriptions
 
-                local nameData          = fileToTable(namePath)
-                local descriptionData   = fileToTable(descriptionPath)
-
-                if nameData and descriptionData then
-                    for id, name in pairs(nameData) do
-                        local subText = descriptionData[id] or i18n("commandEditorShortcut")
-                        choices
-                            :add(convertHtmlEntities(name))
-                            :subText(convertHtmlEntities(subText))
-                            :params(id)
-                            :image(ICON)
-                            :id(id)
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- Process the "Additional" commands:
-                --------------------------------------------------------------------------------
-                local additionalNamePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNamesAdditional.strings"
-                local additionalDescriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptionsAdditional.strings"
-
-                local additionalNameData          = fileToTable(additionalNamePath)
-                local additionalDescriptionData   = fileToTable(additionalDescriptionPath)
-
-                if additionalNameData and additionalDescriptionData then
-                    for id, name in pairs(additionalNameData) do
-                        local subText = additionalDescriptionData[id] or i18n("commandEditorShortcut")
-                        choices
-                            :add(convertHtmlEntities(name))
-                            :subText(convertHtmlEntities(subText))
-                            :params(id)
-                            :image(ICON)
-                            :id(id)
-                    end
+            if nameData and descriptionData then
+                for _, id in ipairs(nameData:findAllKeys()) do
+                    local name = nameData:find(id)
+                    local subText = descriptionData:find(id) or i18n("commandEditorShortcut")
+                    choices
+                        :add(convertHtmlEntities(name))
+                        :subText(convertHtmlEntities(subText))
+                        :params(id)
+                        :image(ICON)
+                        :id(id)
                 end
             end
         end)

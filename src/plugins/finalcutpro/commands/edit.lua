@@ -18,23 +18,40 @@ local commandEditor         = fcp.commandEditor
 
 local mod = {}
 
---- plugins.finalcutpro.commands.edit.doFindCommandInCommandEditor(commandName) -> cp.rx.go.Statement
+--- plugins.finalcutpro.commands.edit.doFindCommandIDInCommandEditor(commandID) -> cp.rx.go.Statement
 --- Function
---- Returns a [Statement](cp.rx.go.Statement.md) that reveals the specified command in the Command Editor.
---- The command is typically in English, but will look up the equivalent command in the current locale.
+--- Returns a [Statement](cp.rx.go.Statement.md) that reveals the specified language-independent command ID in the Command Editor.
 ---
 --- Parameters:
----  * commandName - The name of the command to reveal.
+---  * commandID - The ID of the command to reveal, language-neutral. For example, "NextEdit", not "Go To Next Edit"
 ---
 --- Returns:
 ---  * a [Statement](cp.rx.go.Statement.md) that returns `true` if the command was found and revealed, otherwise `false`.
-function mod.doFindCommandInCommandEditor(commandName)
+function mod.doFindCommandIDInCommandEditor(commandID)
     return Do(
         Require(fcp:doLaunch()):Is(true):OrThrow(i18n("failedToLaunchFinalCutPro"))
     ):Then(
-        Require(commandEditor:doFindCommand(commandName)):Is(true):OrThrow(i18n("failedToFindCommandInCommandEditor", {command = commandName}))
+        Require(commandEditor:doFindCommandID(commandID)):Is(true):OrThrow(i18n("failedToFindCommandInCommandEditor", {command = commandID}))
     )
 end
+
+--- plugins.finalcutpro.commands.edit.doFindCommandNameInCommandEditor(commandID) -> cp.rx.go.Statement
+--- Function
+--- Returns a [Statement](cp.rx.go.Statement.md) that reveals the specified command name in the Command Editor, in the current language.
+---
+--- Parameters:
+---  * commandName - The ID of the command to reveal, language-neutral. For example, "Go To Next Edit", not "NextEdit".
+---
+--- Returns:
+---  * a [Statement](cp.rx.go.Statement.md) that returns `true` if the command was found and revealed, otherwise `false`.
+function mod.doFindCommandNameInCommandEditor(commandName)
+    return Do(
+        Require(fcp:doLaunch()):Is(true):OrThrow(i18n("failedToLaunchFinalCutPro"))
+    ):Then(
+        Require(commandEditor:doFindCommandName(commandName)):Is(true):OrThrow(i18n("failedToFindCommandInCommandEditor", {command = commandName}))
+    )
+end
+
 
 local plugin = {
     id = "finalcutpro.commands.edit",

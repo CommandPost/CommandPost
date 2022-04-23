@@ -84,13 +84,13 @@ local just										= require "cp.just"
 local localeID                                  = require "cp.i18n.localeID"
 local prop										= require "cp.prop"
 local Set                                       = require "cp.collect.Set"
+local strings                                   = require "cp.strings"
 local tools                                     = require "cp.tools"
 
 local commandeditor								= require "cp.apple.commandeditor"
 
 local app                                       = require "cp.apple.finalcutpro.app"
 local plugins									= require "cp.apple.finalcutpro.plugins"
-local strings                                   = require "cp.apple.finalcutpro.strings"
 
 local BackgroundTasksDialog                     = require "cp.apple.finalcutpro.main.BackgroundTasksDialog"
 local Browser									= require "cp.apple.finalcutpro.main.Browser"
@@ -162,7 +162,7 @@ function fcp:initialize()
 --- cp.apple.finalcutpro.strings <cp.strings>
 --- Constant
 --- The `cp.strings` providing access to common FCPX text values.
-    self.strings = strings
+    self.strings = require "cp.apple.finalcutpro.strings"
 
     app:update()
 
@@ -1065,6 +1065,47 @@ function fcp:getCommandShortcuts(id)
     return shortcuts
 end
 
+--- cp.apple.finalcutpro.commandNames <cp.strings>
+--- Field
+--- The `table` of all available command names, with keys mapped to human-readable names in the current locale.
+function fcp.lazy.value:commandNames()
+    local commandNames = strings.new()
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandNames.strings")
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandNamesAdditional.strings")
+
+    local reset = function()
+        commandNames:context({
+            appPath = self:getPath(),
+            locale = self:currentLocale().code,
+        })
+    end
+
+    self.isRunning:watch(reset)
+    self.currentLocale:watch(reset, true)
+
+    return commandNames
+end
+
+--- cp.apple.finalcutpro.commandDescriptions <cp.strings>
+--- Field
+--- The `table` of all available command descriptions, with keys mapped to human-readable descriptions in the current locale.
+function fcp.lazy.value:commandDescriptions()
+    local commandDescriptions = strings.new()
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandDescriptions.strings")
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandDescriptionsAdditional.strings")
+
+    local reset = function()
+        commandDescriptions:context({
+            appPath = self:getPath(),
+            locale = self:currentLocale().code,
+        })
+    end
+
+    self.isRunning:watch(reset)
+    self.currentLocale:watch(reset, true)
+
+    return commandDescriptions
+end
 
 --- cp.apple.finalcutpro.isSkimmingEnabled <bool; live>
 --- Field
