@@ -73,6 +73,7 @@ local log										= require "hs.logger".new "fcp"
 local fs 										= require "hs.fs"
 local plist                                     = require "hs.plist"
 local inspect									= require "hs.inspect"
+local notify                                    = require "hs.notify"
 local osascript 								= require "hs.osascript"
 local pathwatcher                               = require "hs.pathwatcher"
 
@@ -84,13 +85,13 @@ local just										= require "cp.just"
 local localeID                                  = require "cp.i18n.localeID"
 local prop										= require "cp.prop"
 local Set                                       = require "cp.collect.Set"
+local strings                                   = require "cp.strings"
 local tools                                     = require "cp.tools"
 
 local commandeditor								= require "cp.apple.commandeditor"
 
 local app                                       = require "cp.apple.finalcutpro.app"
 local plugins									= require "cp.apple.finalcutpro.plugins"
-local strings                                   = require "cp.apple.finalcutpro.strings"
 
 local BackgroundTasksDialog                     = require "cp.apple.finalcutpro.main.BackgroundTasksDialog"
 local Browser									= require "cp.apple.finalcutpro.main.Browser"
@@ -162,7 +163,7 @@ function fcp:initialize()
 --- cp.apple.finalcutpro.strings <cp.strings>
 --- Constant
 --- The `cp.strings` providing access to common FCPX text values.
-    self.strings = strings
+    self.strings = require "cp.apple.finalcutpro.strings"
 
     app:update()
 
@@ -1065,6 +1066,47 @@ function fcp:getCommandShortcuts(id)
     return shortcuts
 end
 
+--- cp.apple.finalcutpro.commandNames <cp.strings>
+--- Field
+--- The `table` of all available command names, with keys mapped to human-readable names in the current locale.
+function fcp.lazy.value:commandNames()
+    local commandNames = strings.new()
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandNames.strings")
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandNamesAdditional.strings")
+
+    local reset = function()
+        commandNames:context({
+            appPath = self:getPath(),
+            locale = self:currentLocale().code,
+        })
+    end
+
+    self.isRunning:watch(reset)
+    self.currentLocale:watch(reset, true)
+
+    return commandNames
+end
+
+--- cp.apple.finalcutpro.commandDescriptions <cp.strings>
+--- Field
+--- The `table` of all available command descriptions, with keys mapped to human-readable descriptions in the current locale.
+function fcp.lazy.value:commandDescriptions()
+    local commandDescriptions = strings.new()
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandDescriptions.strings")
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandDescriptionsAdditional.strings")
+
+    local reset = function()
+        commandDescriptions:context({
+            appPath = self:getPath(),
+            locale = self:currentLocale().code,
+        })
+    end
+
+    self.isRunning:watch(reset)
+    self.currentLocale:watch(reset, true)
+
+    return commandDescriptions
+end
 
 --- cp.apple.finalcutpro.isSkimmingEnabled <bool; live>
 --- Field
@@ -1080,24 +1122,66 @@ function fcp.lazy.prop:isAudioScrubbingEnabled()
     return self.preferences:prop("FFDisableAudioScrubbing", false):NOT()
 end
 
---- cp.apple.finalcutpro:doShortcut(whichShortcut) -> Statement
+-- tracks if we are currently prompting the user about assigning a shortcut
+local promptingForShortcut = {}
+
+--- cp.apple.finalcutpro:doShortcut(whichShortcut[, suppressPrompt]) -> Statement
 --- Method
 --- Perform a Final Cut Pro Keyboard Shortcut
 ---
 --- Parameters:
 ---  * whichShortcut - As per the Command Set name
+---  * suppressPrompt - If `true`, and no shortcut is found for the specified command, then no prompt will be shown and an error is thrown Defaults to `false`.
 ---
 --- Returns:
 ---  * A `Statement` that will perform the shortcut when executed.
-function fcp:doShortcut(whichShortcut)
+function fcp:doShortcut(whichShortcut, suppressPrompt)
     return Do(self:doLaunch())
     :Then(function()
         local shortcuts = self:getCommandShortcuts(whichShortcut)
         if shortcuts and #shortcuts > 0 then
             shortcuts[1]:trigger(self:application())
             return true
+        elseif not suppressPrompt then
+            -- check we're not already prompting for this shortcut
+            if promptingForShortcut[whichShortcut] then
+                return false
+            end
+            local commandName = self.commandNames:find(whichShortcut) or whichShortcut
+            -- handle the results
+            local handler = function(notification)
+                promptingForShortcut[whichShortcut] = nil
+                local result = notification:activationType()
+                if result == notify.activationTypes.actionButtonClicked or result == notify.activationTypes.contentsClicked then
+                    Do(self.commandEditor:doFindCommandID(whichShortcut, true))
+                    :Then(function()
+                        notify.new(nil)
+                            :title(i18n("finalcutpro_commands_unassigned_title"))
+                            :informativeText(i18n("finalcutpro_commands_unassigned_click_and_assign_text", {["commandName"] = commandName}))
+                            :withdrawAfter(5)
+                            :send()
+                    end)
+                    :Now()
+                end
+            end
+
+            -- write a debug message just incase the user has notifications disabled:
+            log.wf(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
+
+            -- show a notification
+            promptingForShortcut[whichShortcut] = true
+            notify.new(handler)
+                :title(i18n("finalcutpro_commands_unassigned_title"))
+                :informativeText(i18n("finalcutpro_commands_unassigned_text", {["commandName"] = commandName}))
+                :hasActionButton(true)
+                :actionButtonTitle(i18n("finalcutpro_commands_unassigned_action"))
+                :withdrawAfter(0)
+                :send()
+
+            return false
         else
-            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))
+            local commandName = self.commandNames:find(whichShortcut) or whichShortcut
+            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
         end
     end)
     :ThenYield()

@@ -2,14 +2,31 @@
 ---
 --- UI Group.
 
-local require   = require
+local require           = require
 
--- local log       = require "hs.logger" .new "Group"
+-- local log               = require "hs.logger" .new "Group"
 
-local Element   = require "cp.ui.Element"
+local ax                = require "cp.fn.ax"
+local Element           = require "cp.ui.Element"
 
+local pack              = table.pack
 
 local Group = Element:subclass("cp.ui.Group")
+    :defineBuilder("containing")
+
+--- === cp.ui.Group.Builder ===
+---
+--- Defines a `Group` builder.
+
+--- cp.ui.Group:containing(...) -> cp.ui.Group.Builder
+--- Function
+--- Returns a `Builder` with the `Element` initializers for the children in the group.
+---
+--- Parameters:
+---  * ... - A variable list of `Element` initializers, one for each child.
+---
+--- Returns:
+---  * The `Group.Builder`
 
 --- cp.ui.Group.matches(element) -> boolean
 --- Function
@@ -24,19 +41,6 @@ function Group.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.ui.Group.contents(element) -> axuielement
---- Function
---- Returns the `AXContents` of the element, if it is an `AXGroup`.
----
---- Parameters:
----  * element  - The `axuielement` to check.
----
---- Returns:
----  * The list of `axuielements` for the `AXContents` of the `AXGroup`, or `nil`.
-function Group.static.contents(element)
-    return Group.matches(element) and element:attributeValue("AXContents")
-end
-
 --- cp.ui.Group(parent, uiFinder[, contentsClass]) -> Alert
 --- Constructor
 --- Creates a new `Group` instance.
@@ -47,8 +51,23 @@ end
 ---
 --- Returns:
 ---  * A new `Group` object.
-function Group:initialize(parent, uiFinder)
+function Group:initialize(parent, uiFinder, ...)
     Element.initialize(self, parent, uiFinder)
+    self.childInits = pack(...)
+end
+
+--- cp.ui.Group.childrenUI <cp.prop: table of axuielement>
+--- Field
+--- Contains the list of `axuielement` children of the group.
+function Group.lazy.prop:childrenUI()
+    return ax.prop(self.UI, "AXChildren")
+end
+
+--- cp.ui.Group.children <table of cp.ui.Element>
+--- Field
+--- Contains the list of `Element` children of the group.
+function Group.lazy.value:children()
+    return ax.initElements(self, self.childrenUI, self.childInits)
 end
 
 return Group

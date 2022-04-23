@@ -185,9 +185,7 @@ end
 local function makeShortcutHandler(finderFn)
     return function()
         local shortcut = finderFn()
-        fcp:doShortcut(shortcut):Catch(function()
-            displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-        end):Now()
+        fcp:doShortcut(shortcut):Now()
     end
 end
 

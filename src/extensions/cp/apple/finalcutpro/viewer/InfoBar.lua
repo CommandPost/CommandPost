@@ -16,7 +16,7 @@ local cache             = axutils.cache
 local childFromLeft     = axutils.childFromLeft
 local childFromTop      = axutils.childFromTop
 local childFromRight    = axutils.childFromRight
-local leftToRight       = axutils.compareLeftToRight
+local leftToRight       = axutils.compare.leftToRight
 
 local InfoBar = Group:subclass("cp.apple.finalcutpro.viewer.InfoBar")
 

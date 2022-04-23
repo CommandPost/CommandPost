@@ -14,7 +14,7 @@ local Group                             = require "cp.ui.Group"
 local tools								= require "cp.tools"
 local just								= require "cp.just"
 
-local Table								= require "cp.ui.Table"
+local Table								= require "cp.ui.OldTable"
 local ScrollArea						= require "cp.ui.ScrollArea"
 local CheckBox							= require "cp.ui.CheckBox"
 local PopUpButton						= require "cp.ui.PopUpButton"
@@ -639,7 +639,7 @@ function EffectsBrowser.lazy.prop:mainGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.EffectsBrowser.sidebar <cp.ui.Table>
+--- cp.apple.finalcutpro.main.EffectsBrowser.sidebar <cp.ui.OldTable>
 --- Field
 --- The sidebar `Table` object.
 function EffectsBrowser.lazy.value:sidebar()

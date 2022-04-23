@@ -6,8 +6,8 @@
 
 local go	                    = require "cp.rx.go"
 local prop	                    = require "cp.prop"
-local Outline	                = require "cp.ui.Outline"
-local Row                       = require "cp.ui.Row"
+local Outline	                = require "cp.ui.OldOutline"
+local Row                       = require "cp.ui.OldRow"
 
 local Role                      = require "cp.apple.finalcutpro.timeline.Role"
 local AudioRole                 = require "cp.apple.finalcutpro.timeline.AudioRole"

@@ -53,7 +53,7 @@ function CorrectionsBar.static.matches(element)
         local children = element:attributeValue("AXChildren")
         if children and #children >= 2 then
             -- sort them left-to-right
-            sort(children, axutils.compareLeftToRight)
+            sort(children, axutils.compare.leftToRight)
             -- log.df("matches: children left to right: \n%s", _inspect(children))
             return CheckBox.matches(children[1])
                 and MenuButton.matches(children[2])

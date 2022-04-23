@@ -29,9 +29,9 @@ function IndexRolesArea.static.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.timeline.IndexRolesArea.list <cp.ui.Outline>
+--- cp.apple.finalcutpro.timeline.IndexRolesArea.list <cp.apple.finalcutpro.timeline.IndexRolesList>
 --- Field
---- The [Outline](cp.ui.Outline.md) that serves as the list of the scroll area.
+--- The [IndexRolesList](cp.apple.finalcutpro.timeline.IndexRolesList.md) that serves as the list of the scroll area.
 function IndexRolesArea.lazy.value:list()
     return IndexRolesList(self, self.UI:mutate(function(original)
         return childMatching(original(), IndexRolesList.matches)

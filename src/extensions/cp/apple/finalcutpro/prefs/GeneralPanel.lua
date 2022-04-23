@@ -8,12 +8,11 @@ local log				    = require "hs.logger" .new "GeneralPanel"
 
 local tools                 = require "cp.tools"
 
-local axutils               = require "cp.ui.axutils"
+local ax                    = require "cp.fn.ax"
 local Button                = require "cp.ui.Button"
 local PopUpButton           = require "cp.ui.PopUpButton"
 local Panel                 = require "cp.apple.finalcutpro.prefs.Panel"
 
-local childFromTop          = axutils.childFromTop
 local execute               = _G.hs.execute
 
 local GeneralPanel = Panel:subclass("cp.apple.finalcutpro.prefs.GeneralPanel")
@@ -91,45 +90,45 @@ end
 --- Field
 --- The "Time Display" `PopUpButton`.
 function GeneralPanel.lazy.value:timeDisplay()
-    return PopUpButton(self, self.UI:mutate(function(original)
-        return childFromTop(original(), 1, PopUpButton.matches)
-    end))
+    return PopUpButton(self, self.UI:mutate(
+        ax.childMatching(PopUpButton.matches, 1)
+    ))
 end
 
 --- cp.apple.finalcutpro.presfs.GeneralPanel.resetDialogWarnings <cp.ui.Buton>
 --- Field
 --- The "Reset Dialog warnings" `Button`.
 function GeneralPanel.lazy.value:resetDialogWarnings()
-    return Button(self, self.UI:mutate(function(original)
-        return childFromTop(original(), 1, Button.matches)
-    end))
+    return Button(self, self.UI:mutate(
+        ax.childMatching(Button.matches, 1)
+    ))
 end
 
 --- cp.apple.finalcutpro.presfs.GeneralPanel.validateAudioUnits <cp.ui.Buton>
 --- Field
 --- The "Validate Audio Units" `Button`.
 function GeneralPanel.lazy.value:validateAudioUnits()
-    return Button(self, self.UI:mutate(function(original)
-        return childFromTop(original(), 2, Button.matches)
-    end))
+    return Button(self, self.UI:mutate(
+        ax.childMatching(Button.matches, 2)
+    ))
 end
 
 --- cp.apple.finalcutpro.presfs.GeneralPanel.colorCorrection <cp.ui.PopUpButton>
 --- Field
 --- The "Color Correction" `PopUpButton`.
 function GeneralPanel.lazy.value:colorCorrection()
-    return PopUpButton(self, self.UI:mutate(function(original)
-        return childFromTop(original(), 2, PopUpButton.matches)
-    end))
+    return PopUpButton(self, self.UI:mutate(
+        ax.childMatching(PopUpButton.matches, 2)
+    ))
 end
 
 --- cp.apple.finalcutpro.presfs.GeneralPanel.inspectorUnits <cp.ui.PopUpButton>
 --- Field
 --- The "Inspector Units" `PopUpButton`.
 function GeneralPanel.lazy.value:inspectorUnits()
-    return PopUpButton(self, self.UI:mutate(function(original)
-        return childFromTop(original(), 3, PopUpButton.matches)
-    end))
+    return PopUpButton(self, self.UI:mutate(
+        ax.childMatching(PopUpButton.matches, 3)
+    ))
 end
 
 return GeneralPanel

@@ -16,7 +16,7 @@ local geometry							= require "hs.geometry"
 local fnutils							= require "hs.fnutils"
 
 local Group                             = require "cp.ui.Group"
-local Table								= require "cp.ui.Table"
+local Table								= require "cp.ui.OldTable"
 local ScrollArea						= require "cp.ui.ScrollArea"
 local PopUpButton						= require "cp.ui.PopUpButton"
 local TextField							= require "cp.ui.TextField"
@@ -140,7 +140,7 @@ function GeneratorsBrowser.lazy.prop:mainGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.GeneratorsBrowser.sidebar <cp.ui.Table>
+--- cp.apple.finalcutpro.main.GeneratorsBrowser.sidebar <cp.ui.OldTable>
 --- Field
 --- The sidebar object.
 function GeneratorsBrowser.lazy.value:sidebar()

@@ -2,10 +2,12 @@
 ---
 --- Represents an `AXSplitter`.
 
-local axutils	                = require "cp.ui.axutils"
+local require                   = require
+
+local ax                        = require "cp.fn.ax"
 local Element	                = require "cp.ui.Element"
 
-local Splitter = Element:subclass("cp.ui.Element")
+local Splitter = Element:subclass("cp.ui.Splitter")
 
 --- cp.ui.Splitter.VERTICAL_ORIENTATION <string>
 --- Constant
@@ -17,32 +19,50 @@ Splitter.static.VERTICAL_ORIENTATION = "AXVerticalOrientation"
 --- The value for `AXOrientation` when it is horizontal.
 Splitter.static.HORIZONTAL_ORIENTATION = "AXHorizontalOrientation"
 
+--- cp.ui.Splitter.matches(value) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+--- * value - The value to check.
+---
+--- Returns:
+--- * `true` if the value matches, `false` otherwise.
+Splitter.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXSplitter")
 
-function Splitter.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXSplitter"
-end
-
+--- cp.ui.Splitter.maxValue <cp.prop: number, read-only>
+--- Field
+--- The maximum value of the splitter.
 function Splitter.lazy.prop:maxValue()
-    return axutils.prop(self.UI, "AXMaxValue")
+    return ax.prop(self.UI, "AXMaxValue")
 end
 
+--- cp.ui.Splitter.minValue <cp.prop: number, read-only>
+--- Field
+--- The minimum value of the splitter.
 function Splitter.lazy.prop:minValue()
-    return axutils.prop(self.UI, "AXMinValue")
+    return ax.prop(self.UI, "AXMinValue")
 end
 
+--- cp.ui.Splitter.nextContentsUI <cp.prop: axuielementObject, read-only, live?>
+--- Field
+--- The `axuielementObject` for the next contents of the splitter.
 function Splitter.lazy.prop:nextContentsUI()
-    return axutils.prop(self.UI, "AXNextContents")
+    return ax.prop(self.UI, "AXNextContents")
 end
 
+--- cp.ui.Splitter.previousContentsUI <cp.prop: axuielementObject, read-only, live?>
+--- Field
+--- The `axuielementObject` for the previous contents of the splitter.
 function Splitter.lazy.prop:previousContentsUI()
-    return axutils.prop(self.UI, "AXPreviousContents")
+    return ax.prop(self.UI, "AXPreviousContents")
 end
 
 --- cp.ui.Splitter.orientation <cp.prop: string; read-only>
 --- Field
 --- The `AXOrientation` string.
 function Splitter.lazy.prop:orientation()
-    return axutils.prop(self.UI, "AXOrientation")
+    return ax.prop(self.UI, "AXOrientation")
 end
 
 --- cp.ui.Splitter.vertical <cp.prop: boolean; read-only>
@@ -64,7 +84,7 @@ function Splitter.lazy.prop:horizontal()
 end
 
 function Splitter.lazy.prop:value()
-    return axutils.prop(self.UI, "AXValue")
+    return ax.prop(self.UI, "AXValue")
 end
 
 return Splitter

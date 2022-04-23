@@ -43,39 +43,16 @@ function plugin.init(deps)
         :onPress(fcp:doSelectMenu({"Clip", "Expand Audio"}))
 
     group:action(baseID+5, i18n("selectLeftAudioEdge"))
-        :onPress(fcp:doShortcut("SelectLeftEdgeAudio")
-            :Catch(function(message)
-                log.wf("clip.selectLeftAudioEdge: %s", message)
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end)
-        )
+        :onPress(fcp:doShortcut("SelectLeftEdgeAudio"))
 
     group:action(baseID+6, i18n("selectRightAudioEdge"))
-        :onPress(
-            fcp:doShortcut("SelectRightEdgeAudio")
-            :Catch(function(message)
-                log.wf("clip.selectRightAudioEdge: %s", message)
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end)
-        )
+        :onPress(fcp:doShortcut("SelectRightEdgeAudio"))
 
     group:action(baseID+7, i18n("selectLeftEdge"))
-        :onPress(
-            fcp:doShortcut("SelectLeftEdge")
-            :Catch(function(message)
-                log.wf("clip.selectLeftEdge: %s", message)
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end)
-        )
+        :onPress(fcp:doShortcut("SelectLeftEdge"))
 
     group:action(baseID+8, i18n("selectRightEdge"))
-        :onPress(
-            fcp:doShortcut("SelectRightEdge")
-            :Catch(function(message)
-                log.wf("clip.selectRightEdge: %s", message)
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end)
-        )
+        :onPress(fcp:doShortcut("SelectRightEdge"))
 
     group:action(baseID+9, i18n("createStoryline"))
         :onPress(fcp:doSelectMenu({"Clip", "Create Storyline"}))

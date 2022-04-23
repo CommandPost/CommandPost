@@ -12,6 +12,75 @@ local Element                   = require "cp.ui.Element"
 local If                        = go.If
 
 local TextField = Element:subclass("cp.ui.TextField")
+    :defineBuilder("convertingGet", "convertingSet")
+
+-----------------------------------------------------------------------
+-- TextField.Builder definitions.
+-----------------------------------------------------------------------
+
+--- === cp.ui.TextField.Builder ===
+---
+--- Defines a `TextField` [Builder](cp.ui.Builder.md).
+
+--- cp.ui.TextField.Builder:convertingGet(getter) -> cp.ui.TextField.Builder
+--- Method
+--- Specifies a function that will convert the result of the `TextField:value()` getter to a different type.
+---
+--- Parameters:
+---  * getter - A `function` that will be called to get the value from the `TextField`.
+---
+--- Returns:
+---  * The `TextField.Builder`
+---
+--- Notes:
+---  * The `getter` will be called with the `string` value from the `TextField` as its only parameter.
+
+--- cp.ui.TextField.Builder:convertingSet(setter) -> cp.ui.TextField.Builder
+--- Method
+--- Specifies a function to convert the value before setting it in the `TextField`.
+---
+--- Parameters:
+---  * setter - A `function` that will be called to set the value in the `TextField`.
+---
+--- Returns:
+---  * The `TextField.Builder`
+---
+--- Notes:
+---  * The `setter` will be called with the input value from a `TextField:value(...)` call as its only parameter.
+---    It should return a `string` to be saved into the `TextField`.
+
+--- cp.ui.TextField:convertingGet(getter) -> cp.ui.TextField.Builder
+--- Field
+--- Creates a `Builder` that will convert the result of the `TextField:value()` getter to a different type.
+---
+--- Parameters:
+---  * getter - A `function` that will be called to get the value from the `TextField`.
+---
+--- Returns:
+---  * The `TextField.Builder`
+---
+--- Notes:
+---  * The `getter` will be called with the `string` value from the `TextField` as its only parameter.
+---  * For example, `TextField:convertGet(tonumber)` will use the standard `tonumber` function to convert the value to a number.
+
+--- cp.ui.TextField:convertingSet(setter) -> cp.ui.TextField.Builder
+--- Field
+--- Creates a `Builder` that will convert the value before setting it in the `TextField`.
+---
+--- Parameters:
+---  * setter - A `function` that will be called to set the value in the `TextField`.
+---
+--- Returns:
+---  * The `TextField.Builder`
+---
+--- Notes:
+---  * The `setter` will be called with the input value from a `TextField:value(...)` call as its only parameter.
+---    It should return a `string` to be saved into the `TextField`.
+---  * For example, `TextField:convertSet(tostring)` will use the standard `tostring` function to convert the value to a string.
+
+-----------------------------------------------------------------------
+-- TextField definitions.
+-----------------------------------------------------------------------
 
 --- cp.ui.TextField.matches(element[, subrole]) -> boolean
 --- Function
@@ -93,7 +162,7 @@ end
 --- cp.ui.TextField:forceFocus()
 --- Method
 --- Configures the TextField to force a focus on the field before editing.
---- Some fields seem to require this to actually update the
+--- Some fields seem to require this to actually update the text value.
 ---
 --- Parameters:
 ---  * None

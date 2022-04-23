@@ -184,7 +184,44 @@ return describe "cp.delegator" {
         expect(a:getValue()):is("delegated")
     end),
 
-    it "inherits delegations from superclasses"
+    it "inherits delegations from the superclass"
+    :doing(function()
+        local Alpha = class("Alpha"):include(delegator)
+
+        Alpha:delegateTo("delegate")
+
+        function Alpha:initialize()
+            self.value = "undelegated"
+
+            self.delegate = {
+                value = "delegated",
+                getValue = function(this)
+                    return this.value
+                end,
+            }
+        end
+
+        local Beta = Alpha:subclass("Beta")
+        function Beta:initialize()
+            Alpha.initialize(self)
+            self.subclassValue = "subclassValue"
+        end
+
+        local a = Alpha()
+        expect(a.value):is("undelegated")
+        expect(a.delegate.value):is("delegated")
+        expect(a.delegate:getValue()):is("delegated")
+        expect(a:getValue()):is("delegated")
+
+        local b = Beta()
+        expect(b.value):is("undelegated")
+        expect(b.delegate.value):is("delegated")
+        expect(b.delegate:getValue()):is("delegated")
+        expect(b:getValue()):is("delegated")
+        expect(b.subclassValue):is("subclassValue")
+    end),
+
+    it "inherits delegations from superclasses and current class"
     :doing(function()
         local Alpha = class("Alpha"):include(delegator)
 

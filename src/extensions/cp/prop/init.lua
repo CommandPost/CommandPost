@@ -1338,8 +1338,30 @@ function prop.new(getFn, setFn, cloneFn)
     return setmetatable(o, prop.mt)
 end
 
+--- cp.prop.FROM(value) --> cp.prop
+--- Constructor
+--- Creates a new `prop` value, with the provided `value`.
+--- If it's already a `cp.prop`, it will be returned directly.
+--- If it's a function, it will be treated as a `get` function.
+--- Otherwise, it will be returned as [THIS](#THIS)
+---
+--- Parameters:
+---  * `value`      - The value to use.
+---
+--- Returns:
+---  * The new `cp.prop` instance.
+function prop.FROM(value)
+    if prop.is(value) then
+        return value
+    elseif type(value) == "function" then
+        return prop.new(value)
+    else
+        return prop.THIS(value)
+    end
+end
+
 --- cp.prop.THIS([initialValue]) -> cp.prop
---- Function
+--- Constructor
 --- Returns a new `cp.prop` instance which will cache a value internally. It will default to the value of the `initialValue`, if provided.
 ---
 --- Parameters:
@@ -1361,7 +1383,7 @@ function prop.THIS(initialValue)
 end
 
 --- cp.prop.IMMUTABLE(propValue) -- cp.prop
---- Function
+--- Constructor
 --- Returns a new `cp.prop` instance which will not allow the wrapped value to be modified.
 ---
 --- Parameters:
@@ -1373,6 +1395,7 @@ end
 --- Note:
 ---  * The original `propValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
 function prop.IMMUTABLE(propValue)
+    assert(prop.is(propValue), "The 'propValue' must be a 'cp.prop' instance.")
     local immutable = prop.new(function() return propValue:get() end):monitor(propValue)
     return immutable
 end
@@ -1388,7 +1411,7 @@ end
 ---  * a new `cp.prop` instance with a value of `nil`.
 prop.NIL = prop.new(function() return nil end)
 
---- cp.prop:IMMUTABLE() -- cp.prop
+--- cp.prop:IMMUTABLE() -> cp.prop
 --- Method
 --- Returns a new `cp.prop` instance wrapping this property which will not allow it to be modified.
 ---
@@ -1403,7 +1426,7 @@ prop.NIL = prop.new(function() return nil end)
 prop.mt.IMMUTABLE = prop.IMMUTABLE
 
 --- cp.prop.TRUE() -> cp.prop
---- Function
+--- Constructor
 --- Returns a new `cp.prop` which will cache internally, initially set to `true`.
 ---
 --- Parameters:
@@ -1416,7 +1439,7 @@ function prop.TRUE()
 end
 
 --- cp.prop.FALSE() -> cp.prop
---- Function
+--- Constructor
 --- Returns a new `cp.prop` which will cache internally, initially set to `false`.
 ---
 --- Parameters:
@@ -1442,12 +1465,8 @@ function prop.TABLE(initialValue)
 end
 
 --- cp.prop.NOT(propValue) -> cp.prop
---- Function
---- Returns a new `cp.prop` which negates the provided `propValue`. Values are negated as follows:
----
----  * `boolean`    - Switch between `true` and `false`
----  * `nil`        - Switches to `true`
----  * <other>  - Switches to `nil`.
+--- Constructor
+--- Returns a new `cp.prop` which negates the provided `propValue`.
 ---
 --- Parameters:
 ---  * `propValue`      - Another `cp.prop` instance.
@@ -1456,7 +1475,12 @@ end
 ---  * a `cp.prop` instance negating the `propValue`.
 ---
 --- Notes:
----  * If the `propValue` is mutable, you can set the `NOT` property value and the underlying value will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
+---  * If the `propValue` is mutable, you can set the `NOT` property value and the underlying value
+---     will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
+---  * Values are negated as follows:
+---    * `boolean`    - Switch between `true` and `false`
+---    * `nil`        - Switches to `true`
+---    * <other>  - Switches to `nil`.
 function prop.NOT(propValue)
     if not prop.is(propValue) then error "Expected a `cp.prop` at argument #1" end
     local notProp = prop.new(
@@ -1505,7 +1529,7 @@ local function _watchAndOr(andOrProp, props)
 end
 
 --- cp.prop.AND(...) -> cp.prop
---- Function
+--- Constructor
 --- Returns a new `cp.prop` which will be `true` if all `cp.prop` instances passed into the function return a `truthy` value.
 ---
 --- Parameters:
@@ -1560,7 +1584,7 @@ end
 prop.mt.AND = prop.AND
 
 --- cp.prop.OR(...) -> cp.prop
---- Function
+--- Constructor
 --- Returns a new `cp.prop` which will return the first 'truthy' value provided by one of the provided properties. Otherwise, returns the last 'falsy' value.
 ---
 --- Parameters:

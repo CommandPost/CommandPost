@@ -57,6 +57,21 @@ return test.suite("cp.prop"):with {
         ok(eq(isState:mutable(), false))
     end),
 
+    test("Prop FROM", function()
+        local isTrue = prop.TRUE()
+        local fromTrue = prop.FROM(isTrue)
+        ok(eq(prop.is(fromTrue), true))
+        ok(eq(fromTrue(), true))
+
+        local fromFn = prop.FROM(function() return false end)
+        ok(eq(prop.is(fromFn), true))
+        ok(eq(fromFn(), false))
+
+        local fromValue = prop.FROM(1)
+        ok(eq(prop.is(fromValue), true))
+        ok(eq(fromValue(), 1))
+    end),
+
     test("Prop THIS", function()
         local isTrue = prop.THIS(true)
         ok(eq(isTrue(), true))

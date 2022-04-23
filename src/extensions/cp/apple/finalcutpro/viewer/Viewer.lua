@@ -17,7 +17,6 @@ local Group                             = require "cp.ui.Group"
 local Image                             = require "cp.ui.Image"
 local notifier                          = require "cp.ui.notifier"
 local prop                              = require "cp.prop"
-local SplitGroup                        = require "cp.ui.SplitGroup"
 
 local ControlBar                        = require "cp.apple.finalcutpro.viewer.ControlBar"
 local InfoBar                           = require "cp.apple.finalcutpro.viewer.InfoBar"
@@ -31,7 +30,7 @@ local childrenMatching                  = axutils.childrenMatching
 local childrenWithRole                  = axutils.childrenWithRole
 local childWithDescription              = axutils.childWithDescription
 local childWithRole                     = axutils.childWithRole
-local topToBottom                       = axutils.compareTopToBottom
+local topToBottom                       = axutils.compare.topToBottom
 
 local delayedTimer                      = timer.delayed
 local Do                                = go.Do

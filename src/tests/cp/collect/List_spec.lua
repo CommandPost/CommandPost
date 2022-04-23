@@ -19,17 +19,16 @@ return describe "cp.collect.List" {
         expect(l[3]):is(3)
     end),
 
-    it "can have a preset size"
+    it "will still be 'empty' when iterated with ipairs with a size"
     :doing(function()
         local l = List.sized(10)
         expect(#l):is(10)
 
         local max
-        for k,v in ipairs(l) do
+        for k,_ in ipairs(l) do
             max = k
-            expect(v):is(nil)
         end
-        expect(max):is(10)
+        expect(max):is(nil)
     end),
 
     it "can have a preset size with default values"

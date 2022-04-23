@@ -191,34 +191,6 @@ function axutils.children(element, compareFn)
     return {}
 end
 
-local function isBelow(a)
-    return function(b)
-        if b == nil then
-            return false
-        elseif a == nil then
-            return true
-        else
-            local aFrame = a:attributeValue("AXFrame")
-            local bFrame = b:attributeValue("AXFrame")
-            return aFrame.y + aFrame.h < bFrame.y
-        end
-    end
-end
-
-local function isAbove(a)
-    return function(b)
-        if b == nil then
-            return false
-        elseif a == nil then
-            return true
-        else
-            local aFrame = a:attributeValue("AXFrame")
-            local bFrame = b:attributeValue("AXFrame")
-            return aFrame.y < bFrame.y + bFrame.h
-        end
-    end
-end
-
 --- cp.ui.axutils.childrenBelow(element, topElement) -> table of axuielement or nil
 --- Function
 --- Finds the list of `axuielement` children from the `element` which are below the specified `topElement`.
@@ -231,7 +203,7 @@ end
 --- Returns:
 --- * The table of `axuielements` that are below, or `nil` if the element is not available.
 function axutils.childrenBelow(element, topElement)
-    return element and axutils.childrenMatching(element, isBelow(topElement))
+    return element and axutils.childrenMatching(element, axutils.match.isBelow(topElement))
 end
 
 --- cp.ui.axutils.childrenAbove(element, bottomElement) -> table of axuielement or nil
@@ -245,8 +217,8 @@ end
 ---
 --- Returns:
 --- * The table of `axuielements` that are above, or `nil` if the element is not available.
-function axutils.childrenAbove(element, topElement)
-    return element and axutils.childrenMatching(element, isAbove(topElement))
+function axutils.childrenAbove(element, bottomElement)
+    return element and axutils.childrenMatching(element, axutils.match.isAbove(bottomElement))
 end
 
 --- cp.ui.axutils.hasAttributeValue(element, name, value) -> boolean
@@ -456,7 +428,13 @@ function axutils.childAtIndex(element, index, compareFn, matcherFn)
     return nil
 end
 
---- cp.ui.axutils.compareLeftToRight(a, b) -> boolean
+--- === cp.ui.axutils.compare ===
+---
+--- Contains functions for comparing `axuielement`s.
+
+axutils.compare = {}
+
+--- cp.ui.axutils.compare.leftToRight(a, b) -> boolean
 --- Function
 --- Returns `true` if element `a` is left of element `b`. May be used with `table.sort`.
 ---
@@ -466,12 +444,12 @@ end
 ---
 --- Returns:
 ---  * `true` if `a` is left of `b`.
-function axutils.compareLeftToRight(a, b)
+function axutils.compare.leftToRight(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return (aFrame ~= nil and bFrame ~= nil and aFrame.x < bFrame.x) or false
 end
 
---- cp.ui.axutils.compareRightToLeft(a, b) -> boolean
+--- cp.ui.axutils.compare.rightToLeft(a, b) -> boolean
 --- Function
 --- Returns `true` if element `a` is right of element `b`. May be used with `table.sort`.
 ---
@@ -481,12 +459,12 @@ end
 ---
 --- Returns:
 ---  * `true` if `a` is right of `b`.
-function axutils.compareRightToLeft(a, b)
+function axutils.compare.rightToLeft(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return (aFrame ~= nil and bFrame ~= nil and aFrame.x + aFrame.w > bFrame.x + bFrame.w) or false
 end
 
---- cp.ui.axutils.compareTopToBottom(a, b) -> boolean
+--- cp.ui.axutils.compare.topToBottom(a, b) -> boolean
 --- Function
 --- Returns `true` if element `a` is above element `b`. May be used with `table.sort`.
 ---
@@ -496,12 +474,12 @@ end
 ---
 --- Returns:
 ---  * `true` if `a` is above `b`.
-function axutils.compareTopToBottom(a, b)
+function axutils.compare.topToBottom(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return (aFrame ~= nil and bFrame ~= nil and aFrame.y < bFrame.y) or false
 end
 
---- cp.ui.axutils.compareBottomToTop(a, b) -> boolean
+--- cp.ui.axutils.compare.bottomToTop(a, b) -> boolean
 --- Function
 --- Returns `true` if element `a` is below element `b`. May be used with `table.sort`.
 ---
@@ -511,7 +489,7 @@ end
 ---
 --- Returns:
 ---  * `true` if `a` is below `b`.
-function axutils.compareBottomToTop(a, b)
+function axutils.compare.bottomToTop(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return (aFrame ~= nil and bFrame ~= nil and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
 end
@@ -528,7 +506,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromLeft(element, index, matcherFn)
-    return axutils.childAtIndex(element, index, axutils.compareLeftToRight, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compare.leftToRight, matcherFn)
 end
 
 --- cp.ui.axutils.childFromRight(element, index[, matcherFn]) -> axuielement
@@ -543,7 +521,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromRight(element, index, matcherFn)
-    return axutils.childAtIndex(element, index, axutils.compareRightToLeft, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compare.rightToLeft, matcherFn)
 end
 
 --- cp.ui.axutils.childFromTop(element, index[, matcherFn]) -> axuielement
@@ -558,7 +536,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromTop(element, index, matcherFn)
-    return axutils.childAtIndex(element, index, axutils.compareTopToBottom, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compare.topToBottom, matcherFn)
 end
 
 --- cp.ui.axutils.childFromBottom(element, index) -> axuielement
@@ -573,7 +551,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromBottom(element, index, matcherFn)
-    return axutils.childAtIndex(element, index, axutils.compareBottomToTop, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compare.bottomToTop, matcherFn)
 end
 
 --- cp.ui.axutils.childrenWith(element, name, value) -> axuielement
@@ -817,6 +795,10 @@ function axutils.prop(uiFinder, attributeName, settable)
     end
 end
 
+--- === cp.ui.axutils.match ===
+---
+--- Contains common `hs.axuielement` matching functions.
+
 axutils.match = {}
 
 --- cp.ui.axutils.match.role(roleName) -> function
@@ -886,5 +868,96 @@ function axutils.match.containsOnly(values)
     end
 end
 
+--- cp.ui.axutils.match.isBelow(value) -> function
+--- Function
+--- Returns a `match` function that will return `true` if the `axuielement` is below the provided `value` `axuielement`.
+---
+--- Parameters:
+---  * value  - The `axuielement` to check.
+---
+--- Returns:
+---  * A function returning `true` if the element is below the provided `value`.
+function axutils.match.isBelow(value)
+    return function(other)
+        if other == nil then
+            return false
+        elseif value == nil then
+            return true
+        else
+            local aFrame = value:attributeValue("AXFrame")
+            local bFrame = other:attributeValue("AXFrame")
+            return aFrame.y + aFrame.h < bFrame.y
+        end
+    end
+end
+
+--- cp.ui.axutils.match.isAbove(value) -> function
+--- Function
+--- Returns a `match` function that will return `true` if the `axuielement` is above the provided `value` `axuielement`.
+---
+--- Parameters:
+---  * value  - The `axuielement` to check.
+---
+--- Returns:
+---  * A function returning `true` if the element is above the provided `value`.
+function axutils.match.isAbove(value)
+    return function(other)
+        if other == nil then
+            return false
+        elseif value == nil then
+            return true
+        else
+            local aFrame = value:attributeValue("AXFrame")
+            local bFrame = other:attributeValue("AXFrame")
+            return aFrame.y < bFrame.y + bFrame.h
+        end
+    end
+end
+
+--- cp.ui.axutils.match.isLeftOf(value) -> function
+--- Function
+--- Returns a `match` function that will return `true` if the `axuielement` is left of the provided `value` `axuielement`.
+---
+--- Parameters:
+---  * value  - The `axuielement` to check.
+---
+--- Returns:
+---  * A function returning `true` if the element is left of the provided `value`.
+function axutils.match.isLeftOf(value)
+    return function(other)
+        if other == nil then
+            return false
+        elseif value == nil then
+            return true
+        else
+            local aFrame = value:attributeValue("AXFrame")
+            local bFrame = other:attributeValue("AXFrame")
+            return aFrame.x < bFrame.x
+        end
+    end
+end
+
+--- cp.ui.axutils.match.isRightOf(value) -> function
+--- Function
+--- Returns a `match` function that will return `true` if the `axuielement` is right of the provided `value` `axuielement`.
+---
+--- Parameters:
+---  * value  - The `axuielement` to check.
+---
+--- Returns:
+---  * A function returning `true` if the element is right of the provided `value`.
+function axutils.match.isRightOf(value)
+    return function(other)
+        if other == nil then
+            return false
+        elseif value == nil then
+            return true
+        else
+            local aFrame = value:attributeValue("AXFrame")
+            local bFrame = other:attributeValue("AXFrame")
+            return aFrame.x + aFrame.w > bFrame.x + bFrame.w
+        end
+    end
+end
 
 return axutils
