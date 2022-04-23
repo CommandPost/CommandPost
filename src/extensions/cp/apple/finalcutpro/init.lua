@@ -1164,6 +1164,10 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
                     :Now()
                 end
             end
+
+            -- write a debug message just incase the user has notifications disabled:
+            log.wf(i18n("fcpShortcut_NoShortcutAssigned", {id=commandName}))
+
             -- show a notification
             promptingForShortcut[whichShortcut] = true
             notify.new(handler)
@@ -1173,9 +1177,10 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
                 :actionButtonTitle(i18n("finalcutpro_commands_unassigned_action"))
                 :withdrawAfter(0)
                 :send()
+
             return false
         else
-            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))
+            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=commandName}))
         end
     end)
     :ThenYield()
