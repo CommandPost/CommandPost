@@ -40,7 +40,6 @@ function plugin.init(deps)
     local fcpGroup          = deps.fcpGroup
     local manager           = deps.tangentManager
 
-    local doShortcut        = common.doShortcut
     local doShowParameter   = common.doShowParameter
 
     --------------------------------------------------------------------------------
@@ -482,13 +481,13 @@ function plugin.init(deps)
     local colorShortcutGroup = fcpGroup:group(i18n("colorShortcuts"))
 
     colorShortcutGroup:action(wheelsBaseID+0x0105, i18n("applyColorCorrectionFromPreviousClip"))
-        :onPress(doShortcut("SetCorrectionFromEdit-Back-1"))
+        :onPress(fcp:doShortcut("SetCorrectionFromEdit-Back-1"))
     colorShortcutGroup:action(wheelsBaseID+0x0106, i18n("applyColorCorrectionFromThreeClipsBack"))
-        :onPress(doShortcut("SetCorrectionFromEdit-Back-3"))
+        :onPress(fcp:doShortcut("SetCorrectionFromEdit-Back-3"))
     colorShortcutGroup:action(wheelsBaseID+0x0107, i18n("applyColorCorrectionFromTwoClipsBack"))
-        :onPress(doShortcut("SetCorrectionFromEdit-Back-2"))
+        :onPress(fcp:doShortcut("SetCorrectionFromEdit-Back-2"))
     colorShortcutGroup:action(wheelsBaseID+0x0108, i18n("enableDisableBalanceColor"))
-        :onPress(doShortcut("ToggleColorBalance"))
+        :onPress(fcp:doShortcut("ToggleColorBalance"))
 
     colorShortcutGroup:action(wheelsBaseID+0x0109, i18n("goToColorInspector"))
         :onPress(fcp:doSelectMenu({"Window", "Go To", "Color Inspector"}))
@@ -497,11 +496,11 @@ function plugin.init(deps)
         :onPress(fcp:doSelectMenu({"Modify", "Match Color…"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0111, i18n("saveColorEffectPreset"))
-        :onPress(doShortcut("SaveColorEffectPreset"))
+        :onPress(fcp:doShortcut("SaveColorEffectPreset"))
     colorShortcutGroup:action(wheelsBaseID+0x0112, i18n("toggleColorCorrectionEffects"))
-        :onPress(doShortcut("ColorBoard-ToggleAllCorrection"))
+        :onPress(fcp:doShortcut("ColorBoard-ToggleAllCorrection"))
     colorShortcutGroup:action(wheelsBaseID+0x0113, i18n("toggleEffects"))
-        :onPress(doShortcut("ToggleSelectedEffectsOff"))
+        :onPress(fcp:doShortcut("ToggleSelectedEffectsOff"))
 
     colorShortcutGroup:action(wheelsBaseID+0x0114, i18n("viewAlphaColorChannel"))
         :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"}))
@@ -519,7 +518,7 @@ function plugin.init(deps)
         :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0119, i18n("switchBetweenInsideOutsideMarks"))
-        :onPress(doShortcut("ColorBoard-ToggleInsideColorMask"))
+        :onPress(fcp:doShortcut("ColorBoard-ToggleInsideColorMask"))
 
     --------------------------------------------------------------------------------
     --
@@ -555,16 +554,16 @@ function plugin.init(deps)
         :onPress(cb.aspectGroup:doPreviousOption())
 
     cbGroup:action(wheelsBaseID+0x0129, i18n("resetAllControls"))
-        :onPress(doShortcut("ColorBoard-ResetAllPucks"))
+        :onPress(fcp:doShortcut("ColorBoard-ResetAllPucks"))
 
     cbGroup:action(wheelsBaseID+0x0130, i18n("resetCurrentEffectPane"))
-        :onPress(doShortcut("ColorBoard-ResetPucksOnCurrentBoard"))
+        :onPress(fcp:doShortcut("ColorBoard-ResetPucksOnCurrentBoard"))
 
     cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
-        :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
+        :onPress(fcp:doShortcut("ColorBoard-ResetSelectedPuck"))
 
     cbGroup:action(wheelsBaseID+0x0132, i18n("resetSelectedControl"))
-        :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
+        :onPress(fcp:doShortcut("ColorBoard-ResetSelectedPuck"))
 
     --------------------------------------------------------------------------------
     -- Show Inspector:

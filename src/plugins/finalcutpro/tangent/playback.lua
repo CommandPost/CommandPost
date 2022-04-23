@@ -12,21 +12,6 @@ local i18n                  = require "cp.i18n"
 
 local displayMessage        = dialog.displayMessage
 
--- doShortcut(id) -> none
--- Function
---
--- Parameters:
---  * id - The
---
--- Returns:
---  * None
-local function doShortcut(id)
-    return fcp:doShortcut(id):Catch(function(message)
-        log.wf("Unable to perform %q shortcut: %s", id, message)
-        displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-    end)
-end
-
 local plugin = {
     id = "finalcutpro.tangent.playback",
     group = "finalcutpro",
@@ -111,7 +96,7 @@ function plugin.init(deps)
 
     group:action(baseID+14, i18n("play") .. " " .. i18n("reverse"))
         :onPress(function()
-            doShortcut("PlayReverse"):Now()
+            fcp:doShortcut("PlayReverse"):Now()
         end)
 
     group:action(baseID+15, i18n("goTo") .. " " .. i18n("next") .. " " .. i18n("edit"))

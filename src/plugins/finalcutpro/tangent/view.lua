@@ -17,14 +17,6 @@ local mod = {}
 --- The `core.tangent.manager.group` that collects Final Cut Pro View actions/parameters/etc.
 mod.group = nil
 
--- TODO: Add Documentation
-local function doShortcut(id)
-    return fcp:doShortcut(id):Catch(function(message)
-        log.wf("Unable to perform %q shortcut: %s", id, message)
-        dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-    end)
-end
-
 --- plugins.finalcutpro.tangent.view.init() -> none
 --- Function
 --- Initialises the module.
@@ -53,13 +45,13 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"View", "Timeline History Forward"}))
 
     mod.group:action(baseID+5, i18n("show") .. " " .. i18n("histogram"))
-        :onPress(doShortcut("ToggleHistogram"))
+        :onPress(fcp:doShortcut("ToggleHistogram"))
 
     mod.group:action(baseID+6, i18n("show") .. " " .. i18n("vectorscope"))
-        :onPress(doShortcut("ToggleVectorscope"))
+        :onPress(fcp:doShortcut("ToggleVectorscope"))
 
     mod.group:action(baseID+7, i18n("show") .. " " .. i18n("videoWaveform"))
-        :onPress(doShortcut("ToggleWaveform"))
+        :onPress(fcp:doShortcut("ToggleWaveform"))
 
     mod.group:action(baseID+8, i18n("toggleVideoScopesInViewer"))
         :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Video Scopes"}))

@@ -59,13 +59,11 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 action = action.id
             end
-            fcp
-                :doShortcut(action)
-                :Catch(function(message)
-                    displayYesNoQuestion(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
-                    log.ef("Failed to trigger shortcut with action: %s; %s", inspect(action), message)
-                end)
-                :Now()
+            --------------------------------------------------------------------------------
+            -- If a shortcut key isn't already defined, then doShortcut will show
+            -- a macOS notification.
+            --------------------------------------------------------------------------------
+            fcp:doShortcut(action):Now()
         end
     end)
 
