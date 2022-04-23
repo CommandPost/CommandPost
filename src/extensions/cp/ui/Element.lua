@@ -8,7 +8,9 @@
 ---  * [MenuButton](cp.rx.MenuButton.md)
 local require           = require
 
--- local log               = require "hs.logger".new("Element")
+local log               = require "hs.logger".new("Element")
+
+local drawing           = require "hs.drawing"
 
 local axutils           = require "cp.ui.axutils"
 local Builder           = require "cp.ui.Builder"
@@ -457,6 +459,68 @@ function Element:snapshot(path)
     end
     return nil
 end
+
+local RED_COLOR = { red = 1, green = 0, blue = 0, alpha = 0.75 }
+
+--- cp.ui.Element:doHighlight([color], [duration]) -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will attempt to highlight the `Element` with the specified `color` and `duration`.
+---
+--- Parameters:
+---  * color	- The `hs.drawing` color to use. (defaults to red)
+---  * duration	- The `number` of seconds to highlight for. (defaults to `3` seconds)
+---
+--- Returns:
+---  * The `Statement` which will perform the action.
+function Element:doHighlight(color, duration)
+    if type(color) == "number" then
+        duration = color
+        color = nil
+    end
+    color = color or RED_COLOR
+    duration = duration or 3
+    log.df("doHighlight: color=%s, duration=%d", hs.inspect(color), duration)
+    local highlight
+
+    return If(self.frame)
+    :Then(function(frame)
+        return Do(function()
+            log.df("doHighlight: frame: %s", hs.inspect(frame))
+            highlight = drawing.rectangle(frame)
+            highlight:setStrokeColor(color)
+            highlight:setFill(false)
+            highlight:setStrokeWidth(3)
+            highlight:show()
+            return true
+        end)
+        :ThenDelay(duration * 1000)
+    end)
+    :Otherwise(false)
+    :Finally(function()
+        log.df("doHighlight: Finally...")
+        if highlight then
+            log.df("doHighlight: Finally: removing highlight...")
+            highlight:delete()
+            highlight = nil
+        end
+    end)
+    :Label("cp.ui.Element:doHighlight(color, duration)")
+end
+
+--- cp.ui.Element:highlight([color], [duration])
+--- Method
+--- Highlights the `Element` with the specified `color` and `duration`.
+---
+--- Parameters:
+---  * color	- The `hs.drawing` color to use. (defaults to red)
+---  * duration	- The `number` of seconds to highlight for. (defaults to `3` seconds)
+---
+--- Returns:
+---  * Nothing
+function Element:highlight(color, duration)
+    self:doHighlight(color, duration):Now()
+end
+
 
 --- cp.ui.Element:saveLayout() -> table
 --- Method

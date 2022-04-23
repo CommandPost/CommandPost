@@ -73,6 +73,7 @@ local log										= require "hs.logger".new "fcp"
 local fs 										= require "hs.fs"
 local plist                                     = require "hs.plist"
 local inspect									= require "hs.inspect"
+local notify                                    = require "hs.notify"
 local osascript 								= require "hs.osascript"
 local pathwatcher                               = require "hs.pathwatcher"
 
@@ -1121,22 +1122,58 @@ function fcp.lazy.prop:isAudioScrubbingEnabled()
     return self.preferences:prop("FFDisableAudioScrubbing", false):NOT()
 end
 
---- cp.apple.finalcutpro:doShortcut(whichShortcut) -> Statement
+-- tracks if we are currently prompting the user about assigning a shortcut
+local promptingForShortcut = {}
+
+--- cp.apple.finalcutpro:doShortcut(whichShortcut[, suppressPrompt]) -> Statement
 --- Method
 --- Perform a Final Cut Pro Keyboard Shortcut
 ---
 --- Parameters:
 ---  * whichShortcut - As per the Command Set name
+---  * suppressPrompt - If `true`, and no shortcut is found for the specified command, then no prompt will be shown and an error is thrown Defaults to `false`.
 ---
 --- Returns:
 ---  * A `Statement` that will perform the shortcut when executed.
-function fcp:doShortcut(whichShortcut)
+function fcp:doShortcut(whichShortcut, suppressPrompt)
     return Do(self:doLaunch())
     :Then(function()
         local shortcuts = self:getCommandShortcuts(whichShortcut)
         if shortcuts and #shortcuts > 0 then
             shortcuts[1]:trigger(self:application())
             return true
+        elseif not suppressPrompt then
+            -- check we're not already prompting for this shortcut
+            if promptingForShortcut[whichShortcut] then
+                return false
+            end
+            local commandName = self.commandNames:find(whichShortcut) or whichShortcut
+            -- handle the results
+            local handler = function(notification)
+                promptingForShortcut[whichShortcut] = nil
+                local result = notification:activationType()
+                if result == notify.activationTypes.actionButtonClicked or result == notify.activationTypes.contentsClicked then
+                    Do(self.commandEditor:doFindCommandID(whichShortcut, true))
+                    :Then(function()
+                        notify.new(nil)
+                            :title(i18n("finalcutpro_commands_unassigned_title"))
+                            :informativeText(i18n("finalcutpro_commands_unassigned_click_and_assign_text", {commandName = commandName}))
+                            :withdrawAfter(5)
+                            :send()
+                    end)
+                    :Now()
+                end
+            end
+            -- show a notification
+            promptingForShortcut[whichShortcut] = true
+            notify.new(handler)
+                :title(i18n("finalcutpro_commands_unassigned_title"))
+                :informativeText(i18n("finalcutpro_commands_unassigned_text", {commandName = commandName}))
+                :hasActionButton(true)
+                :actionButtonTitle(i18n("finalcutpro_commands_unassigned_action"))
+                :withdrawAfter(0)
+                :send()
+            return false
         else
             return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))
         end

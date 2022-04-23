@@ -124,7 +124,9 @@ end
 --- Returns:
 --- * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
 function CommandEditor.lazy.method:doShow()
-    return If(self:app().isRunning):Then(
+    return If(self:app().isRunning)
+    :Then(self:app():doShow())
+    :Then(
         If(self.isShowing):Is(false):Then(
             self:app().menu:doSelectMenu({"Final Cut Pro", "Commands", "Customize…"})
         ):Then(
@@ -356,39 +358,41 @@ function CommandEditor.lazy.value:commandDetail()
     ))
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID, [highlight]) -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
 --- revealing it at the top of the [commands](#commands) list.
 ---
 --- Parameters:
 ---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)
+---  * highlight - (optional) If true, the command will be highlighted in the list.
 ---
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md).
-function CommandEditor:doFindCommandID(commandID)
+function CommandEditor:doFindCommandID(commandID, highlight)
     return Do(function()
         local commandName = self:app().commandNames:find(commandID)
         if commandName == nil then
             log.wf("Unable to find command with ID: %s", commandID)
             return false
         end
-        return self:doFindCommandName(commandName)
+        return self:doFindCommandName(commandName, highlight)
     end)
     :Label("CommandEditor:doFindCommandID")
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID, [highlight]) -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
 --- revealing it at the top of the [commands](#commands) list.
 ---
 --- Parameters:
 ---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)
+---  * highlight - (optional) If `true`, the command will be highlighted in the list.
 ---
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md).
-function CommandEditor:doFindCommandName(commandName)
+function CommandEditor:doFindCommandName(commandName, highlight)
     return If(self:doShow()):Then(function()
         self.search.value:set(commandName)
         local rowNumber = 1
@@ -396,6 +400,9 @@ function CommandEditor:doFindCommandName(commandName)
         while row:isShowing() do
             if row:command() == commandName then
                 row:selected(true)
+                if highlight then
+                    row:doHighlight():Now()
+                end
                 return true
             end
             rowNumber = rowNumber + 1

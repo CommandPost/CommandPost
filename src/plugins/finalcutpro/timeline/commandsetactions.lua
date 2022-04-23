@@ -19,9 +19,8 @@ local i18n                  = require "cp.i18n"
 local plist                 = require "cp.plist"
 
 local convertHtmlEntities   = http.convertHtmlEntities
-local displayMessage        = dialog.displayMessage
+local displayYesNoQuestion  = dialog.displayYesNoQuestion
 local doAfter               = timer.doAfter
-local fileToTable           = plist.fileToTable
 local imageFromPath         = image.imageFromPath
 
 local mod = {}
@@ -63,7 +62,7 @@ function plugin.init(deps)
             fcp
                 :doShortcut(action)
                 :Catch(function(message)
-                    displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
+                    displayYesNoQuestion(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
                     log.ef("Failed to trigger shortcut with action: %s; %s", inspect(action), message)
                 end)
                 :Now()
