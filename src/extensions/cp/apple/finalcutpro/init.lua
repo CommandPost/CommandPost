@@ -1180,6 +1180,7 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
 
             return false
         else
+            local commandName = self.commandNames:find(whichShortcut) or whichShortcut
             return Throw(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
         end
     end)
