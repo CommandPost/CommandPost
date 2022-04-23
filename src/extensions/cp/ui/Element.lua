@@ -6,9 +6,10 @@
 ---  * [Button](cp.ui.Button.md)
 ---  * [CheckBox](cp.rx.CheckBox.md)
 ---  * [MenuButton](cp.rx.MenuButton.md)
+
 local require           = require
 
-local log               = require "hs.logger".new("Element")
+--local log               = require "hs.logger".new("Element")
 
 local drawing           = require "hs.drawing"
 
