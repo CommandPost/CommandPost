@@ -14,7 +14,7 @@ local Splitter              = require "cp.ui.Splitter"
 
 local chain                 = fn.chain
 local get, sort, split      = fn.table.get, fn.table.sort, fn.table.split
-local ifilter, imap         = fn.table.ifilter, fn.table.imap
+local ifilter               = fn.table.ifilter
 
 local SplitGroup = Element:subclass("cp.ui.SplitGroup")
 

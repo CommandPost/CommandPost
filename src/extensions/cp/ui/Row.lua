@@ -2,7 +2,6 @@
 ---
 --- Represents an `AXRow` `axuielement`.
 
-local fn                        = require "cp.fn"
 local ax                        = require "cp.fn.ax"
 local Element                   = require "cp.ui.Element"
 

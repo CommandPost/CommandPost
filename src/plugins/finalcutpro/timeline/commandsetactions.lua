@@ -81,13 +81,19 @@ function plugin.init(deps)
             if nameData and descriptionData then
                 for _, id in ipairs(nameData:findAllKeys()) do
                     local name = nameData:find(id)
-                    local subText = descriptionData:find(id) or i18n("commandEditorShortcut")
-                    choices
-                        :add(convertHtmlEntities(name))
-                        :subText(convertHtmlEntities(subText))
-                        :params(id)
-                        :image(ICON)
-                        :id(id)
+                    local subText = name and descriptionData:find(id, nil, true) -- Ignore Errors
+                    --------------------------------------------------------------------------------
+                    -- Only add commands with a description, otherwise it will attempt
+                    -- to add the "Command Groups" (i.e. the category names):
+                    --------------------------------------------------------------------------------
+                    if subText then
+                        choices
+                            :add(convertHtmlEntities(name))
+                            :subText(convertHtmlEntities(subText))
+                            :params(id)
+                            :image(ICON)
+                            :id(id)
+                    end
                 end
             end
         end)

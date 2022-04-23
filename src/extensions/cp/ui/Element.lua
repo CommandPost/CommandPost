@@ -479,13 +479,13 @@ function Element:doHighlight(color, duration)
     end
     color = color or RED_COLOR
     duration = duration or 3
-    log.df("doHighlight: color=%s, duration=%d", hs.inspect(color), duration)
+    --log.df("doHighlight: color=%s, duration=%d", hs.inspect(color), duration)
     local highlight
 
     return If(self.frame)
     :Then(function(frame)
         return Do(function()
-            log.df("doHighlight: frame: %s", hs.inspect(frame))
+            --log.df("doHighlight: frame: %s", hs.inspect(frame))
             highlight = drawing.rectangle(frame)
             highlight:setStrokeColor(color)
             highlight:setFill(false)
@@ -497,9 +497,9 @@ function Element:doHighlight(color, duration)
     end)
     :Otherwise(false)
     :Finally(function()
-        log.df("doHighlight: Finally...")
+        --log.df("doHighlight: Finally...")
         if highlight then
-            log.df("doHighlight: Finally: removing highlight...")
+            --log.df("doHighlight: Finally: removing highlight...")
             highlight:delete()
             highlight = nil
         end
