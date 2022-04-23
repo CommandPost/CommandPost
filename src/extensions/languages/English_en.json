@@ -863,7 +863,7 @@
     },
     "fcpMediaFolderRevealInFinder": "Reveal in Finder",
     "fcpMediaWatchFolderTitle": "FCP Media Watch Folder",
-    "fcpShortcut_NoShortcutAssigned": "No shortcut keys are assigned to the '%{id}' command within Final Cut Pro. Please check that you have a shortcut key assigned to command in the Final Cut Pro Command Editor and try again.",
+    "fcpShortcut_NoShortcutAssigned": "No shortcut keys are assigned to the '%{commandName}' command within Final Cut Pro. Please check that you have a shortcut key assigned to command in the Final Cut Pro Command Editor and try again.",
     "fcpx_action_action": "Actions",
     "fcpx_audioEffect_action": "Audio Effects",
     "fcpx_cmds_action": "Commands",

@@ -1157,7 +1157,7 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
                     :Then(function()
                         notify.new(nil)
                             :title(i18n("finalcutpro_commands_unassigned_title"))
-                            :informativeText(i18n("finalcutpro_commands_unassigned_click_and_assign_text", {commandName = commandName}))
+                            :informativeText(i18n("finalcutpro_commands_unassigned_click_and_assign_text", {["commandName"] = commandName}))
                             :withdrawAfter(5)
                             :send()
                     end)
@@ -1166,13 +1166,13 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
             end
 
             -- write a debug message just incase the user has notifications disabled:
-            log.wf(i18n("fcpShortcut_NoShortcutAssigned", {id=commandName}))
+            log.wf(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
 
             -- show a notification
             promptingForShortcut[whichShortcut] = true
             notify.new(handler)
                 :title(i18n("finalcutpro_commands_unassigned_title"))
-                :informativeText(i18n("finalcutpro_commands_unassigned_text", {commandName = commandName}))
+                :informativeText(i18n("finalcutpro_commands_unassigned_text", {["commandName"] = commandName}))
                 :hasActionButton(true)
                 :actionButtonTitle(i18n("finalcutpro_commands_unassigned_action"))
                 :withdrawAfter(0)
@@ -1180,7 +1180,7 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
 
             return false
         else
-            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=commandName}))
+            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
         end
     end)
     :ThenYield()

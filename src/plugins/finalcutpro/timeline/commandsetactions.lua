@@ -13,13 +13,11 @@ local http                  = require "hs.http"
 
 local config                = require "cp.config"
 local deferred              = require "cp.deferred"
-local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 local plist                 = require "cp.plist"
 
 local convertHtmlEntities   = http.convertHtmlEntities
-local displayYesNoQuestion  = dialog.displayYesNoQuestion
 local doAfter               = timer.doAfter
 local imageFromPath         = image.imageFromPath
 
