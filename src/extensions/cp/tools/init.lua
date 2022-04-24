@@ -40,9 +40,10 @@ local map                   = keycodes.map
 local usleep                = timer.usleep
 local utf16                 = text.utf16
 
-local execute               = _G.hs.execute
-local processInfo           = _G.hs.processInfo
-local getObjectMetatable    = _G.hs.getObjectMetatable
+local hs                    = _G["hs"]
+local execute               = hs.execute
+local processInfo           = hs.processInfo
+local getObjectMetatable    = hs.getObjectMetatable
 
 local newKeyEvent           = event.newKeyEvent
 local newSystemKeyEvent     = event.newSystemKeyEvent
@@ -926,7 +927,7 @@ function tools.getmacOSVersion()
             -- macOS Big Sur 11.1:
             --------------------------------------------------------------------------------
             return "macOS Big Sur 11.1"
-        elseif v(macOSVersion) == v("11.1") then
+        elseif v(macOSVersion) == v("11.0.1") then
             --------------------------------------------------------------------------------
             -- macOS Big Sur 11.0.1:
             --------------------------------------------------------------------------------
