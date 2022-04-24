@@ -86,17 +86,8 @@ local characterStringKeyCodeMap = {
 --- Returns:
 ---  * Keycode as String or ""
 function mod.characterStringToKeyCode(input)
-
     local result = tostring(input)
-
-    input = characterStringKeyCodeMap[input] or input
-
-    --------------------------------------------------------------------------------
-    -- Convert to lowercase:
-    --------------------------------------------------------------------------------
-    result = lower(result)
-    return result
-
+    return lower(characterStringKeyCodeMap[result] or result)
 end
 
 --- cp.apple.commandeditor.keypadCharacterToKeyCode() -> string
