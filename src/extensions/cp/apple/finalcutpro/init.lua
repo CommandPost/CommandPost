@@ -1138,6 +1138,7 @@ local promptingForShortcut = {}
 function fcp:doShortcut(whichShortcut, suppressPrompt)
     return Do(self:doLaunch())
     :Then(function()
+        local commandName = self.commandNames:find(whichShortcut) or whichShortcut
         local shortcuts = self:getCommandShortcuts(whichShortcut)
         if shortcuts and #shortcuts > 0 then
             shortcuts[1]:trigger(self:application())
@@ -1147,7 +1148,6 @@ function fcp:doShortcut(whichShortcut, suppressPrompt)
             if promptingForShortcut[whichShortcut] then
                 return false
             end
-            local commandName = self.commandNames:find(whichShortcut) or whichShortcut
             -- handle the results
             local handler = function(notification)
                 promptingForShortcut[whichShortcut] = nil
