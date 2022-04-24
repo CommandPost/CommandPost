@@ -333,7 +333,7 @@ end
 
 --- cp.fn.table.sort(...) -> function(table) -> table
 --- Function
---- A combinator that returns a function that accepts a table and sorts it based on the `compareFn`.
+--- A combinator that returns a function that accepts a table and returns a new table, sorted with the compare functions.
 ---
 --- Parameters:
 ---  * ... - The list of compare functions to use, in order.

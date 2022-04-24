@@ -132,7 +132,7 @@ local doesDirectoryExist                        = tools.doesDirectoryExist
 local stringToHexString                         = tools.stringToHexString
 
 local childMatching                             = axutils.childMatching
-local execute                                   = _G.hs.execute
+local execute                                   = _G["hs"].execute
 local insert                                    = table.insert
 
 -- Load the menu helpers:
@@ -1032,6 +1032,17 @@ function fcp.lazy.prop:activeCommandSet()
     :monitor(self.activeCommandSetPath)
 end
 
+-- cp.apple.finalcutpro._commandShortcuts <table>
+-- Field
+-- Contains the cache of shortcuts that have been retrieved.
+function fcp.lazy.value:_commandShortcuts()
+    -- watch the activeCommandSet and reset the cache when it changes:
+    self.activeCommandSet:watch(function()
+        self._commandShortcuts = {}
+    end)
+    return {}
+end
+
 --- cp.apple.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
 --- Method
 --- Finds a shortcut from the Active Command Set with the specified ID and returns a table
@@ -1047,21 +1058,14 @@ function fcp:getCommandShortcuts(id)
         log.ef("ID is required for cp.apple.finalcutpro.getCommandShortcuts.")
         return nil
     end
-    local activeCommands = self._activeCommands or {}
-    local shortcuts = activeCommands[id]
+    local shortcuts = self._commandShortcuts[id]
     if not shortcuts then
         local commandSet = self:activeCommandSet()
         shortcuts = commandeditor.shortcutsFromCommandSet(id, commandSet)
         if not shortcuts then
             return nil
         end
-        ----------------------------------------------------------------------------------------
-        -- Cache the value for faster access next time:
-        ----------------------------------------------------------------------------------------
-        if not self._activeCommands then
-            self._activeCommands = {}
-        end
-        self._activeCommands[id] = shortcuts
+        self._commandShortcuts[id] = shortcuts
     end
     return shortcuts
 end

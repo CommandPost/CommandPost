@@ -199,11 +199,11 @@ end
 ---
 --- Notes:
 ---  * The comparators are called in the order they are provided.
----  * If no comparators are provided, this will return `nil`.
+---  * If no comparators are provided, returns a `nil` function, which is generally sorted with the standard `<` operator.
 function mod.compare(...)
     local comparators = packArgs(...)
     if #comparators == 0 then
-        return
+        return -- generally defaults to the standard `a < b` operator
     elseif #comparators == 1 then
         return comparators[1]
     end
@@ -306,7 +306,7 @@ end
 
 --- cp.fn.flip(fn) -> function(...) -> function(...) -> any
 --- Function
---- A cobinator that flips the order of the next two arguments to a curried function.
+--- A combinator that flips the order of the next two arguments to a curried function.
 ---
 --- Parameters:
 ---  * fn - The function to flip.
@@ -314,6 +314,9 @@ end
 --- Returns:
 ---  * A function that accepts the second argument and returns
 ---     a function expecting the first argument.
+---
+--- Notes:
+---  * If multiple arguments are provided for either function, the order of the arguments within that list are not flipped.
 function mod.flip(fn)
     return function(...)
         local args = pack(...)
@@ -395,10 +398,11 @@ function mod.prefix(fn, ...)
         for i = 1, argCount do
             inputs[i] = args[i]
         end
-        for i = 1, select("#", ...) do
+        local argCount2 = select("#", ...)
+        for i = 1, argCount2 do
             inputs[i + argCount] = select(i, ...)
         end
-        return fn(unpack(inputs))
+        return fn(unpack(inputs, 1, argCount + argCount2))
     end
 end
 
