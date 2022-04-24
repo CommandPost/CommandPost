@@ -8,19 +8,73 @@ local log               = require "hs.logger".new "cmdEditor"
 
 local fnutils           = require "hs.fnutils"
 
+local fn                = require "cp.fn"
 local shortcut          = require "cp.commands.shortcut"
 local tools             = require "cp.tools"
 
 local contains          = fnutils.contains
 local copy              = fnutils.copy
+local find              = string.find
+local insert            = table.insert
+local lower             = string.lower
 local tableContains     = tools.tableContains
+local sort              = fn.table.sort
 
 local mod = {}
 
 --- cp.apple.commandeditor.padKeys -> table
---- Variable
---- Table of Pad Keys
+--- Constant
+--- List of number keys on the number pad. Also mapped with the key name set to `true` for lookup purposes.
 mod.padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "enter" }
+
+-- map each pad key to true for quick lookup
+for _, key in ipairs(mod.padKeys) do
+    mod.padKeys[key] = true
+end
+
+--- cp.apple.commandeditor.supportedModifiers -> table
+--- Constant
+--- The list of supported modifiers
+mod.supportedModifiers = { "shift", "control", "option", "command", "function" }
+
+-- map each modifier to true for quick lookup
+for _, modifier in ipairs(mod.supportedModifiers) do
+    mod.supportedModifiers[modifier] = true
+end
+
+local characterStringKeyCodeMap = {
+    [" "]                           = "space",
+    NSF1FunctionKey                 = "f1",
+    NSF2FunctionKey                 = "f2",
+    NSF3FunctionKey                 = "f3",
+    NSF4FunctionKey                 = "f4",
+    NSF5FunctionKey                 = "f5",
+    NSF6FunctionKey                 = "f6",
+    NSF7FunctionKey                 = "f7",
+    NSF8FunctionKey                 = "f8",
+    NSF9FunctionKey                 = "f9",
+    NSF10FunctionKey                = "f10",
+    NSF11FunctionKey                = "f11",
+    NSF12FunctionKey                = "f12",
+    NSF13FunctionKey                = "f13",
+    NSF14FunctionKey                = "f14",
+    NSF15FunctionKey                = "f15",
+    NSF16FunctionKey                = "f16",
+    NSF17FunctionKey                = "f17",
+    NSF18FunctionKey                = "f18",
+    NSF19FunctionKey                = "f19",
+    NSF20FunctionKey                = "f20",
+    NSUpArrowFunctionKey            = "up",
+    NSDownArrowFunctionKey          = "down",
+    NSLeftArrowFunctionKey          = "left",
+    NSRightArrowFunctionKey         = "right",
+    NSInsertFunctionKey             = "insert",
+    NSDeleteFunctionKey             = "delete",
+    NSHomeFunctionKey               = "home",
+    NSEndFunctionKey                = "end",
+    NSPageUpFunctionKey             = "pageup",
+    NSCarriageReturnCharacter       = "return",
+}
 
 --- cp.apple.commandeditor.characterStringToKeyCode() -> string
 --- Function
@@ -35,43 +89,12 @@ function mod.characterStringToKeyCode(input)
 
     local result = tostring(input)
 
-    if input == " "                                     then result = "space"       end
-    if string.find(input, "NSF1FunctionKey")            then result = "f1"          end
-    if string.find(input, "NSF2FunctionKey")            then result = "f2"          end
-    if string.find(input, "NSF3FunctionKey")            then result = "f3"          end
-    if string.find(input, "NSF4FunctionKey")            then result = "f4"          end
-    if string.find(input, "NSF5FunctionKey")            then result = "f5"          end
-    if string.find(input, "NSF6FunctionKey")            then result = "f6"          end
-    if string.find(input, "NSF7FunctionKey")            then result = "f7"          end
-    if string.find(input, "NSF8FunctionKey")            then result = "f8"          end
-    if string.find(input, "NSF9FunctionKey")            then result = "f9"          end
-    if string.find(input, "NSF10FunctionKey")           then result = "f10"         end
-    if string.find(input, "NSF11FunctionKey")           then result = "f11"         end
-    if string.find(input, "NSF12FunctionKey")           then result = "f12"         end
-    if string.find(input, "NSF13FunctionKey")           then result = "f13"         end
-    if string.find(input, "NSF14FunctionKey")           then result = "f14"         end
-    if string.find(input, "NSF15FunctionKey")           then result = "f15"         end
-    if string.find(input, "NSF16FunctionKey")           then result = "f16"         end
-    if string.find(input, "NSF17FunctionKey")           then result = "f17"         end
-    if string.find(input, "NSF18FunctionKey")           then result = "f18"         end
-    if string.find(input, "NSF19FunctionKey")           then result = "f19"         end
-    if string.find(input, "NSF20FunctionKey")           then result = "f20"         end
-    if string.find(input, "NSUpArrowFunctionKey")       then result = "up"          end
-    if string.find(input, "NSDownArrowFunctionKey")     then result = "down"        end
-    if string.find(input, "NSLeftArrowFunctionKey")     then result = "left"        end
-    if string.find(input, "NSRightArrowFunctionKey")    then result = "right"       end
-    if string.find(input, "NSDeleteFunctionKey")        then result = "delete"      end
-    if string.find(input, "NSHomeFunctionKey")          then result = "home"        end
-    if string.find(input, "NSEndFunctionKey")           then result = "end"         end
-    if string.find(input, "NSPageUpFunctionKey")        then result = "pageup"      end
-    if string.find(input, "NSPageDownFunctionKey")      then result = "pagedown"    end
-    if string.find(input, "NSDeleteCharacter")          then result = "delete"      end
-    if string.find(input, "NSCarriageReturnCharacter")  then result = "return"      end
+    input = characterStringKeyCodeMap[input] or input
 
     --------------------------------------------------------------------------------
     -- Convert to lowercase:
     --------------------------------------------------------------------------------
-    result = string.lower(result)
+    result = lower(result)
     return result
 
 end
@@ -87,8 +110,8 @@ end
 ---  * string or nil
 function mod.keypadCharacterToKeyCode(input)
     local result = input
-    for i=1, #mod.padKeys do
-        if input == mod.padKeys[i] then result = "pad" .. input end
+    if mod.padKeys[input] then
+        result = "pad" .. input
     end
     return mod.characterStringToKeyCode(result)
 end
@@ -104,10 +127,10 @@ end
 ---  * table
 function mod.translateModifiers(input)
     local result = {}
-    if string.find(input, "command") then result[#result + 1] = "command" end
-    if string.find(input, "control") then result[#result + 1] = "control" end
-    if string.find(input, "option") then result[#result + 1] = "option" end
-    if string.find(input, "shift") then result[#result + 1] = "shift" end
+    if find(input, "command") then insert(result, "command") end
+    if find(input, "control") then insert(result, "control") end
+    if find(input, "option") then insert(result, "option") end
+    if find(input, "shift") then insert(result, "shift") end
     return result
 end
 
@@ -125,14 +148,17 @@ end
 --- Notes:
 ---  * This function only takes into account 'ctrl', 'alt', 'cmd', 'shift'.
 function mod.modifierMatch(inputA, inputB)
-    local match = true
+    if #inputA ~= #inputB then
+        return false
+    end
 
-    if contains(inputA, "ctrl") and not contains(inputB, "ctrl") then match = false end
-    if contains(inputA, "alt") and not contains(inputB, "alt") then match = false end
-    if contains(inputA, "cmd") and not contains(inputB, "cmd") then match = false end
-    if contains(inputA, "shift") and not contains(inputB, "shift") then match = false end
-
-    return match
+    local sortedA, sortedB = sort(inputA), sort(inputB)
+    for i = 1, #sortedA do
+        if sortedA[i] ~= sortedB[i] then
+            return false
+        end
+    end
+    return true
 end
 
 --- cp.apple.commandeditor.modifierMaskToModifiers() -> table
@@ -160,7 +186,7 @@ function mod.modifierMaskToModifiers(value)
 
     for k, a in pairs(modifiers) do
         if (value & a) == a then
-            table.insert(answer, k)
+            insert(answer, k)
         end
     end
 
@@ -206,7 +232,7 @@ function mod.shortcutsFromCommandSet(id, commandSet)
         local keypadModifier = false
 
         if commmand["modifiers"] ~= nil then
-            if string.find(commmand["modifiers"], "keypad") then keypadModifier = true end
+            if find(commmand["modifiers"], "keypad") then keypadModifier = true end
             modifiers = mod.translateModifiers(commmand["modifiers"])
         elseif commmand["modifierMask"] ~= nil then
             modifiers = mod.modifierMaskToModifiers(commmand["modifierMask"])
@@ -215,18 +241,11 @@ function mod.shortcutsFromCommandSet(id, commandSet)
             end
         end
 
-        if commmand["characterString"] ~= nil then
-            if keypadModifier then
-                keyCode = mod.keypadCharacterToKeyCode(commmand["characterString"])
-            else
-                keyCode = mod.characterStringToKeyCode(commmand["characterString"])
-            end
-        elseif commmand["character"] ~= nil then
-            if keypadModifier then
-                keyCode = mod.keypadCharacterToKeyCode(commmand["character"])
-            else
-                keyCode = mod.characterStringToKeyCode(commmand["character"])
-            end
+        local character = commmand["characterString"] or commmand["character"]
+        if keypadModifier then
+            keyCode = mod.keypadCharacterToKeyCode(character)
+        else
+            keyCode = mod.characterStringToKeyCode(character)
         end
 
         if keyCode ~= nil and keyCode ~= "" then
@@ -238,15 +257,15 @@ function mod.shortcutsFromCommandSet(id, commandSet)
             local cleanedModifiers = {}
             if keypadModifier then
                 for _, v in pairs(modifiers) do
-                    if v == "shift" or v == "control" or v == "option" or v == "command" or v == "function" then
-                        table.insert(cleanedModifiers, v)
+                    if mod.supportedModifiers[v] then
+                        insert(cleanedModifiers, v)
                     end
                 end
             else
                 cleanedModifiers = copy(modifiers)
             end
 
-            shortcuts[#shortcuts + 1] = shortcut.new(cleanedModifiers, keyCode)
+            insert(shortcuts, shortcut.new(cleanedModifiers, keyCode))
         end
     end
 
