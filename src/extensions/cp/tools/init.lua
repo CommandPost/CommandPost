@@ -127,11 +127,11 @@ function tools.secureInputApplicationTitle()
         --
         if output and status then
             local lines = tools.lines(output)
-            for i, v in ipairs(lines) do
-                if i == 1 and v:sub(1, 4) ~= "USER" then
+            for id, line in ipairs(lines) do
+                if id == 1 and line:sub(1, 4) ~= "USER" then
                     return
-                elseif i ~= 1 then
-                    local components = v:split(" ")
+                elseif id ~= 1 then
+                    local components = line:split(" ")
                     local pid = components and components[3] and tonumber(components[3])
                     local app = pid and application.applicationForPID(pid)
                     return app and app:title()
