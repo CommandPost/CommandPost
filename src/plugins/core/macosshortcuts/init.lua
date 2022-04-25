@@ -9,8 +9,11 @@ local require           = require
 local shortcuts         = require "hs.shortcuts"
 local image             = require "hs.image"
 
+local tools             = require "cp.tools"
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
+
+local semver            = require "semver"
 
 local imageFromPath     = image.imageFromPath
 
@@ -21,14 +24,57 @@ local plugin = {
     group           = "core",
     dependencies    = {
         ["core.action.manager"] = "actionmanager",
+        ["core.setup"] = "setup",
     }
 }
 
 function plugin.init(deps)
+
+    local setupScreenShown = config.prop("macosshortcuts.setupScreenShown", false)
+
+    --------------------------------------------------------------------------------
+    -- Shortcuts support requires macOS Monterey:
+    --------------------------------------------------------------------------------
+    local macOSVersion = semver(tools.macOSVersion())
+    local macOSMonterey = semver("12.0.0")
+    if macOSVersion < macOSMonterey then
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Setup Screen:
+    --------------------------------------------------------------------------------
+    local iconPath = config.basePath .. "/plugins/core/macosshortcuts/images/Shortcuts.icns"
+    local setup = deps.setup
+    local panel = setup.panel.new("macosshortcuts", 10.2)
+        :addIcon(iconPath)
+        :addParagraph(i18n("macosShortcutsSetupMessage"), false)
+        :addButton({
+            label       = i18n("enableShortcuts"),
+            onclick     = function()
+                --------------------------------------------------------------------------------
+                -- This will trigger an Accessibility Popup if it's the first time we're
+                -- requesting permission:
+                --------------------------------------------------------------------------------
+                shortcuts.list()
+                setupScreenShown(true)
+                setup.nextPanel()
+            end,
+        })
+        :addButton({
+            label       = i18n("quit"),
+            onclick     = function() config.application():kill() end,
+        })
+
+    if not setupScreenShown() then
+        setup.addPanel(panel)
+        setup.show()
+    end
+
     --------------------------------------------------------------------------------
     -- Setup Action Handler:
     --------------------------------------------------------------------------------
-    local icon = imageFromPath(config.basePath .. "/plugins/core/macosshortcuts/images/Shortcuts.icns")
+    local icon = imageFromPath(iconPath)
     local actionmanager = deps.actionmanager
     mod._handler = actionmanager.addHandler("global_macosshortcuts", "global")
         :onChoices(function(choices)

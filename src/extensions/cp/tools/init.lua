@@ -108,8 +108,42 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.secureInputApplicationTitle() -> string
+--- Function
+--- Gets the title of the first application that has 'Secure Input' enabled.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The application title or `nil` if secure input is not enabled or failed to get a title.
+function tools.secureInputApplicationTitle()
+    if eventtap.isSecureInputEnabled() then
+        local output, status = execute([[ioreg -l -w 0 | grep SecureInput | awk 'BEGIN {FS="[^a-zA-Z0-9]+"} {print $8}' | uniq | xargs -n 1 ps aux]])
+        --
+        -- Example Output:
+        --
+        -- USER           PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+        -- chrishocking  9033   0.0  0.2 410017056 117632   ??  S    11:48AM   0:01.16 /System/Applications/System Preferences.app/Contents/MacOS/System Preferences
+        --
+        if output and status then
+            local lines = tools.lines(output)
+            for id, line in ipairs(lines) do
+                if id == 1 and line:sub(1, 4) ~= "USER" then
+                    return
+                elseif id ~= 1 then
+                    local components = line:split(" ")
+                    local pid = components and components[3] and tonumber(components[3])
+                    local app = pid and application.applicationForPID(pid)
+                    return app and app:title()
+                end
+            end
+        end
+    end
+end
+
 --- cp.tools.escapeTilda(input) -> string
---- Method
+--- Function
 --- Escapes a tilda.
 ---
 --- Parameters:
@@ -122,7 +156,7 @@ function tools.escapeTilda(i)
 end
 
 --- cp.tools.keyStroke(modifiers, character, app) -> none
---- Method
+--- Function
 --- Generates and emits a single keystroke event pair for the supplied keyboard
 --- modifiers and character to the application.
 ---
@@ -186,7 +220,7 @@ function tools.keyStroke(modifiers, character, app)
 end
 
 --- cp.tools.pressSystemKey(key) -> none
---- Method
+--- Function
 --- Virtually presses a system key.
 ---
 --- Parameters:
@@ -2302,6 +2336,19 @@ end
 --- Returns:
 ---  * A new string
 function tools.replace(textValue, old, new)
+
+    --[[
+    NOTE TO FUTURE CHRIS:
+
+    This is a potential replacement, if this method ever proves to be a performance issue:
+
+    local function replace(str, what, with)
+        what = string.gsub(what, "[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1") -- escape pattern
+        with = string.gsub(with, "[%%]", "%%%%") -- escape replacement
+        return string.gsub(str, what, with)
+    end
+    --]]
+
     local b,e = textValue:find(old, 1, true)
     if b == nil then
         return textValue
