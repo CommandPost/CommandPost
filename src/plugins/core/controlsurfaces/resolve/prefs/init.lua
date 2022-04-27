@@ -246,6 +246,27 @@ local function updateUI(params)
     end
 
     --------------------------------------------------------------------------------
+    -- Update Battery Status:
+    --------------------------------------------------------------------------------
+    local charging, level = mod._resolveManager.batteryStatus(device, unit)
+
+    local batteryStatus
+    if type(charging) == "boolean" then
+        batteryStatus = string.format("%s%% (%s)", level, charging and i18n("charging") or i18n("notCharging"))
+    end
+
+    if batteryStatus then
+        script = script .. [[
+            document.getElementById("batteryStatusValue").textContent = "]] .. batteryStatus .. [["
+            document.getElementById("batteryStatus").style.display = "block"
+        ]]
+    else
+        script = script .. [[
+            document.getElementById("batteryStatus").style.display = "none"
+        ]]
+    end
+
+    --------------------------------------------------------------------------------
     -- Only show LED options if the button has an LED:
     --------------------------------------------------------------------------------
     local ledNames = blackmagic.ledNames[device]
@@ -657,14 +678,16 @@ local function daVinciResolveControlSurfacePanelCallback(id, params)
             --------------------------------------------------------------------------------
             local items = mod.items()
             local lastDevice = mod.lastDevice()
+            local lastUnit = mod.lastUnit()
 
             local currentButton = items and items[lastDevice]
-                                        and items[lastDevice][lastDevice]
-                                        and items[lastDevice][lastDevice][app]
-                                        and items[lastDevice][lastDevice][app][bank]
-                                        and items[lastDevice][lastDevice][app][bank][button]
+                                        and items[lastDevice][lastUnit]
+                                        and items[lastDevice][lastUnit][app]
+                                        and items[lastDevice][lastUnit][app][bank]
+                                        and items[lastDevice][lastUnit][app][bank][button]
+                                        and items[lastDevice][lastUnit][app][bank][button][buttonType]
 
-            local currentActionTitle = currentButton and currentButton[buttonType] and currentButton[buttonType].actionTitle
+            local currentActionTitle = currentButton and currentButton.actionTitle
 
             if currentActionTitle and currentActionTitle ~= "" then
                 mod.activator[activatorID]:lastQueryValue(currentActionTitle)

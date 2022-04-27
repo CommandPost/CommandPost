@@ -407,11 +407,14 @@
 		<th style="width: 67px;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("device") }}: </span>
 		</th>
-		<th style="width: 250px;">
+		<th style="width: 320px;">
 			<select id="device" style="width: 250px;" onchange="changeDeviceUnitApplicationBank()">
 				<option value="Editor Keyboard">Editor Keyboard</option>
 				<option value="Speed Editor">Speed Editor</option>
 			</select>
+		</th>
+		<th style="width: 320px;">
+			<span id="batteryStatus" class="tip"><strong>{{ i18n("batteryStatus") }}:</strong> <span id="batteryStatusValue" style="font-weight:normal;">-</span></span>
 		</th>
 	</tr>
 </table>

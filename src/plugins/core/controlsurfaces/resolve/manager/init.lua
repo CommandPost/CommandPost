@@ -229,6 +229,46 @@ local shouldKillLEDCacheDueToResolve = false
 -- Jog Wheel Cache
 local speedEditorJogWheelCache = {}
 
+-- jogModeOnDeviceCache -> table
+-- Variable
+-- Jog Mode Cache
+local jogModeOnDeviceCache = {}
+
+--- plugins.core.resolve.manager.batteryStatus(deviceType, deviceID) -> none
+--- Function
+--- Gets the Battery Status for a specific device
+---
+--- Parameters:
+---  * deviceType - A string, either "Speed Editor" or "Editor Keyboard"
+---  * deviceID - A string with the device ID
+---
+--- Returns:
+---  * charging - A boolean
+---  * level - The battery level as a number
+function mod.batteryStatus(deviceType, deviceID)
+    --------------------------------------------------------------------------------
+    -- Currently only the Speed Editor has an internal battery:
+    --------------------------------------------------------------------------------
+    if deviceType ~= "Speed Editor" then
+        return
+    end
+
+    local devices = mod.devices[deviceType]
+    if devices then
+        for _, device in pairs(devices) do
+            --------------------------------------------------------------------------------
+            -- Determine bundleID:
+            --------------------------------------------------------------------------------
+            local serialNumber = device:serialNumber()
+            local currentID = mod.deviceOrder[deviceType][serialNumber]
+            if currentID == deviceID then
+                local charging, level = device:battery()
+                return charging, level
+            end
+        end
+    end
+end
+
 --- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
 --- Control Surface Button Callback
@@ -242,14 +282,6 @@ local speedEditorJogWheelCache = {}
 ---  * None
 function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelValue)
 
-    --------------------------------------------------------------------------------
-    -- Abort if DaVinci Resolve is running:
-    --------------------------------------------------------------------------------
-    if next(applicationsForBundleID("com.blackmagic-design.DaVinciResolve")) ~= nil then
-        --log.df("[Blackmagic Control Surface Support] Ignoring message because DaVinci Resolve is running.")
-        return
-    end
-
     --[[
     log.df("buttonID: %s", buttonID)
     log.df("pressed: %s", pressed)
@@ -260,6 +292,22 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     local serialNumber = object:serialNumber()
     local deviceType = object:deviceType()
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
+
+    --------------------------------------------------------------------------------
+    -- Update the Jog Mode Cache if required:
+    --------------------------------------------------------------------------------
+    local jogModeOnDeviceCacheID = deviceType .. deviceID
+    if jogWheelMode then
+        jogModeOnDeviceCache[jogModeOnDeviceCacheID] = jogWheelMode
+    end
+
+    --------------------------------------------------------------------------------
+    -- Abort if DaVinci Resolve is running:
+    --------------------------------------------------------------------------------
+    if next(applicationsForBundleID("com.blackmagic-design.DaVinciResolve")) ~= nil then
+        --log.df("[Blackmagic Control Surface Support] Ignoring message because DaVinci Resolve is running.")
+        return
+    end
 
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -642,6 +690,11 @@ function mod.update()
             ledCache[deviceType] = {}
         end
 
+        --------------------------------------------------------------------------------
+        -- Kill the Jog Mode Cache:
+        --------------------------------------------------------------------------------
+        jogModeOnDeviceCache = {}
+
         shouldKillLEDCacheDueToResolve = false
     end
 
@@ -709,12 +762,18 @@ function mod.update()
             local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
 
             --------------------------------------------------------------------------------
-            -- Update Jog Wheel Mode (only if needed):
+            -- Update Jog Wheel Mode if the cached value doesn't match:
             --------------------------------------------------------------------------------
-            local _, currentJogMode = device:jogMode()
+            local jogModeOnDeviceCacheID = deviceType .. deviceID
             local jogMode = (bankData and bankData.jogMode) or mod.DEFAULT_JOG_MODE
-            if currentJogMode ~= jogMode then
-                device:jogMode(jogMode)
+            if jogModeOnDeviceCache[jogModeOnDeviceCacheID] ~= jogMode then
+                --------------------------------------------------------------------------------
+                -- Check the hardware to make sure we're not already in that jog mode:
+                --------------------------------------------------------------------------------
+                local _, currentJogMode = device:jogMode()
+                if currentJogMode ~= jogMode then
+                    device:jogMode(jogMode)
+                end
             end
 
             --------------------------------------------------------------------------------
@@ -890,6 +949,11 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
+    --------------------------------------------------------------------------------
+    -- Kill the Jog Mode Cache:
+    --------------------------------------------------------------------------------
+    jogModeOnDeviceCache = {}
+
     --------------------------------------------------------------------------------
     -- Kill the LED cache:
     --------------------------------------------------------------------------------
@@ -1138,7 +1202,13 @@ function plugin.init(deps)
                     mod.previousActiveBanks(previousActiveBanks)
                 end
 
+
                 mod.activeBanks(activeBanks)
+
+                --------------------------------------------------------------------------------
+                -- Kill the Jog Mode Cache:
+                --------------------------------------------------------------------------------
+                jogModeOnDeviceCache = {}
 
                 mod.update()
 
@@ -1209,6 +1279,11 @@ function plugin.init(deps)
         :onExecute(function(action)
             local bundleID = action.bundleID
             mod.lastBundleID(bundleID)
+
+            --------------------------------------------------------------------------------
+            -- Kill the Jog Mode Cache:
+            --------------------------------------------------------------------------------
+            jogModeOnDeviceCache = {}
 
             --------------------------------------------------------------------------------
             -- Refresh all devices:
