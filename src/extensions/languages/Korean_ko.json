@@ -175,6 +175,7 @@
     "batchRename": "배치 이름 바꾸기",
     "batchRenameBrowserFail": "배치 이름 변경 도구가 브라우저를 열 수 없습니다.\n\n브라우저를 열고 다시 시도하십시오.",
     "batchRenameFailed": "배치 이름 변경 실패",
+    "batteryStatus": "배터리 상태",
     "beforePrefix": "접두사 앞",
     "behind": "뒤에",
     "behind9": "뒤에",
@@ -240,6 +241,7 @@
     "changeLanguageRestart": "언어를 변경하려면 CommandPost를 다시 시작해야합니다.",
     "channel": "채널",
     "channelPressure": "채널 압력",
+    "charging": "충전 중",
     "checkForUpdatesNow": "지금 업데이트 확인",
     "checkerboard": "체커보드",
     "circle": "원",
@@ -375,6 +377,7 @@
     "core_loupedeckplus_banks_label": "Loupedeck + : 은행",
     "core_loupedeckplus_prefs_label": "기본 설정 : Loupedeck +",
     "core_macosshortcuts_label": "macOS 몬테레이 단축키",
+    "core_macosshortcuts_preferences_label": "환경 설정: macOS Monterey 단축키",
     "core_menu_bottom_label": "메뉴 바 : 하단 섹션",
     "core_menu_helpandsupport_commandpost_label": "메뉴 표시 줄 : CommandPost 도움말 및 지원",
     "core_menu_helpandsupport_label": "메뉴 바 : 도움말 및 지원 섹션",
@@ -709,6 +712,7 @@
     "disableLoupedeckSupport": "Loupedeck 지원 비활성화",
     "disableLoupedeckSupportAndLaunchLoupedeckApp": "Loupedeck 지원 비활성화 및 Loupedeck 앱 실행",
     "disableRazerSupport": "Razer 지원 비활성화",
+    "disableShortcuts": "바로 가기 비활성화",
     "disableTangentPanelSupport": "접선 패널 지원 비활성화",
     "disableTourBoxAndLaunchTourBoxConsole": "TourBox 지원 비활성화 및 TourBox 콘솔 시작",
     "disableTourBoxSupport": "TourBox 지원 비활성화",
@@ -760,7 +764,7 @@
     "enableAll": "모두 활성화",
     "enableAppleScriptSupport": "AppleScript 지원 활성화",
     "enableBackgroundRender": {
-        "other": "배경 렌더링 활성화 (% {count} 초)"
+        "other": "배경 렌더링 활성화 (%{count} 초)"
     },
     "enableCommandLineSupport": "명령 줄 지원 활성화",
     "enableCustomisedTouchBar": "맞춤형 터치 바 활성화",
@@ -781,6 +785,7 @@
     "enableLoupedeckSupportQuitLoupedeckApp": "Loupedeck 지원 활성화 및 Loupedeck 앱 종료",
     "enableLuaCodeProcessing": "Lua 코드 처리 활성화",
     "enableMIDI": "MIDI 컨트롤 활성화",
+    "enableMacOSShortcutsSupport": "macOS 단축키 지원 활성화",
     "enableMonogramSupport": "모노그램 지원 활성화",
     "enablePasteboardHistory": "대지 기록 사용",
     "enableProwlNotifications": "배회 알림 활성화",
@@ -789,6 +794,7 @@
     "enableRenderingDuringPlayback": "재생 중 렌더링 활성화",
     "enableScrollingTimeline": "스크롤 타임 라인 사용",
     "enableSharedPasteboard": "공유 판지 사용",
+    "enableShortcuts": "바로 가기 활성화",
     "enableShortcutsDuringFullscreen": "전체 화면 재생 중 바로 가기 사용",
     "enableStreamDeck": "Stream Deck 사용",
     "enableTangentPanelSupport": "탄젠트 패널 지원 활성화",
@@ -831,6 +837,8 @@
     "failedToAddCustomApplication": "사용자 지정 응용 프로그램을 추가하지 못했습니다.",
     "failedToAddCustomApplicationDescription": "CommandPost가 사용자 지정 응용 프로그램의 번들 식별자 또는 표시 이름을 확인할 수 없습니다.\n\n문제를 해결할 수 있도록 CommandPost 팀에 피드백을 제공하십시오.",
     "failedToChangeLanguage": "Final Cut Pro의 언어를 변경할 수 없습니다.",
+    "failedToFindCommandInCommandEditor": "명령 편집기에서 '{command}'을(를) 찾지 못했습니다.",
+    "failedToLaunchFinalCutPro": "Final Cut Pro를 실행할 수 없습니다.",
     "failedToProcessFCPXML": "FCPXML을 처리하지 못했습니다.",
     "failedToProcessTheCSVFile": "CSV 파일을 처리하지 못했습니다.",
     "failedToSwitchBackToFinalCutPro": "Final Cut Pro로 다시 전환하지 못했습니다.",
@@ -845,7 +853,7 @@
     "fcpMediaFolderImport": "수입",
     "fcpMediaFolderImportAll": "모든 파일",
     "fcpMediaFolderIncomingSubTitle": {
-        "other": "'% {file}'및 다른 하나가 수신됩니다 ..."
+        "other": "'%{file}'및 다른 하나가 수신됩니다 ..."
     },
     "fcpMediaFolderReadySubTitle": {
         "other": "하나의 파일을 가져올 준비가되었습니다."
@@ -855,7 +863,7 @@
     "fcpMediaFolder_Error_ProjectRequired": "타임 라인에 프로젝트 또는 복합 클립이 있어야합니다.",
     "fcpMediaFolder_Error_ShowTimeline": "타임 라인을 표시 할 수 없습니다",
     "fcpMediaFolder_Error_UnableToPaste": {
-        "other": "Pasteboard에 '% {file}'및 다른 하나를 추가 할 수 없습니다."
+        "other": "Pasteboard에 '%{file}'및 다른 하나를 추가 할 수 없습니다."
     },
     "fcpMediaWatchFolderTitle": "FCP 미디어 감시 폴더",
     "fcpShortcut_NoShortcutAssigned": "'%{id}'에 할당 된 바로 가기 키가 없습니다.",
@@ -924,6 +932,10 @@
     "finalcutpro_browser_soloclip_label": "브라우저 : Solo Clip",
     "finalcutpro_commands_actions_label": "명령 동작",
     "finalcutpro_commands_label": "Final Cut Pro 키보드 명령",
+    "finalcutpro_commands_unassigned_action": "바로가기 할당",
+    "finalcutpro_commands_unassigned_click_and_assign_text": "\"%{commandName}\" 명령을 클릭하고 원하는 키 조합을 누른 다음 \"저장\"을 클릭합니다.",
+    "finalcutpro_commands_unassigned_text": "\"%{commandName}\" 명령은 키보드 단축키에 할당되어야 합니다.",
+    "finalcutpro_commands_unassigned_title": "할당되지 않은 키보드 명령",
     "finalcutpro_console_font_label": "콘솔 : 폰트",
     "finalcutpro_console_label": "콘솔",
     "finalcutpro_export_batch_label": "배치 내보내기",
@@ -1390,7 +1402,12 @@
     "luaCode": "Lua 코드",
     "luaCodeCouldNotBeProcessed": "Lua 코드를 처리 할 수 없습니다.",
     "macOS": "맥 OS",
+    "macOSShortcuts": "macOS 단축키",
     "macOSShortcutsDescriptions": "macOS 바로 가기 앱에서 바로 가기를 트리거합니다.",
+    "macOSShortcutsDisabledSearchConsoleMessage": "macOS 단축키 지원이 비활성화됨",
+    "macOSShortcutsDisabledSearchConsoleMessageTwo": "CommandPost의 환경 설정에 있는 바로 가기 패널에서 활성화할 수 있습니다.",
+    "macOSShortcutsPreferencesPanelDescription": "CommandPost를 사용하면 macOS 바로 가기 응용 프로그램에 있는 모든 바로 가기를 실행할 수 있습니다.<br />이 기능을 사용하려면 CommandPost가 시스템 환경설정에서 '바로 가기 이벤트'에 대한 자동화 권한이 있어야 합니다.",
+    "macosShortcutsSetupMessage": "CommandPost는 Search Console의 macOS 바로 가기 앱에서 바로 가기를 나열하려면 <strong>자동화</strong> 권한<br />이 필요합니다.<br /><br />이것은 <strong>선택 사항</strong>입니다. <strong>바로 가기 활성화</strong>를 클릭하면 CommandPost가 이전에 아직 요청하지 않은 경우<br /> 권한을 묻는 메시지가 표시될 수 있습니다. <strong>시스템 환경설정 > 보안 및 개인정보 보호 > 개인정보 보호 > 자동화</strong> 패널을 방문하여 언제든지 이 권한을 변경할 수 있습니다.",
     "magicButton": "매직 버튼",
     "magnify": "확대",
     "marker": "채점자",
@@ -1510,6 +1527,7 @@
     "none": "없음",
     "normal": "표준",
     "normal9": "표준",
+    "notCharging": "충전하지 않음",
     "notValidKeysAndError": "제공된 API 키가 유효하지 않습니다.\n\n다음과 같은 오류가 발생했습니다.\n",
     "notValidProwlAPIKeyError": "다음 오류로 인해 Prowl API 키를 확인하지 못했습니다 :",
     "noteCC": "참고 / CC",
@@ -1552,6 +1570,7 @@
     "openPrivacyPolicy": "공개 개인 정보 보호 정책",
     "openProjectAfterFind": "찾기 후 프로젝트 열기",
     "openRecentProjectStartingWith": "로 시작하는 최근 프로젝트 열기",
+    "openSystemPreferences": "시스템 환경설정 열기",
     "openTangentMapper": "탄젠트 매퍼 열기",
     "openTitlesInSearchConsole": "Search Console에서 제목 열기",
     "openToolbox": "도구 상자 열기",
@@ -1960,28 +1979,28 @@
     "sharedPasteboardRootFolder": "공유 보드 루트 폴더",
     "sharp": "날카로운",
     "shiftPositionDownPixels": {
-        "other": "% {amount} 픽셀 아래로 위치 이동"
+        "other": "%{amount} 픽셀 아래로 위치 이동"
     },
     "shiftPositionLeftPixels": {
-        "other": "왼쪽으로 위치 이동 % {amount} 픽셀"
+        "other": "왼쪽으로 위치 이동 %{amount} 픽셀"
     },
     "shiftPositionRightPixels": {
-        "other": "오른쪽으로 위치 이동 % {amount} 픽셀"
+        "other": "오른쪽으로 위치 이동 %{amount} 픽셀"
     },
     "shiftPositionUpPixels": {
-        "other": "위로 위치 이동 % {amount} 픽셀"
+        "other": "위로 위치 이동 %{amount} 픽셀"
     },
     "shiftRotationLeft": {
-        "other": "% {amount}도만큼 왼쪽으로 회전 이동"
+        "other": "%{amount}도만큼 왼쪽으로 회전 이동"
     },
     "shiftRotationRight": {
-        "other": "% {amount}도만큼 오른쪽으로 회전 이동"
+        "other": "%{amount}도만큼 오른쪽으로 회전 이동"
     },
     "shiftScaleDown": {
-        "other": "% {amount} 픽셀 단위로 축소 이동"
+        "other": "%{amount} 픽셀 단위로 축소 이동"
     },
     "shiftScaleUp": {
-        "other": "% {amount} 픽셀 단위로 확대 이동"
+        "other": "%{amount} 픽셀 단위로 확대 이동"
     },
     "shortcutAlreadyInUse": "이 단축키는 이미 사용 중입니다.",
     "shortcutAlreadyInUseByMacOS": "이 단축키 조합은 현재 macOS에서 사용 중입니다 (즉, 화면 캡처, 범용 액세스 및 키보드 탐색 키에서 사용될 수 있음).",
@@ -1992,6 +2011,7 @@
     "shortcut_group_fcpx": "파이널 컷 프로",
     "shortcut_group_global": "모든 응용",
     "shortcut_group_resolve": "DaVinci Resolve",
+    "shortcuts": "바로가기",
     "shortcutsGroup": "그룹",
     "shortcutsPanelLabel": "바로 가기",
     "shortcutsPanelTooltip": "키보드 단축키",
