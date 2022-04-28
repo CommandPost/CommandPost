@@ -1784,6 +1784,7 @@
     "rejected": "Отклонено",
     "relative": "Родственник",
     "relativeA": "Относительный A",
+    "relativeFineControl": "Относительный (точный контроль)",
     "release": "Выпуск",
     "releaseAction": "Отпустить действие",
     "releaseActionDownModifier": "Действие выпуска (модификатор вниз)",
