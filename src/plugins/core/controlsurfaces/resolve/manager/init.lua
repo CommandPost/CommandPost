@@ -234,6 +234,16 @@ local speedEditorJogWheelCache = {}
 -- Jog Mode Cache
 local jogModeOnDeviceCache = {}
 
+-- relativeJogModeCache -> table
+-- Variable
+-- Relative Jog Mode Cache
+local relativeJogModeCache = {}
+
+-- relativeJogModeLastValueCache -> table
+-- Variable
+-- Relative Jog Mode Last Value Cache
+local relativeJogModeLastValueCache = {}
+
 --- plugins.core.resolve.manager.batteryStatus(deviceType, deviceID) -> none
 --- Function
 --- Gets the Battery Status for a specific device
@@ -269,6 +279,44 @@ function mod.batteryStatus(deviceType, deviceID)
     end
 end
 
+-- SENSITIVITY_TRANSLATION -> table
+-- Constant
+-- Translates a sensitivity value in the preferences into a real sensitivity
+-- value we can use in the code. This is mainly just here for legacy reasons,
+-- as we've changed the way
+local SENSITIVITY_TRANSLATION = {
+    ["250"]     = 1, -- Very Sensitive
+    ["500"]     = 2,
+    ["1000"]    = 3,
+    ["2000"]    = 4,
+    ["3000"]    = 5,
+    ["4000"]    = 6,
+    ["5000"]    = 7,
+    ["6000"]    = 8,
+    ["7000"]    = 9,
+    ["8000"]    = 10, -- Default
+    ["9000"]    = 15,
+    ["10000"]   = 20,
+    ["11000"]   = 25,
+    ["12000"]   = 30,
+    ["13000"]   = 35,
+    ["14000"]   = 40, -- New:
+    ["15000"]   = 45,
+    ["16000"]   = 50,
+    ["17000"]   = 55,
+    ["18000"]   = 60,
+    ["19000"]   = 65,
+    ["20000"]   = 70,
+    ["21000"]   = 75,
+    ["22000"]   = 80,
+    ["23000"]   = 85,
+    ["24000"]   = 90,
+    ["25000"]   = 95,
+    ["26000"]   = 100,
+    ["27000"]   = 110,
+    ["28000"]   = 120,
+}
+
 --- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
 --- Control Surface Button Callback
@@ -282,23 +330,21 @@ end
 ---  * None
 function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelValue)
 
-    --[[
-    log.df("buttonID: %s", buttonID)
-    log.df("pressed: %s", pressed)
-    log.df("jogWheelMode: %s", jogWheelMode)
-    log.df("jogWheelValue: %s", jogWheelValue)
-    --]]
+    --log.df("buttonID: %s", buttonID)
+    --log.df("pressed: %s", pressed)
+    --log.df("jogWheelMode: %s", jogWheelMode)
+    --log.df("jogWheelValue: %s", jogWheelValue)
 
     local serialNumber = object:serialNumber()
     local deviceType = object:deviceType()
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
+    local cacheID = deviceType .. deviceID
 
     --------------------------------------------------------------------------------
     -- Update the Jog Mode Cache if required:
     --------------------------------------------------------------------------------
-    local jogModeOnDeviceCacheID = deviceType .. deviceID
     if jogWheelMode then
-        jogModeOnDeviceCache[jogModeOnDeviceCacheID] = jogWheelMode
+        jogModeOnDeviceCache[cacheID] = jogWheelMode
     end
 
     --------------------------------------------------------------------------------
@@ -310,7 +356,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     end
 
     local frontmostApplication = application.frontmostApplication()
-    local bundleID = frontmostApplication:bundleID()
+    local bundleID = frontmostApplication and frontmostApplication:bundleID() or "All Applications"
 
     local activeBanks = mod.activeBanks()
     local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
@@ -371,29 +417,40 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     -- Is it a Jog Wheel event or a Button Event?
     --------------------------------------------------------------------------------
     if jogWheelMode then
+        --------------------------------------------------------------------------------
+        -- Jog Wheel Turned (in relative mode):
+        --------------------------------------------------------------------------------
         if jogWheelMode == "RELATIVE" then
+
             --------------------------------------------------------------------------------
-            -- Jog Wheel Turned (in relative mode):
+            -- Count the number of jog wheel events:
             --------------------------------------------------------------------------------
-            local sensitivity = (theButton and theButton.sensitivity) or mod.defaultSensitivity[deviceType]
-            if math.abs(jogWheelValue) > tonumber(sensitivity) then
-                if jogWheelValue < 0 then
-                    --------------------------------------------------------------------------------
-                    -- Turn Left:
-                    --------------------------------------------------------------------------------
-                    local turnLeftAction = theButton.turnLeftAction
-                    if turnLeftAction then
-                        local handlerID = turnLeftAction.handlerID
-                        local action = turnLeftAction.action
-                        if handlerID and action then
-                            --------------------------------------------------------------------------------
-                            -- Trigger the action:
-                            --------------------------------------------------------------------------------
-                            local handler = mod._actionmanager.getHandler(handlerID)
-                            handler:execute(action)
-                        end
-                    end
-                else
+            if not relativeJogModeCache[cacheID] then
+                relativeJogModeCache[cacheID] = 0
+            end
+            if jogWheelValue > 0 then
+                relativeJogModeCache[cacheID] = relativeJogModeCache[cacheID] + 1
+            else
+                relativeJogModeCache[cacheID] = relativeJogModeCache[cacheID] - 1
+            end
+
+            --------------------------------------------------------------------------------
+            -- Get sensitivity setting from file:
+            --------------------------------------------------------------------------------
+            local sensitivityInLayout = theButton and theButton.sensitivity
+
+            --log.df("sensitivityInLayout: %s (%s)", sensitivityInLayout, type(sensitivityInLayout))
+
+            local sensitivity = (sensitivityInLayout and SENSITIVITY_TRANSLATION[sensitivityInLayout]) or SENSITIVITY_TRANSLATION[tostring(mod.defaultSensitivity[deviceType])]
+
+            --log.df("sensitivity: %s", sensitivity)
+
+            --------------------------------------------------------------------------------
+            -- If the number of jog wheel events is more than our sensitivity value,
+            -- then trigger the event:
+            --------------------------------------------------------------------------------
+            if math.abs(relativeJogModeCache[cacheID]) > sensitivity then
+                if jogWheelValue > 0 then
                     --------------------------------------------------------------------------------
                     -- Turn Right:
                     --------------------------------------------------------------------------------
@@ -409,8 +466,29 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
                             handler:execute(action)
                         end
                     end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Turn Left:
+                    --------------------------------------------------------------------------------
+                    local turnLeftAction = theButton.turnLeftAction
+                    if turnLeftAction then
+                        local handlerID = turnLeftAction.handlerID
+                        local action = turnLeftAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                    end
                 end
+                relativeJogModeCache[cacheID] = 0
             end
+
+        --------------------------------------------------------------------------------
+        -- Jog Wheel Turned (in absolute mode):
+        --------------------------------------------------------------------------------
         else
             --------------------------------------------------------------------------------
             -- Jog Wheel Cache:
