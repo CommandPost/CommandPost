@@ -47,7 +47,7 @@ local Element                           = require "cp.ui.Element"
 local ScrollBar                         = require "cp.ui.ScrollBar"
 local delegator                         = require "cp.delegator"
 
-local chain, pipe                       = fn.chain, fn.pipe
+local chain                             = fn.chain
 local ifilter, sort                     = fn.table.ifilter, fn.table.sort
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
