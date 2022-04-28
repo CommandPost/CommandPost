@@ -47,7 +47,7 @@ local Element                           = require "cp.ui.Element"
 local ScrollBar                         = require "cp.ui.ScrollBar"
 local delegator                         = require "cp.delegator"
 
-local chain                             = fn.chain
+local chain, pipe                       = fn.chain, fn.pipe
 local ifilter, sort                     = fn.table.ifilter, fn.table.sort
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
@@ -152,7 +152,7 @@ end
 
 --- cp.ui.ScrollArea:childrenUI(filterFn) -> hs.axuielement | nil
 --- Method
---- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
+--- Returns the list of `axuielement`s representing the Scroll Area Contents, sorted top-down, or `nil` if not available.
 ---
 --- Parameters:
 ---  * filterFn - The function which checks if the child matches the requirements.
@@ -160,11 +160,12 @@ end
 --- Return:
 ---  * The `axuielement` or `nil`.
 function ScrollArea:childrenUI(filterFn)
-    return chain //
+    local finder = chain //
         fn.constant(self.contentsUI) >>
         ax.children >>
         ifilter(filterFn) >>
         sort(ax.topDown)
+    return finder()
 end
 
 --- cp.ui.ScrollArea.viewFrame <cp.prop:table; read-only>
