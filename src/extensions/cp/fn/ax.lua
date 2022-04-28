@@ -460,8 +460,32 @@ function mod.topToBottomBaseAligned(a, b)
     end
 
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    local aBottom, bBottom = aFrame.y+ aFrame.h, bFrame.y + bFrame.h
+    local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
     return aBottom < bBottom
+end
+
+--- cp.fn.ax.bottomToTopBaseAligned(a, b) -> boolean
+--- Function
+--- Returns `true` if the base of element `a` is below the base of element `b`, based on linear vertical alignment.
+--- May be used with `table.sort`.
+---
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
+---
+--- Returns:
+---  * `true` if `a` is below `b`.
+---
+--- Notes:
+---  * Two elements are considered to be aligned if the intersection of the height is at least 50% of the height of both elements.
+function mod.bottomToTopBaseAligned(a, b)
+    if mod.areAligned(a, b) then
+        return false
+    end
+
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
+    return aBottom > bBottom
 end
 
 --- cp.fn.ax.narrowToWide(a, b) -> boolean
@@ -524,9 +548,7 @@ mod.topDown = fn.compare(mod.topToBottomBaseAligned, mod.leftToRight, mod.shortT
 ---
 --- Returns:
 ---  * `true` if `a` is below or to the right of `b` in the UI, `false` otherwise.
-function mod.bottomUp(a, b)
-    return not mod.topDown(a, b)
-end
+mod.bottomUp = fn.compare(mod.bottomToTopBaseAligned, mod.rightToLeft, mod.shortToTall, mod.narrowToWide)
 
 --- cp.fn.ax.init(elementType, ...) -> function(parent, uiFinder) -> cp.ui.Element
 --- Function
