@@ -34,6 +34,11 @@ local tableMatch                = tools.tableMatch
 
 local mod = {}
 
+-- KEEP_ALIVE_INTERVAL_IN_SECONDS -> number
+-- Constant
+-- How often should the keep alive function trigger?
+local KEEP_ALIVE_INTERVAL_IN_SECONDS = 300 -- 5mins
+
 -- JOG_WHEEL_ABSOLUTE_ONE -> table
 -- Constant
 -- Jog Wheel Trigger
@@ -239,11 +244,6 @@ local jogModeOnDeviceCache = {}
 -- Relative Jog Mode Cache
 local relativeJogModeCache = {}
 
--- relativeJogModeLastValueCache -> table
--- Variable
--- Relative Jog Mode Last Value Cache
-local relativeJogModeLastValueCache = {}
-
 --- plugins.core.resolve.manager.batteryStatus(deviceType, deviceID) -> none
 --- Function
 --- Gets the Battery Status for a specific device
@@ -279,12 +279,10 @@ function mod.batteryStatus(deviceType, deviceID)
     end
 end
 
--- SENSITIVITY_TRANSLATION -> table
+-- RELATIVE_FINE_CONTROL_SENSITIVITY_TRANSLATION -> table
 -- Constant
--- Translates a sensitivity value in the preferences into a real sensitivity
--- value we can use in the code. This is mainly just here for legacy reasons,
--- as we've changed the way
-local SENSITIVITY_TRANSLATION = {
+-- Translates our normal relative values to "fine control" values.
+local RELATIVE_FINE_CONTROL_SENSITIVITY_TRANSLATION = {
     ["250"]     = 1, -- Very Sensitive
     ["500"]     = 2,
     ["1000"]    = 3,
@@ -420,8 +418,51 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
         --------------------------------------------------------------------------------
         -- Jog Wheel Turned (in relative mode):
         --------------------------------------------------------------------------------
-        if jogWheelMode == "RELATIVE" then
-
+        local layoutJogMode = theBank.jogMode or mod.DEFAULT_JOG_MODE
+        if layoutJogMode == "RELATIVE" then
+            --------------------------------------------------------------------------------
+            -- Jog Wheel Turned (in relative mode):
+            --------------------------------------------------------------------------------
+            local sensitivity = (theButton and theButton.sensitivity) or mod.defaultSensitivity[deviceType]
+            if math.abs(jogWheelValue) > tonumber(sensitivity) then
+                if jogWheelValue < 0 then
+                    --------------------------------------------------------------------------------
+                    -- Turn Left:
+                    --------------------------------------------------------------------------------
+                    local turnLeftAction = theButton.turnLeftAction
+                    if turnLeftAction then
+                        local handlerID = turnLeftAction.handlerID
+                        local action = turnLeftAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Turn Right:
+                    --------------------------------------------------------------------------------
+                    local turnRightAction = theButton.turnRightAction
+                    if turnRightAction then
+                        local handlerID = turnRightAction.handlerID
+                        local action = turnRightAction.action
+                        if handlerID and action then
+                            --------------------------------------------------------------------------------
+                            -- Trigger the action:
+                            --------------------------------------------------------------------------------
+                            local handler = mod._actionmanager.getHandler(handlerID)
+                            handler:execute(action)
+                        end
+                    end
+                end
+            end
+        --------------------------------------------------------------------------------
+        -- Jog Wheel Turned (in relative "fine control" mode):
+        --------------------------------------------------------------------------------
+        elseif layoutJogMode == "RELATIVE FINE CONTROL" then
             --------------------------------------------------------------------------------
             -- Count the number of jog wheel events:
             --------------------------------------------------------------------------------
@@ -438,12 +479,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
             -- Get sensitivity setting from file:
             --------------------------------------------------------------------------------
             local sensitivityInLayout = theButton and theButton.sensitivity
-
-            --log.df("sensitivityInLayout: %s (%s)", sensitivityInLayout, type(sensitivityInLayout))
-
-            local sensitivity = (sensitivityInLayout and SENSITIVITY_TRANSLATION[sensitivityInLayout]) or SENSITIVITY_TRANSLATION[tostring(mod.defaultSensitivity[deviceType])]
-
-            --log.df("sensitivity: %s", sensitivity)
+            local sensitivity = (sensitivityInLayout and RELATIVE_FINE_CONTROL_SENSITIVITY_TRANSLATION[sensitivityInLayout]) or RELATIVE_FINE_CONTROL_SENSITIVITY_TRANSLATION[tostring(mod.defaultSensitivity[deviceType])]
 
             --------------------------------------------------------------------------------
             -- If the number of jog wheel events is more than our sensitivity value,
@@ -772,6 +808,7 @@ function mod.update()
         -- Kill the Jog Mode Cache:
         --------------------------------------------------------------------------------
         jogModeOnDeviceCache = {}
+        relativeJogModeCache = {}
 
         shouldKillLEDCacheDueToResolve = false
     end
@@ -916,7 +953,6 @@ function mod.update()
             mod.refreshTimer = nil
         end
     end
-
 end
 
 --- plugins.core.resolve.manager.discoveryCallback(connected, object) -> none
@@ -938,6 +974,12 @@ function mod.discoveryCallback(connected, object)
         if connected then
             log.df("[DaVinci Resolve Control Surface] Connected: %s (Serial: %s)", deviceType, serialNumber)
             mod.devices[deviceType][serialNumber] = object:callback(mod.buttonCallback)
+
+            --------------------------------------------------------------------------------
+            -- Kill the Jog Mode Cache:
+            --------------------------------------------------------------------------------
+            jogModeOnDeviceCache = {}
+            relativeJogModeCache = {}
 
             --------------------------------------------------------------------------------
             -- Trash the LED cache:
@@ -963,6 +1005,12 @@ function mod.discoveryCallback(connected, object)
                 -- Trash the LED cache:
                 --------------------------------------------------------------------------------
                 ledCache[deviceType] = {}
+
+                --------------------------------------------------------------------------------
+                -- Kill the Jog Mode Cache:
+                --------------------------------------------------------------------------------
+                jogModeOnDeviceCache = {}
+                relativeJogModeCache = {}
             else
                 log.ef("[DaVinci Resolve Control Surface] Disconnected device that wasn't previously registered: %s - %s", deviceType, serialNumber)
             end
@@ -1012,6 +1060,19 @@ function mod.start()
     end):start()
 
     --------------------------------------------------------------------------------
+    -- Trash the LED cache to attempt to stop the device from sleeping:
+    --------------------------------------------------------------------------------
+    mod._keepAliveTimer = timer.new(KEEP_ALIVE_INTERVAL_IN_SECONDS, function()
+        --------------------------------------------------------------------------------
+        -- Kill the LED cache:
+        --------------------------------------------------------------------------------
+        for deviceType, _ in pairs(mod.devices) do
+            ledCache[deviceType] = {}
+        end
+        mod.update()
+    end):start()
+
+    --------------------------------------------------------------------------------
     -- Initialise DaVinci Resolve Control Surface support:
     --------------------------------------------------------------------------------
     blackmagic.init(mod.discoveryCallback)
@@ -1031,6 +1092,15 @@ function mod.stop()
     -- Kill the Jog Mode Cache:
     --------------------------------------------------------------------------------
     jogModeOnDeviceCache = {}
+    relativeJogModeCache = {}
+
+    --------------------------------------------------------------------------------
+    -- Kill the Keep Alive Timer:
+    --------------------------------------------------------------------------------
+    if mod._keepAliveTimer then
+        mod._keepAliveTimer:stop()
+        mod._keepAliveTimer = nil
+    end
 
     --------------------------------------------------------------------------------
     -- Kill the LED cache:
@@ -1287,6 +1357,7 @@ function plugin.init(deps)
                 -- Kill the Jog Mode Cache:
                 --------------------------------------------------------------------------------
                 jogModeOnDeviceCache = {}
+                relativeJogModeCache = {}
 
                 mod.update()
 
@@ -1362,6 +1433,7 @@ function plugin.init(deps)
             -- Kill the Jog Mode Cache:
             --------------------------------------------------------------------------------
             jogModeOnDeviceCache = {}
+            relativeJogModeCache = {}
 
             --------------------------------------------------------------------------------
             -- Refresh all devices:
