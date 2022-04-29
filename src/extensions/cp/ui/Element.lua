@@ -10,6 +10,7 @@
 local require           = require
 
 --local log               = require "hs.logger".new("Element")
+local inspect           = require "cp.dev" .inspect
 
 local drawing           = require "hs.drawing"
 
@@ -522,6 +523,19 @@ function Element:highlight(color, duration)
     self:doHighlight(color, duration):Now()
 end
 
+-- cp.ui.Element:inspect([options]) -> string
+-- Method
+-- Returns a string representation of the `Element`.
+--
+-- Parameters:
+--  * options	- (optional) The options table.
+--
+-- Returns:
+--  * The string representation.
+function Element:inspect(options)
+    options = options or {depth=1}
+    return inspect(self, options)
+end
 
 --- cp.ui.Element:saveLayout() -> table
 --- Method
