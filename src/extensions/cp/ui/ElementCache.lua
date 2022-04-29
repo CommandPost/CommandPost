@@ -1,155 +1,141 @@
 --- === cp.ui.ElementCache ===
 ---
 --- Provides caching for [Element](cp.ui.Element.md) subclasses that want to cache children.
+---
+--- It is linked to a specfic `parent` [Element](cp.ui.Element.md), and a `uiFinder` that returns
+--- a list of `hs.axuielement` objects.
+---
+--- The `elementInit` should only expect to receive a `parent` (this `ParentElement`), then
+--- a `uiFinder` "callable" pointing to the specific child at the specific index.
+---
+--- When the `uiFinder` resolves to an actual table, the `#myCache` call will return the number of
+--- children in the table, so the cache can be looped through in a for loop with an `ipairs` function call.
+
+local require               = require
+
+local log                   = require "hs.logger".new "ElementCache"
+
+local ax                    = require "cp.fn.ax"
+local is                    = require "cp.is"
+local prop                  = require "cp.prop"
+local Element               = require "cp.ui.Element"
+
+local pack                  = table.pack
+local isCallable, isTable   = is.callable, is.table
+local isNumber              = is.number
 
 local class	                = require "middleclass"
-local axutils	            = require "cp.ui.axutils"
-
-local insert	            = table.insert
-
 local ElementCache = class("cp.ui.ElementCache")
 
---- cp.ui.ElementCache(parent[, createFn])
+--- cp.ui.ElementCache.containing(...) -> function(parent, uiFinder) -> cp.ui.ElementCache
+--- Function
+--- Returns a function that will return a new `ElementCache` instance when passed a `parent` and `uiFinder`.
+---
+--- Parameters:
+---  * ... - The arguments to pass to the `ElementCache` constructor.
+---
+--- Returns:
+---  * A function that will return a new `ElementCache` instance.
+function ElementCache.static.containing(...)
+    local args = pack(...)
+    if #args == 1 then
+        local arg = args[1]
+        if not isCallable(args) and isTable(args) then
+            args = arg
+        end
+    end
+    return function(parent, uiFinder)
+        return ElementCache(parent, uiFinder, args)
+    end
+end
+
+--- cp.ui.ElementCache(parent, uiFinder, [elementInits])
 --- Constructor
 --- Creates and returns a new `ElementCache`, with the specified parent and function which
---- will create new elements on demand. The `createFn` has the signature of `function(parent, ui) -> cp.ui.Element`,
+--- will create new elements on demand. An [Element init](cp.ui.Element.md) has the signature of `function(parent, ui) -> cp.ui.Element`,
 --- and should take the parent provided here and the `axuielement` and return a new `Element` subclass.
 ---
 --- Parameters:
 ---  * parent - the parent [Element](cp.ui.Element.md) that contains the cached items.
----  * createFn - a function that will create new `Element` subclasses based on cached `axuielement` values.
+---  * uiFinder - a function which will return the table of child `hs.axuielement`s when available.
+---  * elementInits - a table of [Element](cp.ui.Element.md) inits. Defaults to [Element](cp.ui.Element.md).
 ---
 --- Returns:
 ---  * The new `ElementCache`.
-function ElementCache:initialize(parent, createFn)
-    self.items = setmetatable({}, {__mode="k"})
-    self.parent = parent
-    self.createFn = createFn
-end
-
---- cp.ui.ElementCache:clean()
---- Method
---- Clears the cache of any invalid (aka dead) items.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function ElementCache:clean()
-    local cache = self.items
-    if cache then
-        for ui,_ in pairs(cache) do
-            if not axutils.isValid(ui) then
-                cache[ui] = nil
-            end
-        end
-    end
-end
-
---- cp.ui.ElementCache:reset() -> none
---- Method
---- Removes all cached items from the cache.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function ElementCache:reset()
-    self.items = {}
-end
-
---- cp.ui.ElementCache:cachedElement(cache, ui) -> cp.ui.Element or nil
---- Method
---- Returns the cached [Element](cp.ui.Element.md), if it is present.
----
---- Parameters:
----  * ui - The `axuielement` it is linked to. If not provided, it will be fetched by calling `Element:UI()`.
----
---- Returns:
----  * `cp.ui.Element` or `nil`
-function ElementCache:cachedElement(ui)
-    local cache = self.items
-    if cache then
-        for cachedUI,row in pairs(cache) do
-            if cachedUI == ui then
-                return row
-            end
-        end
-    end
-end
-
---- cp.ui.ElementCache:cacheElement(element[, ui]) -> none
---- Method
---- Caches the provided [Element](cp.ui.Element.md).
----
---- Parameters:
----  * element - The [Element](cp.ui.Element.md)
----  * ui - The `axuielement` it is linked to. If not provided, it will be fetched by calling `Element:UI()`.
----
---- Returns:
----  * None
-function ElementCache:cacheElement(element, ui)
-    local cache = self.items
-    ui = ui or element:UI()
-    if axutils.isValid(ui) then
-        cache[ui] = element
-    end
-end
-
---- cp.ui.ElementCache:fetchElement(ui) -> cp.ui.Element or nil
---- Method
---- Retrieves the matching [Element](cp.ui.Element.md) instance from the cache.
---- If none exists and the `createFn` was provided in the constructor,
---- it will be used to create a new one, which is automatically cached for future reference.
----
---- Parameters:
----  * ui - The `axuielement` being fetched for.
----
---- Returns:
----  * `cp.ui.Element` or `nil`
-function ElementCache:fetchElement(ui)
-    if ui:attributeValue("AXParent") ~= self.parent:UI() then
-        return nil
-    end
-
-    if not axutils.isValid(ui) then
-        return nil
-    end
-
-    local element = self:cachedElement(ui)
-    local createFn = self.createFn
-    if not element and createFn then
-        element = createFn(self.parent, ui)
-        self:cacheElement(element, ui)
-    end
-    return element
-end
-
---- cp.ui.ElementCache:fetchElements(uis) -> table of cp.ui.Elements or nil
---- Method
---- Fetches a list of [Element](cp.ui.Element.md) instances linked to the provided `axuielement` list.
----
---- Parameters:
----  * uis	- A `table` of `axuielement` values.
----
---- Returns:
----  * A `table` of [Element](cp.ui.Element.md) values.
 ---
 --- Notes:
----  * If any of the provided `axuielement` values are either not from the parent, or no longer valid, a `nil` value will be stored in the matching index. Note that in that case, this will break useage of `ipairs` due to leaving holes in the list.
-function ElementCache:fetchElements(uis)
-    if uis then
-        self:clean()
-        local elements = {}
+---  * If only one element init function is provided, it will be used for all children.
+---  * If multiple element init functions are provided, the first one will be used for the first child, the second one for the second child, etc.
+---    If there are more children than element init functions, [Element](cp.ui.Element.md) will be used for the rest.
+function ElementCache:initialize(parent, uiFinder, elementInits)
+    local elements = setmetatable({}, {__mode="k"})
+    -- rawset(self, "_cache", elements)
+    elementInits = elementInits or {}
+    local ui = prop.FROM(uiFinder)
 
-        for _,ui in ipairs(uis) do
-            insert(elements, self:fetchElement(ui))
+--- cp.ui.ElementCache:get(index) -> cp.ui.Element
+--- Method
+--- Gets the `Element` at the specified index.
+---
+--- Parameters:
+---  * index - the index of the `Element` to get.
+---
+--- Returns:
+---  * The `Element` at the specified index.
+---
+--- Notes:
+---  * This will always return a value for any index above `0`, even if the `Element` is not yet available in the UI.
+    function self.class:get(index)
+        if index < 1 then
+            return
         end
 
-        return elements
+        local item = elements[index]
+        if item then
+            return item
+        end
+
+        local init
+        local initCount = #elementInits
+        if initCount == 1 then
+            init = elementInits[1]
+        else
+            init = elementInits[index] or Element
+        end
+
+        item = init(parent, ui:mutate(function(original)
+            local value = original:get()
+            if isTable(value) then
+                local child = value[index]
+                return ax.isValid(child) and child or nil
+            end
+        end))
+        elements[index] = item
+        return item
+    end
+
+    -- Note to self: defining these here so that we don't have to cache `parent`, `ui`, and `elementInits`,
+    -- causing infinite looping when inspecting.
+    function self.class:__index(key)
+        if not isNumber(key) or key > #self then
+            return
+        end
+
+        return self:get(key)
+    end
+
+    function self.class.__newindex()
+        -- read-only
+    end
+
+    function self.class:__len()
+        local value = ui:get()
+        if isTable(value) then
+            return #value
+        end
+        return 0
     end
 end
+
 
 return ElementCache
