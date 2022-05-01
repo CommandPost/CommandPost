@@ -13,6 +13,7 @@
 ---  Commands that can be RECEIVED from the Workflow Extension:
 ---
 ---  DONE           - Connection successful
+---  DEAD           - Server is shutting down
 ---  PONG           - Recieve a pong
 ---  PLHD s         - The playhead time has changed                (where s is playhead position in seconds)
 ---
@@ -43,6 +44,8 @@ local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
+local delayed           = timer.delayed
+local doAfter           = timer.doAfter
 local playErrorSound    = tools.playErrorSound
 
 local mod = {}
@@ -55,12 +58,27 @@ local mod = {}
 --  * This is defined within the Workflow Extension
 local SOCKET_PORT = 43426
 
+-- ABORT_CONNECTING_IN_SECONDS -> number
+-- Constant
+-- Abort trying to connect to the Workflow Extension after certain amount of time in seconds
+local ABORT_CONNECTING_IN_SECONDS = 30
+
 -- NUMBER_OF_PLAYHEAD_INCREMENTS -> number
 -- Constant
 -- The number of playhead action increments
-local NUMBER_OF_PLAYHEAD_INCREMENTS = 50
+local NUMBER_OF_PLAYHEAD_INCREMENTS = 100
 
---- plugins.finalcutpro.workflowextension.connected() -> boolean
+-- RESTORE_SKIMMING_DELAY -> number
+-- Constant
+-- The number of seconds until we try and restore skimming
+local RESTORE_SKIMMING_DELAY = 1
+
+--- plugins.finalcutpro.workflowextension.connectionAttemptCount -> number
+--- Variable
+--- How many times have we attempted to open the Workflow Extension?
+mod.connectionAttemptCount = 0
+
+--- plugins.finalcutpro.workflowextension.connected -> boolean
 --- Variable
 --- Is CommandPost connected to the Workflow Extension?
 mod.connected = false
@@ -73,16 +91,24 @@ local commandHandler = {
                     log.df("[Workflow Extension] Connected")
                     mod.connected = true
                 end,
+    ["DEAD"] =  function()
+                    log.df("[Workflow Extension] Server Closed")
+                    mod.connected = false
+                    if mod.socketClient then
+                        mod.socketClient:disconnect()
+                    end
+                end,
     ["PONG"] =  function()
-                    --log.df("[Workflow Extension] Pong Recieved!")
+                    log.df("[Workflow Extension] Pong Recieved!")
                 end,
     ["PLHD"] =  function()
-                    --log.df("[Workflow Extension] Playhead Timeline Changed")
                     --------------------------------------------------------------------------------
                     -- Let's update the isPlaying prop in the unlikely case that we haven't already
                     -- updated it via other means at this point in time:
                     --------------------------------------------------------------------------------
-                    --fcp.viewer.isPlaying:update()
+                    fcp.viewer.isPlaying:update()
+
+                    --log.df("[Workflow Extension] Playhead Timeline Changed")
                 end,
     ["SEQC"] =  function()
                     --log.df("[Workflow Extension] Active Project has Changed")
@@ -173,18 +199,27 @@ function mod.setupClient()
     mod.connectionTimer = timer.new(1, function()
         if not mod.socketClient:connected() and fcp.isFrontmost() then
             --------------------------------------------------------------------------------
+            -- Abort after 30 seconds:
+            --------------------------------------------------------------------------------
+            if mod.connectionAttemptCount >= ABORT_CONNECTING_IN_SECONDS then
+                log.ef("[Workflow Extension] Failed to open Workflow Extension after %s seconds so aborted", ABORT_CONNECTING_IN_SECONDS)
+                mod.connectionAttemptCount = 0
+                mod.connectionTimer:stop()
+                return
+            end
+
+            --------------------------------------------------------------------------------
             -- Make sure the Workflow Extension is open:
             --------------------------------------------------------------------------------
             if fcp:isEnabled({"Window", "Extensions", "CommandPost"}) then
                 fcp:doSelectMenu({"Window", "Extensions", "CommandPost"}):Now()
-            else
-                log.ef("[Workflow Extension] Failed to open CommandPost Extension from the menubar")
             end
 
             --------------------------------------------------------------------------------
             -- Try and connect again:
             --------------------------------------------------------------------------------
             if not mod.socketClient:connected() then
+                mod.connectionAttemptCount = mod.connectionAttemptCount + 1
                 mod.connect()
             end
         end
@@ -204,10 +239,22 @@ function mod.isWorkflowExtensionConnected()
     local result = mod.connected or mod.socketClient:connected()
     if not result then
         mod.connected = false
-        mod.connectionTimer:start()
+        if not mod.connectionTimer:running() then
+            mod.connectionTimer:start()
+        end
     end
     return result
 end
+
+-- hasSendCommandErrorHappened -> boolean
+-- Variable
+-- Have we already told the user that the send command failed?
+local hasSendCommandErrorHappened = false
+
+--- plugins.finalcutpro.workflowextension.sendCommandErrorTimer -> hs.timer
+--- Variable
+--- A timer
+mod.sendCommandErrorTimer = doAfter(ABORT_CONNECTING_IN_SECONDS, function() hasSendCommandErrorHappened = false end)
 
 --- plugins.finalcutpro.workflowextension.sendCommand(command) -> none
 --- Function
@@ -222,23 +269,60 @@ function mod.sendCommand(command)
     if mod.isWorkflowExtensionConnected() then
         mod.socketClient:send(command .. "\r\n")
     else
-        log.ef("[Workflow Extension] CommandPost is not currently connected to the Workflow Extension.")
-        playErrorSound()
+        if not hasSendCommandErrorHappened then
+            --------------------------------------------------------------------------------
+            -- Only show this error once to avoid spamming the user:
+            --------------------------------------------------------------------------------
+            log.ef("[Workflow Extension] CommandPost is not currently connected to the Workflow Extension.")
+            playErrorSound()
+            hasSendCommandErrorHappened = true
+            mod.sendCommandErrorTimer:start()
+        end
     end
 end
 
---------------------------------------------------------------------------------
--- Setup a Deferred Timer to help with performance:
---------------------------------------------------------------------------------
-local playheadChangeValue = 0
-local updatePlayhead = deferred.new(0.01):action(function()
-    if playheadChangeValue > 0 then
-        mod.sendCommand("INCR " .. playheadChangeValue)
-    else
-        mod.sendCommand("DECR " .. math.abs(playheadChangeValue))
+--- plugins.finalcutpro.workflowextension.wasSkimmingEnabled -> boolean
+--- Variable
+--- Was the Skimming Feature enabled?
+mod.wasSkimmingEnabled = false
+
+--- plugins.finalcutpro.workflowextension.skimmingRestoreTimer -> cp.deferred
+--- Variable
+--- Deferred Timer to Restore the Skimming Feature (if required)
+mod.skimmingRestoreTimer = delayed.new(RESTORE_SKIMMING_DELAY, function()
+    if mod.wasSkimmingEnabled then
+       fcp:isSkimmingEnabled(true)
     end
-    playheadChangeValue = 0
 end)
+
+-- saveSkimmingState() -> none
+-- Function
+-- Saves the skimming state if we're not already waiting to restore it
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function saveSkimmingState()
+    if not mod.skimmingRestoreTimer:running() then
+        mod.wasSkimmingEnabled = fcp:isSkimmingEnabled()
+    end
+    fcp:isSkimmingEnabled(false)
+end
+
+-- restoreSkimmingState() -> none
+-- Function
+-- Restores the skimming state after 1sec
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function restoreSkimmingState()
+    mod.skimmingRestoreTimer:start()
+end
 
 --- plugins.finalcutpro.workflowextension.incrementPlayhead(frames) -> none
 --- Function
@@ -250,8 +334,9 @@ end)
 --- Returns:
 ---  * None
 function mod.incrementPlayhead(frames)
-    playheadChangeValue = playheadChangeValue + 1
-    updatePlayhead()
+    saveSkimmingState()
+    mod.sendCommand("INCR " .. frames)
+    restoreSkimmingState()
 end
 
 --- plugins.finalcutpro.workflowextension.decrementPlayhead(frames) -> none
@@ -264,8 +349,9 @@ end
 --- Returns:
 ---  * None
 function mod.decrementPlayhead(frames)
-    playheadChangeValue = playheadChangeValue - 1
-    updatePlayhead()
+    saveSkimmingState()
+    mod.sendCommand("DECR " .. frames)
+    restoreSkimmingState()
 end
 
 --- plugins.finalcutpro.workflowextension.movePlayheadToSeconds(seconds) -> none

@@ -881,6 +881,7 @@ function mod.update()
             --------------------------------------------------------------------------------
             local jogModeOnDeviceCacheID = deviceType .. deviceID
             local jogMode = (bankData and bankData.jogMode) or mod.DEFAULT_JOG_MODE
+            if jogMode == "RELATIVE FINE CONTROL" then jogMode = "RELATIVE" end
             if jogModeOnDeviceCache[jogModeOnDeviceCacheID] ~= jogMode then
                 --------------------------------------------------------------------------------
                 -- Check the hardware to make sure we're not already in that jog mode:
