@@ -58,6 +58,21 @@ local mod = {}
 --  * This is defined within the Workflow Extension
 local SOCKET_PORT = 43426
 
+-- HOW_OFTEN_TO_PING_IN_SECONDS -> number
+-- Constant
+-- How often should we send a ping to the server?
+local HOW_OFTEN_TO_PING_IN_SECONDS = 30
+
+-- HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS -> number
+-- Constant
+-- How long in seconds should we wait for a pong to come back?
+local HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS = 0.5
+
+-- CONNECTION_TIMER_RETRY_IN_SECONDS -> number
+-- Constant
+-- The number of seconds before we try and reconnect to the Workflow Extension
+local CONNECTION_TIMER_RETRY_IN_SECONDS = 3
+
 -- ABORT_CONNECTING_IN_SECONDS -> number
 -- Constant
 -- Abort trying to connect to the Workflow Extension after certain amount of time in seconds
@@ -83,6 +98,11 @@ mod.connectionAttemptCount = 0
 --- Is CommandPost connected to the Workflow Extension?
 mod.connected = false
 
+-- pongRecieved -> boolean
+-- Variable
+-- Has a pong been received yet?
+local pongRecieved = false
+
 -- commandHandler -> table
 -- Variable
 -- A table that contains all the functions that are triggered by the Workflow Extension commands.
@@ -93,13 +113,12 @@ local commandHandler = {
                 end,
     ["DEAD"] =  function()
                     log.df("[Workflow Extension] Server Closed")
-                    mod.connected = false
-                    if mod.socketClient then
-                        mod.socketClient:disconnect()
-                    end
+                    mod.disconnect()
                 end,
     ["PONG"] =  function()
-                    log.df("[Workflow Extension] Pong Recieved!")
+                    --log.df("[Workflow Extension] Pong Recieved!")
+                    mod.connected = true
+                    pongRecieved = true
                 end,
     ["PLHD"] =  function()
                     --------------------------------------------------------------------------------
@@ -118,6 +137,33 @@ local commandHandler = {
                 end,
 }
 
+--- plugins.finalcutpro.workflowextension.pingTimerCheck -> hs.timer
+--- Variable
+--- A timer that checks for the server pong after a client ping.
+mod.pingTimerCheck = timer.doAfter(HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS, function()
+    if not pongRecieved then
+        --------------------------------------------------------------------------------
+        -- No pong detected:
+        --------------------------------------------------------------------------------
+        log.df("[Workflow Extension] Failed to ping server.")
+        mod.disconnect()
+    else
+        --------------------------------------------------------------------------------
+        -- Set off the next ping:
+        --------------------------------------------------------------------------------
+        mod.pingTimer:start()
+    end
+end)
+
+--- plugins.finalcutpro.workflowextension.pingTimer -> hs.timer
+--- Variable
+--- A timer that pings the server on a regular interval.
+mod.pingTimer = timer.doAfter(HOW_OFTEN_TO_PING_IN_SECONDS, function()
+    pongRecieved = false
+    mod.ping()
+    mod.pingTimerCheck:start()
+end)
+
 --- plugins.finalcutpro.workflowextension.connectionCallback() -> none
 --- Function
 --- Triggers when the Socket makes a connection.
@@ -128,6 +174,15 @@ local commandHandler = {
 --- Returns:
 ---  * None
 function mod.connectionCallback()
+    --------------------------------------------------------------------------------
+    -- Let's set off the pinging:
+    --------------------------------------------------------------------------------
+    mod.pingTimer:start()
+    mod.pingTimer:fire()
+
+    --------------------------------------------------------------------------------
+    -- Read the contents of the socket:
+    --------------------------------------------------------------------------------
     mod.socketClient:read("\r\n")
 end
 
@@ -169,7 +224,31 @@ end
 --- Returns:
 ---  * None
 function mod.connect()
-    mod.socketClient:connect("localhost", SOCKET_PORT, mod.connectionCallback)
+    if not mod.socketClient:connected() then
+        mod.socketClient:connect("localhost", SOCKET_PORT, mod.connectionCallback)
+    end
+end
+
+--- plugins.finalcutpro.workflowextension.disconnect() -> none
+--- Function
+--- Disconnects from the Workflow Extension Socket Server.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.disconnect()
+    mod.connected = false
+    if mod.socketClient then
+        mod.socketClient:disconnect()
+    end
+    if mod.pingTimer then
+        mod.pingTimer:stop()
+    end
+    if mod.pingTimerCheck then
+        mod.pingTimerCheck:stop()
+    end
 end
 
 --- plugins.finalcutpro.workflowextension.setupClient() -> none
@@ -196,7 +275,7 @@ function mod.setupClient()
     --------------------------------------------------------------------------------
     -- Setup a connection timer if the initial connection fails:
     --------------------------------------------------------------------------------
-    mod.connectionTimer = timer.new(1, function()
+    mod.connectionTimer = timer.new(CONNECTION_TIMER_RETRY_IN_SECONDS, function()
         if not mod.socketClient:connected() and fcp.isFrontmost() then
             --------------------------------------------------------------------------------
             -- Abort after 30 seconds:
@@ -207,6 +286,7 @@ function mod.setupClient()
                 mod.connectionTimer:stop()
                 return
             end
+            mod.connectionAttemptCount = mod.connectionAttemptCount + 1
 
             --------------------------------------------------------------------------------
             -- Make sure the Workflow Extension is open:
@@ -218,10 +298,7 @@ function mod.setupClient()
             --------------------------------------------------------------------------------
             -- Try and connect again:
             --------------------------------------------------------------------------------
-            if not mod.socketClient:connected() then
-                mod.connectionAttemptCount = mod.connectionAttemptCount + 1
-                mod.connect()
-            end
+            mod.connect()
         end
     end)
 end
@@ -241,6 +318,7 @@ function mod.isWorkflowExtensionConnected()
         mod.connected = false
         if not mod.connectionTimer:running() then
             mod.connectionTimer:start()
+            mod.connectionTimer:fire()
         end
     end
     return result
