@@ -19,6 +19,7 @@ local application               = require "hs.application"
 local applicationwatcher        = require "hs.application.watcher"
 local ax                        = require "hs.axuielement"
 local fs                        = require "hs.fs"
+local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
 local timer                     = require "hs.timer"
@@ -47,6 +48,7 @@ local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
 local If                        = go.If
+local imageFromAppBundle        = image.imageFromAppBundle
 local insert                    = table.insert
 local keyStroke                 = tools.keyStroke
 local pathToAbsolute            = fs.pathToAbsolute
@@ -207,6 +209,19 @@ end
 ---  * The Bundle ID.
 function app:bundleID()
     return self._bundleID
+end
+
+--- cp.app:icon() -> image
+--- Method
+--- Returns the application icon as a `hs.image`
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The icon as a `hs.image` object
+function app:icon()
+    return imageFromAppBundle(self._bundleID)
 end
 
 --- cp.app:keyStroke(modifiers, character) -> none
