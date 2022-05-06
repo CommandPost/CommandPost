@@ -39,7 +39,6 @@ local log               = require "hs.logger".new "workflowextension"
 local socket            = require "hs.socket"
 local timer             = require "hs.timer"
 
-local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
