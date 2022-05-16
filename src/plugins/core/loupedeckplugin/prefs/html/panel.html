@@ -1,0 +1,112 @@
+<style>{(css/loupedeckplugin.css)}</style>
+<script>
+	function updateUI(){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "updateUI",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeEnabled(){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "changeEnabled",
+					enabled: document.getElementById("enabled").checked
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeApplication(){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "changeApplication",
+					application: document.getElementById("application").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressAction(buttonID){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "updateAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressClear(buttonID){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "clearAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<div id="loupedeckpluginControls" class="uiItem">
+	<div id="loupedeckpluginGroup" class="loupedeckpluginGroup">
+		<table class="loupedeckplugin">
+			<thead>
+				<tr>
+					<th class="loupedeckpluginRowFavourite">{{ i18n("identification") }}</th>
+					<th class="loupedeckpluginRowAction">{{ i18n("action") }}</th>
+					<th class="loupedeckpluginRowActionButton"></th>
+				</tr>
+			</thead>
+			<tbody>
+			{%
+				for i=1,maxItems,1 do
+			%}
+				<tr>
+					<td class="loupedeckpluginRowFavourite">
+						{{ i18n("loupedeckPlugin") }} {{ i18n("favourite") }} #{{ i }}
+					</td>
+					<td class="loupedeckpluginRowAction">
+						<input type="text" id="label_{{ i }}" class="loupedeckpluginActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td class="loupedeckpluginRowActionButton">
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressAction('{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressClear('{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+				</tr>
+			{%
+				end
+			%}
+			</tbody>
+		</table>
+	</div>
+</div>
+<script>
+	updateUI();
+</script>
