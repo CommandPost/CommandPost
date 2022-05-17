@@ -875,7 +875,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         group           = "loupedeck",
-        priority        = 2033,
+        priority        = 2033.003,
         id              = "loupedeckplus",
         label           = i18n("loupedeckPlus"),
         image           = icon,

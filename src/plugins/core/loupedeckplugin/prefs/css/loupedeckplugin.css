@@ -33,32 +33,17 @@
 	width: 290px;
 }
 
-.loupedeckpluginRowFavourite {
-	width: 15%;
-}
-
-.loupedeckpluginRowAction {
-	width: 50%;
-}
-
-.loupedeckpluginRowActionButton {
-	width: 12%;
-}
-
 .loupedeckplugin thead {
 	font-weight: bold;
 	font-size: 12px;
-	width: 100%;
+    display:table;
+    width: 100%;
 }
 
 .loupedeckplugin thead tr, .loupedeckplugin tbody tr {
 	display: table;
 	table-layout: fixed;
-	width: 100%;
-}
-
-.loupedeckplugin thead tr {
-	width: calc( 100% - 8px);
+	/* width: 100%; */
 }
 
 .loupedeckplugin tbody {
@@ -103,7 +88,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 620px;
+	width: 120px !important;
 }
 
 .loupedeckpluginActionButton {

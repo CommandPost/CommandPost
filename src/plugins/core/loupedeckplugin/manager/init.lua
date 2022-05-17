@@ -7,6 +7,7 @@ local require                   = require
 local log                       = require "hs.logger".new "ldPluginMan"
 
 local application               = require "hs.application"
+local fs                        = require "hs.fs"
 local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
 local timer                     = require "hs.timer"
@@ -21,6 +22,7 @@ local doesDirectoryExist        = tools.doesDirectoryExist
 local execute                   = _G.hs.execute
 local infoForBundleID           = application.infoForBundleID
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
+local pathToAbsolute            = fs.pathToAbsolute
 local playErrorSound            = tools.playErrorSound
 
 local mod = {}
@@ -38,7 +40,27 @@ local LOUPEDECK_PLUGIN_SERVER_PORT = 54475
 --- plugins.core.loupedeckplugin.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
 --- Number of favourites
-mod.NUMBER_OF_FAVOURITES = 20
+mod.NUMBER_OF_FAVOURITES = 50
+
+-- LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER -> string
+-- Constant
+-- The Bundle Identifier for the Loupedeck Service application.
+local LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER = "com.loupedeck.Loupedeck2"
+
+-- LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER -> string
+-- Constant
+-- The Bundle Identifier for the LoupedeckConfig application.
+local LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER = "com.loupedeck.loupedeckconfig"
+
+-- LOUPEDECK_PLUGIN_PATH -> string
+-- Constant
+-- The path to where Loupedeck Plugins are stored.
+local LOUPEDECK_PLUGIN_PATH = pathToAbsolute("~/.local/share/Loupedeck/Plugins")
+
+-- DLL_PATH -> string
+-- Constant
+-- The path to the DLL contained within the CommandPost Plugin.
+local DLL_PATH = "CommandPostPlugin/bin/mac/CommandPostPlugin.dll"
 
 --- plugins.core.loupedeckplugin.manager.favourites <cp.prop: table>
 --- Variable
@@ -175,29 +197,97 @@ mod.enabled = config.prop("loupedeckplugin.enabled", false):watch(function(enabl
     end
 end)
 
--- installPlugin() -> none
--- Function
--- Installs the Loupedeck Plugin.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function installPlugin()
+--- plugins.core.loupedeckplugin.manager.installPlugin() -> none
+--- Function
+--- Installs the Loupedeck Plugin.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.installPlugin()
     log.df("Install Loupedeck Plugin")
+
+    local basePath = config.basePath
+
+    local embeddedCommandPostPluginPath = basePath .. "/plugins/core/loupedeckplugin/plugin/CommandPostPlugin"
+
+    local destination = LOUPEDECK_PLUGIN_PATH .."/" .. DLL_PATH
+    local source = basePath .. "/plugins/core/loupedeckplugin/plugin/" .. DLL_PATH
+
+    local userCommandPostPluginPath = LOUPEDECK_PLUGIN_PATH .. "/CommandPostPlugin"
+
+    task.new("/usr/bin/diff", function(exitCode, _, _)
+        if exitCode == 0 then
+            log.df("[Loupedeck Plugin] Latest plugin installed.")
+        else
+            log.df("[Loupedeck Plugin] The latest CommandPost Loupedeck Plugin is being installed.")
+
+            --------------------------------------------------------------------------------
+            -- Step 1: Remove the existing plugin:
+            --------------------------------------------------------------------------------
+            log.df("[Loupedeck Plugin] Removing the existing plugin")
+            task.new("/bin/rm", function(copyExitCode, stdOut, stdErr)
+                --------------------------------------------------------------------------------
+                -- Step 2: Create a folder for the Plugin:
+                --------------------------------------------------------------------------------
+                log.df("[Loupedeck Plugin] Make a directory for the CommandPost Plugin")
+                task.new("/bin/mkdir", function(copyExitCode, stdOut, stdErr)
+                    if copyExitCode ~= 0 then
+                        log.ef("Failed to make the Loupedeck CommandPost Plugin directory:")
+                        log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
+                        log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
+                        log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
+                    else
+                        --------------------------------------------------------------------------------
+                        -- Step 3: Copying the latest plugin:
+                        --------------------------------------------------------------------------------
+                        log.df("[Loupedeck Plugin] Copying the latest plugin")
+                        task.new("/bin/cp", function(copyExitCode, stdOut, stdErr)
+                            if copyExitCode ~= 0 then
+                                log.ef("Failed to copy the Loupedeck CommandPost Plugin:")
+                                log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
+                                log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
+                                log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
+                            else
+                                log.df("[Loupedeck Plugin] Plugin Copied!")
+
+                                local loupedeckService = application.get(LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER)
+                                if loupedeckService then
+                                    loupedeckService:kill9()
+                                    doAfter(1, function()
+                                        launchOrFocusByBundleID(LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER)
+                                    end)
+                                end
+
+                                local loupedeckConfig = application.get(LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER)
+                                if loupedeckConfig then
+                                    loupedeckConfig:kill9()
+                                    doAfter(1, function()
+                                        launchOrFocusByBundleID(LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER)
+                                    end)
+                                end
+                            end
+                        end, {"-R", embeddedCommandPostPluginPath .. "/", userCommandPostPluginPath .. "/"}):start() -- Copy Plugin
+                    end
+                end, {userCommandPostPluginPath}):start() -- Make Directory
+            end, {"-R", userCommandPostPluginPath}):start() -- Remove Directory
+        end
+    end, {source, destination}):start()
+
 end
 
--- removePlugin() -> none
--- Function
--- Removes the Loupedeck Plugin.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function removePlugin()
+--- plugins.core.loupedeckplugin.manager.removePlugin() -> none
+--- Function
+--- Removes the Loupedeck Plugin.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.removePlugin()
     log.df("Remove Loupedeck Plugin")
 end
 
@@ -237,7 +327,7 @@ function plugin.init(deps)
     for i=1, mod.NUMBER_OF_FAVOURITES do
         mod.registerAction("CommandPostFavourite" .. string.format("%02d", i), function()
             local faves = mod.favourites()
-            local fave = faves[tostring(i)]
+            local fave = faves["press_" .. i]
             if fave then
                 local handler = deps.actionManager.getHandler(fave.handlerID)
                 if handler then
@@ -257,41 +347,66 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Register turn favourites:
     --------------------------------------------------------------------------------
-    for i=1, mod.NUMBER_OF_FAVOURITES/2 do
+    for i=1, mod.NUMBER_OF_FAVOURITES do
         mod.registerAction("CommandPostFavouriteTurn" .. string.format("%02d", i), function(data)
-            local favID = i*2-1
-            if data.actionValue < 0 then
+            if data.actionType == "press" then
+                --------------------------------------------------------------------------------
+                -- Knob Pressed:
+                --------------------------------------------------------------------------------
                 local faves = mod.favourites()
-                local fave = faves[tostring(favID)]
+                local fave = faves["press_" .. i]
                 if fave then
                     local handler = deps.actionManager.getHandler(fave.handlerID)
                     if handler then
                         if not handler:execute(fave.action) then
-                            log.ef("Unable to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
+                            log.ef("[Loupedeck Plugin] Unable to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
                         end
                     else
-                        log.ef("Unable to find handler to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
+                        log.ef("[Loupedeck Plugin] Unable to find handler to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
                     end
                 else
-                    log.ef("No action is assigned to the favourite in the Loupedeck Plugin Panel in CommandPost.")
+                    log.ef("[Loupedeck Plugin] No action is assigned to the favourite in the Loupedeck Plugin Panel in CommandPost.")
                     playErrorSound()
+                end
+            elseif data.actionType == "turn" then
+                --------------------------------------------------------------------------------
+                -- Knob Turned:
+                --------------------------------------------------------------------------------
+                if data.actionValue < 0 then
+                    local faves = mod.favourites()
+                    local fave = faves["left_" .. i]
+                    if fave then
+                        local handler = deps.actionManager.getHandler(fave.handlerID)
+                        if handler then
+                            if not handler:execute(fave.action) then
+                                log.ef("[Loupedeck Plugin] Unable to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
+                            end
+                        else
+                            log.ef("[Loupedeck Plugin] Unable to find handler to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
+                        end
+                    else
+                        log.ef("[Loupedeck Plugin] No action is assigned to the favourite in the Loupedeck Plugin Panel in CommandPost.")
+                        playErrorSound()
+                    end
+                else
+                    local faves = mod.favourites()
+                    local fave = faves["right_" .. i]
+                    if fave then
+                        local handler = deps.actionManager.getHandler(fave.handlerID)
+                        if handler then
+                            if not handler:execute(fave.action) then
+                                log.ef("[Loupedeck Plugin] Unable to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
+                            end
+                        else
+                            log.ef("[Loupedeck Plugin] Unable to find handler to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
+                        end
+                    else
+                        log.ef("[Loupedeck Plugin] No action is assigned to the favourite in the Loupedeck Plugin Panel in CommandPost.")
+                        playErrorSound()
+                    end
                 end
             else
-                local faves = mod.favourites()
-                local fave = faves[tostring(favID + 1)]
-                if fave then
-                    local handler = deps.actionManager.getHandler(fave.handlerID)
-                    if handler then
-                        if not handler:execute(fave.action) then
-                            log.ef("Unable to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
-                        end
-                    else
-                        log.ef("Unable to find handler to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
-                    end
-                else
-                    log.ef("No action is assigned to the favourite in the Loupedeck Plugin Panel in CommandPost.")
-                    playErrorSound()
-                end
+                log.ef("[Loupedeck Plugin] ERROR: An unexpected actionType was recieved: %s", data and hs.inspect(data))
             end
         end)
     end
@@ -301,6 +416,9 @@ end
 
 function plugin.postInit()
     mod.enabled:update()
+    if mod.enabled() then
+        mod.installPlugin()
+    end
 end
 
 return plugin

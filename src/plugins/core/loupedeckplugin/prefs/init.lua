@@ -86,13 +86,18 @@ local function updateUI()
     --------------------------------------------------------------------------------
     local faves = mod.loupedeckplugin.favourites()
     local max = mod.loupedeckplugin.NUMBER_OF_FAVOURITES
+
+    local actionTypes = {"press", "left", "right"}
+
     for i = 1, max do
-        local fave = faves[tostring(i)]
-        if fave then
-            local actionTitle = fave.actionTitle
-            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
-        else
-            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+        for _, actionType in pairs(actionTypes) do
+            local fave = faves[actionType .. "_" .. i]
+            if fave then
+                local actionTitle = fave.actionTitle
+                script = script .. [[changeValueByID(']] .. actionType .. [[_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
+            else
+                script = script .. [[changeValueByID(']] .. actionType .. [[_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+            end
         end
     end
 
@@ -174,7 +179,7 @@ local function loupedeckPluginPanelCallback(id, params)
             local buttonID = params.buttonID
 
             local faves = mod.loupedeckplugin.favourites()
-            faves[tostring(buttonID)] = nil
+            faves[buttonID] = nil
             mod.loupedeckplugin.favourites(faves)
 
             updateUI()
@@ -218,9 +223,9 @@ function plugin.init(deps, env)
 
     manager.addPanel({
         group           = "loupedeck",
-        priority        = 1,
+        priority        = 2033.001,
         id              = "loupedeckplugin",
-        label           = i18n("pluginForOfficialApp"),
+        label           = i18n("loupedeckPlugin"),
         image           = icon,
         tooltip         = i18n("pluginForOfficialApp"),
         height          = 810,

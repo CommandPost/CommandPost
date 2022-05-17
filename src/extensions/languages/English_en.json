@@ -1403,7 +1403,7 @@
     "loupedeckLiveStoreSettingsOnFlashDriveLineOne": "<strong>Store settings on Flash Drive</strong> is enabled, but no Loupedeck Live is detected.",
     "loupedeckLiveStoreSettingsOnFlashDriveLineTwo": "Please connect your Loupedeck Live to allow configuration.",
     "loupedeckPlugin": "Loupedeck Plugin",
-    "loupedeckPluginFavouriteDescription": "You can assign any action in CommandPost to a Favourite below, which is then accessible in the Official Loupedeck App",
+    "loupedeckPluginFavouriteDescription": "You can assign any action in CommandPost to a Favourite below, which is then accessible in the Official Loupedeck App.",
     "loupedeckPluginPreferencesDescription": "CommandPost allows you to install a plugin into the official Loupedeck application<br />so that you can access CommandPost's actions within it.",
     "loupedeckPluginTip": "If you enable the Loupedeck Plugin, CommandPost's native Loupedeck support will be disabled.",
     "loupedeckPlus": "Loupedeck+",
