@@ -193,7 +193,7 @@ mod.enabled = config.prop("loupedeckplugin.enabled", false):watch(function(enabl
     if enabled then
         mod.startWebSocketClient()
     else
-        mo.stopWebSocketClient()
+        mod.stopWebSocketClient()
     end
 end)
 
@@ -207,7 +207,7 @@ end)
 --- Returns:
 ---  * None
 function mod.installPlugin()
-    log.df("Install Loupedeck Plugin")
+    log.df("[Loupedeck Plugin] Installing Loupedeck Plugin...")
 
     local basePath = config.basePath
 
@@ -288,7 +288,16 @@ end
 --- Returns:
 ---  * None
 function mod.removePlugin()
-    log.df("Remove Loupedeck Plugin")
+    log.df("[Loupedeck Plugin] Removing Loupedeck Plugin...")
+
+    local userCommandPostPluginPath = LOUPEDECK_PLUGIN_PATH .. "/CommandPostPlugin"
+
+    --------------------------------------------------------------------------------
+    -- Step 1: Remove the existing plugin:
+    --------------------------------------------------------------------------------
+    log.df("[Loupedeck Plugin] Removing the existing plugin")
+    task.new("/bin/rm", function(copyExitCode, stdOut, stdErr)
+    end, {"-R", userCommandPostPluginPath}):start() -- Remove Directory
 end
 
 --- plugins.core.loupedeckplugin.manager.setEnabled(enabled) -> none
@@ -302,10 +311,10 @@ end
 ---  * `true` if Loupedeck Plugin support is enabled, otherwise `false`
 function mod.setEnabled(enabled)
     if enabled then
-        installPlugin()
+        mod.installPlugin()
         mod.enabled(true)
     else
-        removePlugin()
+        mod.removePlugin()
         mod.enabled(false)
     end
     return mod.enabled()
