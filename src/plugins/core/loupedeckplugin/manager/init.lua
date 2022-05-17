@@ -74,7 +74,7 @@ mod.performAction = {}
 
 --- plugins.core.loupedeckplugin.manager.registerAction(name, fn) -> none
 --- Function
---- Registers a new Loupdeck Plugin Action.
+--- Registers a new Loupedeck Plugin Action.
 ---
 --- Parameters:
 ---  * name - The name of the action.
@@ -91,10 +91,10 @@ end
 -- A table of callback functions
 local callbackFn = {
     ["open"] = function()
-        log.df("[Loupdeck Plugin] Connected")
+        log.df("[Loupedeck Plugin] Connected")
     end,
     ["closed"] = function()
-        log.df("[Loupdeck Plugin] Disconnected")
+        log.df("[Loupedeck Plugin] Disconnected")
         mod.reconnectionTimer = doAfter(CONNECTION_TIMER_RETRY_IN_SECONDS, mod.startWebSocketClient)
     end,
     ["fail"] = function()
@@ -111,7 +111,7 @@ local callbackFn = {
         end
     end,
     ["pong"] = function()
-        log.df("[Loupdeck Plugin] Pong!")
+        log.df("[Loupedeck Plugin] Pong!")
     end
 }
 
