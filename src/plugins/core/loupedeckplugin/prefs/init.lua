@@ -244,7 +244,7 @@ function plugin.init(deps, env)
         :addHeading(2, i18n("loupedeckPlugin"))
         :addParagraph(2.1, i18n("loupedeckPluginPreferencesDescription"), false)
         :addParagraph(2.2, html.br())
-        :addParagraph(2.3, html.span {class="tip"} (html(i18n("loupedeckPluginTip"), false) ) .. "\n\n")
+        :addParagraph(2.3, html.span {class="tip"} (html(i18n("loupedeckPluginTip") .. "<br />" .. i18n("loupedeckPluginTipTwo"), false) ) .. "\n\n")
         :addParagraph(2.4, html.br())
         :addCheckbox(3,
             {

@@ -19,6 +19,7 @@ local tools                     = require "cp.tools"
 
 local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
+local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = _G.hs.execute
 local infoForBundleID           = application.infoForBundleID
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
@@ -52,10 +53,10 @@ local LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER = "com.loupedeck.Loupedeck2"
 -- The Bundle Identifier for the LoupedeckConfig application.
 local LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER = "com.loupedeck.loupedeckconfig"
 
--- LOUPEDECK_PLUGIN_PATH -> string
+-- LOUPEDECK_SUPPORT_PATH -> string
 -- Constant
 -- The path to where Loupedeck Plugins are stored.
-local LOUPEDECK_PLUGIN_PATH = pathToAbsolute("~/.local/share/Loupedeck/Plugins")
+local LOUPEDECK_SUPPORT_PATH = "~/.local/share/Loupedeck"
 
 -- DLL_PATH -> string
 -- Constant
@@ -197,7 +198,7 @@ mod.enabled = config.prop("loupedeckplugin.enabled", false):watch(function(enabl
     end
 end)
 
---- plugins.core.loupedeckplugin.manager.installPlugin() -> none
+--- plugins.core.loupedeckplugin.manager.installPlugin() -> boolean
 --- Function
 --- Installs the Loupedeck Plugin.
 ---
@@ -205,37 +206,137 @@ end)
 ---  * None
 ---
 --- Returns:
----  * None
+---  * `true` if successful otherwise `false` if fails.
 function mod.installPlugin()
     log.df("[Loupedeck Plugin] Installing Loupedeck Plugin...")
 
-    local basePath = config.basePath
+    --------------------------------------------------------------------------------
+    -- Make sure the plugin path actually exists:
+    --------------------------------------------------------------------------------
+    if not ensureDirectoryExists(LOUPEDECK_SUPPORT_PATH, "Plugins") then
+        log.ef("[Loupedeck Plugin] Failed to create folder: %s", LOUPEDECK_SUPPORT_PATH .. "/Plugins/")
+        return false
+    end
 
-    local embeddedCommandPostPluginPath = basePath .. "/plugins/core/loupedeckplugin/plugin/CommandPostPlugin"
+    local loupedeckSupportPath               = pathToAbsolute(LOUPEDECK_SUPPORT_PATH)
+    local basePath                          = config.basePath
+    local embeddedCommandPostPluginPath     = basePath .. "/plugins/core/loupedeckplugin/plugin/CommandPostPlugin"
+    local destination                       = loupedeckSupportPath .."/Plugins/" .. DLL_PATH
+    local source                            = basePath .. "/plugins/core/loupedeckplugin/plugin/" .. DLL_PATH
+    local userCommandPostPluginPath         = loupedeckSupportPath .. "/Plugins/CommandPostPlugin"
 
-    local destination = LOUPEDECK_PLUGIN_PATH .."/" .. DLL_PATH
-    local source = basePath .. "/plugins/core/loupedeckplugin/plugin/" .. DLL_PATH
+    --------------------------------------------------------------------------------
+    -- Check if latest plugin is already installed.
+    --------------------------------------------------------------------------------
+    local userCommandPostPluginPath = loupedeckSupportPath .. "/Plugins/CommandPostPlugin"
+    local output, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
+    if not ok then
+        log.df("[Loupedeck Plugin] Latest plugin already installed.")
+        return true
+    end
 
-    local userCommandPostPluginPath = LOUPEDECK_PLUGIN_PATH .. "/CommandPostPlugin"
+    --------------------------------------------------------------------------------
+    -- Remove the existing plugin:
+    --------------------------------------------------------------------------------
+    log.df("[Loupedeck Plugin] Removing the existing plugin...")
+    output, ok = os.execute([[/bin/rm -R "]] .. userCommandPostPluginPath .. [["]])
+    if not ok then
+        log.df("[Loupedeck Plugin] Failed to remove the existing plugin.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Create a folder for the Plugin:
+    --------------------------------------------------------------------------------
+    log.df("[Loupedeck Plugin] Creating folder for plugin...")
+    output, ok = os.execute([[/bin/mkdir "]] .. userCommandPostPluginPath .. [["]])
+    if not ok then
+        log.df("[Loupedeck Plugin] Failed to make a folder for the CommandPost Plugin.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Copying the latest plugin:
+    --------------------------------------------------------------------------------
+    log.df("[Loupedeck Plugin] Copying latest plugin to Loupedeck folder...")
+    output, ok = os.execute([[/bin/cp -R "]] .. embeddedCommandPostPluginPath .. [[/" "]] .. userCommandPostPluginPath .. [["]])
+    if not ok then
+        log.df("[Loupedeck Plugin] Failed copy the Loupedeck Plugin.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Restart Loupedeck:
+    --------------------------------------------------------------------------------
+    log.df("[Loupedeck Plugin] Restarting Loupedeck Service & LoupedeckConfig Application...")
+    local loupedeckService = application.get(LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER)
+    if loupedeckService then
+        loupedeckService:kill9()
+        doAfter(1, function()
+            launchOrFocusByBundleID(LOUPEDECK_SERVICE_BUNDLE_IDENTIFIER)
+        end)
+    end
+
+    local loupedeckConfig = application.get(LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER)
+    if loupedeckConfig then
+        loupedeckConfig:kill9()
+        doAfter(1, function()
+            launchOrFocusByBundleID(LOUPEDECK_CONFIG_BUNDLE_IDENTIFIER)
+        end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Victory!
+    --------------------------------------------------------------------------------
+    log.df("[Loupedeck Plugin] Successfully Installed!")
+    return true
+end
+
+--- plugins.core.loupedeckplugin.manager.updatePlugin() -> none
+--- Function
+--- Updates the Loupedeck Plugin.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updatePlugin()
+    log.df("[Loupedeck Plugin] Checking if we need to update Loupedeck Plugin...")
+
+    --------------------------------------------------------------------------------
+    -- Make sure the plugin path actually exists:
+    --------------------------------------------------------------------------------
+    if not ensureDirectoryExists(LOUPEDECK_SUPPORT_PATH, "Plugins") then
+        log.ef("[Loupedeck Plugin] Failed to create folder: %s", LOUPEDECK_SUPPORT_PATH .. "/Plugins/")
+        return
+    end
+
+    local loupedeckSupportPath               = pathToAbsolute(LOUPEDECK_SUPPORT_PATH)
+    local basePath                          = config.basePath
+    local embeddedCommandPostPluginPath     = basePath .. "/plugins/core/loupedeckplugin/plugin/CommandPostPlugin"
+    local destination                       = loupedeckSupportPath .."/Plugins/" .. DLL_PATH
+    local source                            = basePath .. "/plugins/core/loupedeckplugin/plugin/" .. DLL_PATH
+    local userCommandPostPluginPath         = loupedeckSupportPath .. "/Plugins/CommandPostPlugin"
 
     task.new("/usr/bin/diff", function(exitCode, _, _)
         if exitCode == 0 then
             log.df("[Loupedeck Plugin] Latest plugin installed.")
         else
-            log.df("[Loupedeck Plugin] The latest CommandPost Loupedeck Plugin is being installed.")
+            log.df("[Loupedeck Plugin] The latest CommandPost Loupedeck Plugin is being installed...")
 
             --------------------------------------------------------------------------------
             -- Step 1: Remove the existing plugin:
             --------------------------------------------------------------------------------
-            log.df("[Loupedeck Plugin] Removing the existing plugin")
+            log.df("[Loupedeck Plugin] Removing the existing plugin...")
             task.new("/bin/rm", function(copyExitCode, stdOut, stdErr)
                 --------------------------------------------------------------------------------
                 -- Step 2: Create a folder for the Plugin:
                 --------------------------------------------------------------------------------
-                log.df("[Loupedeck Plugin] Make a directory for the CommandPost Plugin")
+                log.df("[Loupedeck Plugin] Making a directory for the CommandPost Plugin...")
                 task.new("/bin/mkdir", function(copyExitCode, stdOut, stdErr)
                     if copyExitCode ~= 0 then
-                        log.ef("Failed to make the Loupedeck CommandPost Plugin directory:")
+                        log.ef("[Loupedeck Plugin] Failed to make the Loupedeck CommandPost Plugin directory:")
                         log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
                         log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
                         log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
@@ -243,7 +344,7 @@ function mod.installPlugin()
                         --------------------------------------------------------------------------------
                         -- Step 3: Copying the latest plugin:
                         --------------------------------------------------------------------------------
-                        log.df("[Loupedeck Plugin] Copying the latest plugin")
+                        log.df("[Loupedeck Plugin] Copying the latest plugin...")
                         task.new("/bin/cp", function(copyExitCode, stdOut, stdErr)
                             if copyExitCode ~= 0 then
                                 log.ef("Failed to copy the Loupedeck CommandPost Plugin:")
@@ -275,10 +376,9 @@ function mod.installPlugin()
             end, {"-R", userCommandPostPluginPath}):start() -- Remove Directory
         end
     end, {source, destination}):start()
-
 end
 
---- plugins.core.loupedeckplugin.manager.removePlugin() -> none
+--- plugins.core.loupedeckplugin.manager.removePlugin() -> boolean
 --- Function
 --- Removes the Loupedeck Plugin.
 ---
@@ -286,18 +386,22 @@ end
 ---  * None
 ---
 --- Returns:
----  * None
+---  * Will always return `true`.
 function mod.removePlugin()
     log.df("[Loupedeck Plugin] Removing Loupedeck Plugin...")
 
-    local userCommandPostPluginPath = LOUPEDECK_PLUGIN_PATH .. "/CommandPostPlugin"
+    local loupedeckSupportPath = pathToAbsolute(LOUPEDECK_SUPPORT_PATH)
+    if not loupedeckSupportPath then
+        log.ef("[Loupedeck Plugin] Failed to remove plugin, as this directory doesn't exist: %s", LOUPEDECK_SUPPORT_PATH)
+    end
 
-    --------------------------------------------------------------------------------
-    -- Step 1: Remove the existing plugin:
-    --------------------------------------------------------------------------------
-    log.df("[Loupedeck Plugin] Removing the existing plugin")
-    task.new("/bin/rm", function(copyExitCode, stdOut, stdErr)
-    end, {"-R", userCommandPostPluginPath}):start() -- Remove Directory
+    local userCommandPostPluginPath = loupedeckSupportPath .. "/Plugins/CommandPostPlugin"
+    local output, ok = os.execute([[/bin/rm -R "]] .. userCommandPostPluginPath .. [["]])
+    if not ok then
+        log.ef(format("[Loupedeck Plugin] Failed to delete plugin '%s': %s", userCommandPostPluginPath, output))
+    end
+
+    return true
 end
 
 --- plugins.core.loupedeckplugin.manager.setEnabled(enabled) -> none
@@ -311,10 +415,15 @@ end
 ---  * `true` if Loupedeck Plugin support is enabled, otherwise `false`
 function mod.setEnabled(enabled)
     if enabled then
-        mod.installPlugin()
-        mod.enabled(true)
+        local result = mod.installPlugin()
+        if result then
+            -- Disable other built-in support:
+            config.prop("loupedeckct.enabled")(false)
+            config.prop("loupedecklive.enabled")(false)
+        end
+        mod.enabled(result)
     else
-        mod.removePlugin()
+        local result = mod.removePlugin()
         mod.enabled(false)
     end
     return mod.enabled()
@@ -426,7 +535,7 @@ end
 function plugin.postInit()
     mod.enabled:update()
     if mod.enabled() then
-        mod.installPlugin()
+        mod.updatePlugin()
     end
 end
 

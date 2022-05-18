@@ -514,19 +514,22 @@ function mod.new(deviceType)
     --- How often snippets are refreshed.
     o.snippetsRefreshFrequency = config.prop(o.id .. ".preferences.snippetsRefreshFrequency", "1")
 
-
-
     --- plugins.core.loupedeckctandlive.manager.enabled <cp.prop: boolean>
     --- Field
     --- Is Loupedeck support enabled?
     o.enabled = config.prop(o.id .. ".enabled", false):watch(function(enabled)
         if enabled then
-            o.appWatcher:start()
-            o.driveWatcher:start()
-            o.sleepWatcher:start()
-            o.usbWatcher:start()
+            if mod.loupedeckPlugin.enabled() then
+                log.df("Can't use CommandPost's Loupedeck Intergration if the Loupedeck Plugin is enabled")
+                o.enabled(false)
+            else
+                o.appWatcher:start()
+                o.driveWatcher:start()
+                o.sleepWatcher:start()
+                o.usbWatcher:start()
 
-            o.setupDevices()
+                o.setupDevices()
+            end
         else
             --------------------------------------------------------------------------------
             -- Stop all watchers:
@@ -2224,6 +2227,7 @@ local plugin = {
         ["core.commands.global"]                = "global",
         ["core.controlsurfaces.manager"]        = "csman",
         ["core.preferences.panels.scripting"]   = "scriptingPreferences",
+        ["core.loupedeckplugin.manager"]        = "loupedeckPlugin",
     }
 }
 
@@ -2236,8 +2240,10 @@ function plugin.init(deps, env)
     mod.csman                   = deps.csman
     mod.global                  = deps.global
     mod.scriptingPreferences    = deps.scriptingPreferences
+    mod.loupedeckPlugin         = deps.loupedeckPlugin
 
     mod.env                     = env
+
     --------------------------------------------------------------------------------
     -- Setup devices:
     --------------------------------------------------------------------------------

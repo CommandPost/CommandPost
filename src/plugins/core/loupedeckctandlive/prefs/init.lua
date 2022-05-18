@@ -288,8 +288,14 @@ function mod.new(deviceType)
             {
                 label       = i18n("enable" .. o.commandID .. "Support"),
                 checked     = o.enabled,
+                id          = "enable" .. o.commandID .. "Support",
                 onchange    = function(_, params)
-                    o.enabled(params.checked)
+                    if mod._deviceManager.loupedeckPlugin.enabled() then
+                        mod._manager.injectScript([[changeCheckedByID("enable]] .. o.commandID .. [[Support", false)]])
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("loupedeckPluginIsActive"), i18n("loupedeckPluginIsActiveExplanation"), i18n("ok"))
+                    else
+                        o.enabled(params.checked)
+                    end
                 end,
             }
         )
