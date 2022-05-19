@@ -304,6 +304,21 @@ function mod.curry(fn, argCount)
     return _curryWith(fn, argCount)
 end
 
+--- cp.fn.equals(a) -> function(b) -> boolean
+--- Function
+--- A function combinator that returns a function returning `true` if the first input is equal to the second input.
+---
+--- Parameters:
+---  * a - The first input to compare.
+---
+--- Returns:
+---  * A function that returns `true` if the first input is equal to the second input.
+function mod.equals(a)
+    return function(b)
+        return a == b
+    end
+end
+
 --- cp.fn.flip(fn) -> function(...) -> function(...) -> any
 --- Function
 --- A combinator that flips the order of the next two arguments to a curried function.
