@@ -440,33 +440,10 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Register press favourites:
+    -- Register favourites:
     --------------------------------------------------------------------------------
     for i=1, mod.NUMBER_OF_FAVOURITES do
-        mod.registerAction("CommandPostFavourite" .. string.format("%02d", i), function()
-            local faves = mod.favourites()
-            local fave = faves["press_" .. i]
-            if fave then
-                local handler = deps.actionManager.getHandler(fave.handlerID)
-                if handler then
-                    if not handler:execute(fave.action) then
-                        log.ef("Unable to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
-                    end
-                else
-                    log.ef("Unable to find handler to execute Loupedeck Plugin Favourite #%s: %s", i, fave and inspect(fave))
-                end
-            else
-                log.ef("No action is assigned to the favourite in the Loupedeck Plugin Panel in CommandPost.")
-                playErrorSound()
-            end
-        end)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Register turn favourites:
-    --------------------------------------------------------------------------------
-    for i=1, mod.NUMBER_OF_FAVOURITES do
-        mod.registerAction("CommandPostFavouriteTurn" .. string.format("%02d", i), function(data)
+        mod.registerAction("CommandPostFavourite" .. string.format("%02d", i), function(data)
             if data.actionType == "press" then
                 --------------------------------------------------------------------------------
                 -- Knob Pressed:
