@@ -551,4 +551,15 @@ function plugin.init(deps)
     return mod
 end
 
+function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Forcefully load the Workflow Extension:
+    --------------------------------------------------------------------------------
+    if not os.execute([[pluginkit -a "]] .. hs.processInfo.bundlePath .. [[/Contents/PlugIns/CommandPost.appex"]]) then
+        log.ef("[Workflow Extension] Failed to add via PlugInKit.")
+    else
+        log.df("[Workflow Extension] Successfully added via PlugInKit.")
+    end
+end
+
 return plugin
