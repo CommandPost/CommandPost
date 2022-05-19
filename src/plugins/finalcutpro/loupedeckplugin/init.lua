@@ -30,6 +30,26 @@ local mod = {}
 -- How long we should defer all the update functions.
 local DEFER_VALUE = 0.01
 
+-- COLOR_WHEELS_NORMAL_RANGE -> number
+-- Constant
+-- What we divide the Loupedeck value by for a normal range.
+local COLOR_WHEELS_NORMAL_RANGE = 5000
+
+-- COLOR_WHEELS_FN_RANGE -> number
+-- Constant
+-- What we divide the Loupedeck value by for a normal range with the Fn key pressed.
+local COLOR_WHEELS_FN_RANGE = 1000
+
+-- BRIGHTNESS_RANGE -> number
+-- Constant
+-- What we divide the Loupedeck value by for a normal range.
+local BRIGHTNESS_RANGE = 100
+
+-- SATURATION_RANGE -> number
+-- Constant
+-- What we divide the Loupedeck value by for a normal range.
+local SATURATION_RANGE = 100
+
 -- makeContrastWheelHandler() -> function
 -- Function
 -- Creates a 'handler' for contrast wheel control.
@@ -55,15 +75,14 @@ local function makeContrastWheelHandler()
 
     return function(data)
         if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            colorWheelContrastValue = colorWheelContrastValue + increment
-            updateUI()
-        elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            if value == 0 then
-                colorWheels.shadows.brightness:value(0)
-                colorWheels.highlights.brightness:value(0)
+            local actionValue = data.actionValue
+            if actionValue then
+                colorWheelContrastValue = colorWheelContrastValue + (actionValue/COLOR_WHEELS_NORMAL_RANGE)
+                updateUI()
             end
+        elseif data.operation == "press" then
+            colorWheels.shadows.brightness:value(0)
+            colorWheels.highlights.brightness:value(0)
         end
     end
 end
@@ -78,48 +97,36 @@ end
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeWheelHandler(wheelFinderFn, vertical)
-    local absolute
     local wheelRight = 0
     local wheelUp = 0
     local wheel = wheelFinderFn()
 
     local updateUI = deferred.new(DEFER_VALUE):action(function()
         if wheel:isShowing() then
-            if absolute then
-                wheel:colorOrientation(absolute)
-                absolute = nil
-            else
-                local current = wheel:colorOrientation()
-                current.right = current.right + wheelRight
-                current.up = current.up + wheelUp
-                wheel:colorOrientation(current)
-                wheelRight = 0
-                wheelUp = 0
-            end
+            local current = wheel:colorOrientation()
+            current.right = current.right + wheelRight
+            current.up = current.up + wheelUp
+            wheel:colorOrientation(current)
+            wheelRight = 0
+            wheelUp = 0
         else
             wheel:show()
         end
     end)
 
     return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            if vertical then
-                wheelUp = wheelUp + increment
-            else
-                wheelRight = wheelRight + increment
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if vertical then
+                    wheelUp = wheelUp + (actionValue/COLOR_WHEELS_NORMAL_RANGE)
+                else
+                    wheelRight = wheelRight + (actionValue/COLOR_WHEELS_NORMAL_RANGE)
+                end
+                updateUI()
             end
-            updateUI()
-        elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            local current = wheel:colorOrientation()
-            if vertical then
-                current.up = value
-            else
-                current.right = value
-            end
-            absolute = copy(current)
-            updateUI()
+        elseif data.actionType == "press" then
+            wheel:colorOrientation({right=0, up=0})
         end
     end
 end
@@ -237,16 +244,15 @@ local function makeTimelineZoomHandler()
     end)
 
     return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            zoomShift = zoomShift - increment
-            updateUI()
-        elseif data.operation == "=" then
-            local value = data.params and data.params[1]
-            if value == 0 then
-                zoomShift = 0
-                fcp:application():selectMenuItem({"View", "Zoom to Fit"})
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                zoomShift = zoomShift - (actionValue/10)
             end
+            updateUI()
+        elseif data.actionType == "press" then
+            zoomShift = 0
+            fcp:application():selectMenuItem({"View", "Zoom to Fit"})
         end
     end
 end
@@ -280,10 +286,12 @@ local function makeTimelineClipHeightHandler()
     end)
 
     return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            clipHeightShift = clipHeightShift - increment
-            updateUI()
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                clipHeightShift = clipHeightShift - actionValue
+                updateUI()
+            end
         end
     end
 end
@@ -318,12 +326,14 @@ local function makeSaturationHandler(wheelFinderFn)
     end)
 
     return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            saturationShift = saturationShift + increment
-            updateUI()
-        elseif data.operation == "=" then
-            absolute = data.params and data.params[1]
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                saturationShift = saturationShift + (actionValue/SATURATION_RANGE)
+                updateUI()
+            end
+        elseif data.actionType == "press" then
+            absolute = 1
             updateUI()
         end
     end
@@ -359,12 +369,14 @@ local function makeBrightnessHandler(wheelFinderFn)
     end)
 
     return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            brightnessShift = brightnessShift + increment
-            updateUI()
-        elseif data.operation == "=" then
-            absolute = data.params and data.params[1]
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                brightnessShift = brightnessShift + (actionValue/BRIGHTNESS_RANGE)
+                updateUI()
+            end
+        elseif data.actionType == "press" then
+            absolute = 0
             updateUI()
         end
     end
@@ -381,29 +393,19 @@ end
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
 local function makeColourBoardHandler(boardFinderFn, angle)
-    local absolute
     local colorBoardShift = 0
     local board = boardFinderFn()
 
     local updateUI = deferred.new(DEFER_VALUE):action(function()
         if board:isShowing() then
-            if absolute then
-                if angle then
-                    board:angle(absolute)
-                else
-                    board:percent(absolute)
-                end
-                absolute = nil
+            if angle then
+                local current = board:angle()
+                board:angle(current + colorBoardShift)
+                colorBoardShift = 0
             else
-                if angle then
-                    local current = board:angle()
-                    board:angle(current + colorBoardShift)
-                    colorBoardShift = 0
-                else
-                    local current = board:percent()
-                    board:percent(current + colorBoardShift)
-                    colorBoardShift = 0
-                end
+                local current = board:percent()
+                board:percent(current + colorBoardShift)
+                colorBoardShift = 0
             end
         else
             board:show()
@@ -411,13 +413,14 @@ local function makeColourBoardHandler(boardFinderFn, angle)
     end)
 
     return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            colorBoardShift = colorBoardShift + increment
-            updateUI()
-        elseif data.operation == "=" then
-            absolute = data.params and data.params[1]
-            updateUI()
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                colorBoardShift = colorBoardShift + actionValue
+                updateUI()
+            end
+        elseif data.actionType == "press" then
+            board:show():reset()
         end
     end
 end
@@ -430,13 +433,16 @@ end
 --  * finderFn - a function that will return the slider to apply the value to.
 --  * actionName - The action name used by Loupedeck Plugin
 --  * resetValue - The reset value (i.e. when a knob is pressed)
+--  * range - An optional range to divide the Loupedeck value by
 --
 -- Returns:
 --  * a function that will receive the Monogram control metadata table and process it.
-local function makeSliderHandler(finderFn, actionName, resetValue)
+local function makeSliderHandler(finderFn, actionName, resetValue, range)
     local absolute
     local shift = 0
     local slider = finderFn()
+
+    range = range or 1
 
     local updateUI = deferred.new(DEFER_VALUE):action(function()
         if slider:isShowing() then
@@ -458,12 +464,9 @@ local function makeSliderHandler(finderFn, actionName, resetValue)
         local message = {
             ["MessageType"] = "UpdateDisplay",
             ["ActionName"] = actionName,
-            ["ActionValue"] = tostring(slider:value()) or "?",
+            ["ActionValue"] = tostring(slider:value()) or "",
         }
         local encodedMessage = json.encode(message, true)
-
-        --log.df("encodedMessage: %s", encodedMessage)
-
         mod.manager.sendMessage(encodedMessage)
     end)
 
@@ -471,7 +474,7 @@ local function makeSliderHandler(finderFn, actionName, resetValue)
         if data.actionType == "turn" then
             local actionValue = data.actionValue
             if actionValue then
-                shift = shift + actionValue
+                shift = shift + (actionValue/range)
                 updateUI()
             end
         elseif data.actionType == "press" then
@@ -727,9 +730,9 @@ local function makeLoupedeckColorWheelHandler(wheelFinderFn)
             --------------------------------------------------------------------------------
             -- The Touch Wheel has "moved":
             --------------------------------------------------------------------------------
-            local range = 5000
+            local range = COLOR_WHEELS_NORMAL_RANGE
             if data.functionPressed then
-                range = 1000
+                range = COLOR_WHEELS_FN_RANGE
             end
             deltaX = deltaX + ((data.deltaX)/range)
             deltaY = deltaY + ((data.deltaY*-1)/range)
@@ -752,12 +755,12 @@ local function makeLoupedeckColorWheelHandler(wheelFinderFn)
                 --------------------------------------------------------------------------------
                 -- Saturation:
                 --------------------------------------------------------------------------------
-                saturationShift = saturationShift + (data.actionValue/100)
+                saturationShift = saturationShift + (data.actionValue/SATURATION_RANGE)
             else
                 --------------------------------------------------------------------------------
                 -- Brightness:
                 --------------------------------------------------------------------------------
-                brightnessShift = brightnessShift + (data.actionValue/100)
+                brightnessShift = brightnessShift + (data.actionValue/BRIGHTNESS_RANGE)
             end
             updateUI()
         else
@@ -765,6 +768,117 @@ local function makeLoupedeckColorWheelHandler(wheelFinderFn)
         end
     end
 
+end
+
+-- requestCommands(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service requests a JSON of commands
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function requestCommands(data)
+    for pluginType,_ in pairs(plugins.types) do
+        --------------------------------------------------------------------------------
+        -- Get a list of plugins:
+        --------------------------------------------------------------------------------
+        local pluginIDs = {}
+        local list = fcp:plugins():ofType(pluginType)
+        if list then
+            for _,plugin in ipairs(list) do
+                if plugin.name then
+                    local category = plugin.category or "none"
+                    local theme = plugin.theme or "none"
+                    local name = plugin.name
+                    local id = name .. "." .. category .. "." .. theme
+
+                    --------------------------------------------------------------------------------
+                    -- Save the ID and Plugin Name to send back to Loupedeck:
+                    --------------------------------------------------------------------------------
+                    pluginIDs[id] = name
+
+                    --------------------------------------------------------------------------------
+                    -- Save a lookup table for execution:
+                    --------------------------------------------------------------------------------
+                    mod.fcpPluginsLookup[id] = copy(plugin)
+                    mod.fcpPluginsTypeLookup[id] = pluginType
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Send a WebSocket Message back to Loupedeck:
+        --------------------------------------------------------------------------------
+        local message = {
+            ["MessageType"] = "UpdateCommands",
+            ["ActionName"] = "FCPPlugin." .. pluginType,
+            ["ActionValue"] = json.encode(pluginIDs),
+        }
+        local encodedMessage = json.encode(message, true)
+        mod.manager.sendMessage(encodedMessage)
+    end
+end
+
+-- requestCommands(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service asks to apply a specific command.
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function applyCommand(data)
+    --log.df("ApplyWebSocketCommand: %s", data)
+    local id = data.actionValue
+    local actionData = mod.fcpPluginsLookup[id]
+    local pluginType = mod.fcpPluginsTypeLookup[id]
+    if actionData and pluginType then
+        mod.fcpPlugins[pluginType].apply(actionData)
+    end
+end
+
+-- makePlayheadHandler(actionName, playRate) -> function
+-- Function
+-- Make a Playhead Handler
+--
+-- Parameters:
+--  * actionName - The action name as a string.
+--  * playRate - The play rate as a number.
+--
+-- Returns:
+--  * A handler function
+local function makePlayheadHandler(actionName, playRate)
+    return function(data)
+        --------------------------------------------------------------------------------
+        -- Process the data:
+        --------------------------------------------------------------------------------
+        if data.actionType == "turn" then
+            if data.actionValue > 0 then
+                mod._workflowExtension.incrementPlayhead(data.actionValue * playRate)
+            else
+                mod._workflowExtension.decrementPlayhead(math.abs(data.actionValue * playRate))
+            end
+        elseif data.actionType == "press" then
+            mod._workflowExtension.movePlayheadToSeconds(0)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Tell Loupedeck App to update the hardware display:
+        --------------------------------------------------------------------------------
+        local timecode = fcp.viewer.timecode()
+        if timecode then
+            local message = {
+                ["MessageType"] = "UpdateDisplay",
+                ["ActionName"] = actionName,
+                ["ActionValue"] = timecode,
+            }
+            local encodedMessage = json.encode(message, true)
+            mod.manager.sendMessage(encodedMessage)
+        end
+    end
 end
 
 -- plugins.core.loupedeckplugin.manager._registerActions(manager) -> none
@@ -778,11 +892,9 @@ end
 --  * None
 function mod._registerActions()
     --------------------------------------------------------------------------------
-    -- Run once:
+    -- Only run once:
     --------------------------------------------------------------------------------
-    if mod._registerActionsRun then
-        return
-    end
+    if mod._registerActionsRun then return end
     mod._registerActionsRun = true
 
     --------------------------------------------------------------------------------
@@ -791,147 +903,29 @@ function mod._registerActions()
     local registerAction = mod.manager.registerAction
 
     --------------------------------------------------------------------------------
-    -- Final Cut Pro Plugins:
-    --------------------------------------------------------------------------------
-    local fcpPlugins = {
-        [plugins.types.generator]       = mod._generators,
-        [plugins.types.title]           = mod._titles,
-        [plugins.types.transition]      = mod._transitions,
-        [plugins.types.audioEffect]     = mod._audioeffects,
-        [plugins.types.videoEffect]     = mod._videoeffects,
-    }
-
-    local fcpPluginsLookup = {}
-    local fcpPluginsTypeLookup = {}
-
-    --------------------------------------------------------------------------------
     -- Request a list of WebSocket Commands:
     --------------------------------------------------------------------------------
-    registerAction("RequestCommands", function(data)
-        for pluginType,_ in pairs(plugins.types) do
-
-            --------------------------------------------------------------------------------
-            -- Get a list of plugins:
-            --------------------------------------------------------------------------------
-            local pluginIDs = {}
-            local list = fcp:plugins():ofType(pluginType)
-            if list then
-                for _,plugin in ipairs(list) do
-                    if plugin.name then
-                        local category = plugin.category or "none"
-                        local theme = plugin.theme or "none"
-                        local name = plugin.name
-                        local id = name .. "." .. category .. "." .. theme
-
-                        --------------------------------------------------------------------------------
-                        -- Save the ID and Plugin Name to send back to Loupedeck:
-                        --------------------------------------------------------------------------------
-                        pluginIDs[id] = name
-
-                        --------------------------------------------------------------------------------
-                        -- Save a lookup table for execution:
-                        --------------------------------------------------------------------------------
-                        fcpPluginsLookup[id] = copy(plugin)
-                        fcpPluginsTypeLookup[id] = pluginType
-                    end
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Send a WebSocket Message back to Loupedeck:
-            --------------------------------------------------------------------------------
-            local message = {
-                ["MessageType"] = "UpdateCommands",
-                ["ActionName"] = "FCPPlugin." .. pluginType,
-                ["ActionValue"] = json.encode(pluginIDs),
-            }
-            local encodedMessage = json.encode(message, true)
-
-            --log.df("encodedMessage: %s", encodedMessage)
-            mod.manager.sendMessage(encodedMessage)
-
-        end
-    end)
+    registerAction("RequestCommands", requestCommands)
 
     --------------------------------------------------------------------------------
     -- Apply a WebSocket Command:
     --------------------------------------------------------------------------------
-    registerAction("ApplyWebSocketCommand", function(data)
-        log.df("ApplyWebSocketCommand: %s", data)
-        local id = data.actionValue
-        local actionData = fcpPluginsLookup[id]
-        local pluginType = fcpPluginsTypeLookup[id]
-
-        fcpPlugins[pluginType].apply(actionData)
-    end)
-
-
---[[
-
-
-        --------------------------------------------------------------------------------
-        -- Tell Loupedeck App to update the hardware display:
-        --------------------------------------------------------------------------------
-        local message = {
-            ["MessageType"] = "UpdateDisplay",
-            ["ActionName"] = actionName,
-            ["ActionValue"] = tostring(slider:value()) or "?",
-        }
-        local encodedMessage = json.encode(message, true)
-
-        --log.df("encodedMessage: %s", encodedMessage)
-
-        mod.manager.sendMessage(encodedMessage)
-
-
-
-            if list then
-                for _,plugin in ipairs(list) do
-
-                    local icon
-                    if ICONS[pluginType] then
-                        icon = ICONS[pluginType]
-                    end
-
-                    local subText = i18n(pluginType .. "_group")
-                    local category = "none"
-                    if plugin.category then
-                        subText = subText..": "..plugin.category
-                        category = plugin.category
-                    end
-                    local theme = "none"
-                    if plugin.theme then
-                        theme = plugin.theme
-                        subText = subText.." ("..plugin.theme..")"
-                    end
-                    local name = plugin.name or ("[" .. i18n("unknown") .. "]")
-                    choices:add(name)
-                        :subText(subText)
-                        :params(plugin)
-                        :image(icon)
-                        :id(GROUP .. "_" .. pluginType .. "_" .. name .. "_" .. category .. "_" .. theme)
-                end
-            end
-            --]]
+    registerAction("ApplyWebSocketCommand", applyCommand)
 
     --------------------------------------------------------------------------------
     -- Move Playhead using Workflow Extension:
     --------------------------------------------------------------------------------
-    registerAction("Timeline.Playhead", function(data)
-        if data.actionType == "turn" then
-            if data.actionValue > 0 then
-                mod._workflowExtension.incrementPlayhead(data.actionValue)
-            else
-                mod._workflowExtension.decrementPlayhead(math.abs(data.actionValue))
-            end
-        elseif data.actionType == "press" then
-            mod._workflowExtension.movePlayheadToSeconds(0)
-        end
-    end)
+    registerAction("Timeline.Playhead", makePlayheadHandler("Timeline.Playhead", 1))
+    local playRates = {2, 4, 8, 12, 16, 20}
+    for _, playRate in pairs(playRates) do
+        registerAction("Timeline.PlayheadX" .. playRate, makePlayheadHandler("Timeline.PlayheadX" .. playRate, playRate))
+    end
 
     --------------------------------------------------------------------------------
     -- Jog:
     --------------------------------------------------------------------------------
+    -- TODO:
+    --[[
     local timeline = fcp:timeline()
     registerAction("Timeline.Jog", function(data)
         if data.operation == "+" then
@@ -949,10 +943,13 @@ function mod._registerActions()
             end
         end
     end)
+    --]]
 
     --------------------------------------------------------------------------------
     -- Nudge:
     --------------------------------------------------------------------------------
+    -- TODO:
+    --[[
     registerAction("Timeline.Nudge", function(data)
         if data.operation == "+" then
             if not timeline:isFocused() then
@@ -969,15 +966,16 @@ function mod._registerActions()
             end
         end
     end)
+    --]]
 
     --------------------------------------------------------------------------------
     -- Timeline:
     --------------------------------------------------------------------------------
-    registerAction("Timeline.Zoom", makeTimelineZoomHandler())
+    registerAction("Timeline.Zoom", makeTimelineZoomHandler("Timeline.Zoom"))
     registerAction("Timeline.Clip Height", makeTimelineClipHeightHandler())
 
     --------------------------------------------------------------------------------
-    -- Colour Wheel Controls:
+    -- Colour Wheel Controls for Touch Wheel:
     --------------------------------------------------------------------------------
     local colourWheels = {
         { control = fcp.inspector.color.colorWheels.master,       id = "Global" },
@@ -989,10 +987,9 @@ function mod._registerActions()
         registerAction("FCP " .. v.id, makeLoupedeckColorWheelHandler(function() return v.control end))
     end
 
-
-    -- TODO: Reimplement all of the below for knob usage:
-
-    --[[
+    --------------------------------------------------------------------------------
+    -- Colour Wheel Controls for Knobs:
+    --------------------------------------------------------------------------------
     local colourWheels = {
         { control = fcp.inspector.color.colorWheels.master,       id = "Master" },
         { control = fcp.inspector.color.colorWheels.shadows,      id = "Shadows" },
@@ -1000,99 +997,45 @@ function mod._registerActions()
         { control = fcp.inspector.color.colorWheels.highlights,   id = "Highlights" },
     }
     for _, v in pairs(colourWheels) do
-        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Vertical", makeWheelHandler(function() return v.control end, true))
-        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Horizontal", makeWheelHandler(function() return v.control end, false))
+        registerAction("Color Wheels." .. v.id .. ".Vertical", makeWheelHandler(function() return v.control end, true))
+        registerAction("Color Wheels." .. v.id .. ".Horizontal", makeWheelHandler(function() return v.control end, false))
 
-        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Saturation", makeSaturationHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Brightness", makeBrightnessHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. ".Saturation", makeSaturationHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. ".Brightness", makeBrightnessHandler(function() return v.control end))
 
-        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Reset", makeResetColorWheelHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. ".Reset", makeResetColorWheelHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. ".Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
     end
 
-    registerAction("Color Wheels.Temperature", makeSliderHandler(function() return fcp.inspector.color.colorWheels.temperatureSlider end))
-    registerAction("Color Wheels.Tint", makeSliderHandler(function() return fcp.inspector.color.colorWheels.tintSlider end))
-    registerAction("Color Wheels.Hue", makeSliderHandler(function() return fcp.inspector.color.colorWheels.hueTextField end))
-    registerAction("Color Wheels.Mix", makeSliderHandler(function() return fcp.inspector.color.colorWheels.mixSlider end))
-
+    registerAction("Color Wheels.Temperature", makeSliderHandler(function() return fcp.inspector.color.colorWheels.temperatureSlider end, "Color Wheels.Temperature", 5000))
+    registerAction("Color Wheels.Tint", makeSliderHandler(function() return fcp.inspector.color.colorWheels.tintSlider end, "Color Wheels.Tint", 0))
+    registerAction("Color Wheels.Hue", makeSliderHandler(function() return fcp.inspector.color.colorWheels.hueTextField end, "Color Wheels.Hue", 0))
+    registerAction("Color Wheels.Mix", makeSliderHandler(function() return fcp.inspector.color.colorWheels.mixSlider end, "Color Wheels.Mix", 1, 100))
     registerAction("Color Wheels.Contrast", makeContrastWheelHandler())
-    --]]
-
-
-    --[[
-    local function makeWheelHandler(wheelFinderFn, vertical)
-        local absolute
-        local wheelRight = 0
-        local wheelUp = 0
-        local wheel = wheelFinderFn()
-
-        local updateUI = deferred.new(DEFER_VALUE):action(function()
-            if wheel:isShowing() then
-                if absolute then
-                    wheel:colorOrientation(absolute)
-                    absolute = nil
-                else
-                    local current = wheel:colorOrientation()
-                    current.right = current.right + wheelRight
-                    current.up = current.up + wheelUp
-                    wheel:colorOrientation(current)
-                    wheelRight = 0
-                    wheelUp = 0
-                end
-            else
-                wheel:show()
-            end
-        end)
-
-        return function(data)
-            if data.operation == "+" then
-                local increment = data.params and data.params[1]
-                if vertical then
-                    wheelUp = wheelUp + increment
-                else
-                    wheelRight = wheelRight + increment
-                end
-                updateUI()
-            elseif data.operation == "=" then
-                local value = data.params and data.params[1]
-                local current = wheel:colorOrientation()
-                if vertical then
-                    current.up = value
-                else
-                    current.right = value
-                end
-                absolute = copy(current)
-                updateUI()
-            end
-        end
-    end
---]]
-
---fcp.inspector.color.colorWheels.shadows
 
     --------------------------------------------------------------------------------
     -- Color Board Controls:
     --------------------------------------------------------------------------------
     local colourBoards = {
-        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color.Color Master (Angle)",            angle = true },
-        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color.Color Shadows (Angle)",           angle = true },
-        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color.Color Midtones (Angle)",          angle = true },
-        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color.Color Highlights (Angle)",        angle = true },
+        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color Master (Angle)",            angle = true },
+        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color Shadows (Angle)",           angle = true },
+        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color Midtones (Angle)",          angle = true },
+        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color Highlights (Angle)",        angle = true },
 
-        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color.Color Master (Percentage)" },
-        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color.Color Shadows (Percentage)" },
-        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color.Color Midtones (Percentage)" },
-        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color.Color Highlights (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color Master (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color Shadows (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color Midtones (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color Highlights (Percentage)" },
 
-        { control = fcp.inspector.color.colorBoard.saturation.master,       id = "Saturation.Saturation Master" },
-        { control = fcp.inspector.color.colorBoard.saturation.shadows,      id = "Saturation.Saturation Shadows" },
-        { control = fcp.inspector.color.colorBoard.saturation.midtones,     id = "Saturation.Saturation Midtones" },
-        { control = fcp.inspector.color.colorBoard.saturation.highlights,   id = "Saturation.Saturation Highlights" },
+        { control = fcp.inspector.color.colorBoard.saturation.master,       id = "Saturation Master" },
+        { control = fcp.inspector.color.colorBoard.saturation.shadows,      id = "Saturation Shadows" },
+        { control = fcp.inspector.color.colorBoard.saturation.midtones,     id = "Saturation Midtones" },
+        { control = fcp.inspector.color.colorBoard.saturation.highlights,   id = "Saturation Highlights" },
 
-        { control = fcp.inspector.color.colorBoard.exposure.master,         id = "Exposure.Exposure Master" },
-        { control = fcp.inspector.color.colorBoard.exposure.shadows,        id = "Exposure.Exposure Shadows" },
-        { control = fcp.inspector.color.colorBoard.exposure.midtones,       id = "Exposure.Exposure Midtones" },
-        { control = fcp.inspector.color.colorBoard.exposure.highlights,     id = "Exposure.Exposure Highlights" },
+        { control = fcp.inspector.color.colorBoard.exposure.master,         id = "Exposure Master" },
+        { control = fcp.inspector.color.colorBoard.exposure.shadows,        id = "Exposure Shadows" },
+        { control = fcp.inspector.color.colorBoard.exposure.midtones,       id = "Exposure Midtones" },
+        { control = fcp.inspector.color.colorBoard.exposure.highlights,     id = "Exposure Highlights" },
     }
     for _, v in pairs(colourBoards) do
         registerAction("Color Board." .. v.id, makeColourBoardHandler(function() return v.control end, v.angle))
@@ -1102,25 +1045,25 @@ function mod._registerActions()
     -- Video Controls:
     --------------------------------------------------------------------------------
     do
-        registerAction("Video Inspector.Compositing.Opacity",       makeSliderHandler(function() return fcp.inspector.video.compositing():opacity() end,    "Video Inspector.Compositing.Opacity", 100))
+        registerAction("Video Inspector.Compositing.Opacity",       makeSliderHandler(function() return fcp.inspector.video.compositing():opacity() end,    "Video Inspector.Compositing.Opacity",      100))
 
-        registerAction("Video Inspector.Transform.Position X",      makeSliderHandler(function() return fcp.inspector.video.transform():position().x end,   "Video Inspector.Transform.Position X", 0))
-        registerAction("Video Inspector.Transform.Position Y",      makeSliderHandler(function() return fcp.inspector.video.transform():position().y end,   "Video Inspector.Transform.Position Y", 0))
+        registerAction("Video Inspector.Transform.Position X",      makeSliderHandler(function() return fcp.inspector.video.transform():position().x end,   "Video Inspector.Transform.Position X",     0))
+        registerAction("Video Inspector.Transform.Position Y",      makeSliderHandler(function() return fcp.inspector.video.transform():position().y end,   "Video Inspector.Transform.Position Y",     0))
 
-        registerAction("Video Inspector.Transform.Rotation", makeSliderHandler(function() return fcp.inspector.video.transform():rotation() end))
+        registerAction("Video Inspector.Transform.Rotation",        makeSliderHandler(function() return fcp.inspector.video.transform():rotation() end,     "Video Inspector.Transform.Rotation",       0))
 
-        registerAction("Video Inspector.Transform.Scale (All)", makeSliderHandler(function() return fcp.inspector.video.transform():scaleAll() end))
+        registerAction("Video Inspector.Transform.Scale (All)",     makeSliderHandler(function() return fcp.inspector.video.transform():scaleAll() end,     "Video Inspector.Transform.Scale (All)",    100))
 
-        registerAction("Video Inspector.Transform.Scale X", makeSliderHandler(function() return fcp.inspector.video.transform():scaleX() end))
-        registerAction("Video Inspector.Transform.Scale Y", makeSliderHandler(function() return fcp.inspector.video.transform():scaleY() end))
+        registerAction("Video Inspector.Transform.Scale X",         makeSliderHandler(function() return fcp.inspector.video.transform():scaleX() end,       "Video Inspector.Transform.Scale X",        100))
+        registerAction("Video Inspector.Transform.Scale Y",         makeSliderHandler(function() return fcp.inspector.video.transform():scaleY() end,       "Video Inspector.Transform.Scale Y",        100))
 
-        registerAction("Video Inspector.Transform.Anchor X", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().x end))
-        registerAction("Video Inspector.Transform.Anchor Y", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().y end))
+        registerAction("Video Inspector.Transform.Anchor X",        makeSliderHandler(function() return fcp.inspector.video.transform():anchor().x end,     "Video Inspector.Transform.Anchor X",       0))
+        registerAction("Video Inspector.Transform.Anchor Y",        makeSliderHandler(function() return fcp.inspector.video.transform():anchor().y end,     "Video Inspector.Transform.Anchor Y",       0))
 
-        registerAction("Video Inspector.Crop.Crop Left", makeSliderHandler(function() return fcp.inspector.video.crop():left() end))
-        registerAction("Video Inspector.Crop.Crop Right", makeSliderHandler(function() return fcp.inspector.video.crop():right() end))
-        registerAction("Video Inspector.Crop.Crop Top", makeSliderHandler(function() return fcp.inspector.video.crop():top() end))
-        registerAction("Video Inspector.Crop.Crop Bottom", makeSliderHandler(function() return fcp.inspector.video.crop():bottom() end))
+        registerAction("Video Inspector.Crop.Crop Left",            makeSliderHandler(function() return fcp.inspector.video.crop():left() end,              "Video Inspector.Crop.Crop Left",           0))
+        registerAction("Video Inspector.Crop.Crop Right",           makeSliderHandler(function() return fcp.inspector.video.crop():right() end,             "Video Inspector.Crop.Crop Right",          0))
+        registerAction("Video Inspector.Crop.Crop Top",             makeSliderHandler(function() return fcp.inspector.video.crop():top() end,               "Video Inspector.Crop.Crop Top",            0))
+        registerAction("Video Inspector.Crop.Crop Bottom",          makeSliderHandler(function() return fcp.inspector.video.crop():bottom() end,            "Video Inspector.Crop.Crop Bottom",         0))
 
         for _, v in pairs(fcp.inspector.video.BLEND_MODES) do
             if v.flexoID then
@@ -1129,10 +1072,19 @@ function mod._registerActions()
         end
     end
 
+    --[[
+    local fcp = cp.apple.finalcutpro
+    for _, v in pairs(fcp.inspector.video.BLEND_MODES) do
+        if v.flexoID then
+            print(fcp:string(v.flexoID, "en"))
+        end
+    end
+    --]]
+
     --------------------------------------------------------------------------------
     -- Audio Controls:
     --------------------------------------------------------------------------------
-    registerAction("Audio Inspector.Volume", makeSliderHandler(function() return fcp.inspector.audio:volume() end))
+    registerAction("Audio Inspector.Volume", makeSliderHandler(function() return fcp.inspector.audio:volume() end, "Audio Inspector.Volume", 0, 10))
 
     --------------------------------------------------------------------------------
     -- Menu Items:
@@ -2176,6 +2128,20 @@ function plugin.init(deps)
     mod._audioeffects       = deps.audioeffects
     mod._videoeffects       = deps.videoeffects
     mod._workflowExtension  = deps.workflowExtension
+
+    --------------------------------------------------------------------------------
+    -- Setup Final Cut Pro Plugins:
+    --------------------------------------------------------------------------------
+    mod.fcpPluginsLookup = {}
+    mod.fcpPluginsTypeLookup = {}
+
+    mod.fcpPlugins = {
+        [plugins.types.generator]       = mod._generators,
+        [plugins.types.title]           = mod._titles,
+        [plugins.types.transition]      = mod._transitions,
+        [plugins.types.audioEffect]     = mod._audioeffects,
+        [plugins.types.videoEffect]     = mod._videoeffects,
+    }
 
     --------------------------------------------------------------------------------
     -- Add actions:
