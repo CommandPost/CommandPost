@@ -273,6 +273,20 @@ return describe "cp.fn.table" {
         end),
     },
 
+    context "slice" {
+        it "can slice a table with a start index"
+        :doing(function()
+            local result = fntable.slice(2)({1, 2, 3, 4, 5})
+            expect(result):is({2, 3, 4, 5})
+        end),
+
+        it "can slice a table with a start and count"
+        :doing(function()
+            local result = fntable.slice(2, 3)({1, 2, 3, 4, 5})
+            expect(result):is({2, 3, 4})
+        end),
+    },
+
     context "sort" {
         it "can sort an unsorted table of strings"
         :doing(function()

@@ -9,6 +9,7 @@ local require           = require
 local cpfn              = require "cp.fn"
 local cpfnargs          = require "cp.fn.args"
 local is                = require "cp.is"
+local slice             = require "cp.slice"
 
 local LazyList          = require "cp.collect.LazyList"
 
@@ -17,6 +18,7 @@ local unpackArgs        = cpfnargs.unpack
 
 local insert            = table.insert
 local pack, unpack      = table.pack, table.unpack
+local format            = string.format
 
 local mod = {}
 
@@ -331,6 +333,26 @@ function mod.size(t)
     return #t
 end
 
+--- cp.fn.table.slice(start, [count]) -> function(table) -> table
+--- Function
+--- Returns a function that accepts a table and returns a slice of the table.
+---
+--- Parameters:
+---  * start - The starting index of the slice.
+---  * count - The number of items to include in the slice. If not provided, the slice will include all items from the start index.
+---
+--- Returns:
+---  * A function.
+---
+--- Notes:
+---  * The returned function will wrap the table passed in, and updates to the original table will affect the slice.
+---  * Example usage: `fn.table.slice(2, 3)({1,2,3,4,5})` -- returns `{2,3,4}`
+function mod.slice(start, count)
+    return function(t)
+        return slice.new(t, start, count)
+    end
+end
+
 --- cp.fn.table.sort(...) -> function(table) -> table
 --- Function
 --- A combinator that returns a function that accepts a table and returns a new table, sorted with the compare functions.
@@ -366,6 +388,9 @@ end
 --- Returns:
 ---  * A function that accepts a table to split and returns a table of tables, followed by a table of splitter values
 function mod.split(predicate)
+    if type(predicate) ~= "function" then
+        error("predicate must be a function", 2)
+    end
     return function(t)
         local results = {}
         local current = {}
