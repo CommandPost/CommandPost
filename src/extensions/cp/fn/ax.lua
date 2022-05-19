@@ -460,6 +460,9 @@ function mod.topToBottomBaseAligned(a, b)
     end
 
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    if aFrame == nil or bFrame == nil then
+        return false
+    end
     local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
     return aBottom < bBottom
 end
@@ -484,6 +487,10 @@ function mod.bottomToTopBaseAligned(a, b)
     end
 
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    if aFrame == nil or bFrame == nil then
+        return false
+    end
+
     local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
     return aBottom > bBottom
 end
