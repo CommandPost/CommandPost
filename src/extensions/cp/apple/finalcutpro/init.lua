@@ -111,6 +111,8 @@ local MediaImport								= require "cp.apple.finalcutpro.import.MediaImport"
 local PreferencesWindow							= require "cp.apple.finalcutpro.prefs.PreferencesWindow"
 local FindAndReplaceTitleText	                = require "cp.apple.finalcutpro.main.FindAndReplaceTitleText"
 
+local CommandPostWorkflowExtension              = require "cp.apple.finalcutpro.workflowextensions.CommandPostWindow"
+
 local v											= require "semver"
 local class                                     = require "middleclass"
 local lazy                                      = require "cp.lazy"
@@ -130,6 +132,7 @@ local pathToBookmark                            = fs.pathToBookmark
 local dirFiles                                  = tools.dirFiles
 local doesDirectoryExist                        = tools.doesDirectoryExist
 local stringToHexString                         = tools.stringToHexString
+local tableContains                             = tools.tableContains
 
 local childMatching                             = axutils.childMatching
 local execute                                   = _G["hs"].execute
@@ -640,7 +643,7 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.workflowExtensions() -> table
+--- cp.apple.finalcutpro.workflowExtensionNames() -> table
 --- Function
 --- Gets the names of all the installed Workflow Extensions.
 ---
@@ -649,8 +652,12 @@ end
 ---
 --- Returns:
 ---  * A table of Workflow Extension names
-function fcp.workflowExtensions()
+function fcp.workflowExtensionNames()
     local result = {}
+
+    ----------------------------------------------------------------------------------------
+    -- The original Workflow Extension format (.pluginkit)
+    ----------------------------------------------------------------------------------------
     local output, status = execute("pluginkit -m -v -p FxPlug")
     if status then
         local p = tools.lines(output)
@@ -673,7 +680,43 @@ function fcp.workflowExtensions()
             end
         end
     end
+
+    ----------------------------------------------------------------------------------------
+    -- Modern Workflow Extensions (.appex):
+    ----------------------------------------------------------------------------------------
+    local output, status = execute("pluginkit -m -v -p com.apple.FinalCut.WorkflowExtension")
+    if status then
+        local p = tools.lines(output)
+        if p then
+            for _, plugin in pairs(p) do
+                local params = tools.split(plugin, "\t")
+                local path = params[4]
+                if path then
+                    if tools.doesDirectoryExist(path) then
+                        local plistPath = path .. "/Contents/Info.plist"
+                        local plistData = plist.read(plistPath)
+                        if plistData then
+                            local pluginName = plistData.CFBundleName or plistData.CFBundleDisplayName
+                            if pluginName then
+                                if not tableContains(pluginName) then
+                                    table.insert(result, pluginName)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     return result
+end
+
+--- cp.apple.finalcutpro.commandPostWorkflowExtension <CommandPostWindow>
+--- Field
+--- The CommandPost Workflow Extension window.
+function fcp.lazy.value:commandPostWorkflowExtension()
+    return CommandPostWorkflowExtension(self)
 end
 
 ----------------------------------------------------------------------------------------

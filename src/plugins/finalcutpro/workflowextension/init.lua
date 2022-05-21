@@ -37,8 +37,10 @@ local require           = require
 local log               = require "hs.logger".new "workflowextension"
 
 local socket            = require "hs.socket"
+local task              = require "hs.task"
 local timer             = require "hs.timer"
 
+local config            = require "cp.config"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
@@ -102,6 +104,12 @@ mod.connected = false
 -- Has a pong been received yet?
 local pongRecieved = false
 
+
+--- plugins.finalcutpro.workflowextension.lastPlayheadPosition -> string
+--- Variable
+--- The last playhead position.
+mod.lastPlayheadPosition = nil
+
 -- commandHandler -> table
 -- Variable
 -- A table that contains all the functions that are triggered by the Workflow Extension commands.
@@ -119,7 +127,16 @@ local commandHandler = {
                     mod.connected = true
                     pongRecieved = true
                 end,
-    ["PLHD"] =  function()
+    ["PLHD"] =  function(data)
+                    --------------------------------------------------------------------------------
+                    -- Update lastPlayheadPosition:
+                    --------------------------------------------------------------------------------
+                    if data then
+                        local trimmedData = data:sub(6)
+                        mod.lastPlayheadPosition = trimmedData and trimmedData:gsub("[\n\r]", "")
+                    end
+                    --log.df("mod.lastPlayheadPosition: '%s'", mod.lastPlayheadPosition)
+
                     --------------------------------------------------------------------------------
                     -- Let's update the isPlaying prop in the unlikely case that we haven't already
                     -- updated it via other means at this point in time:
@@ -200,7 +217,7 @@ function mod.callback(data)
     --------------------------------------------------------------------------------
     local command = data and data:sub(1, 4)
     if commandHandler[command] then
-        commandHandler[command]()
+        commandHandler[command](data)
     else
         log.ef("[Workflow Extension] Unknown Command Received: %s", command)
     end
@@ -273,6 +290,9 @@ function mod.setupClient()
 
     --------------------------------------------------------------------------------
     -- Setup a connection timer if the initial connection fails:
+    --
+    -- NOTE: This doesn't automatically start - we'll wait until an action is
+    --       triggered.
     --------------------------------------------------------------------------------
     mod.connectionTimer = timer.new(CONNECTION_TIMER_RETRY_IN_SECONDS, function()
         if not mod.socketClient:connected() and fcp.isFrontmost() then
@@ -290,9 +310,7 @@ function mod.setupClient()
             --------------------------------------------------------------------------------
             -- Make sure the Workflow Extension is open:
             --------------------------------------------------------------------------------
-            if fcp:isEnabled({"Window", "Extensions", "CommandPost"}) then
-                fcp:doSelectMenu({"Window", "Extensions", "CommandPost"}):Now()
-            end
+            mod._commandPostWorkflowExtension:show()
 
             --------------------------------------------------------------------------------
             -- Try and connect again:
@@ -548,18 +566,63 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     mod.setupActions()
 
+    --------------------------------------------------------------------------------
+    -- Watch for the Workflow Extension Window:
+    --------------------------------------------------------------------------------
+    mod._commandPostWorkflowExtension = fcp.commandPostWorkflowExtension
+    mod._commandPostWorkflowExtension.isShowing:watch(function(value)
+        if value then
+            --------------------------------------------------------------------------------
+            -- Make the Workflow Extension small and move as far off screen as we can:
+            --------------------------------------------------------------------------------
+            mod._commandPostWorkflowExtension:size({h=0, w=0})
+            mod._commandPostWorkflowExtension:position({x=10000000,y=10000000})
+
+            --------------------------------------------------------------------------------
+            -- Connect to the WebSocket Server:
+            --------------------------------------------------------------------------------
+            mod.connect()
+        else
+            --------------------------------------------------------------------------------
+            -- Disconnect from the WebSocket Server:
+            --------------------------------------------------------------------------------
+            mod.disconnect()
+        end
+    end)
+
     return mod
 end
 
 function plugin.postInit()
     --------------------------------------------------------------------------------
-    -- Forcefully load the Workflow Extension:
+    -- Forcefully load the Workflow Extension (once only):
+    --
+    -- NOTE: Apple says that in a "future releases of the OS, using the
+    -- “pluginkit -a” and “pluginkit -r” to add and remove plug-ins will
+    -- stop working. We currently don't have a better workaround sadly.
     --------------------------------------------------------------------------------
-    if not os.execute([[pluginkit -a "]] .. hs.processInfo.bundlePath .. [[/Contents/PlugIns/CommandPost.appex"]]) then
-        log.ef("[Workflow Extension] Failed to add via PlugInKit.")
-    else
-        log.df("[Workflow Extension] Successfully added via PlugInKit.")
+    if not fcp.commandPostWorkflowExtension.isShowing() then
+        local hasWorkflowExtensionBeenAdded = config.prop("workflowExtensionAdded", false)
+        if not hasWorkflowExtensionBeenAdded then
+            task.new("/usr/bin/pluginkit", function(exitCode, _, _)
+                if exitCode == 0 then
+                    log.df("[Workflow Extension] Successfully installed.")
+                else
+                    log.df("[Workflow Extension] Failed to install.")
+                end
+            end, {"-a", hs.processInfo.bundlePath .. "/Contents/PlugIns/CommandPost.appex"}):start()
+            hasWorkflowExtensionBeenAdded(true)
+        end
     end
+
+    --------------------------------------------------------------------------------
+    -- Shutdown Callback (disconnect on restart/quit):
+    --------------------------------------------------------------------------------
+    config.shutdownCallback:new("workflowExtension", function()
+        --log.df("[Workflow Extension] Disconnecting from the Workflow Extension")
+        mod.disconnect()
+    end)
+
 end
 
 return plugin

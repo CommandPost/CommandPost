@@ -16,6 +16,7 @@ local deferred          = require "cp.deferred"
 local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
+local just              = require "cp.just"
 local notifier          = require "cp.ui.notifier"
 local plugins           = require "cp.apple.finalcutpro.plugins"
 local tools             = require "cp.tools"
@@ -1134,15 +1135,31 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     -- Full Screen Toggle:
     --------------------------------------------------------------------------------
+    local lastPlayheadPosition
     registerAction("Macros.Toggle Fullscreen", function()
         if fcp.fullScreenPlayer:isShowing() then
             fcp:keyStroke({}, "escape")
         else
+            just.doUntil(function() return mod._workflowExtension.isWorkflowExtensionConnected() end, 5)
+
+            lastPlayheadPosition = mod._workflowExtension.lastPlayheadPosition
+            if lastPlayheadPosition == nil then
+                log.ef("Failed to get last playhead position")
+                tools.playErrorSound()
+                return
+            end
+
+            log.df("lastPlayheadPosition: %s", lastPlayheadPosition)
             fcp:doSelectMenu({"View", "Playback", "Play Full Screen"}):Then(function()
                 if doUntil(function()
                     return fcp.fullScreenPlayer:isShowing()
                 end, 5, 0.1) then
                     fcp:keyStroke({}, "space")
+                    if lastPlayheadPosition then
+                        log.df("moving to: %s", lastPlayheadPosition)
+                        mod._workflowExtension.movePlayheadToSeconds(lastPlayheadPosition)
+                        mod._workflowExtension.movePlayheadToSeconds(lastPlayheadPosition)
+                    end
                     return
                 end
             end):Now()
