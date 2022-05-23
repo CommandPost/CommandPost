@@ -86,13 +86,13 @@ local function makeContrastWheelHandler()
     end)
 
     return function(data)
-        if data.operation == "+" then
+        if data.actionType == "turn" then
             local actionValue = data.actionValue
             if actionValue then
                 colorWheelContrastValue = colorWheelContrastValue + (actionValue/COLOR_WHEELS_NORMAL_RANGE)
                 updateUI()
             end
-        elseif data.operation == "press" then
+        elseif data.actionType == "press" then
             colorWheels.shadows.brightness:value(0)
             colorWheels.highlights.brightness:value(0)
         end
