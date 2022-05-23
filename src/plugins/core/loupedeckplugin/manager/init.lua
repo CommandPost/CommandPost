@@ -103,6 +103,7 @@ local callbackFn = {
     end,
     ["received"] = function(message)
         local decodedData = message and json.decode(message)
+        --log.df("decodedData: %s", hs.inspect(decodedData))
         local actionName = decodedData and decodedData.actionName
         local action = actionName and mod.performAction[actionName]
         if action then

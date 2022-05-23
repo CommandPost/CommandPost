@@ -164,10 +164,11 @@ end
 ---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
 ---  * character - A string containing a character to be emitted
 ---  * app - The optional `hs.application` you want to target
+---  * proper - Use the "proper" method as per Apple's documentation (defaults to `false`)
 ---
 --- Returns:
 ---  * None
-function tools.keyStroke(modifiers, character, app)
+function tools.keyStroke(modifiers, character, app, proper)
     modifiers = modifiers or {}
 
     local cleanedModifiers = {}
@@ -181,42 +182,45 @@ function tools.keyStroke(modifiers, character, app)
         end
     end
 
-    newKeyEvent(cleanedModifiers, character, true):post(app)
-    newKeyEvent(cleanedModifiers, character, false):post(app)
+    if not proper then
+        newKeyEvent(cleanedModifiers, character, true):post(app)
+        newKeyEvent(cleanedModifiers, character, false):post(app)
+    else
+        --------------------------------------------------------------------------------
+        -- NOTE TO FUTURE CHRIS:
+        -- According to the Hammerspoon documentation, "the proper way to perform a
+        -- keypress with modifiers is through multiple key events", which we were doing
+        -- below. However this causes weird issues, where keypresses weren't doing
+        -- what they were supposed to, etc. I ASSUME it was just a timing issue.
+        -- As of 5th April 2022, the above seems to work as intended on macOS 12.3
+        -- and Final Cut Pro 10.6.1.
+        --
+        -- On 23rd May 2022, Chris realised that some shortcuts (i.e. CONTROL+LEFT)
+        -- weren't properly triggering macOS shortcuts (i.e. "Move Left a Space"), so
+        -- I've brought this back as an optional feature.
+        --------------------------------------------------------------------------------
+        local cleanedModifiers = {}
+        for _, modifier in pairs(modifiers) do
+            if modifier == "command" then modifier = "cmd" end
+            if modifier == "option" then modifier = "alt" end
+            if modifier == "control" then modifier = "ctrl" end
+            if modifier == "function" then modifier = "fn" end
+            if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+                table.insert(cleanedModifiers, map[modifier])
+            end
+        end
 
-    --------------------------------------------------------------------------------
-    -- NOTE TO FUTURE CHRIS:
-    -- According to the Hammerspoon documentation, "the proper way to perform a
-    -- keypress with modifiers is through multiple key events", which we were doing
-    -- below. However this causes weird issues, where keypresses weren't doing
-    -- what they were supposed to, etc. I ASSUME it was just a timing issue.
-    -- As of 5th April 2022, the above seems to work as intended on macOS 12.3
-    -- and Final Cut Pro 10.6.1.
-    --------------------------------------------------------------------------------
+        for _, modifier in pairs(cleanedModifiers) do
+            newKeyEvent(modifier, true):post(app)
+        end
 
-    --[[
-    local cleanedModifiers = {}
-    for _, modifier in pairs(modifiers) do
-        if modifier == "command" then modifier = "cmd" end
-        if modifier == "option" then modifier = "alt" end
-        if modifier == "control" then modifier = "ctrl" end
-        if modifier == "function" then modifier = "fn" end
-        if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
-            table.insert(cleanedModifiers, map[modifier])
+        newKeyEvent(character, true):post(app)
+        newKeyEvent(character, false):post(app)
+
+        for _, modifier in pairs(cleanedModifiers) do
+            newKeyEvent(modifier, false):post(app)
         end
     end
-
-    for _, modifier in pairs(cleanedModifiers) do
-        newKeyEvent(modifier, true):post(app)
-    end
-
-    newKeyEvent(character, true):post(app)
-    newKeyEvent(character, false):post(app)
-
-    for _, modifier in pairs(cleanedModifiers) do
-        newKeyEvent(modifier, false):post(app)
-    end
-    --]]
 end
 
 --- cp.tools.pressSystemKey(key) -> none

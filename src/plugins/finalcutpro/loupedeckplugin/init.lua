@@ -27,6 +27,7 @@ local copy              = fnutils.copy
 local delayed           = timer.delayed
 local displayMessage    = dialog.displayMessage
 local doUntil           = timer.doUntil
+local playErrorSound    = tools.playErrorSound
 local tableCount        = tools.tableCount
 
 local mod = {}
@@ -831,7 +832,7 @@ local function requestCommands(data)
     end
 end
 
--- requestCommands(data) -> none
+-- applyCommand(data) -> none
 -- Function
 -- Triggered when the Loupedeck Service asks to apply a specific command.
 --
@@ -891,11 +892,12 @@ local function makePlayheadHandler(actionName, playRate)
     end
 end
 
--- makePopupSliderParameterHandler(param, options, resetIndex) -> function
+-- makePopupSliderParameterHandler(actionName, param, options, resetIndex) -> function
 -- Function
 -- Makes a handler for popups
 --
 -- Parameters:
+--  * actionName - The action name
 --  * param - The parameter
 --  * options - A table of the available options
 --  * resetIndex - Which item should be selected when resetting?
@@ -1045,6 +1047,79 @@ local function makePopupSliderParameterHandler(actionName, param, options, reset
     end
 end
 
+
+-- makeViewerColorChannelsHandler(actionName) -> function
+-- Function
+-- Makes a handler the Viewer Color Channels.
+--
+-- Parameters:
+--  * actionName - The action name
+--
+-- Returns:
+--  * A handler function
+local function makeViewerColorChannelsHandler(actionName)
+    local selectedChannel = 1
+
+    --------------------------------------------------------------------------------
+    -- NOTE: These are definitely not the write i18n codes, however they'll do
+    --       as placeholders for now. The actual string values are stored in:
+    --
+    --       /Applications/Final Cut Pro.app/Contents/Resources/en.lproj/PEPlayerContainerModule.nib
+    --
+    --------------------------------------------------------------------------------
+    local viewerChannels = {
+        [1] = "FFAllEffectTypeLabel",               -- All
+        [2] = "FFShareAlpha",                       -- Alpha
+        [3] = "VideoWaveformModeRedChannel",        -- Red
+        [4] = "VideoWaveformModeGreenChannel",      -- Green
+        [5] = "VideoWaveformModeBlueChannel"        -- Blue
+    }
+
+    local updateDisplay = function()
+        local currentChannelID = viewerChannels[selectedChannel]
+        local currentChannelName = fcp:string(currentChannelID)
+
+        --------------------------------------------------------------------------------
+        -- Tell Loupedeck App to update the hardware display:
+        --------------------------------------------------------------------------------
+        local timecode = fcp.viewer.timecode()
+        if timecode then
+            local message = {
+                ["MessageType"] = "UpdateDisplay",
+                ["ActionName"] = actionName,
+                ["ActionValue"] = currentChannelName,
+            }
+            local encodedMessage = json.encode(message, true)
+            mod.manager.sendMessage(encodedMessage)
+        end
+    end
+
+    local updateUI = delayed.new(DELAY, function()
+        local currentChannelID = viewerChannels[selectedChannel]
+        local currentChannelName = fcp:string(currentChannelID)
+        fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", currentChannelName}):Now()
+    end)
+
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+
+            if actionValue > 0 then
+                selectedChannel = selectedChannel + 1
+                if selectedChannel > 5 then selectedChannel = 1 end
+            else
+                selectedChannel = selectedChannel - 1
+                if selectedChannel < 1 then selectedChannel = 5 end
+            end
+
+            updateDisplay()
+            updateUI:start()
+        elseif data.actionType == "press" then
+            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"}):Now()
+        end
+    end
+end
+
 -- plugins.core.loupedeckplugin.manager._registerActions(manager) -> none
 -- Function
 -- A private function to register actions.
@@ -1067,14 +1142,12 @@ function mod._registerActions()
     local registerAction = mod.manager.registerAction
 
     --------------------------------------------------------------------------------
-    -- Request a list of WebSocket Commands:
+    -- Effects, Transitions, Generators & Titles:
     --------------------------------------------------------------------------------
     registerAction("RequestCommands", requestCommands)
-
-    --------------------------------------------------------------------------------
-    -- Apply a WebSocket Command:
-    --------------------------------------------------------------------------------
-    registerAction("ApplyWebSocketCommand", applyCommand)
+    for pluginType,_ in pairs(plugins.types) do
+        registerAction("FCPPlugin." .. pluginType, applyCommand)
+    end
 
     --------------------------------------------------------------------------------
     -- Move Playhead using Workflow Extension:
@@ -1086,51 +1159,9 @@ function mod._registerActions()
     end
 
     --------------------------------------------------------------------------------
-    -- Jog:
+    -- Viewer Channels:
     --------------------------------------------------------------------------------
-    -- TODO:
-    --[[
-    local timeline = fcp:timeline()
-    registerAction("Timeline.Jog", function(data)
-        if data.operation == "+" then
-            if not timeline:isFocused() then
-                fcp.menu:selectMenu({"Window", "Go To", "Timeline"})
-            end
-            if data.params[1] == -1 then
-                fcp:doShortcut("JumpToPreviousFrame"):Now()
-            elseif data.params[1] == 1 then
-                fcp:doShortcut("JumpToNextFrame"):Now()
-            elseif data.params[1] == 10 then
-                fcp:doShortcut("JumpForward10Frames"):Now()
-            elseif data.params[1] == -10 then
-                fcp:doShortcut("JumpBackward10Frames"):Now()
-            end
-        end
-    end)
-    --]]
-
-    --------------------------------------------------------------------------------
-    -- Nudge:
-    --------------------------------------------------------------------------------
-    -- TODO:
-    --[[
-    registerAction("Timeline.Nudge", function(data)
-        if data.operation == "+" then
-            if not timeline:isFocused() then
-                fcp.menu:selectMenu({"Window", "Go To", "Timeline"})
-            end
-            if data.params[1] == -1 then
-                fcp:doShortcut("NudgeLeft"):Now()
-            elseif data.params[1] == 1 then
-                fcp:doShortcut("NudgeRight"):Now()
-            elseif data.params[1] == -10 then
-                fcp:doShortcut("NudgeLeftMany"):Now()
-            elseif data.params[1] == 10 then
-                fcp:doShortcut("NudgeRightMany"):Now()
-            end
-        end
-    end)
-    --]]
+    registerAction("Viewer.Color Channels", makeViewerColorChannelsHandler("Viewer.Color Channels"))
 
     --------------------------------------------------------------------------------
     -- Full Screen Toggle:
@@ -1140,23 +1171,25 @@ function mod._registerActions()
         if fcp.fullScreenPlayer:isShowing() then
             fcp:keyStroke({}, "escape")
         else
-            just.doUntil(function() return mod._workflowExtension.isWorkflowExtensionConnected() end, 5)
-
             lastPlayheadPosition = mod._workflowExtension.lastPlayheadPosition
             if lastPlayheadPosition == nil then
-                log.ef("Failed to get last playhead position")
-                tools.playErrorSound()
+                if not mod._workflowExtension.isWorkflowExtensionConnected() then
+                    log.ef("[Loupedeck Plugin] The Workflow Extension was not running, so Toggle Fullscreen was aborted")
+                else
+                    log.ef("[Loupedeck Plugin] Failed to get the last playhead position.")
+                end
+                playErrorSound()
                 return
             end
 
-            log.df("lastPlayheadPosition: %s", lastPlayheadPosition)
+            --log.df("lastPlayheadPosition: %s", lastPlayheadPosition)
             fcp:doSelectMenu({"View", "Playback", "Play Full Screen"}):Then(function()
                 if doUntil(function()
                     return fcp.fullScreenPlayer:isShowing()
                 end, 5, 0.1) then
                     fcp:keyStroke({}, "space")
                     if lastPlayheadPosition then
-                        log.df("moving to: %s", lastPlayheadPosition)
+                        --log.df("moving to: %s", lastPlayheadPosition)
                         mod._workflowExtension.movePlayheadToSeconds(lastPlayheadPosition)
                         mod._workflowExtension.movePlayheadToSeconds(lastPlayheadPosition)
                     end
@@ -1315,6 +1348,21 @@ function mod._registerActions()
         end
     end
     --]]
+
+    --------------------------------------------------------------------------------
+    -- Distort:
+    --------------------------------------------------------------------------------
+    registerAction("Video Inspector.Distort.Bottom Left X",         makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().x end,     "Video Inspector.Distort.Bottom Left X",      0))
+    registerAction("Video Inspector.Distort.Bottom Left Y",         makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().y end,     "Video Inspector.Distort.Bottom Left Y",      0))
+
+    registerAction("Video Inspector.Distort.Bottom Right X",        makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().x end,    "Video Inspector.Distort.Bottom Right X",     0))
+    registerAction("Video Inspector.Distort.Bottom Right Y",        makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().y end,    "Video Inspector.Distort.Bottom Right Y",     0))
+
+    registerAction("Video Inspector.Distort.Top Right X",           makeSliderHandler(function() return fcp.inspector.video.distort():topRight().x end,       "Video Inspector.Distort.Top Right X",        0))
+    registerAction("Video Inspector.Distort.Top Right Y",           makeSliderHandler(function() return fcp.inspector.video.distort():topRight().y end,       "Video Inspector.Distort.Top Right Y",        0))
+
+    registerAction("Video Inspector.Distort.Top Left X",            makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().x end,        "Video Inspector.Distort.Top Left X",         0))
+    registerAction("Video Inspector.Distort.Top Left Y",            makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().y end,        "Video Inspector.Distort.Top Left Y",         0))
 
     --------------------------------------------------------------------------------
     -- Audio Controls:

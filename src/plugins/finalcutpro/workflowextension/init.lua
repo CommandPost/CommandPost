@@ -576,7 +576,7 @@ function plugin.init(deps)
             -- Make the Workflow Extension small and move as far off screen as we can:
             --------------------------------------------------------------------------------
             mod._commandPostWorkflowExtension:size({h=0, w=0})
-            mod._commandPostWorkflowExtension:position({x=10000000,y=10000000})
+            mod._commandPostWorkflowExtension:position({x=1000000000000000000000000,y=1000000000000000000000000})
 
             --------------------------------------------------------------------------------
             -- Connect to the WebSocket Server:
