@@ -18,6 +18,7 @@ local tools             = require "cp.tools"
 local semver            = require "semver"
 
 local applescript       = osascript.applescript
+local tableCount        = tools.tableCount
 
 local mod = {}
 
@@ -56,15 +57,17 @@ local function requestShortcuts()
     end
 
     --------------------------------------------------------------------------------
-    -- Send a WebSocket Message back to Loupedeck:
+    -- Send a WebSocket Message back to Loupedeck if there are shortcuts:
     --------------------------------------------------------------------------------
-    local message = {
-        ["MessageType"] = "UpdateCommands",
-        ["ActionName"] = "macOS.Shortcuts",
-        ["ActionValue"] = json.encode(shortcutsForLoupedeck),
-    }
-    local encodedMessage = json.encode(message, true)
-    mod.manager.sendMessage(encodedMessage)
+    if tableCount(shortcutsForLoupedeck) >= 1 then
+        local message = {
+            ["MessageType"] = "UpdateCommands",
+            ["ActionName"] = "macOS.Shortcuts",
+            ["ActionValue"] = json.encode(shortcutsForLoupedeck),
+        }
+        local encodedMessage = json.encode(message, true)
+        mod.manager.sendMessage(encodedMessage)
+    end
 end
 
 -- requestKeyboardMaestro() -> function
@@ -101,15 +104,52 @@ local function requestKeyboardMaestro()
     end
 
     --------------------------------------------------------------------------------
-    -- Send a WebSocket Message back to Loupedeck:
+    -- Send a WebSocket Message back to Loupedeck if there are macros:
     --------------------------------------------------------------------------------
-    local message = {
-        ["MessageType"] = "UpdateCommands",
-        ["ActionName"] = "KeyboardMaestro",
-        ["ActionValue"] = json.encode(keyboardMaestroMacros),
-    }
-    local encodedMessage = json.encode(message, true)
-    mod.manager.sendMessage(encodedMessage)
+    if tableCount(keyboardMaestroMacros) >= 1 then
+        local message = {
+            ["MessageType"] = "UpdateCommands",
+            ["ActionName"] = "KeyboardMaestro",
+            ["ActionValue"] = json.encode(keyboardMaestroMacros),
+        }
+        local encodedMessage = json.encode(message, true)
+        mod.manager.sendMessage(encodedMessage)
+    end
+end
+
+-- triggerShortcut(data) -> function
+-- Function
+-- Triggers a macOS shortcut.
+--
+-- Parameters:
+--  * data - The data from the Loupedeck Plugin
+--
+-- Returns:
+--  * None
+local function triggerShortcut(data)
+    local name = data.actionValue
+    if name then
+        shortcuts.run(name)
+    end
+end
+
+-- triggerKeyboardMaestroMacro(data) -> function
+-- Function
+-- Triggers a Keyboard Maestro Macro.
+--
+-- Parameters:
+--  * data - The data from the Loupedeck Plugin
+--
+-- Returns:
+--  * None
+local function triggerKeyboardMaestroMacro(data)
+    local name = data.actionValue
+    local uid = name and mod.keyboardMaestroLookup[name]
+    if uid then
+        applescript([[tell application "Keyboard Maestro Engine"
+        do script "]] .. uid .. [["
+        end tell]])
+    end
 end
 
 -- plugins.core.loupedeckplugin.manager._registerActions(manager) -> none
@@ -151,12 +191,7 @@ function mod._registerActions()
     local shortcutsEnabled = config.prop("macosshortcuts.enabled", false)
     if macOSVersion >= macOSMonterey and shortcutsEnabled then
         registerAction("RequestShortcuts", requestShortcuts)
-        registerAction("macOS.Shortcuts", function(data)
-            local name = data.actionValue
-            if name then
-                shortcuts.run(name)
-            end
-        end)
+        registerAction("macOS.Shortcuts", triggerShortcut)
     end
 
     --------------------------------------------------------------------------------
@@ -164,15 +199,7 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     mod.keyboardMaestroLookup = {}
     registerAction("RequestKeyboardMaestro", requestKeyboardMaestro)
-    registerAction("KeyboardMaestro", function(data)
-        local name = data.actionValue
-        local uid = name and mod.keyboardMaestroLookup[name]
-        if uid then
-            applescript([[tell application "Keyboard Maestro Engine"
-            do script "]] .. uid .. [["
-            end tell]])
-        end
-    end)
+    registerAction("KeyboardMaestro", triggerKeyboardMaestroMacro)
 
 end
 
