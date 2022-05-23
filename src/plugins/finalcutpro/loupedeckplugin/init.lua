@@ -52,6 +52,11 @@ local COLOR_WHEELS_NORMAL_RANGE = 5000
 -- What we divide the Loupedeck value by for a normal range with the Fn key pressed.
 local COLOR_WHEELS_FN_RANGE = 1000
 
+-- COLOR_WHEELS_RGB_RANGE -> number
+-- Constant
+-- What we divide the Loupedeck value by for a normal range.
+local COLOR_WHEELS_RGB_RANGE = 1000
+
 -- BRIGHTNESS_RANGE -> number
 -- Constant
 -- What we divide the Loupedeck value by for a normal range.
@@ -141,6 +146,74 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             wheel:colorOrientation({right=0, up=0})
         end
     end
+end
+
+-- makeRGBWheelHandler(wheelFinderFn, whichColor) -> function
+-- Function
+-- Creates a 'handler' for RGB Wheel Controls.
+--
+-- Parameters:
+--  * wheelFinderFn - a function which returns the wheel object.
+--  * whichColor - "red", "green" or "blue"
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeRGBWheelHandler(wheelFinderFn, whichColor)
+
+    local wheel = wheelFinderFn()
+
+    local colorWheelRedValue = 0
+    local colorWheelGreenValue = 0
+    local colorWheelBlueValue = 0
+
+    local updateUI = deferred.new(DEFER):action(function()
+        if not wheel:isShowing() then
+            wheel:show()
+        else
+            local currentValue = wheel:colorValue()
+
+            currentValue.red = currentValue.red + colorWheelRedValue
+            currentValue.green = currentValue.green + colorWheelGreenValue
+            currentValue.blue = currentValue.blue + colorWheelBlueValue
+
+            wheel:colorValue(currentValue)
+
+            colorWheelRedValue = 0
+            colorWheelGreenValue = 0
+            colorWheelBlueValue = 0
+        end
+    end)
+
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if whichColor == "red" then
+                    colorWheelRedValue = colorWheelRedValue + (actionValue/COLOR_WHEELS_RGB_RANGE)
+                elseif whichColor == "green" then
+                    colorWheelGreenValue = colorWheelGreenValue + (actionValue/COLOR_WHEELS_RGB_RANGE)
+                elseif whichColor == "blue" then
+                    colorWheelBlueValue = colorWheelBlueValue + (actionValue/COLOR_WHEELS_RGB_RANGE)
+                end
+
+                updateUI()
+            end
+        elseif data.actionType == "press" then
+            wheel:show()
+            local currentValue = wheel:colorValue()
+
+            if whichColor == "red" then
+                currentValue.red = 0
+            elseif whichColor == "green" then
+                currentValue.green = 0
+            elseif whichColor == "blue" then
+                currentValue.blue = 0
+            end
+
+            wheel:colorValue(currentValue)
+        end
+    end
+
 end
 
 -- makeResetColorWheelHandler(puckFinderFn) -> function
@@ -1047,7 +1120,6 @@ local function makePopupSliderParameterHandler(actionName, param, options, reset
     end
 end
 
-
 -- makeViewerColorChannelsHandler(actionName) -> function
 -- Function
 -- Makes a handler the Viewer Color Channels.
@@ -1097,7 +1169,7 @@ local function makeViewerColorChannelsHandler(actionName)
     local updateUI = delayed.new(DELAY, function()
         local currentChannelID = viewerChannels[selectedChannel]
         local currentChannelName = fcp:string(currentChannelID)
-        fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", currentChannelName}):Now()
+        fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", currentChannelName}, {locale="en"}):Now()
     end)
 
     return function(data)
@@ -1115,7 +1187,104 @@ local function makeViewerColorChannelsHandler(actionName)
             updateDisplay()
             updateUI:start()
         elseif data.actionType == "press" then
-            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"}):Now()
+            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"}, {locale="en"}):Now()
+        end
+    end
+end
+
+-- makeNextPreviousMenuItemHandler(itemName) -> function
+-- Function
+-- Makes a handler for Next/Previous Menu Items.
+--
+-- Parameters:
+--  * itemName - The menu item name
+--
+-- Returns:
+--  * A handler function
+local function makeNextPreviousMenuItemHandler(itemName)
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if actionValue > 0 then
+                    fcp:doSelectMenu({"Mark", "Next", itemName}, {locale="en"}):Now()
+                else
+                    fcp:doSelectMenu({"Mark", "Previous", itemName}, {locale="en"}):Now()
+                end
+            end
+        end
+    end
+end
+
+-- makeNudgeMarkerHandler() -> function
+-- Function
+-- Makes a handler for Nudge Marker Left/Right.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A handler function
+local function makeNudgeMarkerHandler()
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if actionValue < 0 then
+                    fcp:doSelectMenu({"Mark", "Markers", "Nudge Marker Left"}, {locale="en"}):Now()
+                else
+                    fcp:doSelectMenu({"Mark", "Markers", "Nudge Marker Right"}, {locale="en"}):Now()
+                end
+            end
+        end
+    end
+end
+
+-- makeNudgeHandler() -> function
+-- Function
+-- Makes a handler for Nudge Marker Left/Right.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A handler function
+local function makeNudgeHandler()
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if actionValue < 0 then
+                    fcp:doSelectMenu({"Trim", "Nudge Left"}, {locale="en"}):Now()
+                else
+                    fcp:doSelectMenu({"Trim", "Nudge Right"}, {locale="en"}):Now()
+                end
+            end
+        end
+    end
+end
+
+-- makeShortcutAdjustment() -> function
+-- Function
+-- Makes a handler for Nudge Marker Left/Right.
+--
+-- Parameters:
+--  * upShortcut - A shortcut identifier when turning up
+--  * downShortcut - A shortcut identifier when turning down
+--
+-- Returns:
+--  * A handler function
+local function makeShortcutAdjustment(upShortcut, downShortcut)
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if actionValue > 0 then
+                    fcp:doShortcut(upShortcut):Now()
+                else
+                    fcp:doShortcut(downShortcut):Now()
+                end
+            end
         end
     end
 end
@@ -1140,6 +1309,30 @@ function mod._registerActions()
     -- Setup Dependancies:
     --------------------------------------------------------------------------------
     local registerAction = mod.manager.registerAction
+
+    --------------------------------------------------------------------------------
+    -- Mark > Previous/Next > Frame/Edit/Marker/Keyframe
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Frame", makeNextPreviousMenuItemHandler("Frame"))
+    registerAction("Timeline.Edit", makeNextPreviousMenuItemHandler("Edit"))
+    registerAction("Timeline.Marker", makeNextPreviousMenuItemHandler("Marker"))
+    registerAction("Timeline.Keyframe", makeNextPreviousMenuItemHandler("Keyframe"))
+
+    --------------------------------------------------------------------------------
+    -- Nudge Marker:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Nudge Marker", makeNudgeMarkerHandler())
+
+    --------------------------------------------------------------------------------
+    -- Nudge Marker:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Trim - Nudge", makeNudgeHandler())
+
+    --------------------------------------------------------------------------------
+    -- Shortcut-based Adjustments:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Nudge Vertically", makeShortcutAdjustment("NudgeUp", "NudgeDown"))
+    registerAction("Multicam.Bank", makeShortcutAdjustment("SelectNextAngleBank", "SelectPreviousAngleBank"))
 
     --------------------------------------------------------------------------------
     -- Effects, Transitions, Generators & Titles:
@@ -1183,7 +1376,7 @@ function mod._registerActions()
             end
 
             --log.df("lastPlayheadPosition: %s", lastPlayheadPosition)
-            fcp:doSelectMenu({"View", "Playback", "Play Full Screen"}):Then(function()
+            fcp:doSelectMenu({"View", "Playback", "Play Full Screen"}, {locale="en"}):Then(function()
                 if doUntil(function()
                     return fcp.fullScreenPlayer:isShowing()
                 end, 5, 0.1) then
@@ -1264,6 +1457,10 @@ function mod._registerActions()
 
         registerAction("Color Wheels." .. v.id .. ".Reset", makeResetColorWheelHandler(function() return v.control end))
         registerAction("Color Wheels." .. v.id .. ".Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
+
+        registerAction("Color Wheels." .. v.id .. ".Red", makeRGBWheelHandler(function() return v.control end, "red"))
+        registerAction("Color Wheels." .. v.id .. ".Green", makeRGBWheelHandler(function() return v.control end, "green"))
+        registerAction("Color Wheels." .. v.id .. ".Blue", makeRGBWheelHandler(function() return v.control end, "blue"))
     end
 
     registerAction("Color Wheels.Temperature", makeSliderHandler(function() return fcp.inspector.color.colorWheels.temperatureSlider end, "Color Wheels.Temperature", 5000))
