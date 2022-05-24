@@ -67,12 +67,7 @@ local HOW_OFTEN_TO_PING_IN_SECONDS = 30
 -- HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS -> number
 -- Constant
 -- How long in seconds should we wait for a pong to come back?
-local HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS = 0.5
-
--- CONNECTION_TIMER_RETRY_IN_SECONDS -> number
--- Constant
--- The number of seconds before we try and reconnect to the Workflow Extension
-local CONNECTION_TIMER_RETRY_IN_SECONDS = 3
+local HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS = 2
 
 -- ABORT_CONNECTING_IN_SECONDS -> number
 -- Constant
@@ -156,13 +151,14 @@ local commandHandler = {
 --- plugins.finalcutpro.workflowextension.pingTimerCheck -> hs.timer
 --- Variable
 --- A timer that checks for the server pong after a client ping.
-mod.pingTimerCheck = timer.doAfter(HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS, function()
+mod.pingTimerCheck = doAfter(HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS, function()
     if not pongRecieved then
         --------------------------------------------------------------------------------
         -- No pong detected:
         --------------------------------------------------------------------------------
-        log.df("[Workflow Extension] Failed to ping server.")
-        mod.disconnect()
+        --log.df("[Workflow Extension] Failed to ping server.")
+        --mod.disconnect()
+        mod.connect()
     else
         --------------------------------------------------------------------------------
         -- Set off the next ping:
@@ -174,7 +170,7 @@ end)
 --- plugins.finalcutpro.workflowextension.pingTimer -> hs.timer
 --- Variable
 --- A timer that pings the server on a regular interval.
-mod.pingTimer = timer.doAfter(HOW_OFTEN_TO_PING_IN_SECONDS, function()
+mod.pingTimer = doAfter(HOW_OFTEN_TO_PING_IN_SECONDS, function()
     pongRecieved = false
     mod.ping()
     mod.pingTimerCheck:start()
@@ -193,8 +189,10 @@ function mod.connectionCallback()
     --------------------------------------------------------------------------------
     -- Let's set off the pinging:
     --------------------------------------------------------------------------------
-    mod.pingTimer:start()
-    mod.pingTimer:fire()
+    doAfter(1, function()
+        mod.pingTimer:start()
+        mod.pingTimer:fire()
+    end)
 
     --------------------------------------------------------------------------------
     -- Read the contents of the socket:
@@ -241,6 +239,7 @@ end
 ---  * None
 function mod.connect()
     if not mod.socketClient:connected() then
+        fcp.commandPostWorkflowExtension:show()
         mod.socketClient:connect("localhost", SOCKET_PORT, mod.connectionCallback)
     end
 end
@@ -282,42 +281,6 @@ function mod.setupClient()
     --------------------------------------------------------------------------------
     mod.socketClient = socket.new()
     mod.socketClient:setCallback(mod.callback)
-
-    --------------------------------------------------------------------------------
-    -- Try to connect:
-    --------------------------------------------------------------------------------
-    mod.connect()
-
-    --------------------------------------------------------------------------------
-    -- Setup a connection timer if the initial connection fails:
-    --
-    -- NOTE: This doesn't automatically start - we'll wait until an action is
-    --       triggered.
-    --------------------------------------------------------------------------------
-    mod.connectionTimer = timer.new(CONNECTION_TIMER_RETRY_IN_SECONDS, function()
-        if not mod.socketClient:connected() and fcp.isFrontmost() then
-            --------------------------------------------------------------------------------
-            -- Abort after 30 seconds:
-            --------------------------------------------------------------------------------
-            if mod.connectionAttemptCount >= ABORT_CONNECTING_IN_SECONDS then
-                log.ef("[Workflow Extension] Failed to open Workflow Extension after %s seconds so aborted", ABORT_CONNECTING_IN_SECONDS)
-                mod.connectionAttemptCount = 0
-                mod.connectionTimer:stop()
-                return
-            end
-            mod.connectionAttemptCount = mod.connectionAttemptCount + 1
-
-            --------------------------------------------------------------------------------
-            -- Make sure the Workflow Extension is open:
-            --------------------------------------------------------------------------------
-            mod._commandPostWorkflowExtension:show()
-
-            --------------------------------------------------------------------------------
-            -- Try and connect again:
-            --------------------------------------------------------------------------------
-            mod.connect()
-        end
-    end)
 end
 
 --- plugins.finalcutpro.workflowextension.isWorkflowExtensionConnected() -> boolean
@@ -333,10 +296,7 @@ function mod.isWorkflowExtensionConnected()
     local result = mod.connected or mod.socketClient:connected()
     if not result then
         mod.connected = false
-        if not mod.connectionTimer:running() then
-            mod.connectionTimer:start()
-            mod.connectionTimer:fire()
-        end
+        mod.connect()
     end
     return result
 end
@@ -368,7 +328,7 @@ function mod.sendCommand(command)
             --------------------------------------------------------------------------------
             -- Only show this error once to avoid spamming the user:
             --------------------------------------------------------------------------------
-            log.ef("[Workflow Extension] CommandPost is not currently connected to the Workflow Extension.")
+            log.ef("[Workflow Extension] CommandPost is not currently connected to the Workflow Extension. Tried to send: %s", command)
             playErrorSound()
             hasSendCommandErrorHappened = true
             mod.sendCommandErrorTimer:start()
@@ -472,6 +432,7 @@ end
 --- Returns:
 ---  * None
 function mod.ping()
+    --log.df("[Workflow Extension] Sending ping")
     mod.sendCommand("PING")
 end
 
@@ -554,7 +515,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Connect to Dependancies:
     --------------------------------------------------------------------------------
-    mod.actionmanager = deps.actionmanager
+    mod.actionmanager                       = deps.actionmanager
 
     --------------------------------------------------------------------------------
     -- Setup the Workflow Extension Client:
@@ -565,30 +526,6 @@ function plugin.init(deps)
     -- Setup the Actions:
     --------------------------------------------------------------------------------
     mod.setupActions()
-
-    --------------------------------------------------------------------------------
-    -- Watch for the Workflow Extension Window:
-    --------------------------------------------------------------------------------
-    mod._commandPostWorkflowExtension = fcp.commandPostWorkflowExtension
-    mod._commandPostWorkflowExtension.isShowing:watch(function(value)
-        if value then
-            --------------------------------------------------------------------------------
-            -- Make the Workflow Extension small and move as far off screen as we can:
-            --------------------------------------------------------------------------------
-            mod._commandPostWorkflowExtension:size({h=0, w=0})
-            mod._commandPostWorkflowExtension:position({x=1000000000000000000000000,y=1000000000000000000000000})
-
-            --------------------------------------------------------------------------------
-            -- Connect to the WebSocket Server:
-            --------------------------------------------------------------------------------
-            mod.connect()
-        else
-            --------------------------------------------------------------------------------
-            -- Disconnect from the WebSocket Server:
-            --------------------------------------------------------------------------------
-            mod.disconnect()
-        end
-    end)
 
     return mod
 end
@@ -601,17 +538,18 @@ function plugin.postInit()
     -- “pluginkit -a” and “pluginkit -r” to add and remove plug-ins will
     -- stop working. We currently don't have a better workaround sadly.
     --------------------------------------------------------------------------------
+    local currentVersion = hs.processInfo.version
     if not fcp.commandPostWorkflowExtension.isShowing() then
-        local hasWorkflowExtensionBeenAdded = config.prop("workflowExtensionAdded", false)
-        if not hasWorkflowExtensionBeenAdded then
+        mod.hasWorkflowExtensionBeenAdded = config.prop("workflowExtension.AddedVersion", "")
+        if mod.hasWorkflowExtensionBeenAdded ~= currentVersion then
             task.new("/usr/bin/pluginkit", function(exitCode, _, _)
                 if exitCode == 0 then
                     log.df("[Workflow Extension] Successfully installed.")
+                    mod.hasWorkflowExtensionBeenAdded(currentVersion)
                 else
                     log.df("[Workflow Extension] Failed to install.")
                 end
             end, {"-a", hs.processInfo.bundlePath .. "/Contents/PlugIns/CommandPost.appex"}):start()
-            hasWorkflowExtensionBeenAdded(true)
         end
     end
 
@@ -623,6 +561,119 @@ function plugin.postInit()
         mod.disconnect()
     end)
 
+    --------------------------------------------------------------------------------
+    -- Watch for the Workflow Extension Window:
+    --------------------------------------------------------------------------------
+    mod.hasWorkflowExtensionBeenMoved = config.prop("workflowExtension.Moved", false)
+    --mod.hasWorkflowExtensionBeenMoved(false)
+    fcp.commandPostWorkflowExtension.isShowing:watch(function(value)
+        if value then
+            --log.df("[Workflow Extension] Is Showing!")
+
+            --------------------------------------------------------------------------------
+            -- The first time we launch the Workflow Extension, lets move it as far away
+            -- as possible. We only do this once, so that the user can move it somewhere
+            -- else if needed.
+            --------------------------------------------------------------------------------
+            if not mod.hasWorkflowExtensionBeenMoved() then
+                --------------------------------------------------------------------------------
+                -- Make the Workflow Extension as small as possible:
+                --------------------------------------------------------------------------------
+                fcp.commandPostWorkflowExtension:size({h=0, w=0})
+
+                local primaryWindowUI = fcp.primaryWindow:UI()
+                local primaryWindowHSWindow = primaryWindowUI and primaryWindowUI:asHSWindow()
+                local primaryWindowScreen = primaryWindowHSWindow and primaryWindowHSWindow:screen()
+                local primaryWindowFullScreen = primaryWindowScreen and primaryWindowScreen:fullFrame()
+                local workflowExtensionFrame = fcp.commandPostWorkflowExtension:frame()
+
+                local isThereAScreenOnTheLeft = false
+                local isThereAScreenOnTheRight = false
+
+                local screenData = {}
+                local screenPositions = hs.screen.screenPositions()
+                for screen, position in pairs(screenPositions) do
+                    if screen ~= primaryWindowScreen then
+                        if position.x == 1 then
+                            isThereAScreenOnTheLeft = true
+                        elseif position.x == -1 then
+                            isThereAScreenOnTheRight = true
+                        end
+                    end
+                end
+
+                --isThereAScreenOnTheLeft = true
+                --isThereAScreenOnTheRight = true
+
+                if isThereAScreenOnTheLeft and isThereAScreenOnTheRight then
+                    --------------------------------------------------------------------------------
+                    -- There's a screen on the left and right of Final Cut Pro, so lets just hide
+                    -- it in the Viewer.
+                    --------------------------------------------------------------------------------'
+                    --log.df("[Workflow Extension] There's a screen on the left and right.")
+                    local viewerFrame = fcp.viewer:frame()
+                    if viewerFrame and workflowExtensionFrame then
+                        fcp.commandPostWorkflowExtension:position({x=viewerFrame.x+(workflowExtensionFrame.w*3), y=viewerFrame.h+viewerFrame.y-workflowExtensionFrame.h})
+                    end
+                elseif isThereAScreenOnTheLeft or (not isThereAScreenOnTheLeft and not isThereAScreenOnTheRight) then
+                    --------------------------------------------------------------------------------
+                    -- There's no screen on the right, so let's hide it on the left:
+                    --------------------------------------------------------------------------------
+                    --log.df("[Workflow Extension] There's a screen on the right.")
+                    if primaryWindowFullScreen and workflowExtensionFrame then
+                        fcp.commandPostWorkflowExtension:position({x=-58, y=primaryWindowFullScreen.h-workflowExtensionFrame.h})
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- There's no screen on the left, so let's hide it on the right:
+                    --------------------------------------------------------------------------------
+                    --log.df("[Workflow Extension] There's a screen on the left.")
+                    if primaryWindowFullScreen and workflowExtensionFrame then
+                        fcp.commandPostWorkflowExtension:position({x=primaryWindowFullScreen.w-1, y=primaryWindowFullScreen.h-workflowExtensionFrame.h})
+                    end
+                end
+
+                mod.hasWorkflowExtensionBeenMoved(true)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Give focus back to the primary window:
+            --------------------------------------------------------------------------------
+            if fcp.commandPostWorkflowExtension:focused() then
+                local primaryWindow = fcp.primaryWindow:window()
+                if primaryWindow then
+                    --log.df("[Workflow Extension] Focussing on primary window")
+                    primaryWindow:focus()
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Connect to the WebSocket Server:
+            --------------------------------------------------------------------------------
+            mod.connect()
+        else
+            --------------------------------------------------------------------------------
+            -- Disconnect from the WebSocket Server:
+            --------------------------------------------------------------------------------
+            log.df("[Workflow Extension] The Workflow Extension window was closed.")
+            mod.disconnect()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Connect to Workflow Extension if FCPX is running:
+    --------------------------------------------------------------------------------
+    if fcp.isRunning() then
+        --log.df("[Workflow Extension] Final Cut Pro is running, so lets try launch the Workflow Extension.")
+        fcp.commandPostWorkflowExtension:doShow():Then(function()
+            mod.connect()
+        end):Now()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Force an iShowing update:
+    --------------------------------------------------------------------------------
+    fcp.commandPostWorkflowExtension.isShowing:update()
 end
 
 return plugin

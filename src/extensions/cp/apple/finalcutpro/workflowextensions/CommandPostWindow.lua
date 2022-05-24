@@ -21,7 +21,7 @@ local cache                         = axutils.cache
 local childMatching                 = axutils.childMatching
 
 local If                            = go.If
-local WaitUntil                     = WaitUntil
+local WaitUntil                     = go.WaitUntil
 
 local CommandPostWindow = Window:subclass("cp.apple.finalcutpro.workflowextensions.CommandPostWindow")
 
@@ -36,8 +36,7 @@ local CommandPostWindow = Window:subclass("cp.apple.finalcutpro.workflowextensio
 ---  * `true` if matches otherwise `false`
 function CommandPostWindow.static.matches(element)
     return Window.matches(element)
-        and childMatching(element, StaticText.matches) ~= nil
-        and childMatching(element, StaticText.matches):attributeValue("AXValue") == "CommandPost"
+        and element:attributeValue("AXTitle") == "CommandPost"
 end
 
 --- cp.apple.finalcutpro.workflowextensions.CommandPostWindow(app) -> CommandPostWindow

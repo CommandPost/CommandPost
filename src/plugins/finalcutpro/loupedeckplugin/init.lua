@@ -13,6 +13,7 @@ local timer             = require "hs.timer"
 
 local config            = require "cp.config"
 local deferred          = require "cp.deferred"
+local destinations      = require "cp.apple.finalcutpro.export.destinations"
 local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
@@ -905,6 +906,36 @@ local function requestCommands(data)
     end
 end
 
+-- requestShareDestinations(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service requests a JSON of commands
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function requestShareDestinations(data)
+    local destinationIDs = {}
+    local shares = destinations.names()
+    for _, title in pairs(shares) do
+        destinationIDs[title] = title
+    end
+
+    --------------------------------------------------------------------------------
+    -- Send a WebSocket Message back to Loupedeck:
+    --------------------------------------------------------------------------------
+    if tableCount(destinationIDs) > 0 then
+        local message = {
+            ["MessageType"]     = "UpdateCommands",
+            ["ActionName"]      = "FCP.ShareDestinations",
+            ["ActionValue"]     = json.encode(destinationIDs),
+        }
+        local encodedMessage = json.encode(message, true)
+        mod.manager.sendMessage(encodedMessage)
+    end
+end
+
 -- applyCommand(data) -> none
 -- Function
 -- Triggered when the Loupedeck Service asks to apply a specific command.
@@ -1264,6 +1295,32 @@ local function makeNudgeHandler()
     end
 end
 
+-- makeSlideHandler() -> function
+-- Function
+-- Makes a handler for Sliding Left/Right.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A handler function
+local function makeSlideHandler()
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if actionValue < 0 then
+                    -- TODO: Add check for current mode and only trigger if necessary:
+                    fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeLeft")):Now()
+                else
+                    -- TODO: Add check for current mode and only trigger if necessary:
+                    fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeRight")):Now()
+                end
+            end
+        end
+    end
+end
+
 -- makeShortcutAdjustment() -> function
 -- Function
 -- Makes a handler for Nudge Marker Left/Right.
@@ -1274,7 +1331,7 @@ end
 --
 -- Returns:
 --  * A handler function
-local function makeShortcutAdjustment(upShortcut, downShortcut)
+local function makeShortcutAdjustment(upShortcut, downShortcut, pressShortcut)
     return function(data)
         if data.actionType == "turn" then
             local actionValue = data.actionValue
@@ -1285,6 +1342,8 @@ local function makeShortcutAdjustment(upShortcut, downShortcut)
                     fcp:doShortcut(downShortcut):Now()
                 end
             end
+        elseif data.actionType == "press" then
+            fcp:doShortcut(pressShortcut):Now()
         end
     end
 end
@@ -1311,6 +1370,49 @@ function mod._registerActions()
     local registerAction = mod.manager.registerAction
 
     --------------------------------------------------------------------------------
+    -- Share Destinations:
+    --------------------------------------------------------------------------------
+    registerAction("RequestShareDestinations", requestShareDestinations)
+    registerAction("FCP.ShareDestinations", function(data)
+        local actionValue = data.actionValue
+        if actionValue then
+
+            local function isDefaultItem(element)
+                return element and element:attributeValue("AXMenuItemCmdChar") ~= nil
+            end
+
+            local defaultFormat = fcp.strings:find("FFShareDefaultApplicationFormat")
+
+            defaultFormat = defaultFormat:gsub("([()])", "%%%1"):gsub("%%@", "(.+)") .. "…"
+
+            local dest = actionValue
+
+            --------------------------------------------------------------------------------
+            -- This function will match based on the destination title, minus
+            -- "(default)" and "…" if present.
+            --------------------------------------------------------------------------------
+            local destinationSelect = function(menuItem)
+                local title = menuItem:attributeValue("AXTitle")
+                if title == nil then
+                    return false
+                elseif isDefaultItem(menuItem) then
+                    title = title:match(defaultFormat)
+                else
+                    local destinationFormat = "(.+)…"
+                    title = title:match(destinationFormat)
+                end
+                return type(dest) == "function" and dest(title) or title == tostring(dest)
+            end
+            local menuItem = fcp.menu:findMenuUI({"File", "Share", destinationSelect})
+            if menuItem then
+                fcp:selectMenu({"File", "Share", destinationSelect}, {locale="en", ["pressAll"] = true}):Now()
+            else
+                playErrorSound()
+            end
+        end
+    end)
+
+    --------------------------------------------------------------------------------
     -- Mark > Previous/Next > Frame/Edit/Marker/Keyframe
     --------------------------------------------------------------------------------
     registerAction("Timeline.Frame", makeNextPreviousMenuItemHandler("Frame"))
@@ -1324,15 +1426,35 @@ function mod._registerActions()
     registerAction("Timeline.Nudge Marker", makeNudgeMarkerHandler())
 
     --------------------------------------------------------------------------------
-    -- Nudge Marker:
+    -- Nudge (Trim):
     --------------------------------------------------------------------------------
     registerAction("Timeline.Trim - Nudge", makeNudgeHandler())
 
     --------------------------------------------------------------------------------
+    -- Slide:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Slide", makeSlideHandler())
+
+    --------------------------------------------------------------------------------
     -- Shortcut-based Adjustments:
     --------------------------------------------------------------------------------
-    registerAction("Timeline.Nudge Vertically", makeShortcutAdjustment("NudgeUp", "NudgeDown"))
-    registerAction("Multicam.Bank", makeShortcutAdjustment("SelectNextAngleBank", "SelectPreviousAngleBank"))
+    registerAction("Multicam.Bank",                     makeShortcutAdjustment("SelectNextAngleBank", "SelectPreviousAngleBank"))
+    registerAction("Multicam.Bank",                     makeShortcutAdjustment("SelectNextAngleBank", "SelectPreviousAngleBank"))
+
+    registerAction("Cinematic.Focus Point",             makeShortcutAdjustment("NextDecisionCinematicEditor", "PreviousDecisionCinematicEditor"))
+
+    registerAction("Timeline.Nudge Vertically",         makeShortcutAdjustment("NudgeUp", "NudgeDown"))
+    registerAction("Timeline.Field",                    makeShortcutAdjustment("JumpToNextField", "JumpToPreviousField"))
+    registerAction("Timeline.Subframe",                 makeShortcutAdjustment("JumpToNextSubframe", "JumpToPreviousSubframe"))
+    registerAction("Timeline.Clip",                     makeShortcutAdjustment("NextClip", "PreviousClip"))
+    registerAction("Timeline.Select Edge",              makeShortcutAdjustment("SelectRightEdge", "SelectLeftEdge"))
+    registerAction("Timeline.Select Video Edge",        makeShortcutAdjustment("SelectRightEdgeVideo", "SelectLeftEdgeVideo"))
+    registerAction("Timeline.Select Audio Edge",        makeShortcutAdjustment("SelectRightEdgeAudio", "SelectLeftEdgeAudio"))
+    registerAction("Timeline.Waveform Size",            makeShortcutAdjustment("ClipAppearanceAudioBigger", "ClipAppearanceAudioSmaller", "ClipAppearance5050"))
+    registerAction("Timeline.Move 10 Frames",           makeShortcutAdjustment("JumpForward10Frames", "JumpBackward10Frames"))
+
+    registerAction("360 Viewer.Pan",                    makeShortcutAdjustment("PanLeft", "PanRight"))
+    registerAction("360 Viewer.Tilt",                   makeShortcutAdjustment("TiltUp", "TiltDown"))
 
     --------------------------------------------------------------------------------
     -- Effects, Transitions, Generators & Titles:
@@ -1429,72 +1551,78 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     -- Colour Wheel Controls for Touch Wheel:
     --------------------------------------------------------------------------------
-    local colourWheels = {
-        { control = fcp.inspector.color.colorWheels.master,       id = "Global" },
-        { control = fcp.inspector.color.colorWheels.shadows,      id = "Shadows" },
-        { control = fcp.inspector.color.colorWheels.midtones,     id = "Midtones" },
-        { control = fcp.inspector.color.colorWheels.highlights,   id = "Highlights" },
-    }
-    for _, v in pairs(colourWheels) do
-        registerAction("FCP " .. v.id, makeLoupedeckColorWheelHandler(function() return v.control end))
+    do
+        local colourWheels = {
+            { control = fcp.inspector.color.colorWheels.master,       id = "Global" },
+            { control = fcp.inspector.color.colorWheels.shadows,      id = "Shadows" },
+            { control = fcp.inspector.color.colorWheels.midtones,     id = "Midtones" },
+            { control = fcp.inspector.color.colorWheels.highlights,   id = "Highlights" },
+        }
+        for _, v in pairs(colourWheels) do
+            registerAction("FCP " .. v.id, makeLoupedeckColorWheelHandler(function() return v.control end))
+        end
     end
 
     --------------------------------------------------------------------------------
     -- Colour Wheel Controls for Knobs:
     --------------------------------------------------------------------------------
-    local colourWheels = {
-        { control = fcp.inspector.color.colorWheels.master,       id = "Master" },
-        { control = fcp.inspector.color.colorWheels.shadows,      id = "Shadows" },
-        { control = fcp.inspector.color.colorWheels.midtones,     id = "Midtones" },
-        { control = fcp.inspector.color.colorWheels.highlights,   id = "Highlights" },
-    }
-    for _, v in pairs(colourWheels) do
-        registerAction("Color Wheels." .. v.id .. ".Vertical", makeWheelHandler(function() return v.control end, true))
-        registerAction("Color Wheels." .. v.id .. ".Horizontal", makeWheelHandler(function() return v.control end, false))
+    do
+        local colourWheels = {
+            { control = fcp.inspector.color.colorWheels.master,       id = "Master" },
+            { control = fcp.inspector.color.colorWheels.shadows,      id = "Shadows" },
+            { control = fcp.inspector.color.colorWheels.midtones,     id = "Midtones" },
+            { control = fcp.inspector.color.colorWheels.highlights,   id = "Highlights" },
+        }
+        for _, v in pairs(colourWheels) do
+            registerAction("Color Wheels." .. v.id .. ".Vertical", makeWheelHandler(function() return v.control end, true))
+            registerAction("Color Wheels." .. v.id .. ".Horizontal", makeWheelHandler(function() return v.control end, false))
 
-        registerAction("Color Wheels." .. v.id .. ".Saturation", makeSaturationHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. ".Brightness", makeBrightnessHandler(function() return v.control end))
+            registerAction("Color Wheels." .. v.id .. ".Saturation", makeSaturationHandler(function() return v.control end))
+            registerAction("Color Wheels." .. v.id .. ".Brightness", makeBrightnessHandler(function() return v.control end))
 
-        registerAction("Color Wheels." .. v.id .. ".Reset", makeResetColorWheelHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. ".Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
+            registerAction("Color Wheels." .. v.id .. ".Reset", makeResetColorWheelHandler(function() return v.control end))
+            registerAction("Color Wheels." .. v.id .. ".Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
 
-        registerAction("Color Wheels." .. v.id .. ".Red", makeRGBWheelHandler(function() return v.control end, "red"))
-        registerAction("Color Wheels." .. v.id .. ".Green", makeRGBWheelHandler(function() return v.control end, "green"))
-        registerAction("Color Wheels." .. v.id .. ".Blue", makeRGBWheelHandler(function() return v.control end, "blue"))
+            registerAction("Color Wheels." .. v.id .. ".Red", makeRGBWheelHandler(function() return v.control end, "red"))
+            registerAction("Color Wheels." .. v.id .. ".Green", makeRGBWheelHandler(function() return v.control end, "green"))
+            registerAction("Color Wheels." .. v.id .. ".Blue", makeRGBWheelHandler(function() return v.control end, "blue"))
+        end
+
+        registerAction("Color Wheels.Temperature", makeSliderHandler(function() return fcp.inspector.color.colorWheels.temperatureSlider end, "Color Wheels.Temperature", 5000))
+        registerAction("Color Wheels.Tint", makeSliderHandler(function() return fcp.inspector.color.colorWheels.tintSlider end, "Color Wheels.Tint", 0))
+        registerAction("Color Wheels.Hue", makeSliderHandler(function() return fcp.inspector.color.colorWheels.hueTextField end, "Color Wheels.Hue", 0))
+        registerAction("Color Wheels.Mix", makeSliderHandler(function() return fcp.inspector.color.colorWheels.mixSlider end, "Color Wheels.Mix", 1, 100))
+        registerAction("Color Wheels.Contrast", makeContrastWheelHandler())
     end
-
-    registerAction("Color Wheels.Temperature", makeSliderHandler(function() return fcp.inspector.color.colorWheels.temperatureSlider end, "Color Wheels.Temperature", 5000))
-    registerAction("Color Wheels.Tint", makeSliderHandler(function() return fcp.inspector.color.colorWheels.tintSlider end, "Color Wheels.Tint", 0))
-    registerAction("Color Wheels.Hue", makeSliderHandler(function() return fcp.inspector.color.colorWheels.hueTextField end, "Color Wheels.Hue", 0))
-    registerAction("Color Wheels.Mix", makeSliderHandler(function() return fcp.inspector.color.colorWheels.mixSlider end, "Color Wheels.Mix", 1, 100))
-    registerAction("Color Wheels.Contrast", makeContrastWheelHandler())
 
     --------------------------------------------------------------------------------
     -- Color Board Controls:
     --------------------------------------------------------------------------------
-    local colourBoards = {
-        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color Master (Angle)",            angle = true },
-        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color Shadows (Angle)",           angle = true },
-        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color Midtones (Angle)",          angle = true },
-        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color Highlights (Angle)",        angle = true },
+    do
+        local colourBoards = {
+            { control = fcp.inspector.color.colorBoard.color.master,            id = "Color Master (Angle)",            angle = true },
+            { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color Shadows (Angle)",           angle = true },
+            { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color Midtones (Angle)",          angle = true },
+            { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color Highlights (Angle)",        angle = true },
 
-        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color Master (Percentage)" },
-        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color Shadows (Percentage)" },
-        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color Midtones (Percentage)" },
-        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color Highlights (Percentage)" },
+            { control = fcp.inspector.color.colorBoard.color.master,            id = "Color Master (Percentage)" },
+            { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color Shadows (Percentage)" },
+            { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color Midtones (Percentage)" },
+            { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color Highlights (Percentage)" },
 
-        { control = fcp.inspector.color.colorBoard.saturation.master,       id = "Saturation Master" },
-        { control = fcp.inspector.color.colorBoard.saturation.shadows,      id = "Saturation Shadows" },
-        { control = fcp.inspector.color.colorBoard.saturation.midtones,     id = "Saturation Midtones" },
-        { control = fcp.inspector.color.colorBoard.saturation.highlights,   id = "Saturation Highlights" },
+            { control = fcp.inspector.color.colorBoard.saturation.master,       id = "Saturation Master" },
+            { control = fcp.inspector.color.colorBoard.saturation.shadows,      id = "Saturation Shadows" },
+            { control = fcp.inspector.color.colorBoard.saturation.midtones,     id = "Saturation Midtones" },
+            { control = fcp.inspector.color.colorBoard.saturation.highlights,   id = "Saturation Highlights" },
 
-        { control = fcp.inspector.color.colorBoard.exposure.master,         id = "Exposure Master" },
-        { control = fcp.inspector.color.colorBoard.exposure.shadows,        id = "Exposure Shadows" },
-        { control = fcp.inspector.color.colorBoard.exposure.midtones,       id = "Exposure Midtones" },
-        { control = fcp.inspector.color.colorBoard.exposure.highlights,     id = "Exposure Highlights" },
-    }
-    for _, v in pairs(colourBoards) do
-        registerAction("Color Board." .. v.id, makeColourBoardHandler(function() return v.control end, v.angle))
+            { control = fcp.inspector.color.colorBoard.exposure.master,         id = "Exposure Master" },
+            { control = fcp.inspector.color.colorBoard.exposure.shadows,        id = "Exposure Shadows" },
+            { control = fcp.inspector.color.colorBoard.exposure.midtones,       id = "Exposure Midtones" },
+            { control = fcp.inspector.color.colorBoard.exposure.highlights,     id = "Exposure Highlights" },
+        }
+        for _, v in pairs(colourBoards) do
+            registerAction("Color Board." .. v.id, makeColourBoardHandler(function() return v.control end, v.angle))
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -1525,10 +1653,12 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     -- Video Inspector - Blend Modes - Buttons:
     --------------------------------------------------------------------------------
-    local blendModes = fcp.inspector.video.BLEND_MODES
-    for _, v in pairs(blendModes) do
-        if v.flexoID then
-            registerAction("Video Inspector.Compositing.Blend Mode." .. fcp:string(v.flexoID, "en"), makeFunctionHandler(function() fcp.inspector.video:compositing():blendMode():doSelectValue(fcp:string(v.flexoID)):Now() end))
+    do
+        local blendModes = fcp.inspector.video.BLEND_MODES
+        for _, v in pairs(blendModes) do
+            if v.flexoID then
+                registerAction("Video Inspector.Compositing.Blend Mode." .. fcp:string(v.flexoID, "en"), makeFunctionHandler(function() fcp.inspector.video:compositing():blendMode():doSelectValue(fcp:string(v.flexoID)):Now() end))
+            end
         end
     end
 
@@ -1549,22 +1679,26 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     -- Distort:
     --------------------------------------------------------------------------------
-    registerAction("Video Inspector.Distort.Bottom Left X",         makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().x end,     "Video Inspector.Distort.Bottom Left X",      0))
-    registerAction("Video Inspector.Distort.Bottom Left Y",         makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().y end,     "Video Inspector.Distort.Bottom Left Y",      0))
+    do
+        registerAction("Video Inspector.Distort.Bottom Left X",         makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().x end,     "Video Inspector.Distort.Bottom Left X",      0))
+        registerAction("Video Inspector.Distort.Bottom Left Y",         makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().y end,     "Video Inspector.Distort.Bottom Left Y",      0))
 
-    registerAction("Video Inspector.Distort.Bottom Right X",        makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().x end,    "Video Inspector.Distort.Bottom Right X",     0))
-    registerAction("Video Inspector.Distort.Bottom Right Y",        makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().y end,    "Video Inspector.Distort.Bottom Right Y",     0))
+        registerAction("Video Inspector.Distort.Bottom Right X",        makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().x end,    "Video Inspector.Distort.Bottom Right X",     0))
+        registerAction("Video Inspector.Distort.Bottom Right Y",        makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().y end,    "Video Inspector.Distort.Bottom Right Y",     0))
 
-    registerAction("Video Inspector.Distort.Top Right X",           makeSliderHandler(function() return fcp.inspector.video.distort():topRight().x end,       "Video Inspector.Distort.Top Right X",        0))
-    registerAction("Video Inspector.Distort.Top Right Y",           makeSliderHandler(function() return fcp.inspector.video.distort():topRight().y end,       "Video Inspector.Distort.Top Right Y",        0))
+        registerAction("Video Inspector.Distort.Top Right X",           makeSliderHandler(function() return fcp.inspector.video.distort():topRight().x end,       "Video Inspector.Distort.Top Right X",        0))
+        registerAction("Video Inspector.Distort.Top Right Y",           makeSliderHandler(function() return fcp.inspector.video.distort():topRight().y end,       "Video Inspector.Distort.Top Right Y",        0))
 
-    registerAction("Video Inspector.Distort.Top Left X",            makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().x end,        "Video Inspector.Distort.Top Left X",         0))
-    registerAction("Video Inspector.Distort.Top Left Y",            makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().y end,        "Video Inspector.Distort.Top Left Y",         0))
+        registerAction("Video Inspector.Distort.Top Left X",            makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().x end,        "Video Inspector.Distort.Top Left X",         0))
+        registerAction("Video Inspector.Distort.Top Left Y",            makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().y end,        "Video Inspector.Distort.Top Left Y",         0))
+    end
 
     --------------------------------------------------------------------------------
     -- Audio Controls:
     --------------------------------------------------------------------------------
-    registerAction("Audio Inspector.Volume", makeSliderHandler(function() return fcp.inspector.audio:volume() end, "Audio Inspector.Volume", 0, 10))
+    do
+        registerAction("Audio Inspector.Volume", makeSliderHandler(function() return fcp.inspector.audio:volume() end, "Audio Inspector.Volume", 0, 10))
+    end
 
     --------------------------------------------------------------------------------
     -- Menu Items:
