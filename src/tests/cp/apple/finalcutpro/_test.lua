@@ -508,29 +508,29 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             local toolbar = fcp.timeline.toolbar
 
-            local clipId, effectsGroup
+            local clipId --, effectsGroup
             local version = fcp:version()
 
             ok(version and type(version) == "table")
 
             if version >= v("10.3.2") then
                 clipId = "_NS:178"
-                effectsGroup = "_NS:165"
+                -- effectsGroup = "_NS:165"
             end
 
             if version >= v("10.3.3") then
                 clipId = "_NS:179"
-                effectsGroup = "_NS:166"
+                -- effectsGroup = "_NS:166"
             end
 
             if version >= v("10.4.4") then
                 clipId = "_NS:183"
-                effectsGroup = "_NS:170"
+                -- effectsGroup = "_NS:170"
             end
 
             ok(toolbar:isShowing())
             ok(toolbar.clip:UI() ~= nil)
-            ok(clipID and toolbar.clip:UI():attributeValue("AXIdentifier") == clipId)
+            ok(clipId and toolbar.clip:UI():attributeValue("AXIdentifier") == clipId)
 
             -- TODO: Chris disabled on 20201228 because effectsGroup is no longer used in the FCPX API.
             -- ok(toolbar.effectsGroup:UI() ~= nil)
