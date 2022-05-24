@@ -132,13 +132,13 @@ function Toolbar.lazy.value:clipMedia()
     ))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.toolPalette <cp.apple.finalcutpro.timeline.ToolPalette>
+--- cp.apple.finalcutpro.timeline.Toolbar.tool <cp.apple.finalcutpro.timeline.ToolPalette>
 --- Field
 --- The [ToolPalette](cp.apple.finalcutpro.timeline.ToolPalette.md), which allows the user to select the tool
 --- that is being used to manipulate the timeline at present.
-function Toolbar.lazy.value:toolPalette()
+function Toolbar.lazy.value:tool()
     return ToolPalette(self, self.UI:mutate(
-        cache(self, "_toolPalette", ToolPalette.matches)(
+        cache(self, "_tool", ToolPalette.matches)(
             chain // childMatching(Group.matches, 2, ax.leftToRight) >> childMatching(ToolPalette.matches)
         )
     ))
