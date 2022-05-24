@@ -508,29 +508,29 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             local toolbar = fcp.timeline.toolbar
 
-            local skimmingId, effectsGroup
+            local clipId, effectsGroup
             local version = fcp:version()
 
             ok(version and type(version) == "table")
 
             if version >= v("10.3.2") then
-                skimmingId = "_NS:178"
+                clipId = "_NS:178"
                 effectsGroup = "_NS:165"
             end
 
             if version >= v("10.3.3") then
-                skimmingId = "_NS:179"
+                clipId = "_NS:179"
                 effectsGroup = "_NS:166"
             end
 
             if version >= v("10.4.4") then
-                skimmingId = "_NS:183"
+                clipId = "_NS:183"
                 effectsGroup = "_NS:170"
             end
 
             ok(toolbar:isShowing())
-            ok(toolbar.skimming:UI() ~= nil)
-            ok(skimmingId and toolbar.skimming:UI():attributeValue("AXIdentifier") == skimmingId)
+            ok(toolbar.clip:UI() ~= nil)
+            ok(clipID and toolbar.clip:UI():attributeValue("AXIdentifier") == clipId)
 
             -- TODO: Chris disabled on 20201228 because effectsGroup is no longer used in the FCPX API.
             -- ok(toolbar.effectsGroup:UI() ~= nil)
