@@ -60,11 +60,11 @@ function MenuButton.lazy.prop:value()
                 if items then
                     for _,item in ipairs(items) do
                         if item:attributeValue("AXTitle") == newValue then
-                            item:doAXPress()
+                            item:performAction("AXPress")
                             return
                         end
                     end
-                    items:doCancel()
+                    items:performAction("AXCancel")
                 end
             end
         end
@@ -383,8 +383,8 @@ function MenuButton:__call(parent, value)
     return self:value(value)
 end
 
-function MenuButton:__tostring()
-    return string.format("cp.ui.MenuButton: %s (%s)", self:title(), self:parent())
+function MenuButton:__valuestring()
+    return string.format("%s (%s)", self:title(), self:parent())
 end
 
 return MenuButton
