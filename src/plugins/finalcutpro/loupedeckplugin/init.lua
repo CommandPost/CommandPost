@@ -1327,15 +1327,82 @@ local function makeSlideHandler()
                 end
                 if actionValue < 0 then
                     if fcp.timeline.toolbar.tool:isTrim() then
-                        fcp:doShortcut("NudgeLeft"):Now()
+                        fcp:doShortcut("SelectClipAtPlayhead")
+                            :Then(fcp:doShortcut("NudgeLeft"))
+                            :Now()
                     else
-                        fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeLeft")):Now()
+                        fcp:doShortcut("SelectClipAtPlayhead")
+                            :Then(fcp:doShortcut("SelectToolTrim"))
+                            :Then(fcp:doShortcut("NudgeLeft"))
+                            :Now()
                     end
                 else
                     if fcp.timeline.toolbar.tool:isTrim() then
-                        fcp:doShortcut("NudgeRight"):Now()
+                        fcp:doShortcut("SelectClipAtPlayhead")
+                            :Then(fcp:doShortcut("NudgeRight"))
+                            :Now()
                     else
-                        fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeRight")):Now()
+                        fcp:doShortcut("SelectClipAtPlayhead")
+                            :Then(fcp:doShortcut("SelectToolTrim"))
+                            :Then(fcp:doShortcut("NudgeRight"))
+                            :Now()
+                    end
+                end
+                updateUI:start()
+            end
+        end
+    end
+end
+
+-- makeRollHandler() -> function
+-- Function
+-- Makes a handler for Rolling a Clip.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A handler function
+local function makeRollHandler()
+
+    local currentTool
+
+    local updateUI = delayed.new(DELAY, function()
+        local CommandSetID = currentTool and currentTool.CommandSetID
+        if CommandSetID then
+            fcp:doShortcut(CommandSetID):Now()
+            currentTool = nil
+        end
+    end)
+
+    return function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue then
+                if not currentTool then
+                    currentTool = fcp.timeline.toolbar.tool:value()
+                end
+                if actionValue < 0 then
+                    if fcp.timeline.toolbar.tool:isTrim() then
+                        fcp:doShortcut("SelectLeftRightEdge")
+                            :Then(fcp:doShortcut("NudgeLeft"))
+                            :Now()
+                    else
+                        fcp:doShortcut("SelectToolTrim")
+                            :Then(fcp:doShortcut("SelectLeftRightEdge"))
+                            :Then(fcp:doShortcut("NudgeLeft"))
+                            :Now()
+                    end
+                else
+                    if fcp.timeline.toolbar.tool:isTrim() then
+                        fcp:doShortcut("SelectLeftRightEdge")
+                            :Then(fcp:doShortcut("NudgeRight"))
+                            :Now()
+                    else
+                        fcp:doShortcut("SelectToolTrim")
+                            :Then(fcp:doShortcut("SelectLeftRightEdge"))
+                            :Then(fcp:doShortcut("NudgeRight"))
+                            :Now()
                     end
                 end
                 updateUI:start()
@@ -1568,6 +1635,11 @@ function mod._registerActions()
     registerAction("Timeline.Slide", makeSlideHandler())
 
     --------------------------------------------------------------------------------
+    -- Roll:
+    --------------------------------------------------------------------------------
+    registerAction("Timeline.Roll", makeRollHandler())
+
+    --------------------------------------------------------------------------------
     -- Shortcut-based Adjustments:
     --------------------------------------------------------------------------------
     registerAction("Multicam.Bank",                     makeShortcutAdjustment("SelectNextAngleBank", "SelectPreviousAngleBank"))
@@ -1584,6 +1656,7 @@ function mod._registerActions()
     registerAction("Timeline.Select Audio Edge",        makeShortcutAdjustment("SelectRightEdgeAudio", "SelectLeftEdgeAudio"))
     registerAction("Timeline.Waveform Size",            makeShortcutAdjustment("ClipAppearanceAudioBigger", "ClipAppearanceAudioSmaller", "ClipAppearance5050"))
     registerAction("Timeline.Move 10 Frames",           makeShortcutAdjustment("JumpForward10Frames", "JumpBackward10Frames"))
+    registerAction("Timeline.History",                  makeShortcutAdjustment("SelectNextTimelineItem", "SelectPreviousTimelineItem"))
 
     registerAction("360 Viewer.Pan",                    makeShortcutAdjustment("PanLeft", "PanRight"))
     registerAction("360 Viewer.Tilt",                   makeShortcutAdjustment("TiltUp", "TiltDown"))

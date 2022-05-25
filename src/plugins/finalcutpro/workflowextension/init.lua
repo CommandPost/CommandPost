@@ -70,11 +70,6 @@ local HOW_OFTEN_TO_PING_IN_SECONDS = 30
 -- How long in seconds should we wait for a pong to come back?
 local HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS = 2
 
--- ABORT_CONNECTING_IN_SECONDS -> number
--- Constant
--- Abort trying to connect to the Workflow Extension after certain amount of time in seconds
-local ABORT_CONNECTING_IN_SECONDS = 30
-
 -- NUMBER_OF_PLAYHEAD_INCREMENTS -> number
 -- Constant
 -- The number of playhead action increments
@@ -94,16 +89,6 @@ mod.hasWorkflowExtensionBeenAddedVersion = config.prop("workflowExtension.AddedV
 --- Field
 --- Returns the CommandPost Version String for the last time the Workflow Extension was moved.
 mod.hasWorkflowExtensionBeenMovedVersion = config.prop("workflowExtension.MovedVersion", "")
-
---- plugins.finalcutpro.workflowextension.wasClosed -> string
---- Variable
---- Has the Workflow Extension been closed?
-mod.wasClosed = false
-
---- plugins.finalcutpro.workflowextension.connectionAttemptCount -> number
---- Variable
---- How many times have we attempted to open the Workflow Extension?
-mod.connectionAttemptCount = 0
 
 --- plugins.finalcutpro.workflowextension.connected -> boolean
 --- Variable
@@ -155,41 +140,15 @@ local commandHandler = {
 
                     --log.df("[Workflow Extension] Playhead Timeline Changed")
                 end,
-    ["SEQC"] =  function()
-                    --log.df("[Workflow Extension] Active Project has Changed")
+    ["SEQC"] =  function(data)
+                    --TODO: Actually do something with this data.
+                    --log.df("[Workflow Extension] Active Project has Changed: %s", hs.inspect(data))
                 end,
-    ["RNGC"] =  function()
-                    --log.df("[Workflow Extension] Active Project Duration and/or Start Time has changed")
+    ["RNGC"] =  function(data)
+                    --TODO: Actually do something with this data.
+                    --log.df("[Workflow Extension] Active Project Duration and/or Start Time has changed: %s", hs.inspect(data))
                 end,
 }
-
---- plugins.finalcutpro.workflowextension.pingTimerCheck -> hs.timer
---- Variable
---- A timer that checks for the server pong after a client ping.
-mod.pingTimerCheck = doAfter(HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS, function()
-    if not pongRecieved then
-        --------------------------------------------------------------------------------
-        -- No pong detected:
-        --------------------------------------------------------------------------------
-        --log.df("[Workflow Extension] Failed to ping server.")
-        --mod.disconnect()
-        mod.connect()
-    else
-        --------------------------------------------------------------------------------
-        -- Set off the next ping:
-        --------------------------------------------------------------------------------
-        mod.pingTimer:start()
-    end
-end)
-
---- plugins.finalcutpro.workflowextension.pingTimer -> hs.timer
---- Variable
---- A timer that pings the server on a regular interval.
-mod.pingTimer = doAfter(HOW_OFTEN_TO_PING_IN_SECONDS, function()
-    pongRecieved = false
-    mod.ping()
-    mod.pingTimerCheck:start()
-end)
 
 --- plugins.finalcutpro.workflowextension.connectionCallback() -> none
 --- Function
@@ -201,6 +160,38 @@ end)
 --- Returns:
 ---  * None
 function mod.connectionCallback()
+    --------------------------------------------------------------------------------
+    -- Create a Ping Timer Check if it doesn't exist:
+    --------------------------------------------------------------------------------
+    if not mod.pingTimerCheck then
+        mod.pingTimerCheck = doAfter(HOW_LONG_TO_WAIT_FOR_PONG_IN_SECONDS, function()
+            if not pongRecieved then
+                --------------------------------------------------------------------------------
+                -- No pong detected:
+                --------------------------------------------------------------------------------
+                --log.df("[Workflow Extension] Failed to ping server.")
+                --mod.disconnect()
+                mod.connect()
+            else
+                --------------------------------------------------------------------------------
+                -- Set off the next ping:
+                --------------------------------------------------------------------------------
+                mod.pingTimer:start()
+            end
+        end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Create a Ping Timer if it doesn't exist:
+    --------------------------------------------------------------------------------
+    if not mod.pingTimer then
+        mod.pingTimer = doAfter(HOW_OFTEN_TO_PING_IN_SECONDS, function()
+            pongRecieved = false
+            mod.ping()
+            mod.pingTimerCheck:start()
+        end)
+    end
+
     --------------------------------------------------------------------------------
     -- Let's set off the pinging:
     --------------------------------------------------------------------------------
@@ -253,6 +244,10 @@ end
 --- Returns:
 ---  * None
 function mod.connect()
+    if not mod.socketClient then
+        mod.socketClient = socket.new()
+        mod.socketClient:setCallback(mod.callback)
+    end
     if not mod.socketClient:connected() then
         fcp.commandPostWorkflowExtension:show()
         mod.socketClient:connect("localhost", SOCKET_PORT, mod.connectionCallback)
@@ -270,32 +265,20 @@ end
 ---  * None
 function mod.disconnect()
     mod.connected = false
-    if mod.socketClient then
-        mod.socketClient:disconnect()
-    end
     if mod.pingTimer then
         mod.pingTimer:stop()
+        mod.pingTimer = nil
     end
     if mod.pingTimerCheck then
         mod.pingTimerCheck:stop()
+        mod.pingTimerCheck = nil
     end
-end
-
---- plugins.finalcutpro.workflowextension.setupClient() -> none
---- Function
---- Sets up the Workflow Extension Socket Client
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.setupClient()
-    --------------------------------------------------------------------------------
-    -- Create a new Socket connection:
-    --------------------------------------------------------------------------------
-    mod.socketClient = socket.new()
-    mod.socketClient:setCallback(mod.callback)
+    if mod.socketClient then
+        mod.socketClient:disconnect()
+        mod.socketClient = nil
+    end
+    collectgarbage()
+    collectgarbage()
 end
 
 --- plugins.finalcutpro.workflowextension.isWorkflowExtensionConnected() -> boolean
@@ -513,11 +496,6 @@ function plugin.init(deps)
     mod.actionmanager                       = deps.actionmanager
 
     --------------------------------------------------------------------------------
-    -- Setup the Workflow Extension Client:
-    --------------------------------------------------------------------------------
-    mod.setupClient()
-
-    --------------------------------------------------------------------------------
     -- Setup the Actions:
     --------------------------------------------------------------------------------
     mod.setupActions()
@@ -693,13 +671,12 @@ function plugin.postInit()
             -- Connect to the WebSocket Server:
             --------------------------------------------------------------------------------
             mod.connect()
-        else
+        --else
             --------------------------------------------------------------------------------
             -- Disconnect from the WebSocket Server:
             --------------------------------------------------------------------------------
             --log.df("[Workflow Extension] The Workflow Extension window was closed.")
             --mod.disconnect()
-            mod.wasClosed = true
         end
     end)
 
