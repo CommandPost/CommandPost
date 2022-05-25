@@ -8,6 +8,7 @@ local log               = require "hs.logger".new "ldPlugin"
 
 local fnutils           = require "hs.fnutils"
 local json              = require "hs.json"
+local notify            = require "hs.notify"
 local plist             = require "hs.plist"
 local timer             = require "hs.timer"
 
@@ -30,6 +31,7 @@ local displayMessage    = dialog.displayMessage
 local doUntil           = timer.doUntil
 local playErrorSound    = tools.playErrorSound
 local tableCount        = tools.tableCount
+local wait              = just.wait
 
 local mod = {}
 
@@ -1486,14 +1488,18 @@ function mod._registerActions()
         if fcp.fullScreenPlayer:isShowing() then
             fcp:keyStroke({}, "escape")
         else
-            lastPlayheadPosition = mod._workflowExtension.lastPlayheadPosition
-            if lastPlayheadPosition == nil then
-                if not mod._workflowExtension.isWorkflowExtensionConnected() then
-                    log.ef("[Loupedeck Plugin] The Workflow Extension was not running, so Toggle Fullscreen was aborted")
-                else
-                    log.ef("[Loupedeck Plugin] Failed to get the last playhead position.")
-                end
-                playErrorSound()
+            --------------------------------------------------------------------------------
+            -- Abort if the Workflow Extension is not running, or we don't know the
+            -- last playhead position:
+            --------------------------------------------------------------------------------
+            if not mod._workflowExtension.connected or not mod._workflowExtension.lastPlayheadPosition then
+                notify.new(nil, {
+                    title = i18n("workFlowExtensionNotRunning"),
+                    subTitle = "",
+                    informativeText = i18n("featureRequiresWorkflowExtension"),
+                    withdrawAfter = 5,
+                    alwaysPresent = true,
+                }):send()
                 return
             end
 
