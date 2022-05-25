@@ -535,7 +535,7 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     mod._currentVersion = hs.processInfo.version
     --mod.hasWorkflowExtensionBeenAddedVersion("")
-    if mod.hasWorkflowExtensionBeenAddedVersion ~= mod._currentVersion then
+    if mod.hasWorkflowExtensionBeenAddedVersion() ~= mod._currentVersion then
         --------------------------------------------------------------------------------
         -- Close the Workflow Extension if already open:
         --------------------------------------------------------------------------------
@@ -713,9 +713,9 @@ function plugin.postInit()
     end)
 
     --------------------------------------------------------------------------------
-    -- Connect to Workflow Extension if FCPX is running:
+    -- Connect to Workflow Extension if FCPX is frontmost:
     --------------------------------------------------------------------------------
-    if fcp.isRunning() then
+    if fcp.isFrontmost() then
         --log.df("[Workflow Extension] Final Cut Pro is running, so lets try launch the Workflow Extension.")
         fcp.commandPostWorkflowExtension:doShow():Then(function()
             mod.connect()

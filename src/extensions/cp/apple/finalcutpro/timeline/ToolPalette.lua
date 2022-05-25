@@ -23,35 +23,43 @@ local ToolPalette = MenuButton:subclass("cp.apple.finalcutpro.timeline.ToolPalet
 --- The options for the Tool Palette Menu Button.
 ---
 --- Notes:
---- * Contains `SELECT`, `TRIM`, `POSITION`, `RANGE`, `BLADE`, `ZOOM`, and `HAND`.
+---  * Contains `SELECT`, `TRIM`, `POSITION`, `RANGE`, `BLADE`, `ZOOM`, and `HAND`.
+---  * The `CommandSetID` value can be used with `cp.apple.finalcutpro:doShortcut()`.
 ToolPalette.static.OPTIONS = {
     SELECT = {
         AXHelpKey = "FFArrowToolTip",
         AXIdentifier = "selectToolArrowOrRangeSelection:",
+        CommandSetID = "SelectToolArrowOrRangeSelection",
     },
     TRIM = {
         AXHelpKey = "FFTrimToolTip",
         AXIdentifier = "selectToolTrim:",
+        CommandSetID = "SelectToolTrim",
     },
     POSITION = {
         AXHelpKey = "FFPositionToolTip",
         AXIdentifier = "selectToolPlacement:",
+        CommandSetID = "SelectToolPlacement",
     },
     RANGE = {
         AXHelpKey = "FFRangeSelectionToolTip",
         AXIdentifier = "selectToolRangeSelection:",
+        CommandSetID = "SelectToolRangeSelection",
     },
     BLADE = {
         AXHelpKey = "FFBladeToolTip",
         AXIdentifier = "selectToolBlade:",
+        CommandSetID = "SelectToolBlade",
     },
     ZOOM = {
         AXHelpKey = "FFZoomToolTip",
         AXIdentifier = "selectToolZoom:",
+        CommandSetID = "SelectToolZoom",
     },
     HAND = {
         AXHelpKey = "FFHandToolTip",
         AXIdentifier = "selectToolHand:",
+        CommandSetID = "SelectToolHand",
     },
 }
 

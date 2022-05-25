@@ -1307,17 +1307,38 @@ end
 -- Returns:
 --  * A handler function
 local function makeSlideHandler()
+
+    local currentTool
+
+    local updateUI = delayed.new(DELAY, function()
+        local CommandSetID = currentTool and currentTool.CommandSetID
+        if CommandSetID then
+            fcp:doShortcut(CommandSetID):Now()
+            currentTool = nil
+        end
+    end)
+
     return function(data)
         if data.actionType == "turn" then
             local actionValue = data.actionValue
             if actionValue then
-                if actionValue < 0 then
-                    -- TODO: Add check for current mode and only trigger if necessary:
-                    fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeLeft")):Now()
-                else
-                    -- TODO: Add check for current mode and only trigger if necessary:
-                    fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeRight")):Now()
+                if not currentTool then
+                    currentTool = fcp.timeline.toolbar.tool:value()
                 end
+                if actionValue < 0 then
+                    if fcp.timeline.toolbar.tool:isTrim() then
+                        fcp:doShortcut("NudgeLeft"):Now()
+                    else
+                        fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeLeft")):Now()
+                    end
+                else
+                    if fcp.timeline.toolbar.tool:isTrim() then
+                        fcp:doShortcut("NudgeRight"):Now()
+                    else
+                        fcp:doShortcut("SelectToolTrim"):Then(fcp:doShortcut("NudgeRight")):Now()
+                    end
+                end
+                updateUI:start()
             end
         end
     end
