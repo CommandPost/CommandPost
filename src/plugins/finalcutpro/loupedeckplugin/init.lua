@@ -979,7 +979,7 @@ local function makePlayheadHandler(actionName, playRate)
                 mod._workflowExtension.decrementPlayhead(math.abs(data.actionValue * playRate))
             end
         elseif data.actionType == "press" then
-            mod._workflowExtension.movePlayheadToSeconds(0)
+            fcp:doShortcut("JumpToStart"):Now()
         end
 
         --------------------------------------------------------------------------------
@@ -1371,6 +1371,103 @@ local function makeShortcutAdjustment(upShortcut, downShortcut, pressShortcut)
     end
 end
 
+-- makeShuttleHandler() -> function
+-- Function
+-- Makes a handler for the Shutter Touch Wheel control.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A handler function
+local function makeShuttleHandler()
+
+    local shuttleCount = 0
+
+    local shuttleRange = 5
+    local shuttleValue = 0
+    local lastShortcut = ""
+
+    local updateUI = delayed.new(DELAY, function()
+        shuttleCount = 0
+    end)
+
+    return function(data)
+        if data.actionType == "wheel" then
+            if data.functionPressed then
+                local range = 1
+                if shuttleCount > 50 then
+                    range = 5
+                elseif shuttleCount > 100 then
+                    range = 10
+                elseif shuttleCount > 150 then
+                    range = 20
+                elseif shuttleCount > 200 then
+                    range = 25
+                end
+                if data.actionValue > 0 then
+                    mod._workflowExtension.incrementPlayhead(data.actionValue * range)
+                else
+                    mod._workflowExtension.decrementPlayhead(math.abs(data.actionValue * range))
+                end
+                shuttleCount = shuttleCount + 1
+                updateUI:start()
+            else
+                if data.actionValue > 0 then
+                    shuttleValue = shuttleValue + 1
+                else
+                    shuttleValue = shuttleValue - 1
+                end
+
+                local whichShortcut
+
+                if shuttleValue > 0 then
+                    if shuttleValue < (shuttleRange * 1) then
+                        whichShortcut = "PlayRate1X"
+                    elseif shuttleValue < (shuttleRange * 2) then
+                        whichShortcut = "PlayRate2X"
+                    elseif shuttleValue < (shuttleRange * 3) then
+                        whichShortcut = "PlayRate4X"
+                    elseif shuttleValue < (shuttleRange * 4) then
+                        whichShortcut = "PlayRate8X"
+                    elseif shuttleValue < (shuttleRange * 5) then
+                        whichShortcut = "PlayRate16X"
+                    elseif shuttleValue < (shuttleRange * 6) then
+                        whichShortcut = "PlayRate32X"
+                    end
+                else
+                    if shuttleValue > ((shuttleRange * 1)*-1) then
+                        whichShortcut = "PlayRateMinus1X"
+                    elseif shuttleValue > ((shuttleRange * 2)*-1) then
+                        whichShortcut = "PlayRateMinus2X"
+                    elseif shuttleValue > ((shuttleRange * 3)*-1) then
+                        whichShortcut = "PlayRateMinus4X"
+                    elseif shuttleValue > ((shuttleRange * 4)*-1) then
+                        whichShortcut = "PlayRateMinus8X"
+                    elseif shuttleValue > ((shuttleRange * 5)*-1) then
+                        whichShortcut = "PlayRateMinus16X"
+                    elseif shuttleValue > ((shuttleRange * 6)*-1) then
+                        whichShortcut = "PlayRateMinus32X"
+                    end
+                end
+
+                if whichShortcut then
+                    if lastShortcut ~= whichShortcut then
+                        fcp:doShortcut(whichShortcut):Now()
+                    end
+                    lastShortcut = whichShortcut
+                end
+            end
+        elseif data.actionType == "doubleTap" then
+            fcp:doShortcut("JumpToStart"):Now()
+        elseif data.actionType == "tap" then
+            fcp:doSelectMenu({"View", "Playback", "Play"}, {locale="en"}):Now()
+            shuttleValue = 0
+            lastShortcut = ""
+        end
+    end
+end
+
 -- plugins.core.loupedeckplugin.manager._registerActions(manager) -> none
 -- Function
 -- A private function to register actions.
@@ -1391,6 +1488,18 @@ function mod._registerActions()
     -- Setup Dependancies:
     --------------------------------------------------------------------------------
     local registerAction = mod.manager.registerAction
+
+    --------------------------------------------------------------------------------
+    -- Shuttle Touch Wheel:
+    --------------------------------------------------------------------------------
+    registerAction("FCP Shuttle", makeShuttleHandler())
+
+    --------------------------------------------------------------------------------
+    -- Show Horizon:
+    --------------------------------------------------------------------------------
+    registerAction("FCP.Viewer.Show Horizon", function()
+        fcp.viewer.infoBar.viewMenu:doSelectValue(fcp:string("CPShowHorizon")):Now()
+    end)
 
     --------------------------------------------------------------------------------
     -- Share Destinations:
