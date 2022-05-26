@@ -303,7 +303,7 @@ end
 --- Returns:
 ---  * None
 function mod.updatePlugin()
-    log.df("[Loupedeck Plugin] Checking if we need to update Loupedeck Plugin...")
+    --log.df("[Loupedeck Plugin] Checking if we need to update Loupedeck Plugin...")
 
     --------------------------------------------------------------------------------
     -- Make sure the plugin path actually exists:
@@ -324,7 +324,7 @@ function mod.updatePlugin()
         if exitCode == 0 then
             log.df("[Loupedeck Plugin] Latest plugin installed.")
         else
-            log.df("[Loupedeck Plugin] The latest CommandPost Loupedeck Plugin is being installed...")
+            --log.df("[Loupedeck Plugin] The latest CommandPost Loupedeck Plugin is being installed...")
 
             --------------------------------------------------------------------------------
             -- Step 1: Remove the existing plugin:

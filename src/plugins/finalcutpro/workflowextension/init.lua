@@ -493,7 +493,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Connect to Dependancies:
     --------------------------------------------------------------------------------
-    mod.actionmanager                       = deps.actionmanager
+    mod.actionmanager = deps.actionmanager
 
     --------------------------------------------------------------------------------
     -- Setup the Actions:
@@ -505,11 +505,11 @@ end
 
 function plugin.postInit()
     --------------------------------------------------------------------------------
-    -- Forcefully load the Workflow Extension (once only):
+    -- Forcefully load the Workflow Extension (once only per update):
     --
     -- NOTE: Apple says that in a "future releases of the OS, using the
-    -- “pluginkit -a” and “pluginkit -r” to add and remove plug-ins will
-    -- stop working. We currently don't have a better workaround sadly.
+    --       'pluginkit -a' and 'pluginkit -r' to add and remove plug-ins will
+    --       stop working". We currently don't have a better workaround sadly.
     --------------------------------------------------------------------------------
     mod._currentVersion = hs.processInfo.version
     --mod.hasWorkflowExtensionBeenAddedVersion("")

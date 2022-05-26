@@ -1986,15 +1986,6 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     registerAction("Video Inspector.Compositing.Blend Modes", makePopupSliderParameterHandler("Video Inspector.Compositing.Blend Modes", function() return fcp.inspector.video:compositing():blendMode().value end, blendModes, 1))
 
-    --[[
-    local fcp = cp.apple.finalcutpro
-    for _, v in pairs(fcp.inspector.video.BLEND_MODES) do
-        if v.flexoID then
-            print(fcp:string(v.flexoID, "en"))
-        end
-    end
-    --]]
-
     --------------------------------------------------------------------------------
     -- Distort:
     --------------------------------------------------------------------------------
