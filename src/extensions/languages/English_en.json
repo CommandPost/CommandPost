@@ -2118,6 +2118,8 @@
     "stabilizationMethod": "Stabilization Method",
     "starlight": "Starlight",
     "start": "Start",
+    "startingWorkflowExtension": "Starting Workflow Extension",
+    "startingWorkflowExtensionDescription": "Please wait for the Workflow Extension to load...",
     "startScan": "Start Scan",
     "startWith": "Start with",
     "static": "Static",

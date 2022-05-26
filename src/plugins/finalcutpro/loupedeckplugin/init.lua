@@ -1805,6 +1805,7 @@ function mod._registerActions()
             -- Abort if the Workflow Extension is not running, or we don't know the
             -- last playhead position:
             --------------------------------------------------------------------------------
+            mod._workflowExtension.ping()
             if not mod._workflowExtension.connected or not mod._workflowExtension.lastPlayheadPosition then
                 notify.new(nil, {
                     title = i18n("workFlowExtensionNotRunning"),

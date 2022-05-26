@@ -48,7 +48,6 @@ local tools             = require "cp.tools"
 
 local delayed           = timer.delayed
 local doAfter           = timer.doAfter
-local playErrorSound    = tools.playErrorSound
 
 local mod = {}
 
@@ -95,6 +94,11 @@ mod.hasWorkflowExtensionBeenMovedVersion = config.prop("workflowExtension.MovedV
 --- Is CommandPost connected to the Workflow Extension?
 mod.connected = false
 
+--- plugins.finalcutpro.workflowextension.connected -> boolean
+--- Variable
+--- Is CommandPost connecting to the Workflow Extension?
+mod.connecting = false
+
 -- pongRecieved -> boolean
 -- Variable
 -- Has a pong been received yet?
@@ -112,6 +116,7 @@ local commandHandler = {
     ["DONE"] =  function()
                     log.df("[Workflow Extension] Connected")
                     mod.connected = true
+                    mod.connecting = false
                 end,
     ["DEAD"] =  function()
                     log.df("[Workflow Extension] Server Closed")
@@ -161,6 +166,19 @@ local commandHandler = {
 ---  * None
 function mod.connectionCallback()
     --------------------------------------------------------------------------------
+    -- We're now connected!
+    --------------------------------------------------------------------------------
+    --log.df("[Workflow Extension] Socket connection established")
+
+    --------------------------------------------------------------------------------
+    -- Removed the Connecting Notification:
+    --------------------------------------------------------------------------------
+    if mod.connectingNotification then
+        mod.connectingNotification:withdraw()
+        mod.connectingNotification = nil
+    end
+
+    --------------------------------------------------------------------------------
     -- Create a Ping Timer Check if it doesn't exist:
     --------------------------------------------------------------------------------
     if not mod.pingTimerCheck then
@@ -169,8 +187,8 @@ function mod.connectionCallback()
                 --------------------------------------------------------------------------------
                 -- No pong detected:
                 --------------------------------------------------------------------------------
-                --log.df("[Workflow Extension] Failed to ping server.")
-                --mod.disconnect()
+                log.df("[Workflow Extension] Failed to ping server.")
+                mod.disconnect()
                 mod.connect()
             else
                 --------------------------------------------------------------------------------
@@ -203,7 +221,9 @@ function mod.connectionCallback()
     --------------------------------------------------------------------------------
     -- Read the contents of the socket:
     --------------------------------------------------------------------------------
-    mod.socketClient:read("\r\n")
+    if mod.socketClient and mod.socketClient:connected() then
+        mod.socketClient:read("\r\n")
+    end
 end
 
 --- plugins.finalcutpro.workflowextension.callback() -> none
@@ -245,12 +265,30 @@ end
 ---  * None
 function mod.connect()
     if not mod.socketClient then
+        --log.df("[Workflow Extension] Creating Socket Client")
         mod.socketClient = socket.new()
         mod.socketClient:setCallback(mod.callback)
     end
+
     if not mod.socketClient:connected() then
-        fcp.commandPostWorkflowExtension:show()
-        mod.socketClient:connect("localhost", SOCKET_PORT, mod.connectionCallback)
+        if not mod.connecting then
+            fcp.commandPostWorkflowExtension:show()
+            --log.df("[Workflow Extension] Connecting to Socket Server")
+            mod.socketClient:connect("localhost", SOCKET_PORT, mod.connectionCallback)
+            mod.connecting = true
+
+            -- Abort after 5 seconds:
+            mod.abortTimer = doAfter(5, function()
+                if not mod.socketClient or (mod.socketClient and not mod.socketClient:connected()) then
+                    log.df("[Workflow Extension] Failed to connect after 5 seconds")
+                    mod.disconnect()
+                    fcp.commandPostWorkflowExtension:hide()
+                    mod.connect()
+                --else
+                    --log.df("[Workflow Extension] Already connected - did not need the abort timer.")
+                end
+            end)
+        end
     end
 end
 
@@ -264,6 +302,7 @@ end
 --- Returns:
 ---  * None
 function mod.disconnect()
+    mod.connecting = false
     mod.connected = false
     if mod.pingTimer then
         mod.pingTimer:stop()
@@ -281,23 +320,13 @@ function mod.disconnect()
     collectgarbage()
 end
 
---- plugins.finalcutpro.workflowextension.isWorkflowExtensionConnected() -> boolean
---- Function
---- Are we connected to the Workflow Extension?
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.isWorkflowExtensionConnected()
-    local result = mod.connected or mod.socketClient:connected()
-    if not result then
-        mod.connected = false
-        mod.connect()
-    end
-    return result
-end
+--- plugins.finalcutpro.workflowextension.skimmingRestoreTimer -> hs.timer.delayed
+--- Variable
+--- Delayed Timer to Connect to Workflow Extension
+mod.delayedConnect = delayed.new(5, function()
+    --log.df("[Workflow Extension] Send Command Triggered - Lets try and connect...")
+    mod.connect()
+end)
 
 --- plugins.finalcutpro.workflowextension.sendCommand(command) -> none
 --- Function
@@ -309,8 +338,28 @@ end
 --- Returns:
 ---  * None
 function mod.sendCommand(command)
-    if mod.isWorkflowExtensionConnected() then
+    if mod.socketClient and mod.socketClient:connected() then
         mod.socketClient:send(command .. "\r\n")
+    else
+        if not mod.connectingNotification  then
+            mod.connectingNotification = notify.new(function()
+                --------------------------------------------------------------------------------
+                -- Restart Final Cut Pro:
+                --------------------------------------------------------------------------------
+                fcp.doRestart():Now()
+            end, {
+                title = i18n("startingWorkflowExtension"),
+                subTitle = "",
+                informativeText = i18n("startingWorkflowExtensionDescription"),
+                autoWithdraw = false,
+                withdrawAfter = 0,
+                alwaysPresent = true,
+            }):send()
+        end
+        if not mod.delayedConnect:running() then
+            mod.connect()
+        end
+        mod.delayedConnect:start()
     end
 end
 
@@ -319,9 +368,9 @@ end
 --- Was the Skimming Feature enabled?
 mod.wasSkimmingEnabled = false
 
---- plugins.finalcutpro.workflowextension.skimmingRestoreTimer -> cp.deferred
+--- plugins.finalcutpro.workflowextension.skimmingRestoreTimer -> hs.timer.delayed
 --- Variable
---- Deferred Timer to Restore the Skimming Feature (if required)
+--- Delayed Timer to Restore the Skimming Feature (if required)
 mod.skimmingRestoreTimer = delayed.new(RESTORE_SKIMMING_DELAY, function()
     if mod.wasSkimmingEnabled then
        fcp:isSkimmingEnabled(true)
@@ -475,43 +524,105 @@ function mod.setupActions()
         end)
 end
 
-local plugin = {
-    id = "finalcutpro.workflowextension",
-    group = "finalcutpro",
-    dependencies = {
-        ["finalcutpro.commands"]        = "fcpxCmds",
-        ["core.action.manager"]         = "actionmanager",
-    }
-}
+--- plugins.finalcutpro.workflowextension.repositionWorkflowExtension() -> none
+--- Function
+--- Repositions the Workflow Extension.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.repositionWorkflowExtension()
+    --------------------------------------------------------------------------------
+    -- The first time we launch the Workflow Extension, lets move it as far away
+    -- as possible. We only do this once, so that the user can move it somewhere
+    -- else if needed.
+    --------------------------------------------------------------------------------
+    if mod.hasWorkflowExtensionBeenMovedVersion() ~= mod._currentVersion then
 
-function plugin.init(deps)
-    --------------------------------------------------------------------------------
-    -- Only load plugin if FCPX is supported:
-    --------------------------------------------------------------------------------
-    if not fcp:isSupported() then return end
+        --------------------------------------------------------------------------------
+        -- Make the Workflow Extension as small as possible:
+        --------------------------------------------------------------------------------
+        fcp.commandPostWorkflowExtension:size({h=0, w=0})
+
+        local primaryWindowUI = fcp.primaryWindow:UI()
+        local primaryWindowHSWindow = primaryWindowUI and primaryWindowUI:asHSWindow()
+        local primaryWindowScreen = primaryWindowHSWindow and primaryWindowHSWindow:screen()
+        local primaryWindowFullScreen = primaryWindowScreen and primaryWindowScreen:fullFrame()
+        local workflowExtensionFrame = fcp.commandPostWorkflowExtension:frame()
+
+        local isThereAScreenOnTheLeft = false
+        local isThereAScreenOnTheRight = false
+
+        local screenData = {}
+        local screenPositions = hs.screen.screenPositions()
+        for screen, position in pairs(screenPositions) do
+            if screen ~= primaryWindowScreen then
+                if position.x == 1 then
+                    isThereAScreenOnTheLeft = true
+                elseif position.x == -1 then
+                    isThereAScreenOnTheRight = true
+                end
+            end
+        end
+
+        --isThereAScreenOnTheLeft = true
+        --isThereAScreenOnTheRight = true
+
+        if isThereAScreenOnTheLeft and isThereAScreenOnTheRight then
+            --------------------------------------------------------------------------------
+            -- There's a screen on the left and right of Final Cut Pro, so lets just hide
+            -- it in the Viewer.
+            --------------------------------------------------------------------------------'
+            --log.df("[Workflow Extension] There's a screen on the left and right.")
+            local viewerFrame = fcp.viewer:frame()
+            if viewerFrame and workflowExtensionFrame then
+                fcp.commandPostWorkflowExtension:position({x=viewerFrame.x+(workflowExtensionFrame.w*3), y=viewerFrame.h+viewerFrame.y-workflowExtensionFrame.h})
+            end
+        elseif isThereAScreenOnTheLeft or (not isThereAScreenOnTheLeft and not isThereAScreenOnTheRight) then
+            --------------------------------------------------------------------------------
+            -- There's no screen on the right, so let's hide it on the left:
+            --------------------------------------------------------------------------------
+            --log.df("[Workflow Extension] There's a screen on the right.")
+            if primaryWindowFullScreen and workflowExtensionFrame then
+                fcp.commandPostWorkflowExtension:position({x=-58, y=primaryWindowFullScreen.h-workflowExtensionFrame.h})
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- There's no screen on the left, so let's hide it on the right:
+            --------------------------------------------------------------------------------
+            --log.df("[Workflow Extension] There's a screen on the left.")
+            if primaryWindowFullScreen and workflowExtensionFrame then
+                fcp.commandPostWorkflowExtension:position({x=primaryWindowFullScreen.w-1, y=primaryWindowFullScreen.h-workflowExtensionFrame.h})
+            end
+        end
+
+        mod.hasWorkflowExtensionBeenMovedVersion(mod._currentVersion)
+    end
 
     --------------------------------------------------------------------------------
-    -- Connect to Dependancies:
+    -- Give focus back to the primary window:
     --------------------------------------------------------------------------------
-    mod.actionmanager = deps.actionmanager
-
-    --------------------------------------------------------------------------------
-    -- Setup the Actions:
-    --------------------------------------------------------------------------------
-    mod.setupActions()
-
-    return mod
+    if fcp.commandPostWorkflowExtension:focused() then
+        local primaryWindow = fcp.primaryWindow:window()
+        if primaryWindow then
+            --log.df("[Workflow Extension] Focussing on primary window")
+            primaryWindow:focus()
+        end
+    end
 end
 
-function plugin.postInit()
-    --------------------------------------------------------------------------------
-    -- Forcefully load the Workflow Extension (once only per update):
-    --
-    -- NOTE: Apple says that in a "future releases of the OS, using the
-    --       'pluginkit -a' and 'pluginkit -r' to add and remove plug-ins will
-    --       stop working". We currently don't have a better workaround sadly.
-    --------------------------------------------------------------------------------
-    mod._currentVersion = hs.processInfo.version
+--- plugins.finalcutpro.workflowextension.forcefullyInstall() -> none
+--- Function
+--- Forcefully installs the Workflow Extension.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.forcefullyInstall()
     --mod.hasWorkflowExtensionBeenAddedVersion("")
     if mod.hasWorkflowExtensionBeenAddedVersion() ~= mod._currentVersion then
         --------------------------------------------------------------------------------
@@ -573,6 +684,50 @@ function plugin.postInit()
             end
         end, {"-a", hs.processInfo.bundlePath .. "/Contents/PlugIns/CommandPost.appex"}):start()
     end
+end
+
+local plugin = {
+    id = "finalcutpro.workflowextension",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]        = "fcpxCmds",
+        ["core.action.manager"]         = "actionmanager",
+    }
+}
+
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
+    -- Connect to Dependancies:
+    --------------------------------------------------------------------------------
+    mod.actionmanager = deps.actionmanager
+
+    --------------------------------------------------------------------------------
+    -- Setup the Actions:
+    --------------------------------------------------------------------------------
+    mod.setupActions()
+
+    --------------------------------------------------------------------------------
+    -- Save the current CommandPost Version:
+    --------------------------------------------------------------------------------
+    mod._currentVersion = hs.processInfo.version
+
+    return mod
+end
+
+function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Forcefully install the Workflow Extension (once only per update):
+    --
+    -- NOTE: Apple says that in a "future releases of the OS, using the
+    --       'pluginkit -a' and 'pluginkit -r' to add and remove plug-ins will
+    --       stop working". We currently don't have a better workaround sadly.
+    --------------------------------------------------------------------------------
+    mod.forcefullyInstall()
 
     --------------------------------------------------------------------------------
     -- Shutdown Callback (disconnect on restart/quit):
@@ -585,124 +740,28 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Watch for the Workflow Extension Window:
     --------------------------------------------------------------------------------
-    --mod.hasWorkflowExtensionBeenMovedVersion("")
-    fcp.commandPostWorkflowExtension.isShowing:watch(function(value)
+    mod.watcher = fcp.commandPostWorkflowExtension.isShowing:watch(function(value)
         if value then
-            --log.df("[Workflow Extension] Is Showing!")
-
-            --------------------------------------------------------------------------------
-            -- Make the Workflow Extension as small as possible:
-            --------------------------------------------------------------------------------
-            fcp.commandPostWorkflowExtension:size({h=0, w=0})
-
-            --------------------------------------------------------------------------------
-            -- The first time we launch the Workflow Extension, lets move it as far away
-            -- as possible. We only do this once, so that the user can move it somewhere
-            -- else if needed.
-            --------------------------------------------------------------------------------
-            if mod.hasWorkflowExtensionBeenMovedVersion() ~= mod._currentVersion then
-                local primaryWindowUI = fcp.primaryWindow:UI()
-                local primaryWindowHSWindow = primaryWindowUI and primaryWindowUI:asHSWindow()
-                local primaryWindowScreen = primaryWindowHSWindow and primaryWindowHSWindow:screen()
-                local primaryWindowFullScreen = primaryWindowScreen and primaryWindowScreen:fullFrame()
-                local workflowExtensionFrame = fcp.commandPostWorkflowExtension:frame()
-
-                local isThereAScreenOnTheLeft = false
-                local isThereAScreenOnTheRight = false
-
-                local screenData = {}
-                local screenPositions = hs.screen.screenPositions()
-                for screen, position in pairs(screenPositions) do
-                    if screen ~= primaryWindowScreen then
-                        if position.x == 1 then
-                            isThereAScreenOnTheLeft = true
-                        elseif position.x == -1 then
-                            isThereAScreenOnTheRight = true
-                        end
-                    end
-                end
-
-                --isThereAScreenOnTheLeft = true
-                --isThereAScreenOnTheRight = true
-
-                if isThereAScreenOnTheLeft and isThereAScreenOnTheRight then
-                    --------------------------------------------------------------------------------
-                    -- There's a screen on the left and right of Final Cut Pro, so lets just hide
-                    -- it in the Viewer.
-                    --------------------------------------------------------------------------------'
-                    --log.df("[Workflow Extension] There's a screen on the left and right.")
-                    local viewerFrame = fcp.viewer:frame()
-                    if viewerFrame and workflowExtensionFrame then
-                        fcp.commandPostWorkflowExtension:position({x=viewerFrame.x+(workflowExtensionFrame.w*3), y=viewerFrame.h+viewerFrame.y-workflowExtensionFrame.h})
-                    end
-                elseif isThereAScreenOnTheLeft or (not isThereAScreenOnTheLeft and not isThereAScreenOnTheRight) then
-                    --------------------------------------------------------------------------------
-                    -- There's no screen on the right, so let's hide it on the left:
-                    --------------------------------------------------------------------------------
-                    --log.df("[Workflow Extension] There's a screen on the right.")
-                    if primaryWindowFullScreen and workflowExtensionFrame then
-                        fcp.commandPostWorkflowExtension:position({x=-58, y=primaryWindowFullScreen.h-workflowExtensionFrame.h})
-                    end
-                else
-                    --------------------------------------------------------------------------------
-                    -- There's no screen on the left, so let's hide it on the right:
-                    --------------------------------------------------------------------------------
-                    --log.df("[Workflow Extension] There's a screen on the left.")
-                    if primaryWindowFullScreen and workflowExtensionFrame then
-                        fcp.commandPostWorkflowExtension:position({x=primaryWindowFullScreen.w-1, y=primaryWindowFullScreen.h-workflowExtensionFrame.h})
-                    end
-                end
-
-                mod.hasWorkflowExtensionBeenMovedVersion(mod._currentVersion)
-            end
-
-            --------------------------------------------------------------------------------
-            -- Give focus back to the primary window:
-            --------------------------------------------------------------------------------
-            if fcp.commandPostWorkflowExtension:focused() then
-                local primaryWindow = fcp.primaryWindow:window()
-                if primaryWindow then
-                    --log.df("[Workflow Extension] Focussing on primary window")
-                    primaryWindow:focus()
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Connect to the WebSocket Server:
-            --------------------------------------------------------------------------------
+            mod.repositionWorkflowExtension()
             mod.connect()
-        --else
-            --------------------------------------------------------------------------------
-            -- Disconnect from the WebSocket Server:
-            --------------------------------------------------------------------------------
-            --log.df("[Workflow Extension] The Workflow Extension window was closed.")
-            --mod.disconnect()
         end
     end)
 
     --------------------------------------------------------------------------------
     -- Watch for Final Cut Pro change in focus:
     --------------------------------------------------------------------------------
-    fcp.app.frontmost:watch(function()
-        fcp.commandPostWorkflowExtension:doShow():Then(function()
+    fcp.app.frontmost:watch(function(frontmost)
+        if frontmost and fcp.commandPostWorkflowExtension.isShowing() then
             mod.connect()
-        end):Now()
+        end
     end)
 
     --------------------------------------------------------------------------------
-    -- Connect to Workflow Extension if FCPX is frontmost:
+    -- Connect if the Workflow Extension is already open:
     --------------------------------------------------------------------------------
-    if fcp.isFrontmost() then
-        --log.df("[Workflow Extension] Final Cut Pro is running, so lets try launch the Workflow Extension.")
-        fcp.commandPostWorkflowExtension:doShow():Then(function()
-            mod.connect()
-        end):Now()
+    if fcp.commandPostWorkflowExtension.isShowing() then
+        mod.connect()
     end
-
-    --------------------------------------------------------------------------------
-    -- Force an iShowing update:
-    --------------------------------------------------------------------------------
-    fcp.commandPostWorkflowExtension.isShowing:update()
 end
 
 return plugin
