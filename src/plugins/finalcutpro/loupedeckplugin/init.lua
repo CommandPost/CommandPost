@@ -987,6 +987,19 @@ local function makePlayheadHandler(actionName, playRate)
         --------------------------------------------------------------------------------
         local timecode = fcp.viewer.timecode()
         if timecode then
+
+            --------------------------------------------------------------------------------
+            -- Trim the timecode value to make it easier to read:
+            --------------------------------------------------------------------------------
+            if timecode:sub(1,6) == "00:00:" then
+                timecode = timecode:sub(7)
+            elseif timecode:sub(1,3) == "00:" then
+                timecode = timecode:sub(4)
+            end
+            if timecode:sub(1,1) == "0" then
+                timecode = timecode:sub(2)
+            end
+
             local message = {
                 ["MessageType"] = "UpdateDisplay",
                 ["ActionName"] = actionName,
