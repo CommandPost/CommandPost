@@ -13,6 +13,7 @@ local plist             = require "hs.plist"
 local timer             = require "hs.timer"
 
 local config            = require "cp.config"
+local cpPlugins         = require "cp.plugins"
 local deferred          = require "cp.deferred"
 local destinations      = require "cp.apple.finalcutpro.export.destinations"
 local dialog            = require "cp.dialog"
@@ -930,11 +931,110 @@ local function requestShareDestinations(data)
     if tableCount(destinationIDs) > 0 then
         local message = {
             ["MessageType"]     = "UpdateCommands",
-            ["ActionName"]      = "FCP.ShareDestinations",
+            ["ActionName"]      = "FCP.Share Destinations",
             ["ActionValue"]     = json.encode(destinationIDs),
         }
         local encodedMessage = json.encode(message, true)
         mod.manager.sendMessage(encodedMessage)
+    end
+end
+
+-- applyShareDestination(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service wants to apply a share destination.
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function applyShareDestination(data)
+    local actionValue = data.actionValue
+    if actionValue then
+
+        local function isDefaultItem(element)
+            return element and element:attributeValue("AXMenuItemCmdChar") ~= nil
+        end
+
+        local defaultFormat = fcp.strings:find("FFShareDefaultApplicationFormat")
+
+        defaultFormat = defaultFormat:gsub("([()])", "%%%1"):gsub("%%@", "(.+)") .. "…"
+
+        local dest = actionValue
+
+        --------------------------------------------------------------------------------
+        -- This function will match based on the destination title, minus
+        -- "(default)" and "…" if present.
+        --------------------------------------------------------------------------------
+        local destinationSelect = function(menuItem)
+            local title = menuItem:attributeValue("AXTitle")
+            if title == nil then
+                return false
+            elseif isDefaultItem(menuItem) then
+                title = title:match(defaultFormat)
+            else
+                local destinationFormat = "(.+)…"
+                title = title:match(destinationFormat)
+            end
+            return type(dest) == "function" and dest(title) or title == tostring(dest)
+        end
+        local menuItem = fcp.menu:findMenuUI({"File", "Share", destinationSelect})
+        if menuItem then
+            fcp:selectMenu({"File", "Share", destinationSelect}, {locale="en", ["pressAll"] = true}):Now()
+        else
+            playErrorSound()
+        end
+    end
+end
+
+-- requestWorkflowExtensions(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service requests a JSON of commands
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function requestWorkflowExtensions(data)
+    local workflowExtensionIDs = {}
+    local workflowExtensions = fcp.workflowExtensionNames()
+    for _, title in pairs(workflowExtensions) do
+        --------------------------------------------------------------------------------
+        -- We don't want the CommandPost Workflow Extension visible:
+        --------------------------------------------------------------------------------
+        if title ~= "CommandPost" then
+            workflowExtensionIDs[title] = title
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Send a WebSocket Message back to Loupedeck:
+    --------------------------------------------------------------------------------
+    if tableCount(workflowExtensionIDs) > 0 then
+        local message = {
+            ["MessageType"]     = "UpdateCommands",
+            ["ActionName"]      = "FCP.Workflow Extensions",
+            ["ActionValue"]     = json.encode(workflowExtensionIDs),
+        }
+        local encodedMessage = json.encode(message, true)
+        mod.manager.sendMessage(encodedMessage)
+    end
+end
+
+-- applyWorkflowExtension(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service wants to apply a share destination.
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function applyWorkflowExtension(data)
+    local actionValue = data.actionValue
+    if actionValue then
+        fcp:doSelectMenu({"Window", "Extensions", actionValue}, {locale="en"}):Now()
     end
 end
 
@@ -1570,6 +1670,34 @@ function mod._registerActions()
     local registerAction = mod.manager.registerAction
 
     --------------------------------------------------------------------------------
+    -- CommandPost Actions:
+    --------------------------------------------------------------------------------
+    registerAction("FCP.Automation.Timeline Batch Export", function()
+        local plugin = cpPlugins("finalcutpro.export.batch")
+        if plugin then
+            plugin.batchExport()
+        end
+    end)
+    registerAction("FCP.Automation.Export Timeline Index as CSV", function()
+        local plugin = cpPlugins("finalcutpro.timeline.csv")
+        if plugin then
+            plugin.saveTimelineIndexToCSV()
+        end
+    end)
+    registerAction("FCP.Automation.Export Browser as CSV", function()
+        local plugin = cpPlugins("finalcutpro.browser.csv")
+        if plugin then
+            plugin.saveBrowserContentsToCSV()
+        end
+    end)
+    registerAction("FCP.Automation.Scrolling Timeline", function()
+        local plugin = cpPlugins("finalcutpro.timeline.playhead")
+        if plugin then
+            plugin.scrollingTimeline:toggle()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
     -- Shuttle Touch Wheel:
     --------------------------------------------------------------------------------
     registerAction("FCP Shuttle", makeShuttleHandler())
@@ -1585,44 +1713,13 @@ function mod._registerActions()
     -- Share Destinations:
     --------------------------------------------------------------------------------
     registerAction("RequestShareDestinations", requestShareDestinations)
-    registerAction("FCP.ShareDestinations", function(data)
-        local actionValue = data.actionValue
-        if actionValue then
+    registerAction("FCP.Share Destinations", applyShareDestination)
 
-            local function isDefaultItem(element)
-                return element and element:attributeValue("AXMenuItemCmdChar") ~= nil
-            end
-
-            local defaultFormat = fcp.strings:find("FFShareDefaultApplicationFormat")
-
-            defaultFormat = defaultFormat:gsub("([()])", "%%%1"):gsub("%%@", "(.+)") .. "…"
-
-            local dest = actionValue
-
-            --------------------------------------------------------------------------------
-            -- This function will match based on the destination title, minus
-            -- "(default)" and "…" if present.
-            --------------------------------------------------------------------------------
-            local destinationSelect = function(menuItem)
-                local title = menuItem:attributeValue("AXTitle")
-                if title == nil then
-                    return false
-                elseif isDefaultItem(menuItem) then
-                    title = title:match(defaultFormat)
-                else
-                    local destinationFormat = "(.+)…"
-                    title = title:match(destinationFormat)
-                end
-                return type(dest) == "function" and dest(title) or title == tostring(dest)
-            end
-            local menuItem = fcp.menu:findMenuUI({"File", "Share", destinationSelect})
-            if menuItem then
-                fcp:selectMenu({"File", "Share", destinationSelect}, {locale="en", ["pressAll"] = true}):Now()
-            else
-                playErrorSound()
-            end
-        end
-    end)
+    --------------------------------------------------------------------------------
+    -- Workflow Extensions:
+    --------------------------------------------------------------------------------
+    registerAction("RequestWorkflowExtensions", requestWorkflowExtensions)
+    registerAction("FCP.Workflow Extensions", applyWorkflowExtension)
 
     --------------------------------------------------------------------------------
     -- Mark > Previous/Next > Frame/Edit/Marker/Keyframe
@@ -1700,7 +1797,7 @@ function mod._registerActions()
     -- Full Screen Toggle:
     --------------------------------------------------------------------------------
     local lastPlayheadPosition
-    registerAction("Macros.Toggle Fullscreen", function()
+    registerAction("FCP.Automation.Toggle Fullscreen", function()
         if fcp.fullScreenPlayer:isShowing() then
             fcp:keyStroke({}, "escape")
         else
@@ -1739,7 +1836,7 @@ function mod._registerActions()
     --------------------------------------------------------------------------------
     -- Trim Clip:
     --------------------------------------------------------------------------------
-    registerAction("Macros.Trim Left Edge", function(data)
+    registerAction("FCP.Automation.Trim Left Edge", function(data)
         if data.actionType == "turn" then
             local actionValue = data.actionValue
             if actionValue < 0 then
@@ -1751,7 +1848,7 @@ function mod._registerActions()
             fcp:doShortcut("SelectLeftEdge"):Now()
         end
     end)
-    registerAction("Macros.Trim Right Edge", function(data)
+    registerAction("FCP.Automation.Trim Right Edge", function(data)
         if data.actionType == "turn" then
             local actionValue = data.actionValue
             if actionValue < 0 then
