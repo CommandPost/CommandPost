@@ -377,6 +377,36 @@ function mod.new()
                         end
                     end
 
+                    --------------------------------------------------------------------------------
+                    -- Work out which tab was selected and re-select it:
+                    --------------------------------------------------------------------------------
+                    local lastTab = mod.lastTab()
+
+                    --------------------------------------------------------------------------------
+                    -- Check to see if the panel is part of a group:
+                    --------------------------------------------------------------------------------
+                    local lastGroup
+                    for _,thePanel in ipairs(mod._panels) do
+                        if thePanel.id == lastTab and thePanel.group then
+                            lastGroup = thePanel.group
+                            break
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If it's part of a group, find the group master:
+                    --------------------------------------------------------------------------------
+                    if lastGroup then
+                        for _,thePanel in ipairs(mod._panels) do
+                            if thePanel.group == lastGroup and thePanel.groupMaster then
+                                lastTab = thePanel.id
+                                break
+                            end
+                        end
+                    end
+
+                    mod._toolbar:selectedItem(lastTab)
+
                     local popup = menubar.new()
                     popup:setMenu(menu):removeFromMenuBar()
                     popup:popupMenu(mouse.absolutePosition(), true)

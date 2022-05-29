@@ -783,7 +783,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     -- Shutterstock (Window > Extensions)
     -- Simon Says Transcription (Window > Extensions)
     --------------------------------------------------------------------------------
-    local workflowExtensions = fcp.workflowExtensions()
+    local workflowExtensions = fcp.workflowExtensionNames()
     for _, title in pairs(workflowExtensions) do
         local path = {"Window", "Extensions"}
         local params = {}

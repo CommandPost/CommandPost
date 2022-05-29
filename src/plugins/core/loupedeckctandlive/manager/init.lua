@@ -514,19 +514,22 @@ function mod.new(deviceType)
     --- How often snippets are refreshed.
     o.snippetsRefreshFrequency = config.prop(o.id .. ".preferences.snippetsRefreshFrequency", "1")
 
-
-
     --- plugins.core.loupedeckctandlive.manager.enabled <cp.prop: boolean>
     --- Field
     --- Is Loupedeck support enabled?
     o.enabled = config.prop(o.id .. ".enabled", false):watch(function(enabled)
         if enabled then
-            o.appWatcher:start()
-            o.driveWatcher:start()
-            o.sleepWatcher:start()
-            o.usbWatcher:start()
+            if mod.loupedeckPlugin.enabled() then
+                log.df("Can't use CommandPost's Loupedeck Intergration if the Loupedeck Plugin is enabled")
+                o.enabled(false)
+            else
+                o.appWatcher:start()
+                o.driveWatcher:start()
+                o.sleepWatcher:start()
+                o.usbWatcher:start()
 
-            o.setupDevices()
+                o.setupDevices()
+            end
         else
             --------------------------------------------------------------------------------
             -- Stop all watchers:
@@ -908,10 +911,12 @@ function mod.mt:getFlashDrivePath()
     local storage = execute("system_profiler SPStorageDataType -xml")
     local storagePlist = storage and readString(storage)
     local drives = storagePlist and storagePlist[1] and storagePlist[1]._items
-    for _, data in pairs(drives) do
-        if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
-            local path = data.mount_point
-            return doesDirectoryExist(path) and path
+    if drives then
+        for _, data in pairs(drives) do
+            if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
+                local path = data.mount_point
+                return doesDirectoryExist(path) and path
+            end
         end
     end
 end
@@ -2224,6 +2229,7 @@ local plugin = {
         ["core.commands.global"]                = "global",
         ["core.controlsurfaces.manager"]        = "csman",
         ["core.preferences.panels.scripting"]   = "scriptingPreferences",
+        ["core.loupedeckplugin.manager"]        = "loupedeckPlugin",
     }
 }
 
@@ -2236,8 +2242,10 @@ function plugin.init(deps, env)
     mod.csman                   = deps.csman
     mod.global                  = deps.global
     mod.scriptingPreferences    = deps.scriptingPreferences
+    mod.loupedeckPlugin         = deps.loupedeckPlugin
 
     mod.env                     = env
+
     --------------------------------------------------------------------------------
     -- Setup devices:
     --------------------------------------------------------------------------------

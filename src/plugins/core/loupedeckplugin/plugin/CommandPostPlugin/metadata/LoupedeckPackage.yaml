@@ -1,0 +1,18 @@
+﻿type: plugin4
+name: CommandPost
+displayName: CommandPost
+version: 1.3.14
+author: LateNite Films Pty Ltd
+copyright: Copyright (c) 2022 LateNite Films Pty Ltd
+
+supportedDevices:
+  - LoupedeckCt
+  - LoupedeckLive
+
+pluginFileName: CommandPostPlugin.dll
+pluginFolderMac: bin/mac/
+
+license: MIT license
+licenseUrl: https://raw.githubusercontent.com/CommandPost/LoupedeckPlugin/main/LICENSE
+homePageUrl: https://commandpost.io
+supportPageUrl: https://help.commandpost.io

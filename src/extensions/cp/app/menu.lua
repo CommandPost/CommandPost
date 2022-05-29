@@ -435,7 +435,7 @@ end
 --- Field
 --- Tells you if the app's Menu Bar is visible.
 function menu.lazy.prop:showing()
-    return self:UI():ISNOT(nil)
+    return self.UI:ISNOT(nil)
 end
 
 --- cp.app.menu:app() -> cp.app

@@ -57,7 +57,7 @@ end
 --- Returns:
 ---  * `true` if showing, otherwise `false`
 function ValueIndicator.lazy.prop:isShowing()
-    return self:UI():ISNOT(nil):AND(self:parent().isShowing)
+    return self.UI:ISNOT(nil):AND(self:parent().isShowing)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.value <cp.prop: number>
