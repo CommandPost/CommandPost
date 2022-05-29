@@ -13,7 +13,6 @@ local just							= require "cp.just"
 local go                            = require "cp.rx.go"
 
 local Group                         = require "cp.ui.Group"
-local StaticText                    = require "cp.ui.StaticText"
 local Button                        = require "cp.ui.Button"
 local Window                        = require "cp.ui.Window"
 

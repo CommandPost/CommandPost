@@ -684,7 +684,7 @@ function fcp.workflowExtensionNames()
     ----------------------------------------------------------------------------------------
     -- Modern Workflow Extensions (.appex):
     ----------------------------------------------------------------------------------------
-    local output, status = execute("pluginkit -m -v -p com.apple.FinalCut.WorkflowExtension")
+    output, status = execute("pluginkit -m -v -p com.apple.FinalCut.WorkflowExtension")
     if status then
         local p = tools.lines(output)
         if p then

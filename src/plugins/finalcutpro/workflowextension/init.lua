@@ -145,11 +145,11 @@ local commandHandler = {
 
                     --log.df("[Workflow Extension] Playhead Timeline Changed")
                 end,
-    ["SEQC"] =  function(data)
+    ["SEQC"] =  function()
                     --TODO: Actually do something with this data.
                     --log.df("[Workflow Extension] Active Project has Changed: %s", hs.inspect(data))
                 end,
-    ["RNGC"] =  function(data)
+    ["RNGC"] =  function()
                     --TODO: Actually do something with this data.
                     --log.df("[Workflow Extension] Active Project Duration and/or Start Time has changed: %s", hs.inspect(data))
                 end,
@@ -555,7 +555,6 @@ function mod.repositionWorkflowExtension()
         local isThereAScreenOnTheLeft = false
         local isThereAScreenOnTheRight = false
 
-        local screenData = {}
         local screenPositions = hs.screen.screenPositions()
         for screen, position in pairs(screenPositions) do
             if screen ~= primaryWindowScreen then

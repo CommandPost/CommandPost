@@ -380,15 +380,15 @@ function mod.new()
                     --------------------------------------------------------------------------------
                     -- Work out which tab was selected and re-select it:
                     --------------------------------------------------------------------------------
-                    local id = mod.lastTab()
+                    local lastTab = mod.lastTab()
 
                     --------------------------------------------------------------------------------
                     -- Check to see if the panel is part of a group:
                     --------------------------------------------------------------------------------
-                    local group
+                    local lastGroup
                     for _,thePanel in ipairs(mod._panels) do
-                        if thePanel.id == id and thePanel.group then
-                            group = thePanel.group
+                        if thePanel.id == lastTab and thePanel.group then
+                            lastGroup = thePanel.group
                             break
                         end
                     end
@@ -396,16 +396,16 @@ function mod.new()
                     --------------------------------------------------------------------------------
                     -- If it's part of a group, find the group master:
                     --------------------------------------------------------------------------------
-                    if group then
+                    if lastGroup then
                         for _,thePanel in ipairs(mod._panels) do
-                            if thePanel.group == group and thePanel.groupMaster then
-                                id = thePanel.id
+                            if thePanel.group == lastGroup and thePanel.groupMaster then
+                                lastTab = thePanel.id
                                 break
                             end
                         end
                     end
 
-                    mod._toolbar:selectedItem(id)
+                    mod._toolbar:selectedItem(lastTab)
 
                     local popup = menubar.new()
                     popup:setMenu(menu):removeFromMenuBar()

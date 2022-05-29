@@ -171,18 +171,18 @@ end
 function tools.keyStroke(modifiers, character, app, proper)
     modifiers = modifiers or {}
 
-    local cleanedModifiers = {}
-    for _, modifier in pairs(modifiers) do
-        if modifier == "command" then modifier = "cmd" end
-        if modifier == "option" then modifier = "alt" end
-        if modifier == "control" then modifier = "ctrl" end
-        if modifier == "function" then modifier = "fn" end
-        if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
-            table.insert(cleanedModifiers, modifier)
-        end
-    end
-
     if not proper then
+        local cleanedModifiers = {}
+        for _, modifier in pairs(modifiers) do
+            if modifier == "command" then modifier = "cmd" end
+            if modifier == "option" then modifier = "alt" end
+            if modifier == "control" then modifier = "ctrl" end
+            if modifier == "function" then modifier = "fn" end
+            if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+                table.insert(cleanedModifiers, modifier)
+            end
+        end
+
         newKeyEvent(cleanedModifiers, character, true):post(app)
         newKeyEvent(cleanedModifiers, character, false):post(app)
     else

@@ -18,10 +18,7 @@ local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
 local doAfter                   = timer.doAfter
-local doesDirectoryExist        = tools.doesDirectoryExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
-local execute                   = _G.hs.execute
-local infoForBundleID           = application.infoForBundleID
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local pathToAbsolute            = fs.pathToAbsolute
 local playErrorSound            = tools.playErrorSound
@@ -109,7 +106,7 @@ local callbackFn = {
         if action then
             action(decodedData)
         else
-            log.df("[Loupedeck Plugin] Invalid ActionName.\nStatus: '%s'\nMessage: '%s'", status, message)
+            log.df("[Loupedeck Plugin] Invalid ActionName: '%s'", message)
         end
     end,
     ["pong"] = function()
@@ -229,7 +226,6 @@ function mod.installPlugin()
     --------------------------------------------------------------------------------
     -- Check if latest plugin is already installed.
     --------------------------------------------------------------------------------
-    local userCommandPostPluginPath = loupedeckSupportPath .. "/Plugins/CommandPostPlugin"
     local output, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Latest plugin already installed.")

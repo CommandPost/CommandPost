@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "ldPlugin"
+--local log               = require "hs.logger".new "ldPlugin"
 
 local osascript         = require "hs.osascript"
 local shortcuts         = require "hs.shortcuts"
@@ -89,7 +89,6 @@ local function requestKeyboardMaestro()
     local macroGroups = prefs and prefs.MacroGroups
     if macroGroups then
         for _, v in pairs(macroGroups) do
-            local groupName = v.Name
             if v.Macros then
                 for _, vv in pairs(v.Macros) do
                     local name = vv.Name
