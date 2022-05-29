@@ -226,7 +226,8 @@ function mod.installPlugin()
     --------------------------------------------------------------------------------
     -- Check if latest plugin is already installed.
     --------------------------------------------------------------------------------
-    local _, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
+    local ok
+    _, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Latest plugin already installed.")
         return true
@@ -236,8 +237,7 @@ function mod.installPlugin()
     -- Remove the existing plugin:
     --------------------------------------------------------------------------------
     log.df("[Loupedeck Plugin] Removing the existing plugin...")
-    local output
-    output, ok = os.execute([[/bin/rm -R "]] .. userCommandPostPluginPath .. [["]])
+    _, ok = os.execute([[/bin/rm -R "]] .. userCommandPostPluginPath .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Failed to remove the existing plugin.")
         return false
@@ -247,7 +247,7 @@ function mod.installPlugin()
     -- Create a folder for the Plugin:
     --------------------------------------------------------------------------------
     log.df("[Loupedeck Plugin] Creating folder for plugin...")
-    output, ok = os.execute([[/bin/mkdir "]] .. userCommandPostPluginPath .. [["]])
+    _, ok = os.execute([[/bin/mkdir "]] .. userCommandPostPluginPath .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Failed to make a folder for the CommandPost Plugin.")
         return false
@@ -257,7 +257,7 @@ function mod.installPlugin()
     -- Copying the latest plugin:
     --------------------------------------------------------------------------------
     log.df("[Loupedeck Plugin] Copying latest plugin to Loupedeck folder...")
-    output, ok = os.execute([[/bin/cp -R "]] .. embeddedCommandPostPluginPath .. [[/" "]] .. userCommandPostPluginPath .. [["]])
+    _, ok = os.execute([[/bin/cp -R "]] .. embeddedCommandPostPluginPath .. [[/" "]] .. userCommandPostPluginPath .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Failed copy the Loupedeck Plugin.")
         return false
