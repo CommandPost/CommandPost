@@ -226,7 +226,7 @@ function mod.installPlugin()
     --------------------------------------------------------------------------------
     -- Check if latest plugin is already installed.
     --------------------------------------------------------------------------------
-    local output, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
+    local _, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Latest plugin already installed.")
         return true
@@ -326,28 +326,28 @@ function mod.updatePlugin()
             -- Step 1: Remove the existing plugin:
             --------------------------------------------------------------------------------
             log.df("[Loupedeck Plugin] Removing the existing plugin...")
-            task.new("/bin/rm", function(copyExitCode, stdOut, stdErr)
+            task.new("/bin/rm", function()
                 --------------------------------------------------------------------------------
                 -- Step 2: Create a folder for the Plugin:
                 --------------------------------------------------------------------------------
                 log.df("[Loupedeck Plugin] Making a directory for the CommandPost Plugin...")
-                task.new("/bin/mkdir", function(copyExitCode, stdOut, stdErr)
-                    if copyExitCode ~= 0 then
+                task.new("/bin/mkdir", function(mkDirExitCode, mkDirStdOut, mkDirStdErr)
+                    if mkDirExitCode ~= 0 then
                         log.ef("[Loupedeck Plugin] Failed to make the Loupedeck CommandPost Plugin directory:")
-                        log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
-                        log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
-                        log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
+                        log.df(" - exitCode: '%s', %s", mkDirExitCode, type(mkDirExitCode))
+                        log.df(" - stdOut: '%s', %s", mkDirStdOut, type(mkDirStdOut))
+                        log.df(" - stdErr: '%s', %s", mkDirStdErr, type(mkDirStdErr))
                     else
                         --------------------------------------------------------------------------------
                         -- Step 3: Copying the latest plugin:
                         --------------------------------------------------------------------------------
                         log.df("[Loupedeck Plugin] Copying the latest plugin...")
-                        task.new("/bin/cp", function(copyExitCode, stdOut, stdErr)
+                        task.new("/bin/cp", function(copyExitCode, copyStdOut, copyStdErr)
                             if copyExitCode ~= 0 then
                                 log.ef("Failed to copy the Loupedeck CommandPost Plugin:")
-                                log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
-                                log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
-                                log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
+                                log.df(" - exitCode: '%s', %s", copyExitCode, type(copyExitCode))
+                                log.df(" - stdOut: '%s', %s", copyStdOut, type(copyStdOut))
+                                log.df(" - stdErr: '%s', %s", copyStdErr, type(copyStdErr))
                             else
                                 log.df("[Loupedeck Plugin] Plugin Copied!")
 
@@ -395,7 +395,7 @@ function mod.removePlugin()
     local userCommandPostPluginPath = loupedeckSupportPath .. "/Plugins/CommandPostPlugin"
     local output, ok = os.execute([[/bin/rm -R "]] .. userCommandPostPluginPath .. [["]])
     if not ok then
-        log.ef(format("[Loupedeck Plugin] Failed to delete plugin '%s': %s", userCommandPostPluginPath, output))
+        log.ef(string.format("[Loupedeck Plugin] Failed to delete plugin '%s': %s", userCommandPostPluginPath, output))
     end
 
     return true
@@ -421,7 +421,7 @@ function mod.setEnabled(enabled)
         mod.enabled(result)
     else
         local result = mod.removePlugin()
-        mod.enabled(false)
+        mod.enabled(not result)
     end
     return mod.enabled()
 end
