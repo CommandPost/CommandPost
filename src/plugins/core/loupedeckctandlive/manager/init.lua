@@ -911,10 +911,12 @@ function mod.mt:getFlashDrivePath()
     local storage = execute("system_profiler SPStorageDataType -xml")
     local storagePlist = storage and readString(storage)
     local drives = storagePlist and storagePlist[1] and storagePlist[1]._items
-    for _, data in pairs(drives) do
-        if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
-            local path = data.mount_point
-            return doesDirectoryExist(path) and path
+    if drives then
+        for _, data in pairs(drives) do
+            if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
+                local path = data.mount_point
+                return doesDirectoryExist(path) and path
+            end
         end
     end
 end
