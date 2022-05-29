@@ -236,6 +236,7 @@ function mod.installPlugin()
     -- Remove the existing plugin:
     --------------------------------------------------------------------------------
     log.df("[Loupedeck Plugin] Removing the existing plugin...")
+    local output
     output, ok = os.execute([[/bin/rm -R "]] .. userCommandPostPluginPath .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Failed to remove the existing plugin.")
