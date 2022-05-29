@@ -226,7 +226,7 @@ function mod.installPlugin()
     --------------------------------------------------------------------------------
     -- Check if latest plugin is already installed.
     --------------------------------------------------------------------------------
-    local ok
+    local _, ok
     _, ok = os.execute([[/usr/bin/diff "]] .. source .. [[" "]] .. destination .. [["]])
     if not ok then
         log.df("[Loupedeck Plugin] Latest plugin already installed.")
