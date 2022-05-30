@@ -9,6 +9,24 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+            <h1>CommandPost 1.4.0</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>We've added a new "Loupedeck Plugin" that acts as an alternative to our native/direct Loupedeck support - allowing you to access all of CommandPost's Final Cut Pro actions within the LoupedeckConfig application. This is really handy for users that have to jump between Adobe Premiere and Final Cut Pro, for example. All of your macOS Shortcuts macros and Keyboard Maestro macros will also appear in the LoupedeckConfig application automagically. There are also some macOS Spaces actions. Big thanks to the Loupedeck Team for their support - especially Jenny!</li>
+                <li>Added support for the Razer Orbweaver. Big thanks to Ross Batten for giving us access to the hardware! We hope to add more Razer keyboards in the near future.</li>
+                <li>We've added a new Final Cut Pro Workflow Extension, which allows us to better control the playhead (which works great with control surfaces - such as the Loupedeck CT wheel). The Workflow Extension will only load when you trigger an action that requires it. When you first load the Workflow Extension it will try and make itself as small as possible and get out of the way - however you can move it to wherever you want, and like all Workflow Extensions its position is saved with your Workspace. There are new actions for "Move Playhead Forward/Backward" at different increments. There's no buttons on the Workflow Extension - it's currently simply an interface for us to control the playhead.</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Improved the colour accuracy of the Razer Tartarus V2 LEDs.</li>
+                <li>Fixed a bug in the Resolve Control Surfaces where the "RELATIVE FINE CONTROL" jog mode wouldn't trigger the correct jog mode on the hardware.</li>
+			</ul>
+
+		    <hr />
+
             <h1>CommandPost 1.3.13</h1>
 
 			<h2>🔨 Improvements</h2>
@@ -20,7 +38,7 @@
 
 			<h2>🐞 Bug Fix</h2>
 			<ul>
-                <li>Fixed a regression introduced in the previous release which caused applying individual effects, transitions, titles and generators to clips in Final Cut Pro via a CommandPost action to fail unexpectedly. Thanks for reporting Fernando Piñero & Andrew Griffiths!		</li>
+                <li>Fixed a regression introduced in the previous release which caused applying individual effects, transitions, titles and generators to clips in Final Cut Pro via a CommandPost action to fail unexpectedly. Thanks for reporting Fernando Piñero & Andrew Griffiths!</li>
 			</ul>
 
 		    <hr />
