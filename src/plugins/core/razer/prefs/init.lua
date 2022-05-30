@@ -165,6 +165,7 @@ local function generateContent()
 
         i18n                        = i18n,
 
+        lastDevice                  = mod.lastDevice(),
         lastApplication             = mod.lastApplication(),
         lastBank                    = mod.lastBank(),
 
@@ -236,21 +237,13 @@ local function updateUI(params)
     --------------------------------------------------------------------------------
     -- If no parameters are supplied, just use whatever was last:
     --------------------------------------------------------------------------------
-    if not params then
-        params = {
-            ["device"] = mod.lastDevice(),
-            ["application"] = mod.lastApplication(),
-            ["bank"] = mod.lastBank(),
-            ["controlType"] = mod.lastControlType(),
-            ["controlID"] = mod.lastControlID(),
-        }
-    end
+    params = params or {}
 
-    local device        = params["device"]
-    local app           = params["application"]
-    local bank          = params["bank"]
-    local controlType   = params["controlType"]
-    local controlID     = params["controlID"]
+    local device        = params["device"]          or mod.lastDevice()
+    local app           = params["application"]     or mod.lastApplication()
+    local bank          = params["bank"]            or mod.lastBank()
+    local controlType   = params["controlType"]     or mod.lastControlType()
+    local controlID     = params["controlID"]       or mod.lastControlID()
 
     local injectScript = mod._manager.injectScript
 
@@ -298,7 +291,9 @@ local function updateUI(params)
 
     local bankLabel = selectedBank and selectedBank.bankLabel or ""
 
-    injectScript([[
+    local script = [[
+        changeValueByID('device', `]] .. escapeTilda(device) .. [[`);
+
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
 
         changeCheckedByID('ignore', ]] .. tostring(ignore) .. [[);
@@ -329,7 +324,68 @@ local function updateUI(params)
         changeColor(']] .. colorValue .. [[');
 
         updateIgnoreVisibility();
-    ]])
+    ]]
+
+    if device == "Razer Tartarus V2" then
+        script = script .. [[
+        document.getElementById("razer_tartarus_v2").style.display = "table";
+        document.getElementById("razer_orbweaver").style.display = "none";
+        ]]
+    elseif device == "Razer Orbweaver" then
+        script = script .. [[
+            document.getElementById("razer_tartarus_v2").style.display = "none";
+            document.getElementById("razer_orbweaver").style.display = "table";
+        ]]
+    end
+
+    local label
+    if controlType == "button" then
+        if controlID == "Mode" then
+            label = "Mode Button"
+        else
+            label = "Button " .. controlID
+        end
+    elseif controlType == "scrollWheel" then
+        label = "Scroll Wheel"
+    elseif controlType == "joystick" then
+        label = "Joystick"
+    end
+
+    script = script .. [[
+        document.getElementById("label").innerHTML = "]] .. label .. [[";
+        setStyleDisplayByClass("knob", "none");
+		setStyleDisplayByClass("pressAction", "none");
+		setStyleDisplayByClass("ledColor", "none");
+		setStyleDisplayByClass("joystickAction", "none");
+    ]]
+
+    if controlType == "button" then
+        if device == "Razer Tartarus V2" then
+            script = script .. [[
+                setStyleDisplayByClass("ledColor", "table");
+            ]]
+        end
+        script = script .. [[
+            setStyleDisplayByClass("pressAction", "table");
+        ]]
+    elseif controlType == "scrollWheel" then
+        script = script .. [[
+            setStyleDisplayByClass("pressAction", "table");
+			setStyleDisplayByClass("knob", "table");
+			setStyleDisplayByClass("ledColor", "table");
+        ]]
+    elseif controlType == "joystick" then
+        script = script .. [[
+            setStyleDisplayByClass("joystickAction", "table");
+        ]]
+    end
+
+    script = script .. [[
+        document.getElementById("controlType").value = "]] .. controlType .. [[";
+		document.getElementById("controlID").value = "]] .. controlID .. [[";
+    ]]
+
+    injectScript(script)
 end
 
 -- razerPanelCallback() -> none
@@ -606,6 +662,9 @@ local function razerPanelCallback(id, params)
                 mod._razerManager.refresh()
             end
         elseif callbackType == "updateUI" then
+            updateUI(params)
+        elseif callbackType == "updateDevice" then
+            mod.lastDevice(params.device)
             updateUI(params)
         elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
