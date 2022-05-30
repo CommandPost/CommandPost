@@ -328,13 +328,17 @@ local function updateUI(params)
 
     if device == "Razer Tartarus V2" then
         script = script .. [[
-        document.getElementById("razer_tartarus_v2").style.display = "table";
-        document.getElementById("razer_orbweaver").style.display = "none";
+            document.getElementById("razer_tartarus_v2").style.display = "table";
+            document.getElementById("razer_orbweaver").style.display = "none";
+
+            setStyleDisplayByClass("tartarusV2Only", "inline-block");
         ]]
     elseif device == "Razer Orbweaver" then
         script = script .. [[
             document.getElementById("razer_tartarus_v2").style.display = "none";
             document.getElementById("razer_orbweaver").style.display = "table";
+
+            setStyleDisplayByClass("tartarusV2Only", "none");
         ]]
     end
 
@@ -1334,6 +1338,7 @@ function plugin.init(deps, env)
 
                 .menubarColumn {
                     flex: 50%;
+                    height: 162px !important;
                 }
             </style>
             <div class="menubarRow">
@@ -1421,39 +1426,6 @@ function plugin.init(deps, env)
 
         :addSelect(12.2,
             {
-                label       =   i18n("backlightsMode"),
-                class       =   "backlightsMode restrictRightTopSectionSize",
-                value       =   function()
-                                    local device = mod.lastDevice()
-                                    local backlightsMode = mod._razerManager.backlightsMode()
-                                    return backlightsMode[device]
-                                end,
-                options     =   function()
-                                    local options = {
-                                        { value = "Off",              label = i18n("off") },
-                                        { value = "User Defined",     label = i18n("userDefined") },
-                                        { value = "Breathing",        label = i18n("breathing") },
-                                        { value = "Reactive",         label = i18n("reactive") },
-                                        { value = "Spectrum",         label = i18n("spectrum") },
-                                        { value = "Starlight",        label = i18n("starlight") },
-                                        { value = "Static",           label = i18n("static") },
-                                        { value = "Wave",             label = i18n("wave") },
-                                    }
-                                    return options
-                                end,
-                required    =   true,
-                onchange    =   function(_, params)
-                                    local device = mod.lastDevice()
-                                    local backlightsMode = mod._razerManager.backlightsMode()
-                                    backlightsMode[device] = params.value
-                                    mod._razerManager.backlightsMode(backlightsMode)
-                                    mod._razerManager.refresh(true)
-                                end,
-            }
-        )
-
-        :addSelect(12.23,
-            {
                 label       =   i18n("backlightBrightness"),
                 class       =   "backlightBrightness restrictRightTopSectionSize",
                 value       =   function()
@@ -1498,15 +1470,50 @@ function plugin.init(deps, env)
             }
         )
 
+        :addSelect(12.23,
+            {
+                label       =   i18n("backlightsMode"),
+                id          =   "backlightsMode",
+                class       =   "backlightsMode restrictRightTopSectionSize tartarusV2Only",
+                value       =   function()
+                                    local device = mod.lastDevice()
+                                    local backlightsMode = mod._razerManager.backlightsMode()
+                                    return backlightsMode[device]
+                                end,
+                options     =   function()
+                                    local options = {
+                                        { value = "Off",              label = i18n("off") },
+                                        { value = "User Defined",     label = i18n("userDefined") },
+                                        { value = "Breathing",        label = i18n("breathing") },
+                                        { value = "Reactive",         label = i18n("reactive") },
+                                        { value = "Spectrum",         label = i18n("spectrum") },
+                                        { value = "Starlight",        label = i18n("starlight") },
+                                        { value = "Static",           label = i18n("static") },
+                                        { value = "Wave",             label = i18n("wave") },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    local device = mod.lastDevice()
+                                    local backlightsMode = mod._razerManager.backlightsMode()
+                                    backlightsMode[device] = params.value
+                                    mod._razerManager.backlightsMode(backlightsMode)
+                                    mod._razerManager.refresh(true)
+                                end,
+            }
+        )
+
         :addTextbox(12.3,
             {
                 label       =   i18n("backlightEffectColorPrimary") .. ":",
+                id          =   "backlightEffectColorPrimary",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightEffectColorA = mod._razerManager.backlightEffectColorA()
                                     return backlightEffectColorA[device]
                                 end,
-                class       =   "restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                class       =   "tartarusV2Only restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params)
                                     local device = mod.lastDevice()
                                     local backlightEffectColorA = mod._razerManager.backlightEffectColorA()
@@ -1520,12 +1527,13 @@ function plugin.init(deps, env)
         :addTextbox(12.4,
             {
                 label       =   i18n("backlightEffectColorSecondary") .. ":",
+                id          =   "backlightEffectColorSecondary",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightEffectColorB = mod._razerManager.backlightEffectColorB()
                                     return backlightEffectColorB[device]
                                 end,
-                class       =   "restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                class       =   "tartarusV2Only restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params)
                                     local device = mod.lastDevice()
                                     local backlightEffectColorB = mod._razerManager.backlightEffectColorB()
@@ -1539,7 +1547,8 @@ function plugin.init(deps, env)
         :addSelect(12.5,
             {
                 label       =   i18n("backlightEffectDirection"),
-                class       =   "backlightsMode restrictRightTopSectionSize",
+                id          =   "backlightEffectDirection",
+                class       =   "tartarusV2Only backlightsMode restrictRightTopSectionSize",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightEffectDirection = mod._razerManager.backlightEffectDirection()
@@ -1566,7 +1575,8 @@ function plugin.init(deps, env)
         :addSelect(12.6,
             {
                 label       =   i18n("backlightEffectSpeed"),
-                class       =   "backlightsMode restrictRightTopSectionSize",
+                id          =   "backlightEffectSpeed",
+                class       =   "tartarusV2Only backlightsMode restrictRightTopSectionSize",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightEffectSpeed = mod._razerManager.backlightEffectSpeed()

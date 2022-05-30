@@ -303,7 +303,7 @@ local function resetStatusLights(device)
     end
 end
 
--- setStatusLights(device, orange, green, blue) -> none
+-- setStatusLights(device, orange, green, blue, yellow) -> none
 -- Function
 -- Sets the Status Lights on a Razer Device.
 --
@@ -312,10 +312,11 @@ end
 --  * orange - Whether or not the orange light is on or off as a boolean
 --  * green - Whether or not the green light is on or off as a boolean
 --  * blue - Whether or not the blue light is on or off as a boolean
+--  * yellow - Whether or not the yellow light is on or off as a boolean
 --
 -- Returns:
 --  * None
-local function setStatusLights(device, orange, green, blue)
+local function setStatusLights(device, orange, green, blue, yellow)
     local deviceName = device:name()
     if deviceName == "Razer Tartarus V2" then
         if not cachedStatusLights[deviceName]["orange"] == orange then
@@ -450,7 +451,7 @@ function mod.refresh(trashCache)
         -- Update status lights based on current bank:
         --------------------------------------------------------------------------------
         local statusLights = mod.bankLabels[deviceName][bankID]
-        setStatusLights(device, statusLights.orange, statusLights.green, statusLights.blue)
+        setStatusLights(device, statusLights.orange, statusLights.green, statusLights.blue, statusLights.yellow)
 
         --------------------------------------------------------------------------------
         -- We only update the LEDs if they actually need changing (to avoid messing
