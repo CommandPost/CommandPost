@@ -914,11 +914,11 @@ end
 -- Triggered when the Loupedeck Service requests a JSON of commands
 --
 -- Parameters:
---  * data - The data from the Loupedeck
+--  * None
 --
 -- Returns:
 --  * None
-local function requestShareDestinations(data)
+local function requestShareDestinations()
     local destinationIDs = {}
     local shares = destinations.names()
     for _, title in pairs(shares) do
@@ -936,6 +936,64 @@ local function requestShareDestinations(data)
         }
         local encodedMessage = json.encode(message, true)
         mod.manager.sendMessage(encodedMessage)
+    end
+end
+
+--- plugins.core.loupedeckplugin.manager.requestKeywordShortcuts(data) -> none
+--- Function
+--- Triggered when the Loupedeck Service requests a JSON of commands
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.requestKeywordShortcuts()
+
+    local keywordShortcuts = {}
+
+    local keywords = fcp.preferences.FFKeywordGroups
+
+    for i=1, 9 do
+        local keyword = keywords[i] and keywords[i][1] or i18n("unassigned")
+        keywordShortcuts[i .. ": Keyword Shortcut"] = keyword
+    end
+
+    --------------------------------------------------------------------------------
+    -- Send a WebSocket Message back to Loupedeck:
+    --------------------------------------------------------------------------------
+    local message = {
+        ["MessageType"]     = "UpdateCommands",
+        ["ActionName"]      = "FCP.Keyword Shortcuts",
+        ["ActionValue"]     = json.encode(keywordShortcuts),
+    }
+    local encodedMessage = json.encode(message, true)
+    mod.manager.sendMessage(encodedMessage)
+
+    --------------------------------------------------------------------------------
+    -- Watch for future changes:
+    --------------------------------------------------------------------------------
+    if not mod.keywordsWatcher then
+        mod.keywordsWatcher = fcp.preferences:prop("FFKeywordGroups", nil, false):watch(function()
+            mod.requestKeywordShortcuts()
+        end)
+    end
+end
+
+-- applyKeywordShortcut(data) -> none
+-- Function
+-- Triggered when the Loupedeck Service wants to apply a Keyword Shortcut.
+--
+-- Parameters:
+--  * data - The data from the Loupedeck
+--
+-- Returns:
+--  * None
+local function applyKeywordShortcut(data)
+    local actionValue = data.actionValue
+    if actionValue then
+        local keywordID = actionValue:sub(1,1)
+        fcp:doShortcut("AddKeywordGroup" .. keywordID):Now()
     end
 end
 
@@ -1668,6 +1726,12 @@ function mod._registerActions()
     -- Setup Dependancies:
     --------------------------------------------------------------------------------
     local registerAction = mod.manager.registerAction
+
+    --------------------------------------------------------------------------------
+    -- Share Destinations:
+    --------------------------------------------------------------------------------
+    registerAction("RequestKeywordShortcuts", mod.requestKeywordShortcuts)
+    registerAction("FCP.Keyword Shortcuts", applyKeywordShortcut)
 
     --------------------------------------------------------------------------------
     -- CommandPost Actions:
