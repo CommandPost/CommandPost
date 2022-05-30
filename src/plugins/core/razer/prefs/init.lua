@@ -669,7 +669,7 @@ local function razerPanelCallback(id, params)
             updateUI(params)
         elseif callbackType == "updateDevice" then
             mod.lastDevice(params.device)
-            updateUI(params)
+            mod._manager.refresh()
         elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
             -- Update Color:
