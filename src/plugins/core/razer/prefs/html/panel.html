@@ -2,6 +2,7 @@
 
 <style>{(css/razer.css)}</style>
 <style>{(css/razer_tartarus_v2.css)}</style>
+<style>{(css/razer_orbweaver.css)}</style>
 
 <script>
 	function ledExamples() {
@@ -93,70 +94,21 @@
 		}
 	}
 
-	function changeControl(element, controlType, controlID) {
-		// -------------------------------------------------
-		// TRANSLATE CONTROLTYPE TO LABEL:
-		// -------------------------------------------------
-		if (!controlType) {
-			controlType = element.getAttribute("controlType");
-		}
-
-		// -------------------------------------------------
-		// UPDATE LABEL UI:
-		// -------------------------------------------------
-		if (!controlID) {
-			controlID = element.getAttribute("controlID");
-		}
-		if (controlType == "button") {
-			if (controlID == "Mode") {
-				label = "Mode Button";
-			} else {
-				label = "Button " + controlID;
+	function updateUI() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: 			"updateUI",
+				},
 			}
-		};
-
-		if (controlType == "scrollWheel") { label = "Scroll Wheel" };
-		if (controlType == "joystick") { label = "Joystick" };
-		document.getElementById("label").innerHTML = label;
-
-		// -------------------------------------------------
-		// HIDE EVERYTHING:
-		// -------------------------------------------------
-		setStyleDisplayByClass("knob", "none");
-		setStyleDisplayByClass("pressAction", "none");
-		setStyleDisplayByClass("ledColor", "none");
-		setStyleDisplayByClass("joystickAction", "none");
-
-		// -------------------------------------------------
-		// BUTTON:
-		// -------------------------------------------------
-		if (controlType == "button") {
-			setStyleDisplayByClass("ledColor", "table");
-			setStyleDisplayByClass("pressAction", "table");
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
 		}
+	}
 
-		// -------------------------------------------------
-		// SCROLL WHEEL:
-		// -------------------------------------------------
-		if (controlType == "scrollWheel") {
-			setStyleDisplayByClass("pressAction", "table");
-			setStyleDisplayByClass("knob", "table");
-			setStyleDisplayByClass("ledColor", "table");
-		}
-
-		// -------------------------------------------------
-		// JOYSTICK:
-		// -------------------------------------------------
-		if (controlType == "joystick") {
-			setStyleDisplayByClass("joystickAction", "table");
-		}
-
-		// -------------------------------------------------
-		// Save the controlType in a hidden field:
-		// -------------------------------------------------
-		document.getElementById("controlType").value = controlType;
-		document.getElementById("controlID").value = controlID;
-
+	function changeControl(element) {
 		try {
 			var result = {
 				id: "{{ id }}",
@@ -165,8 +117,8 @@
 					device: 		document.getElementById("device").value,
 					application: 	document.getElementById("application").value,
 					bank: 			document.getElementById("bank").value,
-					controlType: 	controlType,
-					controlID: 		controlID,
+					controlType: 	element.getAttribute("controlType"),
+					controlID: 		element.getAttribute("controlID"),
 				},
 			}
 			postMessage(result);
@@ -456,6 +408,7 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("device") }}: </span>
 				<select id="device" style="width: 150px;" onchange="updateDevice()">
 					<option value="Razer Tartarus V2">Razer Tartarus V2</option>
+					<option value="Razer Orbweaver">Razer Orbweaver</option>
 				</select>
 			</span>
 		</th>
@@ -502,15 +455,14 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
 				<select id="bank" style="width: 100px;" onchange="updateApplicationAndBank()">
 					{%
-					-- TODO: This currently is hardcoded for the Razer Tartarus V2
-					--       Will need to fix if we ever support other devices.
-					local numberOfBanks = tableCount(bankLabels["Razer Tartarus V2"])
+
+					local numberOfBanks = tableCount(bankLabels[lastDevice])
 					for i=1, numberOfBanks do
 						local selected = ""
 						if lastBank == tostring(i) then
 							selected = [[selected=""]]
 						end
-						local bankLabel = bankLabels["Razer Tartarus V2"][tostring(i)].label
+						local bankLabel = bankLabels[lastDevice][tostring(i)].label
 					%}
 					<option {{selected}} value="{{i}}">{{bankLabel}}</option>
 					{% end %}
@@ -533,129 +485,143 @@
 	<thead>
 		<tr>
 			<th width="447px">
+			    <div id="razer_orbweaver">
+                    <div id="razer_orbweaver_01"></div>
+                    <div id="razer_orbweaver_02"></div>
+                    <div id="razer_orbweaver_button03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_06"></div>
+                    <div id="razer_orbweaver_07"></div>
+                    <div id="razer_orbweaver_button02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_09"></div>
+                    <div id="razer_orbweaver_button01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_11"></div>
+                    <div id="razer_orbweaver_button09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_13"></div>
+                    <div id="razer_orbweaver_button10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_15"></div>
+                    <div id="razer_orbweaver_button08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_17"></div>
+                    <div id="razer_orbweaver_button07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_19"></div>
+                    <div id="razer_orbweaver_button06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_24"></div>
+                    <div id="razer_orbweaver_button12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_26"></div>
+                    <div id="razer_orbweaver_button11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_28"></div>
+                    <div id="razer_orbweaver_29"></div>
+                    <div id="razer_orbweaver_30"></div>
+                    <div id="razer_orbweaver_31"></div>
+                    <div id="razer_orbweaver_button18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_33"></div>
+                    <div id="razer_orbweaver_button19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_36"></div>
+                    <div id="razer_orbweaver_button17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_38"></div>
+                    <div id="razer_orbweaver_39"></div>
+                    <div id="razer_orbweaver_40"></div>
+                    <div id="razer_orbweaver_button16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_42"></div>
+                    <div id="razer_orbweaver_43"></div>
+                    <div id="razer_orbweaver_44"></div>
+                    <div id="razer_orbweaver_45"></div>
+                    <div id="razer_orbweaver_46"></div>
+                    <div id="razer_orbweaver_47"></div>
+                    <div id="razer_orbweaver_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_49"></div>
+                    <div id="razer_orbweaver_50"></div>
+                    <div id="razer_orbweaver_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_52"></div>
+                    <div id="razer_orbweaver_53"></div>
+                    <div id="razer_orbweaver_54"></div>
+                    <div id="razer_orbweaver_button21" controlID="21" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_56"></div>
+                    <div id="razer_orbweaver_57"></div>
+			    </div>
+
 				<!-- Razer Tartarus V2 Interface -->
 				<div id="razer_tartarus_v2">
 					<div id="razer_tartarus_v2_01"></div>
 					<div id="razer_tartarus_v2_02"></div>
-					<div id="razer_tartarus_v2_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_05.png') }}" width="42" height="41" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_04"></div>
 					<div id="razer_tartarus_v2_05"></div>
-					<div id="razer_tartarus_v2_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_04.png') }}" width="50" height="45" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_07"></div>
 					<div id="razer_tartarus_v2_08"></div>
-					<div id="razer_tartarus_v2_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_03.png') }}" width="46" height="45" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_10"></div>
 					<div id="razer_tartarus_v2_11"></div>
-					<div id="razer_tartarus_v2_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_02.png') }}" width="51" height="42" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_13"></div>
 					<div id="razer_tartarus_v2_14"></div>
-					<div id="razer_tartarus_v2_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_01.png') }}" width="50" height="50" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_16"></div>
 					<div id="razer_tartarus_v2_17"></div>
 					<div id="razer_tartarus_v2_18"></div>
-					<div id="razer_tartarus_v2_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_10.png') }}" width="42" height="43" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_20"></div>
-					<div id="razer_tartarus_v2_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_09.png') }}" width="46" height="43" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_22"></div>
 					<div id="razer_tartarus_v2_23"></div>
-					<div id="razer_tartarus_v2_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_08.png') }}" width="51" height="49" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_25"></div>
-					<div id="razer_tartarus_v2_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_07.png') }}" width="48" height="45" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_27"></div>
 					<div id="razer_tartarus_v2_28"></div>
-					<div id="razer_tartarus_v2_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_06.png') }}" width="49" height="48" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_30"></div>
 					<div id="razer_tartarus_v2_31"></div>
 					<div id="razer_tartarus_v2_32"></div>
-					<div id="razer_tartarus_v2_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_15.png') }}" width="42" height="41" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_34"></div>
 					<div id="razer_tartarus_v2_35"></div>
-					<div id="razer_tartarus_v2_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_14.png') }}" width="43" height="42" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_37"></div>
 					<div id="razer_tartarus_v2_38"></div>
-					<div id="razer_tartarus_v2_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_13.png') }}" width="48" height="45" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_40"></div>
-					<div id="razer_tartarus_v2_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_12.png') }}" width="47" height="44" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_42"></div>
 					<div id="razer_tartarus_v2_43"></div>
-					<div id="razer_tartarus_v2_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_11.png') }}" width="45" height="45" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_45"></div>
 					<div id="razer_tartarus_v2_46"></div>
 					<div id="razer_tartarus_v2_47"></div>
 					<div id="razer_tartarus_v2_48"></div>
-					<div id="razer_tartarus_v2_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_19.png') }}" width="43" height="41" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_50"></div>
 					<div id="razer_tartarus_v2_51"></div>
 					<div id="razer_tartarus_v2_52"></div>
-					<div id="razer_tartarus_v2_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_18.png') }}" width="45" height="43" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_54"></div>
-					<div id="razer_tartarus_v2_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_scrollwheel.png') }}" width="42" height="79" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_56"></div>
 					<div id="razer_tartarus_v2_57"></div>
-					<div id="razer_tartarus_v2_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_17.png') }}" width="47" height="43" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_59"></div>
 					<div id="razer_tartarus_v2_60"></div>
-					<div id="razer_tartarus_v2_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_16.png') }}" width="46" height="46" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_62"></div>
 					<div id="razer_tartarus_v2_63"></div>
 					<div id="razer_tartarus_v2_64"></div>
 					<div id="razer_tartarus_v2_65"></div>
 					<div id="razer_tartarus_v2_66"></div>
-					<div id="razer_tartarus_v2_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_mode.png') }}" width="32" height="38" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_68"></div>
 					<div id="razer_tartarus_v2_69"></div>
 					<div id="razer_tartarus_v2_70"></div>
 					<div id="razer_tartarus_v2_71"></div>
-					<div id="razer_tartarus_v2_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_joystick.png') }}" width="65" height="56" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_73"></div>
 					<div id="razer_tartarus_v2_74"></div>
-					<div id="razer_tartarus_v2_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;">
-						<img src="{{ insertImage('images/razer_tartarus_v2_button_20.png') }}" width="107" height="96" border="0" />
-					</div>
+					<div id="razer_tartarus_v2_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
 					<div id="razer_tartarus_v2_76"></div>
 					<div id="razer_tartarus_v2_77"></div>
 				</div>
@@ -898,5 +864,5 @@
 
 <script>
 	// Update UI on initial load:
-	changeControl("", "{{ lastControlType }}", "{{ lastControlID }}");
+	updateUI();
 </script>
