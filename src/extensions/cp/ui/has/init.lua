@@ -8,15 +8,20 @@ local require                       = require
 
 local inspect                       = require "hs.inspect"
 
+local is                            = require "cp.is"
+
 local Builder                       = require "cp.ui.Builder"
 local Element                       = require "cp.ui.Element"
 local AliasHandler                  = require "cp.ui.has.AliasHandler"
 local ElementHandler                = require "cp.ui.has.ElementHandler"
 local ListHandler                   = require "cp.ui.has.ListHandler"
+local OneOfHandler                  = require "cp.ui.has.OneOfHandler"
+local OptionalHandler               = require "cp.ui.has.OptionalHandler"
 local UIHandler                     = require "cp.ui.has.UIHandler"
 
 local format                        = string.format
 local insert                        = table.insert
+local isTable                       = is.table
 
 local has = {}
 
@@ -90,6 +95,45 @@ end
 ---    case they will be wrapped in an [ElementHandler](cp.ui.has.ElementHandler.md).
 function has.list(uiHandlers)
     return ListHandler(toHandlers(uiHandlers, 2))
+end
+
+--- cp.ui.has.oneOf(uiHandlers) -> cp.ui.has.OneOfHandler
+--- Function
+--- Creates a new [OneOfHandler](cp.ui.has.OneOfHandler.md) for the specified list of [UIHandler](cp.ui.has.UIHandler.md)s.
+---
+--- Parameters:
+---  * uiHandlers - The list of [UIHandler](cp.ui.has.UIHandler.md)s to use to build the `Element` instances.
+---
+--- Returns:
+---  * The new `OneOfHandler` instance.
+---
+--- Notes:
+---  * Items in `uiHandlers` may also be [Element](cp.ui.Element.md)s or [Builder](cp.ui.Builder.md), in which
+---    case they will be wrapped in an [ElementHandler](cp.ui.has.ElementHandler.md).
+function has.oneOf(uiHandlers)
+    return OneOfHandler(toHandlers(uiHandlers, 2))
+end
+
+--- cp.ui.has.optional(handlerOrList) -> cp.ui.has.OptionalHandler
+--- Function
+--- Creates a new [OptionalHandler](cp.ui.has.OptionalHandler.md) for the specified [UIHandler](cp.ui.has.UIHandler.md) or table of [UIHandlers](cp.ui.has.UIHandler.md).
+---
+--- Parameters:
+---  * handlerOrList - The [UIHandler](cp.ui.has.UIHandler.md) or table of [UIHandlers](cp.ui.has.UIHandler.md) to use to build the `Element` instance.
+---
+--- Returns:
+---  * The new `OptionalHandler` instance.
+---
+--- Notes:
+---  * The `handlerOrList` may be a single [UIHandler](cp.ui.has.UIHandler.md) or a table of [UIHandlers](cp.ui.has.UIHandler.md), in which case they will be wrapped
+---    in a [ListHandler](cp.ui.has.ListHandler.md).
+function has.optional(handlerOrList)
+    if isTable(handlerOrList) and #handlerOrList > 0 then
+        handlerOrList = toHandlers(handlerOrList, 2)
+    else
+        handlerOrList = toHandler(handlerOrList, 2)
+    end
+    return OptionalHandler(handlerOrList)
 end
 
 return has

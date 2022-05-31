@@ -29,7 +29,7 @@ local lazy                  = require "cp.lazy"
 
 local ElementList = class("cp.ui.has.ElementList"):include(lazy)
 
--- findUpTo(index, handlerList, uiList) -> true, cp.slice | false, nil
+-- matchesUpTo(index, handlerList, uiList) -> true, cp.slice | false, nil
 -- Function
 -- Given a `handlerList` and a `uiList`, checks each handler's `find` up to but not including the `index`. If all handlers
 -- return `true`, then the last remainder is returned. If any handler returns `false`, then `false, nil` is returned.
@@ -42,7 +42,7 @@ local ElementList = class("cp.ui.has.ElementList"):include(lazy)
 -- Returns:
 --  * `true, cp.slice` - If all handlers return `true`.
 --  * `false, nil` - If any handler returns `false`.
-local function findUpTo(index, handlerList, uiList)
+local function matchesUpTo(index, handlerList, uiList)
     if index > #handlerList then
         return false, nil
     end
@@ -59,15 +59,15 @@ end
 
 local subclassNumber = 1
 
---- cp.ui.has.ElementList:ofExactly(uiHandlers) -> function(parent, uiFinder) -> cp.ui.has.ElementList
+--- cp.ui.has.ElementList:ofExactly(uiHandlers) -> cp.ui.has.ElementList type
 --- Function
 --- Returns a function that will return a new `ElementList` instance when passed a `parent` and `uiFinder`.
 ---
 --- Parameters:
----  * ... - The arguments to pass to the `ElementList` constructor.
+---  * uiHandlers - The list of [UIHandlers](cp.ui.has.UIHandler.md) to pass to the `ElementList` constructor.
 ---
 --- Returns:
----  * A function that will return a new `ElementList` instance.
+---  * A new `ElementList` subclass that supports the provided list of `UIHandlers`.
 function ElementList.static:ofExactly(uiHandlers)
     local listClass = self:subclass(format("%s_%d", self.name, subclassNumber))
     subclassNumber = subclassNumber + 1
@@ -88,7 +88,7 @@ function ElementList.static:ofExactly(uiHandlers)
     return listClass
 end
 
---- cp.ui.has.ElementList(parent, uiFinder, [uiHandlers])
+--- cp.ui.has.ElementList(parent, uiFinder, uiHandlers)
 --- Constructor
 --- Creates and returns a new `ElementList`, with the specified parent, uiFinder, and uiHandlers.
 ---
@@ -107,18 +107,15 @@ function ElementList:initialize(parent, uiFinder, uiHandlers)
     rawset(self, "UI", prop.FROM(uiFinder))
 end
 
---- cp.ui.has.ElementList:get(index) -> cp.ui.Element
+--- cp.ui.has.ElementList:get(index) -> any
 --- Method
---- Gets the `Element` at the specified index.
+--- Gets the value at the specified index. This is often an [Element](cp.ui.Element.md) subclass, but can be any type.
 ---
 --- Parameters:
 ---  * index - the index of the `Element` to get.
 ---
 --- Returns:
----  * The `Element` at the specified index.
----
---- Notes:
----  * This will always return a value for any index above `0`, even if the `Element` is not yet available in the UI.
+---  * The value at the specified index.
 function ElementList:get(index)
     if index < 1 then
         return nil
@@ -141,7 +138,7 @@ function ElementList:get(index)
         local uiElements = original:get()
         if isTable(uiElements) then
             uiElements = slice.from(uiElements)
-            local found, remainingUIElements = findUpTo(index, uiHandlers, uiElements)
+            local found, remainingUIElements = matchesUpTo(index, uiHandlers, uiElements)
             return found and remainingUIElements or nil
         end
     end)
