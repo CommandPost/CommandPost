@@ -5,6 +5,7 @@
 
 local require       = require
 
+local inspect       = require "hs.inspect"
 local axutils       = require "cp.ui.axutils"
 local Element       = require "cp.ui.Element"
 local Menu          = require "cp.ui.Menu"
@@ -129,8 +130,8 @@ function Button:__call()
     return self:press()
 end
 
-function Button:__tostring()
-    return string.format("cp.ui.Button: %q (parent: %s)", self:title(), self:parent())
+function Button:__valuestring()
+    return self:title()
 end
 
 return Button

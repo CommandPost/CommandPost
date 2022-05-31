@@ -21,6 +21,7 @@
 
 local require = require
 
+local inspect           = require "hs.inspect"
 local axutils           = require "cp.ui.axutils"
 local Element			= require "cp.ui.Element"
 local tools             = require "cp.tools"
@@ -242,6 +243,10 @@ function CheckBox:__call(parent, value)
         value = parent
     end
     return self:checked(value)
+end
+
+function CheckBox:__valuestring()
+    return self:checked() and " ✔ " or " ✘ "
 end
 
 return CheckBox

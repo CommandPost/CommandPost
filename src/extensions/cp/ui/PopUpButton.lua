@@ -261,8 +261,8 @@ function PopUpButton:__call(parent, value)
     return self:value(value)
 end
 
-function PopUpButton:__tostring()
-    return string.format("cp.ui.PopUpButton: %s", self:value())
+function PopUpButton:__valuestring()
+    return self:value()
 end
 
 --- cp.ui.PopUpButton:saveLayout() -> table
