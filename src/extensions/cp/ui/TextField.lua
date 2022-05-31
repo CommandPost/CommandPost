@@ -6,6 +6,7 @@ local require = require
 
 -- local log                       = require "hs.logger" .new "TextField"
 
+local inspect                   = require "hs.inspect"
 local go                        = require "cp.rx.go"
 local Element                   = require "cp.ui.Element"
 
@@ -288,6 +289,10 @@ function TextField.__call(self, parent, value)
         value = parent
     end
     return self:value(value)
+end
+
+function TextField:__valuestring()
+    return inspect(self:value())
 end
 
 return TextField

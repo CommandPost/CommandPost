@@ -19,6 +19,7 @@ local Builder           = require "cp.ui.Builder"
 local go	            = require "cp.rx.go"
 local is                = require "cp.is"
 local lazy              = require "cp.lazy"
+local notifier          = require "cp.ui.notifier"
 local prop              = require "cp.prop"
 
 local class             = require "middleclass"
@@ -28,6 +29,7 @@ local Do, Given, If     = go.Do, go.Given, go.If
 local isFunction        = is.fn
 local isCallable        = is.callable
 local pack, unpack      = table.pack, table.unpack
+local format            = string.format
 
 local Element = class("cp.ui.Element"):include(lazy)
 
@@ -84,7 +86,7 @@ function Element.static:defineBuilder(...)
     return self
 end
 
---- cp.ui.Element:isTypeOf(thing) -> boolean
+--- cp.ui.Element:isClassOf(thing) -> boolean
 --- Function
 --- Checks if the `thing` is an `Element`. If called on subclasses, it will check
 --- if the `thing` is an instance of the subclass.
@@ -97,9 +99,26 @@ end
 ---
 --- Notes:
 ---  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
----    not an instance. For example `Element:isTypeOf(value)`
-function Element.static:isTypeOf(thing)
+---    not an instance. For example `Element:isClassOf(value)`
+function Element.static:isClassOf(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(self)
+end
+
+--- cp.ui.Element:isSupertypeOf(thing) -> boolean
+--- Function
+--- Checks if the `thing` is a subclass of `Element`.
+---
+--- Parameters:
+---  * `thing`		- The thing to check
+---
+--- Returns:
+---  * `true` if the thing is a subclass of `Element`.
+---
+--- Notes:
+---  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
+---    not an instance. For example `Element:isSupertypeof(value)`
+function Element.static:isSupertypeOf(thing)
+    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self)
 end
 
 --- cp.ui.Element.matches(element) -> boolean
@@ -115,9 +134,29 @@ function Element.static.matches(element)
     return element ~= nil and isFunction(element.isValid) and element:isValid()
 end
 
+--- cp.ui.Element:__valuestring() -> string
+--- Method
+--- Returns a string representation of current `Element`,
+--- or `nil` if no extra detail is available. Defaults to returning `nil`.
+---
+--- Returns:
+---  * A string representation of the `Element`.
+---
+--- Notes:
+---  * This will be called by `__tostring` and added to the class name.
+---  * If you want to change the whole string, you can override `__tostring()` instead.
+function Element:__valuestring()
+    return nil
+end
+
 -- Defaults to describing the class by it's class name
 function Element:__tostring()
-    return self.class.name
+    local className = self.class.name
+    local valueString = self:__valuestring()
+    if valueString then
+        return format("%s <%s>", className, valueString)
+    end
+    return className
 end
 
 --- cp.ui.Element(parent, uiFinder) -> cp.ui.Element
@@ -366,6 +405,13 @@ function Element.lazy.prop:role()
     return axutils.prop(self.UI, "AXRole")
 end
 
+--- cp.ui.Element.roleDescription <cp.prop: string; read-only>
+--- Field
+--- Returns the `AX` role description for the element.
+function Element.lazy.prop:roleDescription()
+    return axutils.prop(self.UI, "AXRoleDescription")
+end
+
 --- cp.ui.Element.subrole <cp.prop: string; read-only>
 --- Field
 --- Returns the `AX` subrole name for the element.
@@ -442,6 +488,19 @@ end
 function Element:app()
     local parent = self:parent()
     return parent and parent:app()
+end
+
+--- cp.ui.Element:notifier() -> cp.ui.notifier
+--- Method
+--- Returns the [notifier](cp.ui.notifier.lua) instance for this `Element`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * cp.ui.notifier
+function Element.lazy.method:notifier()
+    return notifier.new(self:app():bundleID(), self.UI)
 end
 
 --- cp.ui.Element:snapshot([path]) -> hs.image | nil
@@ -521,6 +580,7 @@ end
 ---  * Nothing
 function Element:highlight(color, duration)
     self:doHighlight(color, duration):Now()
+    return self
 end
 
 -- cp.ui.Element:inspect([options]) -> string
@@ -535,6 +595,20 @@ end
 function Element:inspect(options)
     options = options or {depth=1}
     return inspect(self, options)
+end
+
+--- cp.ui.Element:inspectUI([options]) -> string
+--- Method
+--- Returns a string representation of the `Element`'s `UI`.
+---
+--- Parameters:
+---  * options	- (optional) The options table.
+---
+-- Returns:
+---  * The string representation.
+function Element:inspectUI(options)
+    options = options or {depth=1}
+    return cp.dev.inspect(self:UI(), options)
 end
 
 --- cp.ui.Element:saveLayout() -> table
@@ -670,6 +744,42 @@ end
 -- in the FCPX API.
 function Element:__call()
     return self
+end
+
+--- cp.ui.Element:extension(name) -> table
+--- Function
+--- Returns the extension table for the specified `name`.
+---
+--- Parameters:
+---  * name - The name of the extension.
+---
+--- Returns:
+---  * The extension table.
+---
+--- Notes:
+---  * Extensions are intended to compose additional shared functionality across multiple
+---    [Element](cp.ui.Element.md) classes.
+---  * They have `lazy` values, so can be used to define additional `value`/`method`/`prop` properties,
+---    like a standard Element.
+function Element.static:extension(name)
+    local extension = { lazy = { value = {}, method = {}, prop = {} } }
+
+    function extension:included(klass)
+        if not klass.lazy then
+            error(string.format("extension requires that %s has already included cp.lazy", klass.name), 2)
+        end
+        for key, value in pairs(self.lazy.value) do
+            klass.lazy.value[key] = value
+        end
+        for key, value in pairs(self.lazy.prop) do
+            klass.lazy.prop[key] = value
+        end
+        for key, value in pairs(self.lazy.method) do
+            klass.lazy.method[key] = value
+        end
+    end
+
+    return extension
 end
 
 return Element
