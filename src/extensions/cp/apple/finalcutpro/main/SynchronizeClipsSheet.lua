@@ -9,9 +9,9 @@ local require               = require
 local strings               = require "cp.apple.finalcutpro.strings"
 local fn                    = require "cp.fn"
 local ax                    = require "cp.fn.ax"
+local prop                  = require "cp.prop"
 local Button                = require "cp.ui.Button"
 local CheckBox              = require "cp.ui.CheckBox"
-local ElementCache          = require "cp.ui.ElementCache"
 local Sheet                 = require "cp.ui.Sheet"
 local StaticText            = require "cp.ui.StaticText"
 local TextField             = require "cp.ui.TextField"
@@ -22,7 +22,7 @@ local delegator             = require "cp.delegator"
 local has                   = require "cp.ui.has"
 
 local chain                 = fn.chain
-local get, slice            = fn.table.get, fn.table.slice
+local get                   = fn.table.get
 local filter                = fn.value.filter
 
 local alias, list, oneOf    = has.alias, has.list, has.oneOf
@@ -57,57 +57,59 @@ SynchronizeClipsSheet.static.matches = ax.matchesIf(
 --- Constant
 --- UI Handler for the children of the `SynchronizeClipsSheet`.
 SynchronizeClipsSheet.static.children = list {
-    StaticText, alias("synchronizedClipName", TextField),
-    StaticText, alias("inEvent", PopUpButton),
-    StaticText, alias("startingTimecode", TextField),
-    alias("useAudioForSynchronization", CheckBox),
-    alias("disableAudioComponentsOnAVClips", CheckBox),
-    alias("method", oneOf {
-        alias("automatic", list {
-            StaticText, StaticText, -- "Video and Audio", "Set based on common clip properties"
-            alias("settings", StaticText),
-            alias("useCustomSettings", Button),
-        }),
-        alias("custom", list {
-            StaticText, alias("synchronization", PopUpButton),
-            StaticText, alias("videoFormat", PopUpButton),
-            StaticText, -- "Format" label
-            alias("videoResolution", oneOf { -- can either be a pop-up or width/height
-                alias("preset", PopUpButton),
-                alias("custom", list {
-                    alias("height", TextField),
-                    alias("width", TextField),
-                }),
-            }),
-            alias("videoRate", PopUpButton),
-            StaticText, StaticText, -- "Resolution", "Rate" labels
-            alias("videoProjection", optional {
-                alias("type", PopUpButton),
-                StaticText, -- "Projection Type" label
-            }),
-            StaticText, alias("renderingCodec", PopUpButton),
-            StaticText, -- "Codec" label
-            alias("renderingColorSpace", PopUpButton),
-            StaticText, -- "Color Space" label
-            StaticText, -- "Audio"
-            alias("audioChannels", PopUpButton),
-            alias("audioSampleRate", PopUpButton),
-            StaticText, StaticText, -- "Audio Channels", "Sample Rate" labels
-            alias("useAutomaticSettings", Button),
-        }),
-    }),
-    alias("cancel", Button),
-    alias("ok", Button),
+    StaticText, alias "synchronizedClipName" { TextField },
+    StaticText, alias "inEvent" { PopUpButton },
+    StaticText, alias "startingTimecode" { TextField },
+    alias "useAudioForSynchronization" { CheckBox },
+    alias "disableAudioComponentsOnAVClips" { CheckBox },
+    alias "method" {
+        oneOf {
+            alias "automatic" {
+                StaticText, StaticText, -- "Video and Audio", "Set based on common clip properties"
+                alias "settings" { StaticText },
+                alias "useCustomSettings" { Button },
+            },
+            alias "custom" {
+                StaticText, alias "synchronization" { PopUpButton },
+                StaticText, alias "videoFormat" { PopUpButton },
+                StaticText, -- "Format" label
+                alias "videoResolution" {
+                    oneOf { -- can either be a pop-up or width/height
+                        alias "preset" { PopUpButton },
+                        alias "custom" {
+                            alias "height" { TextField },
+                            alias "width" { TextField },
+                        },
+                    }
+                },
+                alias "videoRate" { PopUpButton },
+                StaticText, StaticText, -- "Resolution", "Rate" labels
+                alias "videoProjection" {
+                    optional {
+                        alias "type" { PopUpButton },
+                        StaticText, -- "Projection Type" label
+                    }
+                },
+                StaticText, alias "renderingCodec" { PopUpButton },
+                StaticText, -- "Codec" label
+                alias "renderingColorSpace" { PopUpButton },
+                StaticText, -- "Color Space" label
+                StaticText, -- "Audio"
+                alias "audioChannels" { PopUpButton },
+                alias "audioSampleRate" { PopUpButton },
+                StaticText, StaticText, -- "Audio Channels", "Sample Rate" labels
+                alias "useAutomaticSettings" { Button },
+            },
+        }
+    },
+    alias "cancel" { Button },
+    alias "ok" { Button },
 }
 
 function SynchronizeClipsSheet:initialize(parent)
     local ui = parent.UI:mutate(ax.childMatching(SynchronizeClipsSheet.matches))
 
-    Sheet.initialize(self, parent, ui)
-end
-
-function SynchronizeClipsSheet.lazy.value:children()
-    return self.class.children:build(self, self.childrenUI)
+    Sheet.initialize(self, parent, ui, SynchronizeClipsSheet.children)
 end
 
 --- cp.apple.finalcutpro.main.SynchronizeClipsSheet.synchronizedClipName <cp.ui.TextField>
@@ -226,7 +228,6 @@ end
 -- Standard buttons
 --------------------------------------------------------------------------------
 
-
 -- NOTE: Skipping the "Cancel" button because [Sheet](cp.ui.Sheet.md) already defines one.
 
 --- cp.apple.finalcutpro.main.SynchronizeClipsSheet.ok <cp.ui.Button>
@@ -237,11 +238,23 @@ end
 -- Functionality
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.isAutomatic <cp.prop: boolean>
+--- cp.apple.finalcutpro.main.SynchronizeClipsSheet.isAutomatic <cp.prop: boolean, live>
 --- Field
 --- A `boolean` property indicating whether the sheet is in automatic or custom mode.
 function SynchronizeClipsSheet.lazy.prop:isAutomatic()
-    return self.useCustomSettings.isShowing
+    return prop(
+        function()
+            return self.useCustomSettings:isShowing()
+        end,
+        function(value)
+            if value == true and self.useAutomaticSettings:isShowing() then
+                self.useAutomaticSettings:doPress():Now()
+            elseif value == false and self.useCustomSettings:isShowing() then
+                self.useCustomSettings:doPress():Now()
+            end
+        end
+    )
+    :monitor(self.UI)
 end
 
 return SynchronizeClipsSheet

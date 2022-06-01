@@ -16,23 +16,21 @@ local format                        = string.format
 
 local OptionalHandler = UIHandler:subclass("cp.ui.has.OptionalHandler")
 
---- cp.ui.has.OptionalHandler(handlerOrList) -> cp.ui.has.OptionalHandler
+--- cp.ui.has.OptionalHandler(handler) -> cp.ui.has.OptionalHandler
 --- Constructor
 --- Creates a new `OptionalHandler` instance.
 ---
 --- Parameters:
----  * handlerOrList - The [UIHandler](cp.ui.has.UIHandler.md) or `table` of [UIHandler](cp.ui.has.UIHandler.md) instances to use to build the list.
+---  * handler - The [UIHandler](cp.ui.has.UIHandler.md) which may or may not be present in the list.
 ---
 --- Returns:
 ---  * The new `OptionalHandler` instance.
-function OptionalHandler:initialize(handlerOrList)
+function OptionalHandler:initialize(handler)
     UIHandler.initialize(self)
-    if UIHandler:isSupertypeOf(handlerOrList) then
-        self.handler = handlerOrList
-    elseif isTable(handlerOrList) and #handlerOrList > 0 then
-        self.handler = ListHandler(handlerOrList)
+    if UIHandler:isClassOf(handler) then
+        self.handler = handler
     else
-        error(format("expected a UIHandler or a table of UIHandlers: %s", inspect(handlerOrList)))
+        error(format("expected a UIHandler or a table of UIHandlers: %s", inspect(handler)))
     end
 end
 

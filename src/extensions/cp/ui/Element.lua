@@ -118,7 +118,7 @@ end
 ---  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
 ---    not an instance. For example `Element:isSupertypeof(value)`
 function Element.static:isSupertypeOf(thing)
-    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self)
+    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self) or self == thing
 end
 
 --- cp.ui.Element.matches(element) -> boolean
@@ -761,10 +761,18 @@ end
 ---    [Element](cp.ui.Element.md) classes.
 ---  * They have `lazy` values, so can be used to define additional `value`/`method`/`prop` properties,
 ---    like a standard Element.
+---  * They have a `static` value, so can be used to define additional class/static properties.
 function Element.static:extension(name)
-    local extension = { lazy = { value = {}, method = {}, prop = {} } }
+    local extension = {
+        lazy = { value = {}, method = {}, prop = {} },
+        static = {},
+    }
 
     function extension:included(klass)
+        for key, value in pairs(self.static) do
+            klass[key] = value
+        end
+
         if not klass.lazy then
             error(string.format("extension requires that %s has already included cp.lazy", klass.name), 2)
         end

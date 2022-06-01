@@ -13,8 +13,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "ElementList"
-local inspect               = require "hs.inspect"
+-- local log                   = require "hs.logger".new "ElementList"
 
 local is                    = require "cp.is"
 local prop                  = require "cp.prop"
