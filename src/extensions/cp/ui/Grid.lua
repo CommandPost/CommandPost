@@ -12,7 +12,7 @@
 
 local require                   = require
 
--- local log                       = require "hs.logger".new "Grid"
+local log                       = require "hs.logger".new "Grid"
 
 local ax                        = require "cp.fn.ax"
 local Element                   = require "cp.ui.Element"

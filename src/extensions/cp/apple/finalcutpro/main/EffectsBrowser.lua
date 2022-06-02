@@ -40,6 +40,12 @@ local list, alias                       = has.list, has.alias
 
 local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
 
+--- === cp.apple.finalcutpro.main.EffectsBrowser.Effect ===
+---
+--- An `Effect` is a single effect/transition in the Effects Browser.
+
+EffectsBrowser.static.Effect = Image:subclass("cp.apple.finalcutpro.main.EffectsBrowser.Effect")
+
 --- cp.apple.finalcutpro.main.EffectsBrowser.EFFECTS -> string
 --- Constant
 --- Effects.
@@ -748,12 +754,6 @@ function EffectsBrowser:loadLayout(layout)
         self:hide()
     end
 end
-
---- === cp.apple.finalcutpro.main.EffectsBrowser.Effect ===
----
---- An `Effect` is a single effect/transition in the Effects Browser.
-
-EffectsBrowser.static.Effect = Image:subclass("cp.apple.finalcutpro.main.EffectsBrowser.Effect")
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.Effect.menu <cp.ui.Menu>
 --- Field

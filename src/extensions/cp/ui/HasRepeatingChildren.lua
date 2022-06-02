@@ -36,9 +36,11 @@ local has                           = require "cp.ui.has"
 
 local chain                         = fn.chain
 
+local zeroOrMore, handler           = has.zeroOrMore, has.handler
+
 local HasRepeatingChildren = Element:extension("cp.ui.HasRepeatingChildren")
 
-local DEFAULT_HANDLER = has.zeroOrMore(Element)
+local DEFAULT_HANDLER = zeroOrMore(Element)
 
 local CHILDREN_HANDLER = {}
 
@@ -52,7 +54,7 @@ local CHILDREN_HANDLER = {}
 --- Returns:
 ---  * `nil`
 function HasRepeatingChildren:childrenHandler(childrenHandler)
-    childrenHandler = childrenHandler and has.zeroOrMore(has.handler(childrenHandler)) or DEFAULT_HANDLER
+    childrenHandler = childrenHandler and zeroOrMore(handler(childrenHandler)) or DEFAULT_HANDLER
     self[CHILDREN_HANDLER] = childrenHandler
 end
 

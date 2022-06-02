@@ -9,7 +9,7 @@ local is                            = require "cp.is"
 local class                         = require "middleclass"
 local lazy                          = require "cp.lazy"
 
-local isNumber                      = is.Number
+local isNumber                      = is.number
 
 local ElementRepeater = class("cp.ui.has.ElementRepeater"):include(lazy)
 
