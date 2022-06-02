@@ -16,11 +16,13 @@
 
 local require               = require
 
+local fn                    = require "cp.fn"
 local ax                    = require "cp.fn.ax"
 local Element               = require "cp.ui.Element"
 local has                   = require "cp.ui.has"
 
-local sort                  = table.sort
+local chain, call           = fn.chain, fn.call
+local sort                  = fn.table.sort
 
 local HasExactChildren = Element:extension("cp.ui.HasExactChildren")
 
@@ -46,16 +48,12 @@ end
 --- Field
 --- The children UI elements in [top-down](cp.fn.ax.md#topDown) order.
 function HasExactChildren.lazy.prop:childrenUI()
-    return ax.prop(self.UI, "AXChildren"):mutate(function(original)
-        local children = original()
-        if children then
-            sort(children, ax.topDown)
-        end
-        return children
-    end)
+    return ax.prop(self.UI, "AXChildren"):mutate(
+        chain // call >> sort(ax.topDown)
+    )
 end
 
---- cp.ui.HasExactChildren.children <cp.ui.ElementCache: cp.ui.Element>
+--- cp.ui.HasExactChildren.children <any>
 --- Field
 --- Provides access to the [Elements](cp.ui.Element.md) of this `Element`'s children.
 function HasExactChildren.lazy.value:children()

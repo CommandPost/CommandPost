@@ -36,44 +36,46 @@
 --- The main advantage of this style is that you can pass the `Builder` in to other `Element` types
 --- that require an "`Element` init" that will only be provided a parent and UI finder.
 ---
---- This is a subclass of [Element](cp.ui.Element.md).
+--- Extends: [Element](cp.ui.Element.md).
+--- Delegates To: [contents](#contents).
 
 local require                           = require
 
 local fn                                = require "cp.fn"
 local ax                                = require "cp.fn.ax"
 
+local has                               = require "cp.ui.has"
 local Element                           = require "cp.ui.Element"
 local ScrollBar                         = require "cp.ui.ScrollBar"
-local delegator                         = require "cp.delegator"
 
 local chain                             = fn.chain
-local ifilter, sort                     = fn.table.ifilter, fn.table.sort
+local handler                           = has.handler
+local sort                              = fn.table.sort
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
-    :include(delegator):delegateTo("contents")
+    :delegateTo("contents")
     :defineBuilder("containing")
 
 --- === cp.ui.ScrollArea.Builder ===
 ---
 --- [Builder](cp.ui.Builder.md) class for [ScrollArea](cp.ui.ScrollArea.lua).
 
---- cp.ui.ScrollArea.Builder:containing(contentBuilder) -> cp.ui.ScrollArea.Builder
+--- cp.ui.ScrollArea.Builder:containing(contentsHandler) -> cp.ui.ScrollArea.Builder
 --- Method
 --- Sets the content `Element` type/builder to the specified value.
 ---
 --- Parameters:
----  * contentBuilder - A `callable` that accepts a `parent` and `uiFinder` parameter, and returns an `Element` instance.
+---  * contentsHandler - A [UIHandler](cp.ui.UIHandler.md) or value supported by [cp.ui.has.handler](cp.ui.has.md#handler).
 ---
 --- Returns:
 ---  * The `Builder` instance.
 
---- cp.ui.ScrollArea:containing(elementInit) -> cp.ui.ScrollArea.Builder
+--- cp.ui.ScrollArea:containing(contentsHandler) -> cp.ui.ScrollArea.Builder
 --- Function
 --- A static method that returns a new `ScrollArea.Builder`.
 ---
 --- Parameters:
----  * elementInit - An `Element` initializer.
+---  * contentsHandler - A [UIHandler](cp.ui.UIHandler.md) or value supported by [cp.ui.has.handler](cp.ui.has.md#handler).
 ---
 --- Returns:
 ---  * A new `ScrollArea.Builder` instance.
@@ -81,6 +83,8 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 -----------------------------------------------------------------------
 -- cp.ui.ScrollArea
 -----------------------------------------------------------------------
+
+local DEFAULT_HANDLER = has.zeroOrMore(Element)
 
 --- cp.ui.ScrollArea.matches(element) -> boolean
 --- Function
@@ -91,36 +95,54 @@ local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-ScrollArea.static.matches = fn.all(Element.matches, ax.hasRole "AXScrollArea")
+ScrollArea.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXScrollArea")
 
---- cp.ui.ScrollArea(parent, uiFinder[, contentsInit]) -> cp.ui.ScrollArea
+--- cp.ui.ScrollArea(parent, uiFinder[, contentsHandler]) -> cp.ui.ScrollArea
 --- Constructor
 --- Creates a new `ScrollArea`.
 ---
 --- Parameters:
 ---  * parent       - The parent object.
 ---  * uiFinder     - A `function` or `cp.prop` which will return the `hs.axuielement` when available.
----  * contentsInit - An optional function to initialise the `contentsUI`. Uses `cp.ui.Element` by default.
+---  * contentsHandler - An optional [UIHandler](cp.ui.has.UIHandler.md) to initialise the `contentsUI`.
 ---
 --- Returns:
 ---  * The new `ScrollArea`.
-function ScrollArea:initialize(parent, uiFinder, contentsInit)
+---
+--- Notes:
+---  * If the `contentsHandler` is not provided, it will default to any number of [Element](cp.ui.Element.md).
+---  * If the `contentsHandler` is provided, it can be any value passed in to the [cp.ui.has.handler](cp.ui.has.md#handler) function.
+function ScrollArea:initialize(parent, uiFinder, contentsHandler)
     Element.initialize(self, parent, uiFinder)
-    self.contentsInit = contentsInit or Element
+    self.contentsHandler = handler(contentsHandler or DEFAULT_HANDLER)
+end
+
+--- cp.ui.ScrollArea.childrenUI <cp.prop: hs.axuielement; read-only; live?>
+--- Field
+--- The `hs.axuielement`s for the `AXChildren` attribute.
+function ScrollArea.lazy.prop:childrenUI()
+    return ax.prop(self.UI, "AXContents")
+end
+
+--- cp.ui.ScrollArea.childrenInNavigationOrderUI <cp.prop: hs.axuielement; read-only; live?>
+--- Field
+--- The `hs.axuielement`s for the `AXChildren` attribute, in navigation order.
+function ScrollArea.lazy.prop:childrenInNavigationOrderUI()
+    return ax.prop(self.UI, "AXChildrenInNavigationOrder")
 end
 
 --- cp.ui.ScrollArea.contentsUI <cp.prop: hs.axuielement; read-only; live?>
 --- Field
---- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
+--- Returns the `hs.axuielement`s representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
-    return self.UI:mutate(chain // ax.attribute "AXContents" >> fn.table.first)
+    return self.UI:mutate(chain // ax.attribute "AXContents" >> sort(ax.topDown))
 end
 
 --- cp.ui.ScrollArea.contents <cp.ui.Element>
 --- Field
 --- Returns the `Element` representing the `ScrollArea` Contents.
 function ScrollArea.lazy.value:contents()
-    return self.contentsInit(self, self.contentsUI)
+    return self.contentsHandler:build(self, self.contentsUI)
 end
 
 --- cp.ui.ScrollArea.verticalScrollBar <cp.ui.ScrollBar>
@@ -149,23 +171,6 @@ end
 -- CONTENT UI:
 --
 -----------------------------------------------------------------------
-
---- cp.ui.ScrollArea:childrenUI(filterFn) -> hs.axuielement | nil
---- Method
---- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
----
---- Parameters:
----  * filterFn - The function which checks if the child matches the requirements.
----
---- Return:
----  * The `axuielement` or `nil`.
-function ScrollArea:childrenUI(filterFn)
-    return chain //
-        fn.constant(self.contentsUI) >>
-        ax.children >>
-        ifilter(filterFn) >>
-        sort(ax.topDown)
-end
 
 --- cp.ui.ScrollArea.viewFrame <cp.prop:table; read-only>
 --- Field

@@ -113,7 +113,7 @@ end
 --- Returns:
 ---  * `true` if the `thing` is a `Builder` or a subclass of `Builder`, otherwise `false`.
 function Builder.static:isSupertypeOf(thing)
-    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self)
+    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self) or self == thing
 end
 
 function Builder:initialize(elementType, ...)

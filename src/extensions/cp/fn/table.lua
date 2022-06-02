@@ -198,7 +198,7 @@ function mod.ifilter(predicate)
     end
 end
 
---- cp.fn.table.imap(fn, values | ...) -> table of any | ...
+--- cp.fn.table.imap(fn) -> function(values | ...) -> table of any | ...
 --- Function
 --- Maps a function over a table using `ipairs`. The function is passed the current `value` and the `key`.
 ---
@@ -211,16 +211,18 @@ end
 ---
 --- Notes:
 ---  * If the values are a table, the results will be a table. Otherwise, the results will be a vararg list.
-function mod.imap(fn, ...)
-    local args, packed = packArgs(...)
-    local results = LazyList(
-        function() return #args end,
-        function(i)
-            local value = args[i]
-            return fn(value, i)
-        end
-    )
-    return unpackArgs(results, packed)
+function mod.imap(fn)
+    return function(...)
+        local args, packed = packArgs(...)
+        local results = LazyList(
+            function() return #args end,
+            function(i)
+                local value = args[i]
+                return fn(value, i)
+            end
+        )
+        return unpackArgs(results, packed)
+    end
 end
 
 --- cp.fn.table.last(table) -> any | nil
@@ -261,7 +263,7 @@ function mod.matchesExactItems(...)
     end
 end
 
---- cp.fn.table.map(fn, t) -> table of any
+--- cp.fn.table.map(fn) -> function(t) -> table of any
 --- Function
 --- Maps a function over a table using `pairs`. The function is passed the current `value` and the `key`.
 ---
@@ -271,12 +273,14 @@ end
 ---
 --- Returns:
 ---  * A table with the values updated via the function.
-function mod.map(fn, t)
-    local results = {}
-    for i,arg in pairs(t) do
-        results[i] = fn(arg, i)
+function mod.map(fn)
+    return function(t)
+        local results = {}
+        for i,arg in pairs(t) do
+            results[i] = fn(arg, i)
+        end
+        return results
     end
-    return results
 end
 
 --- cp.fn.table.mutate(key) -> function(fn) -> function(table) -> table

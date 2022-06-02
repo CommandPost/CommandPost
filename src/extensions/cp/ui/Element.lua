@@ -16,6 +16,7 @@ local drawing           = require "hs.drawing"
 
 local axutils           = require "cp.ui.axutils"
 local Builder           = require "cp.ui.Builder"
+local delegator         = require "cp.delegator"
 local go	            = require "cp.rx.go"
 local is                = require "cp.is"
 local lazy              = require "cp.lazy"
@@ -31,7 +32,7 @@ local isCallable        = is.callable
 local pack, unpack      = table.pack, table.unpack
 local format            = string.format
 
-local Element = class("cp.ui.Element"):include(lazy)
+local Element = class("cp.ui.Element"):include(lazy):include(delegator)
 
 --- cp.ui.Element:defineBuilder(...) -> cp.ui.Element
 --- Method

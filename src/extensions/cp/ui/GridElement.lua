@@ -409,7 +409,7 @@ function GridElement:selectRows(rows)
     local rowsUI = {}
     for _,row in ipairs(rows) do
         -- check it's a supported row type
-        if not self._rowInit:isTypeOf(row) then
+        if not self._rowInit:isClassOf(row) then
             error("Unsupported row type: " .. tostring(row))
         end
         local rowUI = row:UI()
@@ -432,7 +432,7 @@ end
 ---  * `nil`
 function GridElement:selectRow(row)
     -- check it's a supported row type
-    if not self._rowInit:isTypeOf(row) then
+    if not self._rowInit:isClassOf(row) then
         error("Unsupported row type: " .. tostring(row))
     end
     -- select the row

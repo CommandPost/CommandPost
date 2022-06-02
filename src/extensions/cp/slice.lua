@@ -88,7 +88,7 @@ end
 --  * v - The value to set.
 --
 -- Returns:
---  * The value at the specified index.
+--  * Nothing
 --
 -- Notes:
 --  * This is a private function.

@@ -608,7 +608,7 @@ function mod.initElements(parent, elementsUiFinder, elementInits)
     if not elementInits or #elementInits == 0 then return nil end
     return imap(function(init, index)
         return init(parent, elementsUiFinder:mutate(chain // fn.call >> get(index)))
-    end, elementInits)
+    end)(elementInits)
 end
 
 --- cp.fn.ax.prop(uiFinder, attributeName[, settable]) -> cp.prop

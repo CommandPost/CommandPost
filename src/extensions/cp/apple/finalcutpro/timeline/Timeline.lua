@@ -4,15 +4,17 @@
 --- The timeline module provides an interface to the Final Cut Pro timeline.
 --- It delegates to the `contents` property, so any functions which can be called
 --- on the `contents` property can be called on the Timeline module.
+---
+--- Extends: [Group](cp.ui.Group.md)
+--- Delegates To: [contents](#contents)
 
 local require = require
 
 -- local log								= require "hs.logger".new "Timeline"
 
 local axutils							= require "cp.ui.axutils"
-local delegator                         = require "cp.delegator"
-local Element                           = require "cp.ui.Element"
-local go                                = require "cp.rx.go"
+local Group                             = require "cp.ui.Group"
+local SplitGroup                        = require "cp.ui.SplitGroup"
 local tools                             = require "cp.tools"
 
 local Contents					        = require "cp.apple.finalcutpro.timeline.Contents"
@@ -28,6 +30,7 @@ local childMatching                     = axutils.childMatching
 local childrenWithRole                  = axutils.childrenWithRole
 local childWithRole                     = axutils.childWithRole
 
+local go                                = require "cp.rx.go"
 local Do                                = go.Do
 local Done                              = go.Done
 local If                                = go.If
@@ -35,8 +38,7 @@ local WaitUntil                         = go.WaitUntil
 
 local playErrorSound                    = tools.playErrorSound
 
-local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
-    :include(delegator)
+local Timeline = Group:subclass("cp.apple.finalcutpro.timeline.Timeline")
     :delegateTo("contents")
 
 --- cp.apple.finalcutpro.timeline.Timeline.matches(element) -> boolean
@@ -53,8 +55,8 @@ local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
 ---  * `element` should be an `AXGroup`, which contains an `AXSplitGroup` with an
 ---    `AXIdentifier` of `_NS:237` (as of Final Cut Pro 10.4)
 function Timeline.static.matches(element)
-    local splitGroup = childWithRole(element, "AXSplitGroup")
-    return element:attributeValue("AXRole") == "AXGroup"
+    local splitGroup = childMatching(element, SplitGroup.matches)
+    return Group.matches(element)
        and splitGroup
        and Timeline.matchesMain(splitGroup)
 end
@@ -122,7 +124,7 @@ function Timeline:initialize(app)
         Timeline.matches)
     end):monitor(app.primaryWindow.UI, app.secondaryWindow.UI)
 
-    Element.initialize(self, app, UI)
+    Group.initialize(self, app, UI)
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.isOnSecondary <cp.prop: boolean; read-only>

@@ -1,6 +1,9 @@
 --- === cp.apple.finalcutpro.main.SynchronizeClipsSheet ===
 ---
 --- Represents the `Synchronize Clips` [Sheet](cp.ui.Sheet.md) in Final Cut Pro.
+---
+--- Extends: [cp.ui.Sheet](cp.ui.Sheet.md)
+--- Delegates To: [children](#children)
 
 local require               = require
 
@@ -29,7 +32,7 @@ local alias, list, oneOf    = has.alias, has.list, has.oneOf
 local optional              = has.optional
 
 local SynchronizeClipsSheet = Sheet:subclass("cp.apple.finalcutpro.main.SynchronizeClipsSheet")
-    :include(delegator):delegateTo("children", "method")
+                                :delegateTo("children", "method")
 
 local SYNCHRONIZED_CLIP_NAME_KEY = "FFAnchoredSequenceSettingsModule_synchronizedClipLabel"
 
@@ -104,6 +107,7 @@ SynchronizeClipsSheet.static.children = list {
     },
     alias "cancel" { Button },
     alias "ok" { Button },
+    has.ended
 }
 
 function SynchronizeClipsSheet:initialize(parent)

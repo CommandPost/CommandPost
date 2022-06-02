@@ -178,12 +178,12 @@ return describe "cp.fn.table" {
     context "imap" {
         it "can map a function over an ordered table"
         :doing(function()
-            expect(fntable.imap(double, {1, 2, 3})):is({2, 4, 6})
+            expect(fntable.imap(double)({1, 2, 3})):is({2, 4, 6})
         end),
 
         it "can map a function over a list of values"
         :doing(function()
-            local a, b, c, d = fntable.imap(double, 1, 2, 3)
+            local a, b, c, d = fntable.imap(double)(1, 2, 3)
             expect(a):is(2)
             expect(b):is(4)
             expect(c):is(6)
@@ -192,7 +192,7 @@ return describe "cp.fn.table" {
 
         it "maps over ordered values and ignores key values in a table"
         :doing(function()
-            local result = fntable.imap(double, {1, 2, 3, a = 1, b = 2, c = 3})
+            local result = fntable.imap(double)({1, 2, 3, a = 1, b = 2, c = 3})
             expect(result):is({2, 4, 6})
         end),
     },
@@ -236,14 +236,14 @@ return describe "cp.fn.table" {
     context "map" {
         it "can map over an unordered table"
         :doing(function()
-            local result = fntable.map(double, {1, 2, 3})
+            local result = fntable.map(double)({1, 2, 3})
             table.sort(result)
             expect(result):is({2, 4, 6})
         end),
 
         it "can map over a table with key values"
         :doing(function()
-            local result = fntable.map(double, {a = 1, b = 2, c = 3})
+            local result = fntable.map(double)({a = 1, b = 2, c = 3})
             table.sort(result)
             expect(result):is({a = 2, b = 4, c = 6})
         end),

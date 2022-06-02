@@ -16,6 +16,7 @@ local Builder                       = require "cp.ui.Builder"
 local Element                       = require "cp.ui.Element"
 local AliasHandler                  = require "cp.ui.has.AliasHandler"
 local ElementHandler                = require "cp.ui.has.ElementHandler"
+local EndHandler                    = require "cp.ui.has.EndHandler"
 local ListHandler                   = require "cp.ui.has.ListHandler"
 local OneOfHandler                  = require "cp.ui.has.OneOfHandler"
 local OptionalHandler               = require "cp.ui.has.OptionalHandler"
@@ -47,6 +48,7 @@ local toHandler, toHandlers
 --  * If the value is a table with a single value, it is converted to a `UIHandler`.
 --  * If the value is a table with multiple values, it is converted to a `ListHandler`.
 toHandler = function(value, errorLevel)
+    errorLevel = errorLevel or 1
     if UIHandler:isClassOf(value) then
         return value
     elseif Element:isSupertypeOf(value) or Builder:isClassOf(value) then
@@ -59,7 +61,6 @@ toHandler = function(value, errorLevel)
             return ListHandler(toHandlers(value, errorLevel + 1))
         end
     end
-    errorLevel = errorLevel or 1
     error(format("expected an Element, Builder, UIHandler, or table thereof, got %s: %s", type(value), inspect(value, {depth=2})), 1 + errorLevel)
 end
 
@@ -74,6 +75,25 @@ toHandlers = function(values, errorLevel)
         end
     end
     return handlers
+end
+
+--- cp.ui.has.handler(value) -> cp.ui.has.UIHandler
+--- Function
+--- Converts a value to a `UIHandler`.
+---
+--- Parameters:
+---  * value - The value to convert.
+---
+--- Returns:
+---  * The `UIHandler`
+---
+--- Notes:
+--  * If the value is already a `UIHandler`, it is returned.
+--  * If the value is an [Element](cp.ui.Element.md) or [Builder](cp.ui.Builder.md), it is wrapped in a `ElementHandler`.
+--  * If the value is a table with a single value, it is converted to a `UIHandler`.
+--  * If the value is a table with multiple values, it is converted to a `ListHandler`.
+function has.handler(value)
+    return toHandler(value, 2)
 end
 
 --- cp.ui.has.element(elementBuilder) -> cp.ui.has.ElementHandler
@@ -236,6 +256,11 @@ function has.between(minCount, maxCount)
         return RepeatingHandler(toHandler(handlerOrList, 2), minCount, maxCount)
     end
 end
+
+--- cp.ui.has.ended <cp.ui.has.EndHandler>
+--- Constant
+--- Enforces that the complete list of `hs.axuielement`s have been processed.
+has.ended = EndHandler()
 
 
 return has
