@@ -9,6 +9,66 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+            <h1>CommandPost 1.4.0</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>We've added a new "Loupedeck Plugin" that acts as an alternative to our native/direct Loupedeck support - allowing you to access all of CommandPost's Final Cut Pro actions within the LoupedeckConfig application. This is really handy for users that have to jump between Adobe Premiere and Final Cut Pro, for example. All of your macOS Shortcuts macros and Keyboard Maestro macros will also appear in the LoupedeckConfig application automagically. There are also some macOS Spaces actions. Big thanks to the Loupedeck Team for their support - especially Jenny!</li>
+                <li>Added support for the Razer Orbweaver. Big thanks to Ross Batten for giving us access to the hardware! We hope to add more Razer keyboards in the near future.</li>
+                <li>We've added a new Final Cut Pro Workflow Extension, which allows us to better control the playhead (which works great with control surfaces - such as the Loupedeck CT wheel). The Workflow Extension will only load when you trigger an action that requires it. When you first load the Workflow Extension it will try and make itself as small as possible and get out of the way - however you can move it to wherever you want, and like all Workflow Extensions its position is saved with your Workspace. There are new actions for "Move Playhead Forward/Backward" at different increments. There's no buttons on the Workflow Extension - it's currently simply an interface for us to control the playhead.</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Improved the colour accuracy of the Razer Tartarus V2 LEDs.</li>
+                <li>Fixed a bug in the Resolve Control Surfaces where the "RELATIVE FINE CONTROL" jog mode wouldn't trigger the correct jog mode on the hardware.</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.3.13</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>We've added a new "Relative (Fine Control)" Jog Wheel Mode for the Blackmagic Resolve Keyboards, which uses a different algorithm for more precise control, as some users found the jog wheel too sensitive and hard to navigate when in relative mode. We’ve also added some additional sensitivity values, so you can further fine tune it to your liking. Thanks for your valuable feedback David Manganelli!</li>
+                <li>We now forcefully update the LED lights on the Blackmagic Resolve Keyboards every 5 minutes to attempt to prevent the device from falling asleep. Thanks for reporting David Manganelli!</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Fixed a regression introduced in the previous release which caused applying individual effects, transitions, titles and generators to clips in Final Cut Pro via a CommandPost action to fail unexpectedly. Thanks for reporting Fernando Piñero & Andrew Griffiths!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.3.12</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>CommandPost now remembers the menubar position if you change it by holding down COMMAND and dragging it to a new location.</li>
+                <li>In the previous release of CommandPost if you tried to trigger a Final Cut Pro shortcut key that didn't actually have any keys assigned to it with the Final Cut Pro Command Editor, you'd be presented with an error message. This would sometime confuse users - for example, those using a Speed Editor which has the "Play Rate" shortcut keys assigned to the jog wheel - but Final Cut Pro doesn't assign anything to the "Play Rate" shortcuts by default. To improve this, if CommandPost tries to trigger a shortcut key that you haven't set up in Final Cut Pro, we'll now present you with a macOS Notification, which when clicked, takes you to the relevant Command within the Final Cut Pro Command Editor.</li>
+                <li>CommandPost now disables support for displaying macOS Shortcut app shortcuts within the Search Console by default. To enable this functionality you must now manually enable it within the Shortcuts preferences panel within CommandPost. We have also added a new setup screen for new users, that allows you to enable shortcuts there. This is to prevent the shortcuts permission box from popping up the first time new users opened the Search Console.</li>
+                <li>When you add a custom application to the Resolve Keyboards, it now automatically selects that application once added. Thanks for reporting Dávid Szentmiklósi!</li>
+                <li>We've improved how we cache the Jog Wheel mode on the DaVinci Resolve Keyboards.</li>
+                <li>Improved the load times of the Resolve, Razer and TourBox Control Surface Panels.</li>
+                <li>The Speed Editor battery status is now displayed in the preferences panel.</li>
+                <li>Updated the default Resolve Keyboard layouts so that the JOG banks use menubar actions instead of shortcut key actions to improve performance. This will only change for new users, or if you reset your layout to "factory default".</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>If you delete an application, device or everything on the Resolve Keyboard panel, it now resets the "last application" if that custom application no longer exists in the preferences file.</li>
+                <li>CommandPost now correctly determines the Final Cut Pro language when you change it via System Preferences within the Language & Region > Apps section. Thanks for reporting Sam Pluemacher - we had no idea this feature was added to macOS!</li>
+                <li>System Preferences no longer quits when CommandPost starts up.</li>
+                <li>CommandPost can now better detect when the Command Set is changed within Final Cut Pro.</li>
+                <li>Fixed a bug which prevented the Search Console from pre-populating the last action title in the Resolve Keyboard panel.</li>
+			</ul>
+
+		    <hr />
+
 		    <h1>CommandPost 1.3.11</h1>
 
 			<h2>🐞 Bug Fixes</h2>

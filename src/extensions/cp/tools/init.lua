@@ -108,8 +108,42 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.secureInputApplicationTitle() -> string
+--- Function
+--- Gets the title of the first application that has 'Secure Input' enabled.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The application title or `nil` if secure input is not enabled or failed to get a title.
+function tools.secureInputApplicationTitle()
+    if eventtap.isSecureInputEnabled() then
+        local output, status = execute([[ioreg -l -w 0 | grep SecureInput | awk 'BEGIN {FS="[^a-zA-Z0-9]+"} {print $8}' | uniq | xargs -n 1 ps aux]])
+        --
+        -- Example Output:
+        --
+        -- USER           PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+        -- chrishocking  9033   0.0  0.2 410017056 117632   ??  S    11:48AM   0:01.16 /System/Applications/System Preferences.app/Contents/MacOS/System Preferences
+        --
+        if output and status then
+            local lines = tools.lines(output)
+            for id, line in ipairs(lines) do
+                if id == 1 and line:sub(1, 4) ~= "USER" then
+                    return
+                elseif id ~= 1 then
+                    local components = line:split(" ")
+                    local pid = components and components[3] and tonumber(components[3])
+                    local app = pid and application.applicationForPID(pid)
+                    return app and app:title()
+                end
+            end
+        end
+    end
+end
+
 --- cp.tools.escapeTilda(input) -> string
---- Method
+--- Function
 --- Escapes a tilda.
 ---
 --- Parameters:
@@ -122,7 +156,7 @@ function tools.escapeTilda(i)
 end
 
 --- cp.tools.keyStroke(modifiers, character, app) -> none
---- Method
+--- Function
 --- Generates and emits a single keystroke event pair for the supplied keyboard
 --- modifiers and character to the application.
 ---
@@ -130,63 +164,67 @@ end
 ---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
 ---  * character - A string containing a character to be emitted
 ---  * app - The optional `hs.application` you want to target
+---  * proper - Use the "proper" method as per Apple's documentation (defaults to `false`)
 ---
 --- Returns:
 ---  * None
-function tools.keyStroke(modifiers, character, app)
+function tools.keyStroke(modifiers, character, app, proper)
     modifiers = modifiers or {}
 
-    local cleanedModifiers = {}
-    for _, modifier in pairs(modifiers) do
-        if modifier == "command" then modifier = "cmd" end
-        if modifier == "option" then modifier = "alt" end
-        if modifier == "control" then modifier = "ctrl" end
-        if modifier == "function" then modifier = "fn" end
-        if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
-            table.insert(cleanedModifiers, modifier)
+    if not proper then
+        local cleanedModifiers = {}
+        for _, modifier in pairs(modifiers) do
+            if modifier == "command" then modifier = "cmd" end
+            if modifier == "option" then modifier = "alt" end
+            if modifier == "control" then modifier = "ctrl" end
+            if modifier == "function" then modifier = "fn" end
+            if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+                table.insert(cleanedModifiers, modifier)
+            end
+        end
+
+        newKeyEvent(cleanedModifiers, character, true):post(app)
+        newKeyEvent(cleanedModifiers, character, false):post(app)
+    else
+        --------------------------------------------------------------------------------
+        -- NOTE TO FUTURE CHRIS:
+        -- According to the Hammerspoon documentation, "the proper way to perform a
+        -- keypress with modifiers is through multiple key events", which we were doing
+        -- below. However this causes weird issues, where keypresses weren't doing
+        -- what they were supposed to, etc. I ASSUME it was just a timing issue.
+        -- As of 5th April 2022, the above seems to work as intended on macOS 12.3
+        -- and Final Cut Pro 10.6.1.
+        --
+        -- On 23rd May 2022, Chris realised that some shortcuts (i.e. CONTROL+LEFT)
+        -- weren't properly triggering macOS shortcuts (i.e. "Move Left a Space"), so
+        -- I've brought this back as an optional feature.
+        --------------------------------------------------------------------------------
+        local cleanedModifiers = {}
+        for _, modifier in pairs(modifiers) do
+            if modifier == "command" then modifier = "cmd" end
+            if modifier == "option" then modifier = "alt" end
+            if modifier == "control" then modifier = "ctrl" end
+            if modifier == "function" then modifier = "fn" end
+            if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+                table.insert(cleanedModifiers, map[modifier])
+            end
+        end
+
+        for _, modifier in pairs(cleanedModifiers) do
+            newKeyEvent(modifier, true):post(app)
+        end
+
+        newKeyEvent(character, true):post(app)
+        newKeyEvent(character, false):post(app)
+
+        for _, modifier in pairs(cleanedModifiers) do
+            newKeyEvent(modifier, false):post(app)
         end
     end
-
-    newKeyEvent(cleanedModifiers, character, true):post(app)
-    newKeyEvent(cleanedModifiers, character, false):post(app)
-
-    --------------------------------------------------------------------------------
-    -- NOTE TO FUTURE CHRIS:
-    -- According to the Hammerspoon documentation, "the proper way to perform a
-    -- keypress with modifiers is through multiple key events", which we were doing
-    -- below. However this causes weird issues, where keypresses weren't doing
-    -- what they were supposed to, etc. I ASSUME it was just a timing issue.
-    -- As of 5th April 2022, the above seems to work as intended on macOS 12.3
-    -- and Final Cut Pro 10.6.1.
-    --------------------------------------------------------------------------------
-
-    --[[
-    local cleanedModifiers = {}
-    for _, modifier in pairs(modifiers) do
-        if modifier == "command" then modifier = "cmd" end
-        if modifier == "option" then modifier = "alt" end
-        if modifier == "control" then modifier = "ctrl" end
-        if modifier == "function" then modifier = "fn" end
-        if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
-            table.insert(cleanedModifiers, map[modifier])
-        end
-    end
-
-    for _, modifier in pairs(cleanedModifiers) do
-        newKeyEvent(modifier, true):post(app)
-    end
-
-    newKeyEvent(character, true):post(app)
-    newKeyEvent(character, false):post(app)
-
-    for _, modifier in pairs(cleanedModifiers) do
-        newKeyEvent(modifier, false):post(app)
-    end
-    --]]
 end
 
 --- cp.tools.pressSystemKey(key) -> none
---- Method
+--- Function
 --- Virtually presses a system key.
 ---
 --- Parameters:
@@ -2302,6 +2340,19 @@ end
 --- Returns:
 ---  * A new string
 function tools.replace(textValue, old, new)
+
+    --[[
+    NOTE TO FUTURE CHRIS:
+
+    This is a potential replacement, if this method ever proves to be a performance issue:
+
+    local function replace(str, what, with)
+        what = string.gsub(what, "[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1") -- escape pattern
+        with = string.gsub(with, "[%%]", "%%%%") -- escape replacement
+        return string.gsub(str, what, with)
+    end
+    --]]
+
     local b,e = textValue:find(old, 1, true)
     if b == nil then
         return textValue

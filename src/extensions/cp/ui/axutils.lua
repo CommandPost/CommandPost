@@ -7,6 +7,7 @@ local require = require
 local log           = require "hs.logger".new "axutils"
 
 local canvas        = require "hs.canvas"
+local eventtap      = require "hs.eventtap"
 local fnutils       = require "hs.fnutils"
 local geometry      = require "hs.geometry"
 
@@ -721,9 +722,19 @@ function axutils.snapshot(element, filename, elementFrame)
         if window then
             local hsWindow = window:asHSWindow()
 
+            local isSecureInputEnabled = eventtap.isSecureInputEnabled()
             local windowSnap = hsWindow and hsWindow:snapshot()
             if not windowSnap then
-                log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured, so aborting.")
+                if isSecureInputEnabled then
+                    local secureInputApplicationTitle = tools.secureInputApplicationTitle()
+                    if secureInputApplicationTitle then
+                        log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured because '%s' has enabled 'Secure Input'. Please try closing any password prompts or permission dialog boxes it has open.", secureInputApplicationTitle)
+                    else
+                        log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured because another application has enabled 'Secure Input'. Please try closing any open password prompts or permission dialog boxes.")
+                    end
+                else
+                    log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured, so aborting. 'Secure Input' was not enabled.")
+                end
                 return
             end
 

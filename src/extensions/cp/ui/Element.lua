@@ -569,7 +569,7 @@ function Element:doHighlight(color, duration)
     :Label("cp.ui.Element:doHighlight(color, duration)")
 end
 
---- cp.ui.Element:highlight([color], [duration])
+--- cp.ui.Element:highlight([color], [duration]) -> cp.ui.Element
 --- Method
 --- Highlights the `Element` with the specified `color` and `duration`.
 ---
@@ -578,7 +578,7 @@ end
 ---  * duration	- The `number` of seconds to highlight for. (defaults to `3` seconds)
 ---
 --- Returns:
----  * Nothing
+---  * the same `Element` instance.
 function Element:highlight(color, duration)
     self:doHighlight(color, duration):Now()
     return self

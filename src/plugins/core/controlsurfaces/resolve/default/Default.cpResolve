@@ -10,10 +10,10 @@
       "com.apple.systempreferences" : {
         "ignore" : true
       },
-      "com.blackmagic-design.DaVinciResolve" : {
+      "com.ecamm.EcammLive" : {
         "ignore" : true
       },
-      "com.ecamm.EcammLive" : {
+      "com.blackmagic-design.DaVinciResolve" : {
         "ignore" : true
       },
       "All Applications" : {
@@ -272,7 +272,7 @@
             }
           }
         },
-        "12" : {
+        "5" : {
           "JOG" : {
             "pressAction" : {
               "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
@@ -314,7 +314,7 @@
             }
           }
         },
-        "5" : {
+        "12" : {
           "JOG" : {
             "pressAction" : {
               "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
@@ -576,37 +576,6 @@
               "handlerID" : "global_cmds"
             }
           },
-          "jogMode" : "RELATIVE",
-          "JOG WHEEL" : {
-            "turnRightAction" : {
-              "actionTitle" : "Mouse Scroll Wheel - 1 Line Up",
-              "action" : {
-                "y" : 1,
-                "amount" : 1,
-                "modifiers" : [
-
-                ],
-                "x" : 0,
-                "mode" : "scroll",
-                "unit" : "line"
-              },
-              "handlerID" : "global_mouse"
-            },
-            "turnLeftAction" : {
-              "actionTitle" : "Mouse Scroll Wheel - 1 Line Down",
-              "action" : {
-                "y" : -1,
-                "amount" : -1,
-                "modifiers" : [
-
-                ],
-                "x" : 0,
-                "mode" : "scroll",
-                "unit" : "line"
-              },
-              "handlerID" : "global_mouse"
-            }
-          },
           "JOG" : {
             "pressAction" : {
               "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
@@ -620,6 +589,37 @@
               "handlerID" : "global_resolvebanks"
             }
           },
+          "JOG WHEEL" : {
+            "turnRightAction" : {
+              "actionTitle" : "Mouse Scroll Wheel - 1 Line Up",
+              "action" : {
+                "amount" : 1,
+                "y" : 1,
+                "modifiers" : [
+
+                ],
+                "x" : 0,
+                "mode" : "scroll",
+                "unit" : "line"
+              },
+              "handlerID" : "global_mouse"
+            },
+            "turnLeftAction" : {
+              "actionTitle" : "Mouse Scroll Wheel - 1 Line Down",
+              "action" : {
+                "amount" : -1,
+                "y" : -1,
+                "modifiers" : [
+
+                ],
+                "x" : 0,
+                "mode" : "scroll",
+                "unit" : "line"
+              },
+              "handlerID" : "global_mouse"
+            }
+          },
+          "jogMode" : "RELATIVE",
           "SHTL" : {
             "ledAlwaysOn" : true,
             "pressAction" : {
@@ -634,7 +634,6 @@
               "handlerID" : "global_resolvebanks"
             }
           },
-          "bankLabel" : "SHTL",
           "SCRL" : {
             "ledAlwaysOn" : false,
             "pressAction" : {
@@ -648,7 +647,8 @@
               },
               "handlerID" : "global_resolvebanks"
             }
-          }
+          },
+          "bankLabel" : "SHTL"
         },
         "9" : {
           "JOG" : {
@@ -699,15 +699,6 @@
         },
         "ignore" : true
       },
-      "com.microsoft.teams" : {
-        "ignore" : true
-      },
-      "com.apple.DiskUtility" : {
-        "ignore" : true
-      },
-      "us.zoom.xos" : {
-        "ignore" : true
-      },
       "com.apple.FinalCut" : {
         "10" : {
           "JOG" : {
@@ -753,18 +744,39 @@
           }
         },
         "2" : {
-          "bankLabel" : "JOG",
-          "SCRL" : {
+          "JOG" : {
+            "ledAlwaysOn" : true,
             "pressAction" : {
-              "actionTitle" : "Editor Keyboard Bank 3 (Unit 1)",
+              "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
               "action" : {
-                "id" : "Editor Keyboard_1_3",
+                "id" : "Editor Keyboard_1_2",
                 "device" : "Editor Keyboard",
-                "bank" : 3,
+                "bank" : 2,
                 "unit" : "1",
                 "action" : "bank"
               },
               "handlerID" : "global_resolvebanks"
+            }
+          },
+          "JOG WHEEL" : {
+            "sensitivity" : "10000",
+            "turnRightAction" : {
+              "actionTitle" : "Move Playhead Forward 1 Frame",
+              "action" : {
+                "amount" : 1,
+                "id" : "fcpx_workflowextensions_increment_1",
+                "actionType" : "increment"
+              },
+              "handlerID" : "fcpx_workflowextensions"
+            },
+            "turnLeftAction" : {
+              "actionTitle" : "Move Playhead Backward 1 Frame",
+              "action" : {
+                "amount" : 1,
+                "id" : "fcpx_workflowextensions_decrement_1",
+                "actionType" : "decrement"
+              },
+              "handlerID" : "fcpx_workflowextensions"
             }
           },
           "SHTL" : {
@@ -781,36 +793,21 @@
               "handlerID" : "global_resolvebanks"
             }
           },
-          "JOG WHEEL" : {
-            "turnRightAction" : {
-              "actionTitle" : "Jump to Next Frame",
-              "action" : {
-                "id" : "jumpToNextFrame"
-              },
-              "handlerID" : "fcpx_cmds"
-            },
-            "turnLeftAction" : {
-              "actionTitle" : "Jump to Previous Frame",
-              "action" : {
-                "id" : "jumpToPreviousFrame"
-              },
-              "handlerID" : "fcpx_cmds"
-            }
-          },
-          "JOG" : {
-            "ledAlwaysOn" : true,
+          "SCRL" : {
             "pressAction" : {
-              "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
+              "actionTitle" : "Editor Keyboard Bank 3 (Unit 1)",
               "action" : {
-                "id" : "Editor Keyboard_1_2",
+                "id" : "Editor Keyboard_1_3",
                 "device" : "Editor Keyboard",
-                "bank" : 2,
+                "bank" : 3,
                 "unit" : "1",
                 "action" : "bank"
               },
               "handlerID" : "global_resolvebanks"
             }
-          }
+          },
+          "jogMode" : "RELATIVE FINE CONTROL",
+          "bankLabel" : "JOG"
         },
         "15" : {
           "JOG" : {
@@ -856,19 +853,39 @@
           }
         },
         "3" : {
-          "bankLabel" : "SCRL",
-          "SCRL" : {
-            "ledAlwaysOn" : true,
+          "JOG" : {
+            "ledAlwaysOn" : false,
             "pressAction" : {
-              "actionTitle" : "Editor Keyboard Bank 3 (Unit 1)",
+              "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
               "action" : {
-                "id" : "Editor Keyboard_1_3",
+                "id" : "Editor Keyboard_1_2",
                 "device" : "Editor Keyboard",
-                "bank" : 3,
+                "bank" : 2,
                 "unit" : "1",
                 "action" : "bank"
               },
               "handlerID" : "global_resolvebanks"
+            }
+          },
+          "JOG WHEEL" : {
+            "sensitivity" : "8000",
+            "turnRightAction" : {
+              "handlerID" : "fcpx_workflowextensions",
+              "actionTitle" : "Move Playhead Forward 100 Frames",
+              "action" : {
+                "amount" : 100,
+                "id" : "fcpx_workflowextensions_increment_100",
+                "actionType" : "increment"
+              }
+            },
+            "turnLeftAction" : {
+              "handlerID" : "fcpx_workflowextensions",
+              "actionTitle" : "Move Playhead Backward 100 Frames",
+              "action" : {
+                "amount" : 100,
+                "id" : "fcpx_workflowextensions_decrement_100",
+                "actionType" : "decrement"
+              }
             }
           },
           "SHTL" : {
@@ -885,36 +902,22 @@
               "handlerID" : "global_resolvebanks"
             }
           },
-          "JOG WHEEL" : {
-            "turnRightAction" : {
-              "actionTitle" : "Increase Timeline Horizontal Scroll by 0.01",
-              "action" : {
-                "id" : "shiftTimelineHorizontallyIncrease0.01"
-              },
-              "handlerID" : "fcpx_cmds"
-            },
-            "turnLeftAction" : {
-              "actionTitle" : "Decrease Timeline Horizontal Scroll by 0.01",
-              "action" : {
-                "id" : "shiftTimelineHorizontallyDecrease0.01"
-              },
-              "handlerID" : "fcpx_cmds"
-            }
-          },
-          "JOG" : {
-            "ledAlwaysOn" : false,
+          "SCRL" : {
+            "ledAlwaysOn" : true,
             "pressAction" : {
-              "actionTitle" : "Editor Keyboard Bank 2 (Unit 1)",
+              "actionTitle" : "Editor Keyboard Bank 3 (Unit 1)",
               "action" : {
-                "id" : "Editor Keyboard_1_2",
+                "id" : "Editor Keyboard_1_3",
                 "device" : "Editor Keyboard",
-                "bank" : 2,
+                "bank" : 3,
                 "unit" : "1",
                 "action" : "bank"
               },
               "handlerID" : "global_resolvebanks"
             }
-          }
+          },
+          "jogMode" : "RELATIVE",
+          "bankLabel" : "SCRL"
         },
         "11" : {
           "JOG" : {
@@ -1002,7 +1005,7 @@
             }
           }
         },
-        "12" : {
+        "5" : {
           "JOG" : {
             "ledAlwaysOn" : false,
             "pressAction" : {
@@ -1045,7 +1048,7 @@
             }
           }
         },
-        "5" : {
+        "12" : {
           "JOG" : {
             "ledAlwaysOn" : false,
             "pressAction" : {
@@ -1308,17 +1311,16 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "jogMode" : "ABSOLUTE ZERO",
           "JOG" : {
             "ledAlwaysOn" : false,
             "pressAction" : {
@@ -1344,11 +1346,6 @@
               "action" : "PlayRateMinus32X",
               "handlerID" : "fcpx_shortcuts"
             },
-            "turnRightThreeAction" : {
-              "actionTitle" : "Play Rate 4",
-              "action" : "PlayRate4X",
-              "handlerID" : "fcpx_shortcuts"
-            },
             "turnLeftFiveAction" : {
               "actionTitle" : "Play Rate -16",
               "action" : "PlayRateMinus16X",
@@ -1359,11 +1356,16 @@
               "action" : "PlayRateMinus1X",
               "handlerID" : "fcpx_shortcuts"
             },
+            "turnRightThreeAction" : {
+              "actionTitle" : "Play Rate 4",
+              "action" : "PlayRate4X",
+              "handlerID" : "fcpx_shortcuts"
+            },
             "turnLeftAction" : {
               "actionTitle" : "J",
               "action" : {
-                "character" : "j",
                 "id" : "j",
+                "character" : "j",
                 "modifiers" : [
 
                 ]
@@ -1388,8 +1390,8 @@
             "turnRightAction" : {
               "actionTitle" : "CONTROL and OPTION and COMMAND and SHIFT and pad2 (⌃⌥⇧⌘pad2)",
               "action" : {
-                "character" : "pad2",
                 "id" : "⌃⌥⇧⌘_pad2",
+                "character" : "pad2",
                 "modifiers" : [
                   "ctrl",
                   "alt",
@@ -1404,14 +1406,14 @@
               "action" : "PlayRate8X",
               "handlerID" : "fcpx_shortcuts"
             },
-            "turnRightSixAction" : {
-              "actionTitle" : "Play Rate 32",
-              "action" : "PlayRate32X",
-              "handlerID" : "fcpx_shortcuts"
-            },
             "absoluteZeroAction" : {
               "actionTitle" : "Stop",
               "action" : "Stop",
+              "handlerID" : "fcpx_shortcuts"
+            },
+            "turnRightSixAction" : {
+              "actionTitle" : "Play Rate 32",
+              "action" : "PlayRate32X",
               "handlerID" : "fcpx_shortcuts"
             },
             "turnRightFiveAction" : {
@@ -1425,6 +1427,21 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "jogMode" : "ABSOLUTE ZERO",
+          "SCRL" : {
+            "pressAction" : {
+              "actionTitle" : "Editor Keyboard Bank 3 (Unit 1)",
+              "action" : {
+                "id" : "Editor Keyboard_1_3",
+                "device" : "Editor Keyboard",
+                "bank" : 3,
+                "unit" : "1",
+                "action" : "bank"
+              },
+              "handlerID" : "global_resolvebanks"
+            }
+          },
+          "bankLabel" : "SHTL",
           "SHTL" : {
             "ledAlwaysOn" : true,
             "pressAction" : {
@@ -1439,7 +1456,6 @@
               "handlerID" : "global_resolvebanks"
             }
           },
-          "bankLabel" : "SHTL",
           "DIS" : {
             "pressAction" : {
               "actionTitle" : "Open Transitions in Search Console",
@@ -1447,19 +1463,6 @@
                 "id" : "cpFinalCutProTransition"
               },
               "handlerID" : "fcpx_cmds"
-            }
-          },
-          "SCRL" : {
-            "pressAction" : {
-              "actionTitle" : "Editor Keyboard Bank 3 (Unit 1)",
-              "action" : {
-                "id" : "Editor Keyboard_1_3",
-                "device" : "Editor Keyboard",
-                "bank" : 3,
-                "unit" : "1",
-                "action" : "bank"
-              },
-              "handlerID" : "global_resolvebanks"
             }
           }
         },
@@ -1507,6 +1510,15 @@
           }
         }
       },
+      "com.apple.DiskUtility" : {
+        "ignore" : true
+      },
+      "us.zoom.xos" : {
+        "ignore" : true
+      },
+      "com.microsoft.teams" : {
+        "ignore" : true
+      },
       "com.apple.Compressor" : {
         "ignore" : true
       },
@@ -1526,10 +1538,10 @@
       "com.apple.systempreferences" : {
         "ignore" : true
       },
-      "com.blackmagic-design.DaVinciResolve" : {
+      "com.ecamm.EcammLive" : {
         "ignore" : true
       },
-      "com.ecamm.EcammLive" : {
+      "com.blackmagic-design.DaVinciResolve" : {
         "ignore" : true
       },
       "All Applications" : {
@@ -1799,7 +1811,7 @@
             }
           }
         },
-        "12" : {
+        "5" : {
           "JOG" : {
             "ledAlwaysOn" : false,
             "pressAction" : {
@@ -1843,7 +1855,7 @@
             }
           }
         },
-        "5" : {
+        "12" : {
           "JOG" : {
             "ledAlwaysOn" : false,
             "pressAction" : {
@@ -2108,6 +2120,7 @@
           }
         },
         "1" : {
+          "jogMode" : "RELATIVE",
           "SHTL" : {
             "ledAlwaysOn" : true,
             "pressAction" : {
@@ -2142,10 +2155,10 @@
           "DIS" : {
             "ledAlwaysOn" : true
           },
-          "CAM 4" : {
+          "CAM 9" : {
             "ledAlwaysOn" : true
           },
-          "CAM 9" : {
+          "CAM 4" : {
             "ledAlwaysOn" : true
           },
           "CLOSE UP" : {
@@ -2159,39 +2172,6 @@
           },
           "TRANS" : {
             "ledAlwaysOn" : true
-          },
-          "VIDEO ONLY" : {
-            "ledAlwaysOn" : true
-          },
-          "JOG WHEEL" : {
-            "turnRightAction" : {
-              "actionTitle" : "Mouse Scroll Wheel - 1 Line Up",
-              "action" : {
-                "y" : 1,
-                "amount" : 1,
-                "modifiers" : [
-
-                ],
-                "x" : 0,
-                "mode" : "scroll",
-                "unit" : "line"
-              },
-              "handlerID" : "global_mouse"
-            },
-            "turnLeftAction" : {
-              "actionTitle" : "Mouse Scroll Wheel - 1 Line Down",
-              "action" : {
-                "y" : -1,
-                "amount" : -1,
-                "modifiers" : [
-
-                ],
-                "x" : 0,
-                "mode" : "scroll",
-                "unit" : "line"
-              },
-              "handlerID" : "global_mouse"
-            }
           },
           "JOG" : {
             "ledAlwaysOn" : false,
@@ -2207,6 +2187,39 @@
               "handlerID" : "global_resolvebanks"
             }
           },
+          "VIDEO ONLY" : {
+            "ledAlwaysOn" : true
+          },
+          "JOG WHEEL" : {
+            "turnRightAction" : {
+              "actionTitle" : "Mouse Scroll Wheel - 1 Line Up",
+              "action" : {
+                "amount" : 1,
+                "y" : 1,
+                "modifiers" : [
+
+                ],
+                "x" : 0,
+                "mode" : "scroll",
+                "unit" : "line"
+              },
+              "handlerID" : "global_mouse"
+            },
+            "turnLeftAction" : {
+              "actionTitle" : "Mouse Scroll Wheel - 1 Line Down",
+              "action" : {
+                "amount" : -1,
+                "y" : -1,
+                "modifiers" : [
+
+                ],
+                "x" : 0,
+                "mode" : "scroll",
+                "unit" : "line"
+              },
+              "handlerID" : "global_mouse"
+            }
+          },
           "CAM 2" : {
             "ledAlwaysOn" : true
           },
@@ -2219,24 +2232,24 @@
           "CAM 1" : {
             "ledAlwaysOn" : true
           },
+          "AUDIO ONLY" : {
+            "ledAlwaysOn" : true
+          },
+          "CAM 6" : {
+            "ledAlwaysOn" : true
+          },
           "SOURCE" : {
             "pressAction" : {
               "actionTitle" : "A",
               "action" : {
-                "character" : "a",
                 "id" : "a",
+                "character" : "a",
                 "modifiers" : [
 
                 ]
               },
               "handlerID" : "global_shortcuts"
             }
-          },
-          "CAM 6" : {
-            "ledAlwaysOn" : true
-          },
-          "AUDIO ONLY" : {
-            "ledAlwaysOn" : true
           },
           "CUT" : {
             "ledAlwaysOn" : true
@@ -2311,27 +2324,18 @@
         },
         "ignore" : true
       },
-      "com.microsoft.teams" : {
-        "ignore" : true
-      },
-      "com.apple.DiskUtility" : {
-        "ignore" : true
-      },
-      "us.zoom.xos" : {
-        "ignore" : true
-      },
       "com.apple.FinalCut" : {
         "10" : {
           "CUT" : {
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2353,13 +2357,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2368,12 +2372,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2382,13 +2386,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2446,15 +2450,15 @@
           },
           "DIS" : {
             "pressAction" : {
+              "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Add Default Transition",
               "handlerID" : "fcpx_menu"
             }
           },
@@ -2462,12 +2466,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2485,13 +2489,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2507,12 +2511,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2521,12 +2525,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2543,9 +2547,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -2588,21 +2592,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -2625,21 +2637,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -2647,39 +2644,46 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
               },
-              "actionTitle" : "Snapping LED Status",
               "handlerID" : "global_snippets"
             },
             "pressAction" : {
+              "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Snapping",
               "handlerID" : "fcpx_menu"
             }
           }
@@ -2689,12 +2693,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2716,13 +2720,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2731,12 +2735,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2745,13 +2749,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2809,15 +2813,15 @@
           },
           "DIS" : {
             "pressAction" : {
+              "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Add Default Transition",
               "handlerID" : "fcpx_menu"
             }
           },
@@ -2825,12 +2829,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2848,13 +2852,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2870,38 +2874,48 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "JOG WHEEL" : {
+            "sensitivity" : "8000",
             "turnRightAction" : {
-              "actionTitle" : "Go to Next Frame",
-              "action" : "JumpToNextFrame",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Move Playhead Forward 1 Frame",
+              "action" : {
+                "amount" : 1,
+                "id" : "fcpx_workflowextensions_increment_1",
+                "actionType" : "increment"
+              },
+              "handlerID" : "fcpx_workflowextensions"
             },
             "turnLeftAction" : {
-              "actionTitle" : "Go to Previous Frame",
-              "action" : "JumpToPreviousFrame",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Move Playhead Backward 1 Frame",
+              "action" : {
+                "amount" : 1,
+                "id" : "fcpx_workflowextensions_decrement_1",
+                "actionType" : "decrement"
+              },
+              "handlerID" : "fcpx_workflowextensions"
             }
           },
+          "jogMode" : "RELATIVE FINE CONTROL",
           "TRIM OUT" : {
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -2918,9 +2932,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -2960,27 +2974,22 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "APPND" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Append to Storyline",
+              "actionTitle" : "Play Full Screen",
               "action" : {
-                "locale" : "en",
                 "path" : [
-                  "Edit",
-                  "Append to Storyline"
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
-            "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
+          "bankLabel" : "JOG",
           "SHTL" : {
             "pressAction" : {
               "actionTitle" : "Speed Editor Bank 1 (Unit 1)",
@@ -3001,36 +3010,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "bankLabel" : "JOG",
-          "OUT" : {
-            "pressAction" : {
-              "actionTitle" : "Set Range End",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Mark",
-                  "Set Range End"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -3038,25 +3017,60 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "OUT" : {
+            "pressAction" : {
+              "actionTitle" : "Set Range End",
+              "action" : {
+                "path" : [
+                  "Mark",
+                  "Set Range End"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "APPND" : {
+            "pressAction" : {
+              "actionTitle" : "Append to Storyline",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Append to Storyline"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
           "SNAP" : {
             "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
               },
-              "actionTitle" : "Snapping LED Status",
               "handlerID" : "global_snippets"
             },
             "pressAction" : {
+              "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Snapping",
               "handlerID" : "fcpx_menu"
             }
           }
@@ -3066,12 +3080,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3093,13 +3107,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3108,12 +3122,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3122,13 +3136,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3188,12 +3202,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3202,12 +3216,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3225,13 +3239,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3247,12 +3261,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3261,12 +3275,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3283,9 +3297,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -3328,21 +3342,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -3365,21 +3387,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -3387,38 +3394,45 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3429,12 +3443,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3457,13 +3471,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3472,12 +3486,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3486,13 +3500,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3552,12 +3566,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3566,12 +3580,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3589,13 +3603,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3611,42 +3625,47 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "JOG WHEEL" : {
+            "sensitivity" : "8000",
             "turnRightAction" : {
-              "actionTitle" : "Increase Timeline Horizontal Scroll by 0.01",
+              "handlerID" : "fcpx_workflowextensions",
+              "actionTitle" : "Move Playhead Forward 100 Frames",
               "action" : {
-                "id" : "shiftTimelineHorizontallyIncrease0.01"
-              },
-              "handlerID" : "fcpx_cmds"
+                "amount" : 100,
+                "id" : "fcpx_workflowextensions_increment_100",
+                "actionType" : "increment"
+              }
             },
             "turnLeftAction" : {
-              "actionTitle" : "Decrease Timeline Horizontal Scroll by 0.01",
+              "handlerID" : "fcpx_workflowextensions",
+              "actionTitle" : "Move Playhead Backward 100 Frames",
               "action" : {
-                "id" : "shiftTimelineHorizontallyDecrease0.01"
-              },
-              "handlerID" : "fcpx_cmds"
+                "amount" : 100,
+                "id" : "fcpx_workflowextensions_decrement_100",
+                "actionType" : "decrement"
+              }
             }
           },
           "TRIM OUT" : {
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3663,9 +3682,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -3704,27 +3723,22 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "APPND" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Append to Storyline",
+              "actionTitle" : "Play Full Screen",
               "action" : {
-                "locale" : "en",
                 "path" : [
-                  "Edit",
-                  "Append to Storyline"
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
-            "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
+          "bankLabel" : "SCRL",
           "SHTL" : {
             "pressAction" : {
               "actionTitle" : "Speed Editor Bank 1 (Unit 1)",
@@ -3745,36 +3759,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "bankLabel" : "SCRL",
-          "OUT" : {
-            "pressAction" : {
-              "actionTitle" : "Set Range End",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Mark",
-                  "Set Range End"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -3782,24 +3766,59 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "OUT" : {
+            "pressAction" : {
+              "actionTitle" : "Set Range End",
+              "action" : {
+                "path" : [
+                  "Mark",
+                  "Set Range End"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "APPND" : {
+            "pressAction" : {
+              "actionTitle" : "Append to Storyline",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Append to Storyline"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3810,12 +3829,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3837,13 +3856,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3852,12 +3871,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3866,13 +3885,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3932,12 +3951,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3946,12 +3965,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3969,13 +3988,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -3991,12 +4010,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4005,12 +4024,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4027,9 +4046,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -4072,21 +4091,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -4109,21 +4136,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -4131,38 +4143,45 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4173,12 +4192,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4200,13 +4219,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4215,12 +4234,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4229,13 +4248,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4292,15 +4311,15 @@
           },
           "DIS" : {
             "pressAction" : {
+              "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Add Default Transition",
               "handlerID" : "fcpx_menu"
             }
           },
@@ -4308,12 +4327,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4331,13 +4350,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4353,12 +4372,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4383,12 +4402,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4405,9 +4424,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -4446,391 +4465,22 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "APPND" : {
-            "pressAction" : {
-              "actionTitle" : "Append to Storyline",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Edit",
-                  "Append to Storyline"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "AUDIO ONLY" : {
-            "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "SHTL" : {
-            "pressAction" : {
-              "actionTitle" : "Speed Editor Bank 1 (Unit 1)",
-              "action" : {
-                "id" : "Speed Editor_1_1",
-                "device" : "Speed Editor",
-                "bank" : 1,
-                "unit" : "1",
-                "action" : "bank"
-              },
-              "handlerID" : "global_resolvebanks"
-            }
-          },
-          "SPLIT" : {
-            "pressAction" : {
-              "actionTitle" : "Blade",
-              "action" : "BladeAtPlayhead",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
           "FULL VIEW" : {
             "pressAction" : {
               "actionTitle" : "Play Full Screen",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play Full Screen"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "bankLabel" : "AUDIO",
-          "OUT" : {
-            "pressAction" : {
-              "actionTitle" : "Set Range End",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Mark",
-                  "Set Range End"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "CAM 1" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 1",
-              "action" : "CutSwitchAngle01",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "SNAP" : {
-            "snippetAction" : {
-              "action" : {
-                "id" : "Snapping LED Status",
-                "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              },
-              "actionTitle" : "Snapping LED Status",
-              "handlerID" : "global_snippets"
-            },
-            "pressAction" : {
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Snapping"
-                ],
-                "plain" : true
-              },
-              "actionTitle" : "Snapping",
-              "handlerID" : "fcpx_menu"
-            }
-          }
-        },
-        "12" : {
-          "CUT" : {
-            "pressAction" : {
-              "actionTitle" : "Blade",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Trim",
-                  "Blade"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "SCRL" : {
-            "pressAction" : {
-              "actionTitle" : "Speed Editor Bank 3 (Unit 1)",
-              "action" : {
-                "id" : "Speed Editor_1_3",
-                "device" : "Speed Editor",
-                "bank" : 3,
-                "unit" : "1",
-                "action" : "bank"
-              },
-              "handlerID" : "global_resolvebanks"
-            }
-          },
-          "TIMELINE" : {
-            "pressAction" : {
-              "actionTitle" : "Timeline",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Window",
-                  "Go To",
-                  "Timeline"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "TRIM IN" : {
-            "pressAction" : {
-              "actionTitle" : "Trim Start",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Trim",
-                  "Trim Start"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "STOP PLAY" : {
-            "pressAction" : {
-              "actionTitle" : "Play",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "CAM 8" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 8",
-              "action" : "CutSwitchAngle08",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "AUDIO LEVEL" : {
-            "pressAction" : {
-              "actionTitle" : "Speed Editor Bank 4 (Unit 1)",
-              "action" : {
-                "id" : "Speed Editor_1_4",
-                "device" : "Speed Editor",
-                "bank" : 4,
-                "unit" : "1",
-                "action" : "bank"
-              },
-              "handlerID" : "global_resolvebanks"
-            }
-          },
-          "CAM 6" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 6",
-              "action" : "CutSwitchAngle06",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "LIVE OWR" : [
-
-          ],
-          "VIDEO ONLY" : {
-            "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Video Only",
-              "action" : "MultiAngleEditStyleVideo",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "CAM 4" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 4",
-              "action" : "CutSwitchAngle04",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "CAM 2" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 2",
-              "action" : "CutSwitchAngle02",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "DIS" : {
-            "pressAction" : {
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Edit",
-                  "Add Default Transition"
-                ],
-                "plain" : true
-              },
-              "actionTitle" : "Add Default Transition",
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "IN" : {
-            "pressAction" : {
-              "actionTitle" : "Set Range Start",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Mark",
-                  "Set Range Start"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "TRANS" : {
-            "pressAction" : {
-              "actionTitle" : "Open Transitions in Search Console",
-              "action" : {
-                "id" : "cpFinalCutProTransition"
-              },
-              "handlerID" : "fcpx_cmds"
-            }
-          },
-          "SOURCE" : {
-            "pressAction" : {
-              "actionTitle" : "Event Viewer",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Window",
-                  "Go To",
-                  "Event Viewer"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "RIPL DEL" : {
-            "pressAction" : {
-              "actionTitle" : "Delete",
-              "action" : "Delete",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "PLACE ON TOP" : {
-            "pressAction" : {
-              "actionTitle" : "Connect to Primary Storyline",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Edit",
-                  "Connect to Primary Storyline"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "TRIM OUT" : {
-            "pressAction" : {
-              "actionTitle" : "Trim End",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Trim",
-                  "Trim End"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "CAM 9" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 9",
-              "action" : "CutSwitchAngle09",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "SMTH CUT" : {
-            "pressAction" : {
-              "actionTitle" : "Flow",
-              "action" : {
-                "locale" : "en",
-                "name" : "Flow",
-                "category" : "Dissolves",
-                "type" : "transition"
-              },
-              "handlerID" : "fcpx_transition"
-            }
-          },
-          "CAM 7" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 7",
-              "action" : "CutSwitchAngle07",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "CAM 5" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 5",
-              "action" : "CutSwitchAngle05",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "JOG" : {
-            "pressAction" : {
-              "actionTitle" : "Speed Editor Bank 2 (Unit 1)",
-              "action" : {
-                "id" : "Speed Editor_1_2",
-                "device" : "Speed Editor",
-                "bank" : 2,
-                "unit" : "1",
-                "action" : "bank"
-              },
-              "handlerID" : "global_resolvebanks"
-            }
-          },
-          "CAM 3" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 3",
-              "action" : "CutSwitchAngle03",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
-          "APPND" : {
-            "pressAction" : {
-              "actionTitle" : "Append to Storyline",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Edit",
-                  "Append to Storyline"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "AUDIO ONLY" : {
-            "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
-            }
-          },
           "SHTL" : {
             "pressAction" : {
               "actionTitle" : "Speed Editor Bank 1 (Unit 1)",
@@ -4851,21 +4501,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -4873,39 +4508,60 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "APPND" : {
+            "pressAction" : {
+              "actionTitle" : "Append to Storyline",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Append to Storyline"
+                ],
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
               },
-              "actionTitle" : "Snapping LED Status",
               "handlerID" : "global_snippets"
             },
             "pressAction" : {
+              "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Snapping",
               "handlerID" : "fcpx_menu"
             }
           }
@@ -4915,12 +4571,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4942,13 +4598,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4957,12 +4613,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -4971,13 +4627,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5037,12 +4693,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5051,12 +4707,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5074,13 +4730,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5096,12 +4752,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5110,12 +4766,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5132,9 +4788,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -5177,21 +4833,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -5214,19 +4878,367 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "CAM 1" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 1",
+              "action" : "CutSwitchAngle01",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "OUT" : {
+            "pressAction" : {
+              "actionTitle" : "Set Range End",
+              "action" : {
+                "path" : [
+                  "Mark",
+                  "Set Range End"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "SNAP" : {
+            "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
+              "action" : {
+                "id" : "Snapping LED Status",
+                "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
+              },
+              "handlerID" : "global_snippets"
+            },
+            "pressAction" : {
+              "actionTitle" : "Snapping",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Snapping"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          }
+        },
+        "12" : {
+          "CUT" : {
+            "pressAction" : {
+              "actionTitle" : "Blade",
+              "action" : {
+                "path" : [
+                  "Trim",
+                  "Blade"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "SCRL" : {
+            "pressAction" : {
+              "actionTitle" : "Speed Editor Bank 3 (Unit 1)",
+              "action" : {
+                "id" : "Speed Editor_1_3",
+                "device" : "Speed Editor",
+                "bank" : 3,
+                "unit" : "1",
+                "action" : "bank"
+              },
+              "handlerID" : "global_resolvebanks"
+            }
+          },
+          "TIMELINE" : {
+            "pressAction" : {
+              "actionTitle" : "Timeline",
+              "action" : {
+                "path" : [
+                  "Window",
+                  "Go To",
+                  "Timeline"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "TRIM IN" : {
+            "pressAction" : {
+              "actionTitle" : "Trim Start",
+              "action" : {
+                "path" : [
+                  "Trim",
+                  "Trim Start"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "STOP PLAY" : {
+            "pressAction" : {
+              "actionTitle" : "Play",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 8" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 8",
+              "action" : "CutSwitchAngle08",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "AUDIO LEVEL" : {
+            "pressAction" : {
+              "actionTitle" : "Speed Editor Bank 4 (Unit 1)",
+              "action" : {
+                "id" : "Speed Editor_1_4",
+                "device" : "Speed Editor",
+                "bank" : 4,
+                "unit" : "1",
+                "action" : "bank"
+              },
+              "handlerID" : "global_resolvebanks"
+            }
+          },
+          "CAM 6" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 6",
+              "action" : "CutSwitchAngle06",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "LIVE OWR" : [
+
+          ],
+          "VIDEO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Video Only",
+              "action" : "MultiAngleEditStyleVideo",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 4" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 4",
+              "action" : "CutSwitchAngle04",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 2" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 2",
+              "action" : "CutSwitchAngle02",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "DIS" : {
+            "pressAction" : {
+              "actionTitle" : "Add Default Transition",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Add Default Transition"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "IN" : {
+            "pressAction" : {
+              "actionTitle" : "Set Range Start",
+              "action" : {
+                "path" : [
+                  "Mark",
+                  "Set Range Start"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "TRANS" : {
+            "pressAction" : {
+              "actionTitle" : "Open Transitions in Search Console",
+              "action" : {
+                "id" : "cpFinalCutProTransition"
+              },
+              "handlerID" : "fcpx_cmds"
+            }
+          },
+          "SOURCE" : {
+            "pressAction" : {
+              "actionTitle" : "Event Viewer",
+              "action" : {
+                "path" : [
+                  "Window",
+                  "Go To",
+                  "Event Viewer"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "RIPL DEL" : {
+            "pressAction" : {
+              "actionTitle" : "Delete",
+              "action" : "Delete",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "PLACE ON TOP" : {
+            "pressAction" : {
+              "actionTitle" : "Connect to Primary Storyline",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Connect to Primary Storyline"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "TRIM OUT" : {
+            "pressAction" : {
+              "actionTitle" : "Trim End",
+              "action" : {
+                "path" : [
+                  "Trim",
+                  "Trim End"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "CAM 9" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 9",
+              "action" : "CutSwitchAngle09",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "SMTH CUT" : {
+            "pressAction" : {
+              "actionTitle" : "Flow",
+              "action" : {
+                "locale" : "en",
+                "type" : "transition",
+                "category" : "Dissolves",
+                "name" : "Flow"
+              },
+              "handlerID" : "fcpx_transition"
+            }
+          },
+          "CAM 7" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 7",
+              "action" : "CutSwitchAngle07",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 5" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 5",
+              "action" : "CutSwitchAngle05",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "JOG" : {
+            "pressAction" : {
+              "actionTitle" : "Speed Editor Bank 2 (Unit 1)",
+              "action" : {
+                "id" : "Speed Editor_1_2",
+                "device" : "Speed Editor",
+                "bank" : 2,
+                "unit" : "1",
+                "action" : "bank"
+              },
+              "handlerID" : "global_resolvebanks"
+            }
+          },
+          "CAM 3" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 3",
+              "action" : "CutSwitchAngle03",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "APPND" : {
+            "pressAction" : {
+              "actionTitle" : "Append to Storyline",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Append to Storyline"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
           "FULL VIEW" : {
             "pressAction" : {
               "actionTitle" : "Play Full Screen",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play Full Screen"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
+            }
+          },
+          "SHTL" : {
+            "pressAction" : {
+              "actionTitle" : "Speed Editor Bank 1 (Unit 1)",
+              "action" : {
+                "id" : "Speed Editor_1_1",
+                "device" : "Speed Editor",
+                "bank" : 1,
+                "unit" : "1",
+                "action" : "bank"
+              },
+              "handlerID" : "global_resolvebanks"
+            }
+          },
+          "SPLIT" : {
+            "pressAction" : {
+              "actionTitle" : "Blade",
+              "action" : "BladeAtPlayhead",
+              "handlerID" : "fcpx_shortcuts"
             }
           },
           "CAM 1" : {
@@ -5236,38 +5248,45 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5278,12 +5297,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5305,13 +5324,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5320,12 +5339,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5334,13 +5353,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5398,15 +5417,15 @@
           },
           "DIS" : {
             "pressAction" : {
+              "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Add Default Transition",
               "handlerID" : "fcpx_menu"
             }
           },
@@ -5414,12 +5433,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5437,13 +5456,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5459,12 +5478,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5473,12 +5492,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5495,9 +5514,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -5540,21 +5559,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -5577,21 +5604,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -5599,39 +5611,46 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
               },
-              "actionTitle" : "Snapping LED Status",
               "handlerID" : "global_snippets"
             },
             "pressAction" : {
+              "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Snapping",
               "handlerID" : "fcpx_menu"
             }
           }
@@ -5641,12 +5660,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5668,13 +5687,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5683,12 +5702,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5697,13 +5716,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5763,12 +5782,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5777,12 +5796,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5800,13 +5819,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5822,12 +5841,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5836,12 +5855,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -5858,9 +5877,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -5903,21 +5922,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -5940,21 +5967,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -5962,38 +5974,45 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6004,12 +6023,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6031,13 +6050,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6046,12 +6065,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6060,13 +6079,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6126,12 +6145,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6140,12 +6159,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6163,13 +6182,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6185,12 +6204,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6199,12 +6218,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6221,9 +6240,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -6266,21 +6285,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -6303,21 +6330,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -6325,38 +6337,45 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6367,12 +6386,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6394,13 +6413,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6409,12 +6428,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6423,13 +6442,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6487,15 +6506,15 @@
           },
           "DIS" : {
             "pressAction" : {
+              "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Add Default Transition",
               "handlerID" : "fcpx_menu"
             }
           },
@@ -6503,12 +6522,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6526,13 +6545,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6548,12 +6567,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6562,12 +6581,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6584,9 +6603,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -6629,21 +6648,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -6666,21 +6693,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -6688,39 +6700,46 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
               },
-              "actionTitle" : "Snapping LED Status",
               "handlerID" : "global_snippets"
             },
             "pressAction" : {
+              "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Snapping",
               "handlerID" : "fcpx_menu"
             }
           }
@@ -6730,12 +6749,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6757,13 +6776,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6772,12 +6791,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6786,13 +6805,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6850,15 +6869,15 @@
           },
           "DIS" : {
             "pressAction" : {
+              "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Add Default Transition",
               "handlerID" : "fcpx_menu"
             }
           },
@@ -6866,12 +6885,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6889,13 +6908,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6911,12 +6930,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6925,12 +6944,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -6947,9 +6966,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -6992,21 +7011,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -7029,21 +7056,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -7051,39 +7063,46 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
+              "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
               },
-              "actionTitle" : "Snapping LED Status",
               "handlerID" : "global_snippets"
             },
             "pressAction" : {
+              "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
-              "actionTitle" : "Snapping",
               "handlerID" : "fcpx_menu"
             }
           }
@@ -7093,27 +7112,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "TIMELINE" : {
-            "pressAction" : {
-              "actionTitle" : "Timeline",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Window",
-                  "Go To",
-                  "Timeline"
-                ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7131,16 +7135,27 @@
               "handlerID" : "global_resolvebanks"
             }
           },
+          "TIMELINE" : {
+            "pressAction" : {
+              "actionTitle" : "Move Playhead Forward 1 Frame",
+              "action" : {
+                "amount" : 1,
+                "id" : "fcpx_workflowextensions_increment_1",
+                "actionType" : "increment"
+              },
+              "handlerID" : "fcpx_workflowextensions"
+            }
+          },
           "TRIM IN" : {
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7149,13 +7164,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7164,6 +7179,13 @@
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 8",
               "action" : "CutSwitchAngle08",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
+          "CAM 6" : {
+            "pressAction" : {
+              "actionTitle" : "Cut and Switch to Viewer Angle 6",
+              "action" : "CutSwitchAngle06",
               "handlerID" : "fcpx_shortcuts"
             }
           },
@@ -7178,13 +7200,6 @@
                 "action" : "bank"
               },
               "handlerID" : "global_resolvebanks"
-            }
-          },
-          "CAM 6" : {
-            "pressAction" : {
-              "actionTitle" : "Cut and Switch to Viewer Angle 6",
-              "action" : "CutSwitchAngle06",
-              "handlerID" : "fcpx_shortcuts"
             }
           },
           "LIVE OWR" : [
@@ -7215,12 +7230,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7229,12 +7244,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7250,17 +7265,13 @@
           },
           "SOURCE" : {
             "pressAction" : {
-              "actionTitle" : "Event Viewer",
+              "actionTitle" : "Move Playhead Backward 1 Frame",
               "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Window",
-                  "Go To",
-                  "Event Viewer"
-                ],
-                "plain" : true
+                "amount" : 1,
+                "id" : "fcpx_workflowextensions_decrement_1",
+                "actionType" : "decrement"
               },
-              "handlerID" : "fcpx_menu"
+              "handlerID" : "fcpx_workflowextensions"
             }
           },
           "RIPL DEL" : {
@@ -7274,25 +7285,25 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "JOG WHEEL" : {
-            "turnLeftSixAction" : {
-              "actionTitle" : "Play Rate -32",
-              "action" : "PlayRateMinus32X",
-              "handlerID" : "fcpx_shortcuts"
-            },
             "turnLeftTwoAction" : {
               "actionTitle" : "Play Rate -2",
               "action" : "PlayRateMinus2X",
+              "handlerID" : "fcpx_shortcuts"
+            },
+            "turnLeftSixAction" : {
+              "actionTitle" : "Play Rate -32",
+              "action" : "PlayRateMinus32X",
               "handlerID" : "fcpx_shortcuts"
             },
             "turnRightThreeAction" : {
@@ -7356,12 +7367,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7378,9 +7389,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -7419,16 +7430,17 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "APPND" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Append to Storyline",
+              "actionTitle" : "Play Full Screen",
               "action" : {
-                "locale" : "en",
                 "path" : [
-                  "Edit",
-                  "Append to Storyline"
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7461,36 +7473,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
-          "bankLabel" : "SHTL",
-          "OUT" : {
-            "pressAction" : {
-              "actionTitle" : "Set Range End",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "Mark",
-                  "Set Range End"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -7498,24 +7480,53 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "bankLabel" : "SHTL",
+          "OUT" : {
+            "pressAction" : {
+              "actionTitle" : "Set Range End",
+              "action" : {
+                "path" : [
+                  "Mark",
+                  "Set Range End"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
+          "APPND" : {
+            "pressAction" : {
+              "actionTitle" : "Append to Storyline",
+              "action" : {
+                "path" : [
+                  "Edit",
+                  "Append to Storyline"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
+            }
+          },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7526,12 +7537,12 @@
             "pressAction" : {
               "actionTitle" : "Blade",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Blade"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7553,13 +7564,13 @@
             "pressAction" : {
               "actionTitle" : "Timeline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Timeline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7568,12 +7579,12 @@
             "pressAction" : {
               "actionTitle" : "Trim Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7582,13 +7593,13 @@
             "pressAction" : {
               "actionTitle" : "Play",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Playback",
                   "Play"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7648,12 +7659,12 @@
             "pressAction" : {
               "actionTitle" : "Add Default Transition",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Add Default Transition"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7662,12 +7673,12 @@
             "pressAction" : {
               "actionTitle" : "Set Range Start",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range Start"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7685,13 +7696,13 @@
             "pressAction" : {
               "actionTitle" : "Event Viewer",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Window",
                   "Go To",
                   "Event Viewer"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7707,12 +7718,12 @@
             "pressAction" : {
               "actionTitle" : "Connect to Primary Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Connect to Primary Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7721,12 +7732,12 @@
             "pressAction" : {
               "actionTitle" : "Trim End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Trim",
                   "Trim End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
@@ -7743,9 +7754,9 @@
               "actionTitle" : "Flow",
               "action" : {
                 "locale" : "en",
-                "name" : "Flow",
+                "type" : "transition",
                 "category" : "Dissolves",
-                "type" : "transition"
+                "name" : "Flow"
               },
               "handlerID" : "fcpx_transition"
             }
@@ -7788,21 +7799,29 @@
             "pressAction" : {
               "actionTitle" : "Append to Storyline",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Edit",
                   "Append to Storyline"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
-          "AUDIO ONLY" : {
+          "FULL VIEW" : {
             "pressAction" : {
-              "actionTitle" : "Cut\/Switch Multicam Audio Only",
-              "action" : "MultiAngleEditStyleAudio",
-              "handlerID" : "fcpx_shortcuts"
+              "actionTitle" : "Play Full Screen",
+              "action" : {
+                "path" : [
+                  "View",
+                  "Playback",
+                  "Play Full Screen"
+                ],
+                "plain" : true,
+                "locale" : "en"
+              },
+              "handlerID" : "fcpx_menu"
             }
           },
           "SHTL" : {
@@ -7825,21 +7844,6 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
-          "FULL VIEW" : {
-            "pressAction" : {
-              "actionTitle" : "Play Full Screen",
-              "action" : {
-                "locale" : "en",
-                "path" : [
-                  "View",
-                  "Playback",
-                  "Play Full Screen"
-                ],
-                "plain" : true
-              },
-              "handlerID" : "fcpx_menu"
-            }
-          },
           "CAM 1" : {
             "pressAction" : {
               "actionTitle" : "Cut and Switch to Viewer Angle 1",
@@ -7847,43 +7851,59 @@
               "handlerID" : "fcpx_shortcuts"
             }
           },
+          "AUDIO ONLY" : {
+            "pressAction" : {
+              "actionTitle" : "Cut\/Switch Multicam Audio Only",
+              "action" : "MultiAngleEditStyleAudio",
+              "handlerID" : "fcpx_shortcuts"
+            }
+          },
           "OUT" : {
             "pressAction" : {
               "actionTitle" : "Set Range End",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "Mark",
                   "Set Range End"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           },
           "SNAP" : {
             "snippetAction" : {
-              "handlerID" : "global_snippets",
               "actionTitle" : "Snapping LED Status",
               "action" : {
                 "id" : "Snapping LED Status",
                 "code" : "local fcp = require(\"cp.apple.finalcutpro\")\nreturn not fcp.preferences.FFDisableSnapping"
-              }
+              },
+              "handlerID" : "global_snippets"
             },
             "pressAction" : {
               "actionTitle" : "Snapping",
               "action" : {
-                "locale" : "en",
                 "path" : [
                   "View",
                   "Snapping"
                 ],
-                "plain" : true
+                "plain" : true,
+                "locale" : "en"
               },
               "handlerID" : "fcpx_menu"
             }
           }
         }
+      },
+      "com.apple.DiskUtility" : {
+        "ignore" : true
+      },
+      "us.zoom.xos" : {
+        "ignore" : true
+      },
+      "com.microsoft.teams" : {
+        "ignore" : true
       },
       "com.apple.Compressor" : {
         "ignore" : true

@@ -1543,9 +1543,9 @@ function mod.mt:updateScreenKnobColor(knobID, color, callbackFn)
     self:updateScreenColor(whichScreen, color, {x=0, y=y, w=60,h=90}, callbackFn)
 end
 
---- hs.loupdeckct.buttonID -> table
+--- hs.loupedeck.buttonID -> table
 --- Constant
---- Contains IDs for the various buttons on the Loupdeck CT.
+--- Contains IDs for the various buttons on the Loupedeck CT.
 ---
 --- Notes:
 ---  * The buttonID's are as follows:
