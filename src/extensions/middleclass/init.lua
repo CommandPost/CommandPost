@@ -162,13 +162,28 @@ local DefaultMixin = {
     subclassed = function(self, other) end, -- luacheck:ignore
 
     isSubclassOf = function(self, other)
+      assert(type(self) == 'table', "Make sure that you are using 'Class:isSubclassOf' instead of 'Class.isSubclassOf'")
       return type(other)      == 'table' and
              type(self.super) == 'table' and
              ( self.super == other or self.super:isSubclassOf(other) )
     end,
 
+    isSuperclassOf = function(self, other)
+      assert(type(self) == 'table', "Make sure that you are using 'Class:isSuperclassOf' instead of 'Class.isSuperclassOf'")
+      return self == other or
+             type(other) == "table" and
+             type(other.super) == 'table' and
+             other.isSubclassOf ~= nil and
+             other:isSubclassOf(self)
+    end,
+
     isClassFor = function(self, instance)
       assert(type(self) == 'table', "Make sure that you are using 'Class:isClassFor' instead of 'Class.isClassFor'")
+      return type(instance) == "table" and type(instance.class) == "table" and self == instance.class
+    end,
+
+    isSuperclassFor = function(self, instance)
+      assert(type(self) == 'table', "Make sure that you are using 'Class:isSuperclassFor' instead of 'Class.isSuperclassFor'")
       return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(self)
     end,
 
