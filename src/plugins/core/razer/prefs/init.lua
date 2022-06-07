@@ -326,19 +326,45 @@ local function updateUI(params)
         updateIgnoreVisibility();
     ]]
 
-    if device == "Razer Tartarus V2" then
+    if device == "Razer Orbweaver" then
         script = script .. [[
-            document.getElementById("razer_tartarus_v2").style.display = "table";
-            document.getElementById("razer_orbweaver").style.display = "none";
-
-            setStyleDisplayByClass("tartarusV2Only", "inline-block");
-        ]]
-    elseif device == "Razer Orbweaver" then
-        script = script .. [[
-            document.getElementById("razer_tartarus_v2").style.display = "none";
             document.getElementById("razer_orbweaver").style.display = "table";
+            document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_pro").style.display = "none";
+            document.getElementById("razer_tartarus_v2").style.display = "none";
 
-            setStyleDisplayByClass("tartarusV2Only", "none");
+            setStyleDisplayByClass("basicTartarusEffects", "none");
+            setStyleDisplayByClass("extraTartarusEffects", "none");
+        ]]
+    elseif device == "Razer Tartarus" then
+        script = script .. [[
+            document.getElementById("razer_orbweaver").style.display = "none";
+            document.getElementById("razer_tartarus").style.display = "table";
+            document.getElementById("razer_tartarus_pro").style.display = "none";
+            document.getElementById("razer_tartarus_v2").style.display = "none";
+
+            setStyleDisplayByClass("basicTartarusEffects", "none");
+            setStyleDisplayByClass("extraTartarusEffects", "none");
+        ]]
+    elseif device == "Razer Tartarus Pro" then
+        script = script .. [[
+            document.getElementById("razer_orbweaver").style.display = "none";
+            document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_pro").style.display = "table";
+            document.getElementById("razer_tartarus_v2").style.display = "none";
+
+            setStyleDisplayByClass("basicTartarusEffects", "inline-block");
+            setStyleDisplayByClass("extraTartarusEffects", "none");
+        ]]
+    elseif device == "Razer Tartarus V2" then
+        script = script .. [[
+            document.getElementById("razer_orbweaver").style.display = "none";
+            document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_pro").style.display = "none";
+            document.getElementById("razer_tartarus_v2").style.display = "table";
+
+            setStyleDisplayByClass("basicTartarusEffects", "inline-block");
+            setStyleDisplayByClass("extraTartarusEffects", "inline-block");
         ]]
     end
 
@@ -364,7 +390,7 @@ local function updateUI(params)
     ]]
 
     if controlType == "button" then
-        if device == "Razer Tartarus V2" then
+        if device == "Razer Tartarus V2" or device == "Razer Tartarus Pro" then
             script = script .. [[
                 setStyleDisplayByClass("ledColor", "table");
             ]]
@@ -841,34 +867,30 @@ local function razerPanelCallback(id, params)
             --------------------------------------------------------------------------------
             local items = mod.items()
 
-            local device        = params["device"]
-            local app           = params["application"]
-            local bank          = params["bank"]
-            local controlType   = params["controlType"]
+            local device            = params["device"]
+            local app               = params["application"]
+            local bank              = params["bank"]
+            local controlType       = params["controlType"]
+            local controlID         = params["controlID"]
 
-            local data = items[device] and items[device][app] and items[device][app][bank] and items[device][app][bank][controlType]
+            local theDevice         = items[device]
+            local theApp            = theDevice and theDevice[app]
+            local theBank           = theApp and theApp[bank]
+            local theControlType    = theBank and theBank[controlType]
+            local theControlID      = theControlType and theControlType[controlID] or {}
 
-            if type(data) == "table" then
-                local numberOfBanks = tableCount(mod._razerManager.bankLabels[device])
-                for b=1, numberOfBanks do
-                    local bankId = tostring(b)
+            local bankLabels = mod._razerManager.bankLabels
+            local numberOfBanks = tableCount(bankLabels[device])
 
-                    local deviceItems = items[device] or {}
-                    local appItems = deviceItems[app] or {}
-                    items[device][app] = appItems
-
-                    local bankItems = appItems[bankId] or {}
-                    appItems[bankId] = bankItems
-
-                    local controlTypes = bankItems[controlType] or {}
-                    bankItems[controlType] = controlTypes
-
-                    for i, v in pairs(data) do
-                        controlTypes[i] = v
-                    end
-                end
+            local data = copy(theControlID)
+            for b=1, numberOfBanks do
+                setItem(device, app, tostring(b), controlType, controlID, data)
             end
-            mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._razerManager.refresh()
         elseif callbackType == "resetControl" then
             --------------------------------------------------------------------------------
             -- Reset Control:
@@ -877,11 +899,12 @@ local function razerPanelCallback(id, params)
             local app           = params["application"]
             local bank          = params["bank"]
             local controlType   = params["controlType"]
+            local controlID     = params["controlID"]
 
             local items = mod.items()
 
-            if items[device] and items[device][app] and items[device][app][bank] and items[device][app][bank][controlType] then
-                items[device][app][bank][controlType] = nil
+            if items[device] and items[device][app] and items[device][app][bank] and items[device][app][bank][controlType] and items[device][app][bank][controlType][controlID] then
+                items[device][app][bank][controlType][controlID] = nil
             end
 
             mod.items(items)
@@ -1474,23 +1497,34 @@ function plugin.init(deps, env)
             {
                 label       =   i18n("backlightsMode"),
                 id          =   "backlightsMode",
-                class       =   "backlightsMode restrictRightTopSectionSize tartarusV2Only",
+                class       =   "backlightsMode restrictRightTopSectionSize basicTartarusEffects",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightsMode = mod._razerManager.backlightsMode()
                                     return backlightsMode[device]
                                 end,
                 options     =   function()
-                                    local options = {
-                                        { value = "Off",              label = i18n("off") },
-                                        { value = "User Defined",     label = i18n("userDefined") },
-                                        { value = "Breathing",        label = i18n("breathing") },
-                                        { value = "Reactive",         label = i18n("reactive") },
-                                        { value = "Spectrum",         label = i18n("spectrum") },
-                                        { value = "Starlight",        label = i18n("starlight") },
-                                        { value = "Static",           label = i18n("static") },
-                                        { value = "Wave",             label = i18n("wave") },
-                                    }
+                                    local device = mod.lastDevice()
+                                    local options
+
+                                    if device == "Razer Tartarus V2" then
+                                        options = {
+                                            { value = "Off",              label = i18n("off") },
+                                            { value = "User Defined",     label = i18n("userDefined") },
+                                            { value = "Breathing",        label = i18n("breathing") },
+                                            { value = "Reactive",         label = i18n("reactive") },
+                                            { value = "Spectrum",         label = i18n("spectrum") },
+                                            { value = "Starlight",        label = i18n("starlight") },
+                                            { value = "Static",           label = i18n("static") },
+                                            { value = "Wave",             label = i18n("wave") },
+                                        }
+                                    elseif device == "Razer Tartarus Pro" then
+                                        options = {
+                                            { value = "Off",              label = i18n("off") },
+                                            { value = "User Defined",     label = i18n("userDefined") },
+                                            { value = "Static",           label = i18n("static") },
+                                        }
+                                    end
                                     return options
                                 end,
                 required    =   true,
@@ -1513,7 +1547,7 @@ function plugin.init(deps, env)
                                     local backlightEffectColorA = mod._razerManager.backlightEffectColorA()
                                     return backlightEffectColorA[device]
                                 end,
-                class       =   "tartarusV2Only restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                class       =   "basicTartarusEffects restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params)
                                     local device = mod.lastDevice()
                                     local backlightEffectColorA = mod._razerManager.backlightEffectColorA()
@@ -1533,7 +1567,7 @@ function plugin.init(deps, env)
                                     local backlightEffectColorB = mod._razerManager.backlightEffectColorB()
                                     return backlightEffectColorB[device]
                                 end,
-                class       =   "tartarusV2Only restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
+                class       =   "extraTartarusEffects restrictRightTopSectionSize colorPreferences jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params)
                                     local device = mod.lastDevice()
                                     local backlightEffectColorB = mod._razerManager.backlightEffectColorB()
@@ -1548,7 +1582,7 @@ function plugin.init(deps, env)
             {
                 label       =   i18n("backlightEffectDirection"),
                 id          =   "backlightEffectDirection",
-                class       =   "tartarusV2Only backlightsMode restrictRightTopSectionSize",
+                class       =   "extraTartarusEffects backlightsMode restrictRightTopSectionSize",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightEffectDirection = mod._razerManager.backlightEffectDirection()
@@ -1576,7 +1610,7 @@ function plugin.init(deps, env)
             {
                 label       =   i18n("backlightEffectSpeed"),
                 id          =   "backlightEffectSpeed",
-                class       =   "tartarusV2Only backlightsMode restrictRightTopSectionSize",
+                class       =   "extraTartarusEffects backlightsMode restrictRightTopSectionSize",
                 value       =   function()
                                     local device = mod.lastDevice()
                                     local backlightEffectSpeed = mod._razerManager.backlightEffectSpeed()

@@ -1,8 +1,10 @@
 <script>{(js/jscolor.js)}</script>
 
 <style>{(css/razer.css)}</style>
-<style>{(css/razer_tartarus_v2.css)}</style>
 <style>{(css/razer_orbweaver.css)}</style>
+<style>{(css/razer_tartarus.css)}</style>
+<style>{(css/razer_tartarus_pro.css)}</style>
+<style>{(css/razer_tartarus_v2.css)}</style>
 
 <script>
 	function ledExamples() {
@@ -407,8 +409,10 @@
 		<th style=text-align: left;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("device") }}: </span>
 				<select id="device" style="width: 150px;" onchange="updateDevice()">
+    				<option value="Razer Orbweaver">Razer Orbweaver</option>
+    				<option value="Razer Tartarus">Razer Tartarus</option>
+    				<option value="Razer Tartarus Pro">Razer Tartarus Pro</option>
 					<option value="Razer Tartarus V2">Razer Tartarus V2</option>
-					<option value="Razer Orbweaver">Razer Orbweaver</option>
 				</select>
 			</span>
 		</th>
@@ -485,6 +489,7 @@
 	<thead>
 		<tr>
 			<th width="447px">
+			    <!-- Razer Orbweaver -->
 			    <div id="razer_orbweaver">
                     <div id="razer_orbweaver_01"></div>
                     <div id="razer_orbweaver_02"></div>
@@ -544,6 +549,130 @@
                     <div id="razer_orbweaver_56"></div>
                     <div id="razer_orbweaver_57"></div>
 			    </div>
+
+			    <!-- Razer Tartarus -->
+                <div id="razer_tartarus">
+                    <div id="razer_tartarus_01"></div>
+                    <div id="razer_tartarus_02"></div>
+                    <div id="razer_tartarus_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_05"></div>
+                    <div id="razer_tartarus_06"></div>
+                    <div id="razer_tartarus_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_08"></div>
+                    <div id="razer_tartarus_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_10"></div>
+                    <div id="razer_tartarus_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_16"></div>
+                    <div id="razer_tartarus_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_19"></div>
+                    <div id="razer_tartarus_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_22"></div>
+                    <div id="razer_tartarus_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_24"></div>
+                    <div id="razer_tartarus_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_26"></div>
+                    <div id="razer_tartarus_27"></div>
+                    <div id="razer_tartarus_28"></div>
+                    <div id="razer_tartarus_29"></div>
+                    <div id="razer_tartarus_30"></div>
+                    <div id="razer_tartarus_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_32"></div>
+                    <div id="razer_tartarus_33"></div>
+                    <div id="razer_tartarus_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_35"></div>
+                    <div id="razer_tartarus_36"></div>
+                    <div id="razer_tartarus_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_38"></div>
+                    <div id="razer_tartarus_39"></div>
+                </div>
+
+                <!-- Razer Tartarus Pro Interface -->
+				<div id="razer_tartarus_pro">
+					<div id="razer_tartarus_pro_01"></div>
+					<div id="razer_tartarus_pro_02"></div>
+					<div id="razer_tartarus_pro_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_04"></div>
+					<div id="razer_tartarus_pro_05"></div>
+					<div id="razer_tartarus_pro_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_07"></div>
+					<div id="razer_tartarus_pro_08"></div>
+					<div id="razer_tartarus_pro_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_10"></div>
+					<div id="razer_tartarus_pro_11"></div>
+					<div id="razer_tartarus_pro_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_13"></div>
+					<div id="razer_tartarus_pro_14"></div>
+					<div id="razer_tartarus_pro_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_16"></div>
+					<div id="razer_tartarus_pro_17"></div>
+					<div id="razer_tartarus_pro_18"></div>
+					<div id="razer_tartarus_pro_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_20"></div>
+					<div id="razer_tartarus_pro_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_22"></div>
+					<div id="razer_tartarus_pro_23"></div>
+					<div id="razer_tartarus_pro_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_25"></div>
+					<div id="razer_tartarus_pro_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_27"></div>
+					<div id="razer_tartarus_pro_28"></div>
+					<div id="razer_tartarus_pro_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_30"></div>
+					<div id="razer_tartarus_pro_31"></div>
+					<div id="razer_tartarus_pro_32"></div>
+					<div id="razer_tartarus_pro_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_34"></div>
+					<div id="razer_tartarus_pro_35"></div>
+					<div id="razer_tartarus_pro_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_37"></div>
+					<div id="razer_tartarus_pro_38"></div>
+					<div id="razer_tartarus_pro_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_40"></div>
+					<div id="razer_tartarus_pro_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_42"></div>
+					<div id="razer_tartarus_pro_43"></div>
+					<div id="razer_tartarus_pro_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_45"></div>
+					<div id="razer_tartarus_pro_46"></div>
+					<div id="razer_tartarus_pro_47"></div>
+					<div id="razer_tartarus_pro_48"></div>
+					<div id="razer_tartarus_pro_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_50"></div>
+					<div id="razer_tartarus_pro_51"></div>
+					<div id="razer_tartarus_pro_52"></div>
+					<div id="razer_tartarus_pro_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_54"></div>
+					<div id="razer_tartarus_pro_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_56"></div>
+					<div id="razer_tartarus_pro_57"></div>
+					<div id="razer_tartarus_pro_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_59"></div>
+					<div id="razer_tartarus_pro_60"></div>
+					<div id="razer_tartarus_pro_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_62"></div>
+					<div id="razer_tartarus_pro_63"></div>
+					<div id="razer_tartarus_pro_64"></div>
+					<div id="razer_tartarus_pro_65"></div>
+					<div id="razer_tartarus_pro_66"></div>
+					<div id="razer_tartarus_pro_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_68"></div>
+					<div id="razer_tartarus_pro_69"></div>
+					<div id="razer_tartarus_pro_70"></div>
+					<div id="razer_tartarus_pro_71"></div>
+					<div id="razer_tartarus_pro_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_73"></div>
+					<div id="razer_tartarus_pro_74"></div>
+					<div id="razer_tartarus_pro_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_76"></div>
+					<div id="razer_tartarus_pro_77"></div>
+				</div>
 
 				<!-- Razer Tartarus V2 Interface -->
 				<div id="razer_tartarus_v2">
