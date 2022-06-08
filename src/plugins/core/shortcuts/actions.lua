@@ -11,13 +11,11 @@ local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local keycodes          = require "hs.keycodes"
-local osascript         = require "hs.osascript"
 
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
-local applescript       = osascript.applescript
 local keyStroke         = tools.keyStroke
 local pressSystemKey    = tools.pressSystemKey
 local imageFromPath     = image.imageFromPath
@@ -28,6 +26,11 @@ local newKeyEvent       = event.newKeyEvent
 
 local mod = {}
 
+--- plugins.core.shortcuts.actions.heldKeys -> table
+--- Variable
+--- A table of held down modifier keys.
+mod.heldKeys = {}
+
 local plugin = {
     id              = "core.shortcuts.actions",
     group           = "core",
@@ -37,17 +40,48 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Apply any held key modifiers via an event tap:
+    --------------------------------------------------------------------------------
+    mod.eventtap = eventtap.new({eventtap.event.types.scrollWheel, eventtap.event.types.keyUp, eventtap.event.types.keyDown}, function(e)
+        local flags = e:getFlags()
+
+        local hasChanged = false
+
+        if mod.heldKeys["control"] == true then
+            hasChanged = true
+            flags["ctrl"] = true
+        end
+        if mod.heldKeys["option"] == true then
+            hasChanged = true
+            flags[ "alt"] = true
+        end
+
+        if mod.heldKeys["command"] == true then
+            hasChanged = true
+            flags["cmd"] = true
+        end
+        if mod.heldKeys["shift"] == true then
+            hasChanged = true
+            flags["shift"] = true
+        end
+
+        e:setFlags(flags)
+
+        if hasChanged then
+            return false, {e}
+        end
+    end)
 
     local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/Keyboard.icns")
 
-    local heldKeys = {}
-
     local holdKey = function(key, isDown)
-        applescript([[tell application "System Events" to ]] .. key .. [[ key ]] .. (isDown and "down" or "up"))
         if isDown then
-            heldKeys[key] = true
+            mod.eventtap:start()
+            mod.heldKeys[key] = true
         else
-            heldKeys[key] = nil
+            mod.eventtap:stop()
+            mod.heldKeys[key] = nil
         end
     end
 
@@ -57,10 +91,10 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Inject modifier keys, if they've already been held down by a hold action:
         --------------------------------------------------------------------------------
-        if heldKeys["control"] == true then table.insert(m, "ctrl") end
-        if heldKeys["option"] == true then table.insert(m, "alt") end
-        if heldKeys["command"] == true then table.insert(m, "cmd") end
-        if heldKeys["shift"] == true then table.insert(m, "shift") end
+        if mod.heldKeys["control"] == true then table.insert(m, "ctrl") end
+        if mod.heldKeys["option"] == true then table.insert(m, "alt") end
+        if mod.heldKeys["command"] == true then table.insert(m, "cmd") end
+        if mod.heldKeys["shift"] == true then table.insert(m, "shift") end
 
         keyStroke(m, action.character)
     end
