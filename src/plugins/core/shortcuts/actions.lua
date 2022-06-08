@@ -43,8 +43,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Apply any held key modifiers via an event tap:
     --------------------------------------------------------------------------------
-    mod.eventtap = eventtap.new({eventtap.event.types.scrollWheel, eventtap.event.types.keyUp, eventtap.event.types.keyDown}, function(event)
-        local flags = event:getFlags()
+    mod.eventtap = eventtap.new({eventtap.event.types.scrollWheel, eventtap.event.types.keyUp, eventtap.event.types.keyDown}, function(e)
+        local flags = e:getFlags()
 
         local hasChanged = false
 
@@ -66,10 +66,10 @@ function plugin.init(deps)
             flags["shift"] = true
         end
 
-        event:setFlags(flags)
+        e:setFlags(flags)
 
         if hasChanged then
-            return false, {event}
+            return false, {e}
         end
     end)
 
