@@ -42,6 +42,11 @@ local mod = {}
 -- URL to Snippet Support Site
 local SNIPPET_LED_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_led_colors"
 
+--- plugins.core.razer.prefs.pasteboard <cp.prop: table>
+--- Field
+--- Pasteboard
+mod.pasteboard = json.prop(config.cachePath, "Razer", "Pasteboard.cpCache", {})
+
 --- plugins.core.razer.prefs.lastDevice <cp.prop: string>
 --- Field
 --- Last Bank used in the Preferences Panel.
@@ -66,6 +71,11 @@ mod.lastControlType = config.prop("razer.preferences.lastControlType", "button")
 --- Field
 --- Last Selected Control ID used in the Preferences Panel.
 mod.lastControlID = config.prop("razer.preferences.lastControlID", "1")
+
+--- plugins.core.razer.prefs.changeBankOnHardwareWhenChangingHere <cp.prop: boolean>
+--- Field
+--- Should we change bank on hardware when changing in preferences?
+mod.changeBankOnHardwareWhenChangingHere = config.prop("razer.preferences.changeBankOnHardwareWhenChangingHere", true)
 
 --- plugins.core.razer.prefs.lastImportPath <cp.prop: string>
 --- Field
@@ -416,6 +426,11 @@ local function updateUI(params)
     ]]
 
     injectScript(script)
+
+    --------------------------------------------------------------------------------
+    -- Refresh the hardware:
+    --------------------------------------------------------------------------------
+    mod._razerManager.refresh()
 end
 
 -- razerPanelCallback() -> none
@@ -564,13 +579,6 @@ local function razerPanelCallback(id, params)
                 -- Update the UI:
                 --------------------------------------------------------------------------------
                 updateUI(params)
-
-                --------------------------------------------------------------------------------
-                -- Refresh the hardware:
-                --------------------------------------------------------------------------------
-                if activatorID == "snippet" then
-                    mod._razerManager.refresh()
-                end
             end)
 
             --------------------------------------------------------------------------------
@@ -594,11 +602,6 @@ local function razerPanelCallback(id, params)
             -- Update the UI:
             --------------------------------------------------------------------------------
             updateUI(params)
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
-            mod._razerManager.refresh()
         elseif callbackType == "updateApplicationAndBank" then
             local device        = params["device"]
             local app           = params["application"]
@@ -664,32 +667,32 @@ local function razerPanelCallback(id, params)
                 mod.lastBank(bank)
 
                 --------------------------------------------------------------------------------
-                -- Update the Last Bundle ID used when "Automatically Switch Applications"
-                -- is disabled.
+                -- If change bank on hardware:
                 --------------------------------------------------------------------------------
-                local lastBundleID = mod.lastBundleID()
-                lastBundleID[device] = app
-                mod.lastBundleID(lastBundleID)
+                if mod.changeBankOnHardwareWhenChangingHere() then
+                    --------------------------------------------------------------------------------
+                    -- Update the Last Bundle ID used when "Automatically Switch Applications"
+                    -- is disabled.
+                    --------------------------------------------------------------------------------
+                    local lastBundleID = mod.lastBundleID()
+                    lastBundleID[device] = app
+                    mod.lastBundleID(lastBundleID)
 
-                --------------------------------------------------------------------------------
-                -- Change the bank:
-                --------------------------------------------------------------------------------
-                local activeBanks = mod._razerManager.activeBanks()
+                    --------------------------------------------------------------------------------
+                    -- Change the bank:
+                    --------------------------------------------------------------------------------
+                    local activeBanks = mod._razerManager.activeBanks()
 
-                if not activeBanks[device] then activeBanks[device] = {} end
+                    if not activeBanks[device] then activeBanks[device] = {} end
 
-                activeBanks[device][app] = bank
-                mod._razerManager.activeBanks(activeBanks)
+                    activeBanks[device][app] = bank
+                    mod._razerManager.activeBanks(activeBanks)
+                end
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:
                 --------------------------------------------------------------------------------
                 updateUI(params)
-
-                --------------------------------------------------------------------------------
-                -- Refresh the hardware:
-                --------------------------------------------------------------------------------
-                mod._razerManager.refresh()
             end
         elseif callbackType == "updateUI" then
             updateUI(params)
@@ -913,11 +916,6 @@ local function razerPanelCallback(id, params)
             -- Update the UI:
             --------------------------------------------------------------------------------
             updateUI(params)
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
-            mod._razerManager.refresh()
         elseif callbackType == "resetEverything" then
             --------------------------------------------------------------------------------
             -- Reset Everything:
@@ -1293,6 +1291,119 @@ local function razerPanelCallback(id, params)
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.absolutePosition(), true)
+        elseif callbackType == "showContextMenu" then
+            --------------------------------------------------------------------------------
+            -- Show Context Menu:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+
+            local device            = params["device"]
+            local app               = params["application"]
+            local bank              = params["bank"]
+            local controlType       = params["controlType"]
+            local controlID         = params["controlID"]
+
+            local pasteboard = mod.pasteboard()
+
+            local menu = {}
+
+            local theDevice         = items[device]
+            local theApp            = theDevice and theDevice[app]
+            local theBank           = theApp and theApp[bank]
+            local theControlType    = theBank and theBank[controlType]
+            local theControlID      = theControlType and theControlType[controlID]
+
+            local isControlEmpty = next(theControlID or {}) == nil
+
+            table.insert(menu, {
+                title = i18n("cut"),
+                disabled = isControlEmpty,
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Cut:
+                    --------------------------------------------------------------------------------
+                    pasteboard = copy(theControlID)
+                    mod.pasteboard(pasteboard)
+                    setItem(device, app, bank, controlType, controlID, {})
+                    updateUI()
+                end
+            })
+
+            table.insert(menu, {
+                title = i18n("copy"),
+                disabled = isControlEmpty,
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Copy:
+                    --------------------------------------------------------------------------------
+                    pasteboard = copy(theControlID)
+                    mod.pasteboard(pasteboard)
+                end
+            })
+
+            table.insert(menu, {
+                title = i18n("paste"),
+                disabled = not pasteboard,
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Paste:
+                    --------------------------------------------------------------------------------
+                    setItem(device, app, bank, controlType, controlID, copy(pasteboard))
+                    updateUI()
+                end
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
+        elseif callbackType == "dropAndDrop" then
+            --------------------------------------------------------------------------------
+            -- Drag & Drop:
+            --------------------------------------------------------------------------------
+            local device            = params["device"]
+            local app               = params["application"]
+            local bank              = params["bank"]
+
+            local sourceType        = params["sourceType"]
+            local destinationType   = params["destinationType"]
+
+            --------------------------------------------------------------------------------
+            -- This shouldn't ever happen, but just to be safe:
+            --------------------------------------------------------------------------------
+            if sourceType ~= destinationType then
+                return
+            end
+
+            local controlType       = destinationType
+
+            local source            = params["sourceID"]
+            local destination       = params["destinationID"]
+
+            --------------------------------------------------------------------------------
+            -- Swap controls:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+
+            if not items[device] then                           items[device] = {} end
+            if not items[device][app] then                      items[device][app] = {} end
+            if not items[device][app][bank] then                items[device][app][bank] = {} end
+            if not items[device][app][bank][controlType] then   items[device][app][bank][controlType] = {} end
+
+            local destinationData = items[device][app][bank][controlType][destination] or {}
+            local sourceData = items[device][app][bank][controlType][source] or {}
+
+            local a = copy(destinationData)
+            local b = copy(sourceData)
+
+            items[device][app][bank][controlType][source] = a
+            items[device][app][bank][controlType][destination] = b
+
+            mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -1346,14 +1457,9 @@ function plugin.init(deps, env)
         tooltip         = i18n("razerDevices"),
         height          = 1170,
     })
-        :addContent(1, html.style ([[
-                .displayMessageWhenChangingBanks {
-                    padding-bottom:10px;
-                }
-            ]], true))
-        :addHeading(1.1, i18n("razerDevices"))
+        :addHeading(1, i18n("razerDevices"))
 
-        :addContent(1.2, [[
+        :addContent(2, [[
             <style>
                 .menubarRow {
                     display: flex;
@@ -1368,7 +1474,7 @@ function plugin.init(deps, env)
                 <div class="menubarColumn">
         ]], false)
 
-        :addCheckbox(1.3,
+        :addCheckbox(3,
             {
                 label       = i18n("enableRazerSupport"),
                 checked     = mod.enabled,
@@ -1377,7 +1483,7 @@ function plugin.init(deps, env)
                 end,
             }
         )
-        :addCheckbox(3,
+        :addCheckbox(4,
             {
                 label       =   i18n("automaticallySwitchApplications"),
                 checked     =   function()
@@ -1391,9 +1497,8 @@ function plugin.init(deps, env)
                                 end,
             }
         )
-        :addCheckbox(4,
+        :addCheckbox(5,
             {
-                class       =   "displayMessageWhenChangingBanks",
                 label       =   i18n("displayMessageWhenChangingBanks"),
                 checked     =   function()
                                     local displayMessageWhenChangingBanks = mod.displayMessageWhenChangingBanks()
@@ -1406,8 +1511,17 @@ function plugin.init(deps, env)
                                 end,
             }
         )
-
-        :addContent(5, [[
+        :addCheckbox(6,
+            {
+                label       = i18n("changeBankOnHardwareWhenChangingHere"),
+                checked     = mod.changeBankOnHardwareWhenChangingHere,
+                onchange    = function(_, params)
+                    mod.changeBankOnHardwareWhenChangingHere(params.checked)
+                    updateUI()
+                end,
+            }
+        )
+        :addContent(7, [[
                 </div>
                 <div class="menubarColumn">
                 <style>
@@ -1447,7 +1561,7 @@ function plugin.init(deps, env)
                 </style>
         ]], false)
 
-        :addSelect(12.2,
+        :addSelect(8,
             {
                 label       =   i18n("backlightBrightness"),
                 class       =   "backlightBrightness restrictRightTopSectionSize",
@@ -1493,7 +1607,7 @@ function plugin.init(deps, env)
             }
         )
 
-        :addSelect(12.23,
+        :addSelect(9,
             {
                 label       =   i18n("backlightsMode"),
                 id          =   "backlightsMode",
@@ -1538,7 +1652,7 @@ function plugin.init(deps, env)
             }
         )
 
-        :addTextbox(12.3,
+        :addTextbox(10,
             {
                 label       =   i18n("backlightEffectColorPrimary") .. ":",
                 id          =   "backlightEffectColorPrimary",
@@ -1558,7 +1672,7 @@ function plugin.init(deps, env)
             }
         )
 
-        :addTextbox(12.4,
+        :addTextbox(11,
             {
                 label       =   i18n("backlightEffectColorSecondary") .. ":",
                 id          =   "backlightEffectColorSecondary",
@@ -1578,7 +1692,7 @@ function plugin.init(deps, env)
             }
         )
 
-        :addSelect(12.5,
+        :addSelect(12,
             {
                 label       =   i18n("backlightEffectDirection"),
                 id          =   "backlightEffectDirection",
@@ -1606,7 +1720,7 @@ function plugin.init(deps, env)
             }
         )
 
-        :addSelect(12.6,
+        :addSelect(13,
             {
                 label       =   i18n("backlightEffectSpeed"),
                 id          =   "backlightEffectSpeed",
@@ -1663,14 +1777,14 @@ function plugin.init(deps, env)
             }
         )
 
-        :addContent(50, [[
+        :addContent(14, [[
                 </div>
             </div>
             <br />
         ]], false)
 
 
-        :addContent(51, generateContent, false)
+        :addContent(15, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

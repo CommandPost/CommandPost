@@ -18,6 +18,7 @@ local mouse                 = require "hs.mouse"
 local osascript             = require "hs.osascript"
 local screen                = require "hs.screen"
 local sound                 = require "hs.sound"
+local task                  = require "hs.task"
 local text                  = require "hs.text"
 local timer                 = require "hs.timer"
 local window                = require "hs.window"
@@ -106,6 +107,24 @@ function string:split(delimiter) -- luacheck: ignore
       end
    end
    return list
+end
+
+--- cp.tools.appleScriptViaTask() -> none
+--- Function
+--- Triggers an AppleScript command via `hs.task` to avoid potential memory leaks in `hs.osascript.applescript`.
+---
+--- Parameters:
+---  * script - A single line AppleScript.
+---
+--- Returns:
+---  * None
+function tools.appleScriptViaTask(script)
+    task.new("/usr/bin/osascript", function(exitCode, stdOut, stdError)
+        if exitCode ~= 0 then
+                log.df("[cp.tools.appleScriptViaTask] An error occured. Exit Code: '%s'. Standard Out: '%s'. Standard Error: '%s'.", exitCode, stdOut, stdError)
+
+        end
+    end, {"-e", script}):start()
 end
 
 --- cp.tools.secureInputApplicationTitle() -> string

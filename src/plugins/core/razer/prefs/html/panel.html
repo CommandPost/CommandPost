@@ -7,6 +7,72 @@
 <style>{(css/razer_tartarus_v2.css)}</style>
 
 <script>
+	function allowDrop(ev) {
+		ev.dataTransfer.dropEffect = "copy";
+		ev.preventDefault();
+	}
+
+	function drag(ev) {
+		ev.dataTransfer.setData("controlID", ev.target.getAttribute("controlID"));
+		ev.dataTransfer.setData("controlType", ev.target.getAttribute("controlType"));
+	}
+
+	function drop(ev) {
+
+		ev.preventDefault();
+
+		var dt = ev.dataTransfer
+	    var files = dt.files
+		var file = files[0]
+
+	    if (file) {
+	        return;
+	    }
+	    else {
+			try {
+				var result = {
+					id: "{{ id }}",
+					params: {
+						type: "dropAndDrop",
+                        device: document.getElementById("device").value,
+                        application: document.getElementById("application").value,
+                        bank: document.getElementById("bank").value,
+
+                        sourceType: ev.dataTransfer.getData("controlType"),
+						sourceID: ev.dataTransfer.getData("controlID"),
+
+						destinationType: ev.toElement.getAttribute("controlType"),
+						destinationID: ev.toElement.getAttribute("controlID"),
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
+	function showContextMenu(ev) {
+		ev.preventDefault();
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "showContextMenu",
+					device: document.getElementById("device").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: ev.srcElement.getAttribute("controlType"),
+				    controlID: ev.srcElement.getAttribute("controlID"),
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+		return false;
+	}
+
 	function ledExamples() {
 		try {
 			var result = {
@@ -493,59 +559,59 @@
 			    <div id="razer_orbweaver">
                     <div id="razer_orbweaver_01"></div>
                     <div id="razer_orbweaver_02"></div>
-                    <div id="razer_orbweaver_button03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_orbweaver_button04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_orbweaver_button05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_orbweaver_button04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_orbweaver_button05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_06"></div>
                     <div id="razer_orbweaver_07"></div>
-                    <div id="razer_orbweaver_button02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_09"></div>
-                    <div id="razer_orbweaver_button01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_11"></div>
-                    <div id="razer_orbweaver_button09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_13"></div>
-                    <div id="razer_orbweaver_button10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_15"></div>
-                    <div id="razer_orbweaver_button08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_17"></div>
-                    <div id="razer_orbweaver_button07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_19"></div>
-                    <div id="razer_orbweaver_button06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_orbweaver_button14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_orbweaver_button15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_orbweaver_button13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_orbweaver_button14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_orbweaver_button15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_orbweaver_button13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_24"></div>
-                    <div id="razer_orbweaver_button12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_26"></div>
-                    <div id="razer_orbweaver_button11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_28"></div>
                     <div id="razer_orbweaver_29"></div>
                     <div id="razer_orbweaver_30"></div>
                     <div id="razer_orbweaver_31"></div>
-                    <div id="razer_orbweaver_button18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_33"></div>
-                    <div id="razer_orbweaver_button19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_orbweaver_button20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_orbweaver_button20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_36"></div>
-                    <div id="razer_orbweaver_button17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_38"></div>
                     <div id="razer_orbweaver_39"></div>
                     <div id="razer_orbweaver_40"></div>
-                    <div id="razer_orbweaver_button16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_42"></div>
                     <div id="razer_orbweaver_43"></div>
                     <div id="razer_orbweaver_44"></div>
                     <div id="razer_orbweaver_45"></div>
                     <div id="razer_orbweaver_46"></div>
                     <div id="razer_orbweaver_47"></div>
-                    <div id="razer_orbweaver_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_49"></div>
                     <div id="razer_orbweaver_50"></div>
-                    <div id="razer_orbweaver_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_52"></div>
                     <div id="razer_orbweaver_53"></div>
                     <div id="razer_orbweaver_54"></div>
-                    <div id="razer_orbweaver_button21" controlID="21" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_orbweaver_button21" controlID="21" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_orbweaver_56"></div>
                     <div id="razer_orbweaver_57"></div>
 			    </div>
@@ -554,41 +620,41 @@
                 <div id="razer_tartarus">
                     <div id="razer_tartarus_01"></div>
                     <div id="razer_tartarus_02"></div>
-                    <div id="razer_tartarus_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_05"></div>
                     <div id="razer_tartarus_06"></div>
-                    <div id="razer_tartarus_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_08"></div>
-                    <div id="razer_tartarus_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_10"></div>
-                    <div id="razer_tartarus_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_16"></div>
-                    <div id="razer_tartarus_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_19"></div>
-                    <div id="razer_tartarus_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
-                    <div id="razer_tartarus_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
+                    <div id="razer_tartarus_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_22"></div>
-                    <div id="razer_tartarus_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_24"></div>
-                    <div id="razer_tartarus_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_26"></div>
                     <div id="razer_tartarus_27"></div>
                     <div id="razer_tartarus_28"></div>
                     <div id="razer_tartarus_29"></div>
                     <div id="razer_tartarus_30"></div>
-                    <div id="razer_tartarus_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_32"></div>
                     <div id="razer_tartarus_33"></div>
-                    <div id="razer_tartarus_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_35"></div>
                     <div id="razer_tartarus_36"></div>
-                    <div id="razer_tartarus_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+                    <div id="razer_tartarus_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
                     <div id="razer_tartarus_38"></div>
                     <div id="razer_tartarus_39"></div>
                 </div>
@@ -597,79 +663,79 @@
 				<div id="razer_tartarus_pro">
 					<div id="razer_tartarus_pro_01"></div>
 					<div id="razer_tartarus_pro_02"></div>
-					<div id="razer_tartarus_pro_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_04"></div>
 					<div id="razer_tartarus_pro_05"></div>
-					<div id="razer_tartarus_pro_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_07"></div>
 					<div id="razer_tartarus_pro_08"></div>
-					<div id="razer_tartarus_pro_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_10"></div>
 					<div id="razer_tartarus_pro_11"></div>
-					<div id="razer_tartarus_pro_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_13"></div>
 					<div id="razer_tartarus_pro_14"></div>
-					<div id="razer_tartarus_pro_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_16"></div>
 					<div id="razer_tartarus_pro_17"></div>
 					<div id="razer_tartarus_pro_18"></div>
-					<div id="razer_tartarus_pro_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_20"></div>
-					<div id="razer_tartarus_pro_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_22"></div>
 					<div id="razer_tartarus_pro_23"></div>
-					<div id="razer_tartarus_pro_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_25"></div>
-					<div id="razer_tartarus_pro_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_27"></div>
 					<div id="razer_tartarus_pro_28"></div>
-					<div id="razer_tartarus_pro_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_30"></div>
 					<div id="razer_tartarus_pro_31"></div>
 					<div id="razer_tartarus_pro_32"></div>
-					<div id="razer_tartarus_pro_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_34"></div>
 					<div id="razer_tartarus_pro_35"></div>
-					<div id="razer_tartarus_pro_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_37"></div>
 					<div id="razer_tartarus_pro_38"></div>
-					<div id="razer_tartarus_pro_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_40"></div>
-					<div id="razer_tartarus_pro_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_42"></div>
 					<div id="razer_tartarus_pro_43"></div>
-					<div id="razer_tartarus_pro_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_45"></div>
 					<div id="razer_tartarus_pro_46"></div>
 					<div id="razer_tartarus_pro_47"></div>
 					<div id="razer_tartarus_pro_48"></div>
-					<div id="razer_tartarus_pro_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_50"></div>
 					<div id="razer_tartarus_pro_51"></div>
 					<div id="razer_tartarus_pro_52"></div>
-					<div id="razer_tartarus_pro_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_54"></div>
-					<div id="razer_tartarus_pro_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_56"></div>
 					<div id="razer_tartarus_pro_57"></div>
-					<div id="razer_tartarus_pro_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_59"></div>
 					<div id="razer_tartarus_pro_60"></div>
-					<div id="razer_tartarus_pro_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_62"></div>
 					<div id="razer_tartarus_pro_63"></div>
 					<div id="razer_tartarus_pro_64"></div>
 					<div id="razer_tartarus_pro_65"></div>
 					<div id="razer_tartarus_pro_66"></div>
-					<div id="razer_tartarus_pro_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_68"></div>
 					<div id="razer_tartarus_pro_69"></div>
 					<div id="razer_tartarus_pro_70"></div>
 					<div id="razer_tartarus_pro_71"></div>
-					<div id="razer_tartarus_pro_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_73"></div>
 					<div id="razer_tartarus_pro_74"></div>
-					<div id="razer_tartarus_pro_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_pro_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_pro_76"></div>
 					<div id="razer_tartarus_pro_77"></div>
 				</div>
@@ -678,79 +744,79 @@
 				<div id="razer_tartarus_v2">
 					<div id="razer_tartarus_v2_01"></div>
 					<div id="razer_tartarus_v2_02"></div>
-					<div id="razer_tartarus_v2_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_05" controlID="5" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_04"></div>
 					<div id="razer_tartarus_v2_05"></div>
-					<div id="razer_tartarus_v2_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_04" controlID="4" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_07"></div>
 					<div id="razer_tartarus_v2_08"></div>
-					<div id="razer_tartarus_v2_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_03" controlID="3" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_10"></div>
 					<div id="razer_tartarus_v2_11"></div>
-					<div id="razer_tartarus_v2_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_02" controlID="2" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_13"></div>
 					<div id="razer_tartarus_v2_14"></div>
-					<div id="razer_tartarus_v2_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_01" controlID="1" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_16"></div>
 					<div id="razer_tartarus_v2_17"></div>
 					<div id="razer_tartarus_v2_18"></div>
-					<div id="razer_tartarus_v2_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_10" controlID="10" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_20"></div>
-					<div id="razer_tartarus_v2_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_09" controlID="9" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_22"></div>
 					<div id="razer_tartarus_v2_23"></div>
-					<div id="razer_tartarus_v2_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_08" controlID="8" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_25"></div>
-					<div id="razer_tartarus_v2_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_07" controlID="7" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_27"></div>
 					<div id="razer_tartarus_v2_28"></div>
-					<div id="razer_tartarus_v2_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_06" controlID="6" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_30"></div>
 					<div id="razer_tartarus_v2_31"></div>
 					<div id="razer_tartarus_v2_32"></div>
-					<div id="razer_tartarus_v2_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_15" controlID="15" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_34"></div>
 					<div id="razer_tartarus_v2_35"></div>
-					<div id="razer_tartarus_v2_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_14" controlID="14" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_37"></div>
 					<div id="razer_tartarus_v2_38"></div>
-					<div id="razer_tartarus_v2_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_13" controlID="13" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_40"></div>
-					<div id="razer_tartarus_v2_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_12" controlID="12" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_42"></div>
 					<div id="razer_tartarus_v2_43"></div>
-					<div id="razer_tartarus_v2_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_11" controlID="11" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_45"></div>
 					<div id="razer_tartarus_v2_46"></div>
 					<div id="razer_tartarus_v2_47"></div>
 					<div id="razer_tartarus_v2_48"></div>
-					<div id="razer_tartarus_v2_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_19" controlID="19" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_50"></div>
 					<div id="razer_tartarus_v2_51"></div>
 					<div id="razer_tartarus_v2_52"></div>
-					<div id="razer_tartarus_v2_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_18" controlID="18" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_54"></div>
-					<div id="razer_tartarus_v2_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_scrollwheel" controlID="1" controlType="scrollWheel" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_56"></div>
 					<div id="razer_tartarus_v2_57"></div>
-					<div id="razer_tartarus_v2_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_17" controlID="17" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_59"></div>
 					<div id="razer_tartarus_v2_60"></div>
-					<div id="razer_tartarus_v2_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_16" controlID="16" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_62"></div>
 					<div id="razer_tartarus_v2_63"></div>
 					<div id="razer_tartarus_v2_64"></div>
 					<div id="razer_tartarus_v2_65"></div>
 					<div id="razer_tartarus_v2_66"></div>
-					<div id="razer_tartarus_v2_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_mode" controlID="Mode" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_68"></div>
 					<div id="razer_tartarus_v2_69"></div>
 					<div id="razer_tartarus_v2_70"></div>
 					<div id="razer_tartarus_v2_71"></div>
-					<div id="razer_tartarus_v2_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_joystick" controlID="1" controlType="joystick" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_73"></div>
 					<div id="razer_tartarus_v2_74"></div>
-					<div id="razer_tartarus_v2_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;"></div>
+					<div id="razer_tartarus_v2_button_20" controlID="20" controlType="button" onclick="changeControl(this)" style="cursor: pointer;" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)"></div>
 					<div id="razer_tartarus_v2_76"></div>
 					<div id="razer_tartarus_v2_77"></div>
 				</div>
