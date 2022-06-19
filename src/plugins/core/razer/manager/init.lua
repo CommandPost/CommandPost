@@ -349,101 +349,51 @@ mod.items = json.prop(config.userConfigRootPath, "Razer", defaultFilename, mod.d
 --- Field
 --- Enable or disable the automatic switching of applications.
 mod.automaticallySwitchApplications = config.prop("razer.automaticallySwitchApplications", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.automaticallySwitchApplications[deviceName]) ~= "boolean" then
-        mod.automaticallySwitchApplications[deviceName] = true
-    end
-end
 
 --- plugins.core.razer.manager.displayMessageWhenChangingBanks <cp.prop: boolean>
 --- Field
 --- Display message when changing banks?
 mod.displayMessageWhenChangingBanks = config.prop("razer.displayMessageWhenChangingBanks", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.displayMessageWhenChangingBanks[deviceName]) ~= "boolean" then
-        mod.displayMessageWhenChangingBanks[deviceName] = true
-    end
-end
 
 --- plugins.core.razer.manager.lastBundleID <cp.prop: table>
 --- Field
 --- The last used bundle ID.
 mod.lastBundleID = config.prop("razer.lastBundleID", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.lastBundleID[deviceName]) ~= "string" then
-        mod.lastBundleID[deviceName] = "All Applications"
-    end
-end
 
 --- plugins.core.razer.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.activeBanks = config.prop("razer.activeBanks", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.activeBanks[deviceName]) ~= "table" then
-        mod.activeBanks[deviceName] = {}
-    end
-end
 
 --- plugins.core.razer.manager.backlightsMode <cp.prop: table>
 --- Field
 --- The backlights mode for all the Razer devices.
 mod.backlightsMode = config.prop("razer.preferences.backlightsMode", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.backlightsMode[deviceName]) ~= "string" then
-        mod.backlightsMode[deviceName] = "User Defined"
-    end
-end
 
 --- plugins.core.razer.manager.backlightBrightness <cp.prop: table>
 --- Field
 --- The backlights brightness for all the Razer devices.
 mod.backlightBrightness = config.prop("razer.preferences.backlightBrightness", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.backlightBrightness[deviceName]) ~= "string" then
-        mod.backlightBrightness[deviceName] = "100"
-    end
-end
 
 --- plugins.core.razer.manager.backlightEffectColorA <cp.prop: table>
 --- Field
 --- The backlight effect primary color.
 mod.backlightEffectColorA = config.prop("razer.preferences.backlightEffectColorA", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.backlightEffectColorA[deviceName]) ~= "string" then
-        mod.backlightEffectColorA[deviceName] = "000000"
-    end
-end
 
 --- plugins.core.razer.manager.backlightEffectColorB <cp.prop: table>
 --- Field
 --- The backlight effect secondary color.
 mod.backlightEffectColorB = config.prop("razer.preferences.backlightEffectColorB", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.backlightEffectColorB[deviceName]) ~= "string" then
-        mod.backlightEffectColorB[deviceName] = "000000"
-    end
-end
 
 --- plugins.core.razer.manager.backlightEffectDirection <cp.prop: table>
 --- Field
 --- The backlight effect direction.
 mod.backlightEffectDirection = config.prop("razer.preferences.backlightEffectDirection", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.backlightEffectDirection[deviceName]) ~= "string" then
-        mod.backlightEffectDirection[deviceName] = "left"
-    end
-end
 
 --- plugins.core.razer.manager.backlightEffectSpeed <cp.prop: table>
 --- Field
 --- The backlight effect speed.
 mod.backlightEffectSpeed = config.prop("razer.preferences.backlightEffectSpeed", {})
-for _, deviceName in pairs(mod.supportedDevices) do
-    if type(mod.backlightEffectSpeed[deviceName]) ~= "string" then
-        mod.backlightEffectSpeed[deviceName] = "1"
-    end
-end
 
 --- plugins.core.razer.manager -> table
 --- Variable
@@ -474,6 +424,50 @@ local cachedLedMode = {}
 -- Variable
 -- A table of cached custom colors
 local cachedCustomColors = {}
+
+-- setupDefaults() -> none
+-- Function
+-- Sets up the default values for the various preferences.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function setupDefaults()
+    for _, deviceName in pairs(mod.supportedDevices) do
+        if type(mod.automaticallySwitchApplications[deviceName]) ~= "boolean" then
+            mod.automaticallySwitchApplications[deviceName] = true
+        end
+        if type(mod.displayMessageWhenChangingBanks[deviceName]) ~= "boolean" then
+            mod.displayMessageWhenChangingBanks[deviceName] = true
+        end
+        if type(mod.lastBundleID[deviceName]) ~= "string" then
+            mod.lastBundleID[deviceName] = "All Applications"
+        end
+        if type(mod.activeBanks[deviceName]) ~= "table" then
+            mod.activeBanks[deviceName] = {}
+        end
+        if type(mod.backlightsMode[deviceName]) ~= "string" then
+            mod.backlightsMode[deviceName] = "User Defined"
+        end
+        if type(mod.backlightBrightness[deviceName]) ~= "string" then
+            mod.backlightBrightness[deviceName] = "100"
+        end
+        if type(mod.backlightEffectColorA[deviceName]) ~= "string" then
+            mod.backlightEffectColorA[deviceName] = "000000"
+        end
+        if type(mod.backlightEffectColorB[deviceName]) ~= "string" then
+            mod.backlightEffectColorB[deviceName] = "000000"
+        end
+        if type(mod.backlightEffectSpeed[deviceName]) ~= "string" then
+            mod.backlightEffectSpeed[deviceName] = "1"
+        end
+        if type(mod.backlightEffectDirection[deviceName]) ~= "string" then
+            mod.backlightEffectDirection[deviceName] = "left"
+        end
+    end
+end
 
 -- resetStatusLights(device) -> none
 -- Function
@@ -1214,6 +1208,11 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Setup Defaults:
+    --------------------------------------------------------------------------------
+    setupDefaults()
+
     --------------------------------------------------------------------------------
     -- Turn off LEDs and restore default keyboard layout on shutdown:
     --------------------------------------------------------------------------------
