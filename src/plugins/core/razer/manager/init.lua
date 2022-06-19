@@ -42,81 +42,150 @@ local razer
 --- Constant
 --- Table supported devices.
 mod.supportedDevices = {
+    "Razer Nostromo",
     "Razer Orbweaver",
+    "Razer Orbweaver Chroma",
     "Razer Tartarus",
     "Razer Tartarus Pro",
     "Razer Tartarus V2",
 }
 
--- fileExtension -> string
--- Variable
--- File Extension for Loupedeck CT
-local fileExtension = ".cpRazer"
-
--- defaultFilename -> string
--- Variable
--- Default Filename for Loupedeck CT Settings
-local defaultFilename = "Default" .. fileExtension
-
--- defaultLayoutPath -> string
--- Variable
--- Default Layout Path
-local defaultLayoutPath = config.basePath .. "/plugins/core/razer/default/Default.cpRazer"
-
---- plugins.core.razer.manager.defaultLayout -> table
---- Variable
---- Default Loupedeck CT Layout
-mod.defaultLayout = json.read(defaultLayoutPath)
-
---- plugins.core.razer.manager.items <cp.prop: table>
---- Field
---- Contains all the saved TourBox layouts.
-mod.items = json.prop(config.userConfigRootPath, "Razer", defaultFilename, mod.defaultLayout)
-
---- plugins.core.razer.manager.automaticallySwitchApplications <cp.prop: boolean>
---- Field
---- Enable or disable the automatic switching of applications.
-mod.automaticallySwitchApplications = config.prop("razer.automaticallySwitchApplications", {
-    ["Razer Orbweaver"]     = true,
-    ["Razer Tartarus"]      = true,
-    ["Razer Tartarus Pro"]  = true,
-    ["Razer Tartarus V2"]   = true,
-})
-
---- plugins.core.razer.manager.displayMessageWhenChangingBanks <cp.prop: boolean>
---- Field
---- Display message when changing banks?
-mod.displayMessageWhenChangingBanks = config.prop("razer.displayMessageWhenChangingBanks", {
-    ["Razer Orbweaver"]     = true,
-    ["Razer Tartarus"]      = true,
-    ["Razer Tartarus Pro"]  = true,
-    ["Razer Tartarus V2"]   = true,
-})
-
---- plugins.core.razer.manager.lastBundleID <cp.prop: table>
---- Field
---- The last used bundle ID.
-mod.lastBundleID = config.prop("razer.lastBundleID", {
-    ["Razer Orbweaver"]     = "All Applications",
-    ["Razer Tartarus"]      = "All Applications",
-    ["Razer Tartarus Pro"]  = "All Applications",
-    ["Razer Tartarus V2"]   = "All Applications",
-})
-
---- plugins.core.razer.manager.activeBanks <cp.prop: table>
---- Field
---- Table of active banks for each application.
-mod.activeBanks = config.prop("razer.activeBanks", {
-    ["Razer Orbweaver"]     = {},
-    ["Razer Tartarus"]      = {},
-    ["Razer Tartarus Pro"]  = {},
-    ["Razer Tartarus V2"]   = {},
-})
-
 --- plugins.core.razer.manager.bankLabels -> table
 --- Constant
 --- Table of bank labels, which reflect the LED icons.
 mod.bankLabels = {
+    ["Razer Nostromo"] = {
+        ["1"] = {
+            label   = "1 (Off)",
+            red     = false,
+            green   = false,
+            blue    = false
+        },
+        ["2"] = {
+            label   = "2 (Green)",
+            red     = false,
+            green   = true,
+            blue    = false
+        },
+        ["3"] = {
+            label   = "3 (Red)",
+            red     = true,
+            green   = false,
+            blue    = false
+        },
+        ["4"] = {
+            label   = "4 (Blue)",
+            red  = false,
+            green   = false,
+            blue    = true
+        },
+        ["5"] = {
+            label   = "5 (Red/Green)",
+            red     = true,
+            green   = true,
+            blue    = false
+        },
+        ["6"] = {
+            label   = "6 (Red/Blue)",
+            red     = true,
+            green   = false,
+            blue    = true
+        },
+        ["7"] = {
+            label   = "7 (Green/Blue)",
+            red     = false,
+            green   = true,
+            blue    = true
+        }
+    },
+    ["Razer Orbweaver"] = {
+        ["1"] = {
+            label   = "1 (Off)",
+            yellow  = false,
+            green   = false,
+            blue    = false
+        },
+        ["2"] = {
+            label   = "2 (Yellow)",
+            yellow  = true,
+            green   = false,
+            blue    = false
+        },
+        ["3"] = {
+            label   = "3 (Green)",
+            yellow  = false,
+            green   = true,
+            blue    = false
+        },
+        ["4"] = {
+            label   = "4 (Blue)",
+            yellow  = false,
+            green   = false,
+            blue    = true
+        },
+        ["5"] = {
+            label   = "5 (Yellow/Green)",
+            yellow  = true,
+            green   = true,
+            blue    = false
+        },
+        ["6"] = {
+            label   = "6 (Yellow/Blue)",
+            yellow  = true,
+            green   = false,
+            blue    = true
+        },
+        ["7"] = {
+            label   = "7 (Green/Blue)",
+            yellow  = false,
+            green   = true,
+            blue    = true
+        }
+    },
+    ["Razer Orbweaver Chroma"] = {
+        ["1"] = {
+            label   = "1 (Off)",
+            yellow  = false,
+            green   = false,
+            blue    = false
+        },
+        ["2"] = {
+            label   = "2 (Yellow)",
+            yellow  = true,
+            green   = false,
+            blue    = false
+        },
+        ["3"] = {
+            label   = "3 (Green)",
+            yellow  = false,
+            green   = true,
+            blue    = false
+        },
+        ["4"] = {
+            label   = "4 (Blue)",
+            yellow  = false,
+            green   = false,
+            blue    = true
+        },
+        ["5"] = {
+            label   = "5 (Yellow/Green)",
+            yellow  = true,
+            green   = true,
+            blue    = false
+        },
+        ["6"] = {
+            label   = "6 (Yellow/Blue)",
+            yellow  = true,
+            green   = false,
+            blue    = true
+        },
+        ["7"] = {
+            label   = "7 (Green/Blue)",
+            yellow  = false,
+            green   = true,
+            blue    = true
+        }
+    },
     ["Razer Tartarus"] = {
         ["1"] = {
             label   = "1 (Off)",
@@ -249,98 +318,82 @@ mod.bankLabels = {
             blue    = true
         }
     },
-    ["Razer Orbweaver"] = {
-        ["1"] = {
-            label   = "1 (Off)",
-            yellow  = false,
-            green   = false,
-            blue    = false
-        },
-        ["2"] = {
-            label   = "2 (Yellow)",
-            yellow  = true,
-            green   = false,
-            blue    = false
-        },
-        ["3"] = {
-            label   = "3 (Green)",
-            yellow  = false,
-            green   = true,
-            blue    = false
-        },
-        ["4"] = {
-            label   = "4 (Blue)",
-            yellow  = false,
-            green   = false,
-            blue    = true
-        },
-        ["5"] = {
-            label   = "5 (Yellow/Green)",
-            yellow  = true,
-            green   = true,
-            blue    = false
-        },
-        ["6"] = {
-            label   = "6 (Yellow/Blue)",
-            yellow  = true,
-            green   = false,
-            blue    = true
-        },
-        ["7"] = {
-            label   = "7 (Green/Blue)",
-            yellow  = false,
-            green   = true,
-            blue    = true
-        }
-    },
 }
+
+-- fileExtension -> string
+-- Variable
+-- File Extension for Loupedeck CT
+local fileExtension = ".cpRazer"
+
+-- defaultFilename -> string
+-- Variable
+-- Default Filename for Loupedeck CT Settings
+local defaultFilename = "Default" .. fileExtension
+
+-- defaultLayoutPath -> string
+-- Variable
+-- Default Layout Path
+local defaultLayoutPath = config.basePath .. "/plugins/core/razer/default/Default.cpRazer"
+
+--- plugins.core.razer.manager.defaultLayout -> table
+--- Variable
+--- Default Loupedeck CT Layout
+mod.defaultLayout = json.read(defaultLayoutPath)
+
+--- plugins.core.razer.manager.items <cp.prop: table>
+--- Field
+--- Contains all the saved TourBox layouts.
+mod.items = json.prop(config.userConfigRootPath, "Razer", defaultFilename, mod.defaultLayout)
+
+--- plugins.core.razer.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- Field
+--- Enable or disable the automatic switching of applications.
+mod.automaticallySwitchApplications = config.prop("razer.automaticallySwitchApplications", {})
+
+--- plugins.core.razer.manager.displayMessageWhenChangingBanks <cp.prop: boolean>
+--- Field
+--- Display message when changing banks?
+mod.displayMessageWhenChangingBanks = config.prop("razer.displayMessageWhenChangingBanks", {})
+
+--- plugins.core.razer.manager.lastBundleID <cp.prop: table>
+--- Field
+--- The last used bundle ID.
+mod.lastBundleID = config.prop("razer.lastBundleID", {})
+
+--- plugins.core.razer.manager.activeBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.activeBanks = config.prop("razer.activeBanks", {})
 
 --- plugins.core.razer.manager.backlightsMode <cp.prop: table>
 --- Field
 --- The backlights mode for all the Razer devices.
-mod.backlightsMode = config.prop("razer.preferences.backlightsMode", {
-    ["Razer Tartarus Pro"]  = "User Defined",
-    ["Razer Tartarus V2"]   = "User Defined",
-})
+mod.backlightsMode = config.prop("razer.preferences.backlightsMode", {})
 
 --- plugins.core.razer.manager.backlightBrightness <cp.prop: table>
 --- Field
 --- The backlights brightness for all the Razer devices.
-mod.backlightBrightness = config.prop("razer.preferences.backlightBrightness", {
-    ["Razer Orbweaver"]     = "100",
-    ["Razer Tartarus"]      = "100",
-    ["Razer Tartarus Pro"]  = "100",
-    ["Razer Tartarus V2"]   = "100",
-})
+mod.backlightBrightness = config.prop("razer.preferences.backlightBrightness", {})
 
 --- plugins.core.razer.manager.backlightEffectColorA <cp.prop: table>
 --- Field
 --- The backlight effect primary color.
-mod.backlightEffectColorA = config.prop("razer.preferences.backlightEffectColorA", {
-    ["Razer Tartarus Pro"] = "000000",
-    ["Razer Tartarus V2"] = "000000",
-})
+mod.backlightEffectColorA = config.prop("razer.preferences.backlightEffectColorA", {})
 
 --- plugins.core.razer.manager.backlightEffectColorB <cp.prop: table>
 --- Field
 --- The backlight effect secondary color.
-mod.backlightEffectColorB = config.prop("razer.preferences.backlightEffectColorB", {
-    ["Razer Tartarus V2"] = "000000",
-})
+mod.backlightEffectColorB = config.prop("razer.preferences.backlightEffectColorB", {})
 
 --- plugins.core.razer.manager.backlightEffectDirection <cp.prop: table>
 --- Field
 --- The backlight effect direction.
-mod.backlightEffectDirection = config.prop("razer.preferences.backlightEffectDirection", {
-    ["Razer Tartarus V2"] = "left",
-})
+mod.backlightEffectDirection = config.prop("razer.preferences.backlightEffectDirection", {})
 
 --- plugins.core.razer.manager.backlightEffectSpeed <cp.prop: table>
 --- Field
 --- The backlight effect speed.
-mod.backlightEffectSpeed = config.prop("razer.preferences.backlightEffectSpeed", {
-    ["Razer Tartarus V2"] = "1",
-})
+mod.backlightEffectSpeed = config.prop("razer.preferences.backlightEffectSpeed", {})
 
 --- plugins.core.razer.manager -> table
 --- Variable
@@ -372,6 +425,50 @@ local cachedLedMode = {}
 -- A table of cached custom colors
 local cachedCustomColors = {}
 
+-- setupDefaults() -> none
+-- Function
+-- Sets up the default values for the various preferences.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function setupDefaults()
+    for _, deviceName in pairs(mod.supportedDevices) do
+        if type(mod.automaticallySwitchApplications[deviceName]) ~= "boolean" then
+            mod.automaticallySwitchApplications[deviceName] = true
+        end
+        if type(mod.displayMessageWhenChangingBanks[deviceName]) ~= "boolean" then
+            mod.displayMessageWhenChangingBanks[deviceName] = true
+        end
+        if type(mod.lastBundleID[deviceName]) ~= "string" then
+            mod.lastBundleID[deviceName] = "All Applications"
+        end
+        if type(mod.activeBanks[deviceName]) ~= "table" then
+            mod.activeBanks[deviceName] = {}
+        end
+        if type(mod.backlightsMode[deviceName]) ~= "string" then
+            mod.backlightsMode[deviceName] = "User Defined"
+        end
+        if type(mod.backlightBrightness[deviceName]) ~= "string" then
+            mod.backlightBrightness[deviceName] = "100"
+        end
+        if type(mod.backlightEffectColorA[deviceName]) ~= "string" then
+            mod.backlightEffectColorA[deviceName] = "000000"
+        end
+        if type(mod.backlightEffectColorB[deviceName]) ~= "string" then
+            mod.backlightEffectColorB[deviceName] = "000000"
+        end
+        if type(mod.backlightEffectSpeed[deviceName]) ~= "string" then
+            mod.backlightEffectSpeed[deviceName] = "1"
+        end
+        if type(mod.backlightEffectDirection[deviceName]) ~= "string" then
+            mod.backlightEffectDirection[deviceName] = "left"
+        end
+    end
+end
+
 -- resetStatusLights(device) -> none
 -- Function
 -- Reset Status Lights
@@ -383,7 +480,10 @@ local cachedCustomColors = {}
 --  * None
 local function resetStatusLights(device)
     local deviceName = device:name()
-    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" then
+    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" or deviceName == "Razer Orbweaver Chroma" then
+        --------------------------------------------------------------------------------
+        -- YELLOW / GREEN / BLUE:
+        --------------------------------------------------------------------------------
         cachedStatusLights[deviceName]["yellow"] = false
         cachedStatusLights[deviceName]["green"] = false
         cachedStatusLights[deviceName]["blue"] = false
@@ -392,6 +492,9 @@ local function resetStatusLights(device)
         device:greenStatusLight(false)
         device:blueStatusLight(false)
     elseif deviceName == "Razer Tartarus Pro" or deviceName == "Razer Tartarus V2" then
+        --------------------------------------------------------------------------------
+        -- ORANGE / GREEN / BLUE:
+        --------------------------------------------------------------------------------
         cachedStatusLights[deviceName]["orange"] = false
         cachedStatusLights[deviceName]["green"] = false
         cachedStatusLights[deviceName]["blue"] = false
@@ -399,10 +502,21 @@ local function resetStatusLights(device)
         device:orangeStatusLight(false)
         device:greenStatusLight(false)
         device:blueStatusLight(false)
+    elseif deviceName == "Razer Nostromo" then
+        --------------------------------------------------------------------------------
+        -- GREEN / RED / BLUE:
+        --------------------------------------------------------------------------------
+        cachedStatusLights[deviceName]["green"] = false
+        cachedStatusLights[deviceName]["red"] = false
+        cachedStatusLights[deviceName]["blue"] = false
+
+        device:greenStatusLight(false)
+        device:redStatusLight(false)
+        device:blueStatusLight(false)
     end
 end
 
--- setStatusLights(device, orange, green, blue, yellow) -> none
+-- setStatusLights(device, orange, green, blue, yellow, red) -> none
 -- Function
 -- Sets the Status Lights on a Razer Device.
 --
@@ -412,12 +526,16 @@ end
 --  * green - Whether or not the green light is on or off as a boolean
 --  * blue - Whether or not the blue light is on or off as a boolean
 --  * yellow - Whether or not the yellow light is on or off as a boolean
+--  * red - Whether or not the yellow light is on or off as a boolean
 --
 -- Returns:
 --  * None
-local function setStatusLights(device, orange, green, blue, yellow)
+local function setStatusLights(device, orange, green, blue, yellow, red)
     local deviceName = device:name()
-    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" then
+    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" or deviceName == "Razer Orbweaver Chroma" then
+        --------------------------------------------------------------------------------
+        -- YELLOW / GREEN / BLUE:
+        --------------------------------------------------------------------------------
         if not cachedStatusLights[deviceName]["yellow"] == yellow then
             device:yellowStatusLight(yellow)
         end
@@ -434,6 +552,9 @@ local function setStatusLights(device, orange, green, blue, yellow)
         cachedStatusLights[deviceName]["green"] = green
         cachedStatusLights[deviceName]["blue"] = blue
     elseif deviceName == "Razer Tartarus Pro" or deviceName == "Razer Tartarus V2" then
+        --------------------------------------------------------------------------------
+        -- ORANGE / GREEN / BLUE:
+        --------------------------------------------------------------------------------
         if not cachedStatusLights[deviceName]["orange"] == orange then
             device:orangeStatusLight(orange)
         end
@@ -448,6 +569,25 @@ local function setStatusLights(device, orange, green, blue, yellow)
 
         cachedStatusLights[deviceName]["orange"] = orange
         cachedStatusLights[deviceName]["green"] = green
+        cachedStatusLights[deviceName]["blue"] = blue
+    elseif deviceName == "Razer Nostromo" then
+        --------------------------------------------------------------------------------
+        -- GREEN / RED / BLUE:
+        --------------------------------------------------------------------------------
+        if not cachedStatusLights[deviceName]["green"] == green then
+            device:greenStatusLight(green)
+        end
+
+        if not cachedStatusLights[deviceName]["red"] == red then
+            device:redStatusLight(red)
+        end
+
+        if not cachedStatusLights[deviceName]["blue"] == blue then
+            device:blueStatusLight(blue)
+        end
+
+        cachedStatusLights[deviceName]["green"] = green
+        cachedStatusLights[deviceName]["red"] = red
         cachedStatusLights[deviceName]["blue"] = blue
     end
 end
@@ -550,7 +690,7 @@ function mod.refresh(trashCache)
         -- Update status lights based on current bank:
         --------------------------------------------------------------------------------
         local statusLights = mod.bankLabels[deviceName][bankID]
-        setStatusLights(device, statusLights.orange, statusLights.green, statusLights.blue, statusLights.yellow)
+        setStatusLights(device, statusLights.orange, statusLights.green, statusLights.blue, statusLights.yellow, statusLights.red)
 
         --------------------------------------------------------------------------------
         -- We only update the LEDs if they actually need changing (to avoid messing
@@ -563,10 +703,9 @@ function mod.refresh(trashCache)
             local customColors = {}
 
             --------------------------------------------------------------------------------
-            -- Process LEDs for the Razer Tartarus Pro and Razer Tartarus V2:
+            -- Process LEDs for all devices that support Custom LED values:
             --------------------------------------------------------------------------------
-            if deviceName == "Razer Tartarus V2" or deviceName == "Razer Tartarus Pro" then
-
+            if deviceName == "Razer Tartarus V2" or deviceName == "Razer Tartarus Pro" or deviceName == "Razer Orbweaver Chroma" then
                 --------------------------------------------------------------------------------
                 -- Update Scroll Wheel:
                 --------------------------------------------------------------------------------
@@ -578,7 +717,7 @@ function mod.refresh(trashCache)
                 end
                 local scrollWheel = scrollWheels and scrollWheels["1"]
                 local led = scrollWheel and scrollWheel.led
-                if led then
+                if led and scrollWheelID then
                     customColors[scrollWheelID] = {hex="#"..led}
                 end
 
@@ -747,7 +886,6 @@ end
 -- Returns:
 --  * None
 local function razerCallback(obj, buttonName, buttonAction)
-
     --------------------------------------------------------------------------------
     -- Translate Control Type & ID:
     --------------------------------------------------------------------------------
@@ -914,7 +1052,7 @@ local function deviceCallback(connected, device)
         -- Turn off the LEDs:
         --------------------------------------------------------------------------------
         mod.devices[deviceName]:backlightsOff()
-        setStatusLights(mod.devices[deviceName], false, false, false)
+        setStatusLights(mod.devices[deviceName], false, false, false, false, false)
 
         --------------------------------------------------------------------------------
         -- Destroy the device:
@@ -985,7 +1123,7 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
                 if mod.enabled() then
                     for _, device in pairs(mod.devices) do
                         device:backlightsOff()
-                        setStatusLights(device, false, false, false)
+                        setStatusLights(device, false, false, false, false, false)
                     end
                 end
             end
@@ -1017,7 +1155,7 @@ mod.enabled = config.prop("razer.enabled", false):watch(function(enabled)
         for i, device in pairs(mod.devices) do
             device:defaultKeyboardLayout(true)
             device:backlightsOff()
-            setStatusLights(device, false, false, false)
+            setStatusLights(device, false, false, false, false, false)
             mod.devices[i] = nil
         end
 
@@ -1071,6 +1209,11 @@ local plugin = {
 
 function plugin.init(deps, env)
     --------------------------------------------------------------------------------
+    -- Setup Defaults:
+    --------------------------------------------------------------------------------
+    setupDefaults()
+
+    --------------------------------------------------------------------------------
     -- Turn off LEDs and restore default keyboard layout on shutdown:
     --------------------------------------------------------------------------------
     config.shutdownCallback:new("razer", function()
@@ -1123,14 +1266,14 @@ function plugin.init(deps, env)
         :titled(i18n("toggleRazerSupport"))
 
     local backlightModes = {
-        { value = "Off",              label = i18n("off"),                  supportedDevices = {"Razer Tartarus V2", "Razer Tartarus Pro"}    },
-        { value = "User Defined",     label = i18n("userDefined"),          supportedDevices = {"Razer Tartarus V2", "Razer Tartarus Pro"}    },
-        { value = "Breathing",        label = i18n("breathing"),            supportedDevices = {"Razer Tartarus V2"}                          },
-        { value = "Reactive",         label = i18n("reactive"),             supportedDevices = {"Razer Tartarus V2"}                          },
-        { value = "Spectrum",         label = i18n("spectrum"),             supportedDevices = {"Razer Tartarus V2"}                          },
-        { value = "Starlight",        label = i18n("starlight"),            supportedDevices = {"Razer Tartarus V2"}                          },
-        { value = "Static",           label = i18n("static"),               supportedDevices = {"Razer Tartarus V2", "Razer Tartarus Pro"}    },
-        { value = "Wave",             label = i18n("wave"),                 supportedDevices = {"Razer Tartarus V2"}                          },
+        { value = "Off",              label = i18n("off"),                  supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2", "Razer Tartarus Pro"}    },
+        { value = "User Defined",     label = i18n("userDefined"),          supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2", "Razer Tartarus Pro"}    },
+        { value = "Breathing",        label = i18n("breathing"),            supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2"}                          },
+        { value = "Reactive",         label = i18n("reactive"),             supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2"}                          },
+        { value = "Spectrum",         label = i18n("spectrum"),             supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2"}                          },
+        { value = "Starlight",        label = i18n("starlight"),            supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2"}                          },
+        { value = "Static",           label = i18n("static"),               supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2", "Razer Tartarus Pro"}    },
+        { value = "Wave",             label = i18n("wave"),                 supportedDevices = {"Razer Orbweaver Chroma", "Razer Tartarus V2"}                          },
     }
     for _, deviceName in pairs(mod.supportedDevices) do
         --------------------------------------------------------------------------------

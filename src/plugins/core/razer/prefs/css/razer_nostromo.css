@@ -1,0 +1,405 @@
+/* RAZER NOSTROMO - INTERFACE: */
+
+#razer_nostromo {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:429px;
+	height:625px;
+	font-size:0px;
+	background-image:url({* insertImage('images/razer_nostromo.png') *});
+	background-repeat: no-repeat;
+	background-size: 429px 625px;
+}
+
+#razer_nostromo_01 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:429px;
+	height:91px;
+}
+
+#razer_nostromo_02 {
+	position:absolute;
+	left:0px;
+	top:91px;
+	width:248px;
+	height:6px;
+}
+
+#razer_nostromo_button_05 {
+	position:absolute;
+	left:248px;
+	top:91px;
+	width:49px;
+	height:41px;
+}
+
+#razer_nostromo_04 {
+	position:absolute;
+	left:297px;
+	top:91px;
+	width:132px;
+	height:110px;
+}
+
+#razer_nostromo_05 {
+	position:absolute;
+	left:0px;
+	top:97px;
+	width:201px;
+	height:7px;
+}
+
+#razer_nostromo_button_04 {
+	position:absolute;
+	left:201px;
+	top:97px;
+	width:47px;
+	height:35px;
+}
+
+#razer_nostromo_07 {
+	position:absolute;
+	left:0px;
+	top:104px;
+	width:156px;
+	height:6px;
+}
+
+#razer_nostromo_button_03 {
+	position:absolute;
+	left:156px;
+	top:104px;
+	width:45px;
+	height:33px;
+}
+
+#razer_nostromo_09 {
+	position:absolute;
+	left:0px;
+	top:110px;
+	width:112px;
+	height:17px;
+}
+
+#razer_nostromo_button_02 {
+	position:absolute;
+	left:112px;
+	top:110px;
+	width:44px;
+	height:34px;
+}
+
+#razer_nostromo_11 {
+	position:absolute;
+	left:0px;
+	top:127px;
+	width:71px;
+	height:45px;
+}
+
+#razer_nostromo_button_01 {
+	position:absolute;
+	left:71px;
+	top:127px;
+	width:41px;
+	height:26px;
+}
+
+#razer_nostromo_button_04013 {
+	position:absolute;
+	left:201px;
+	top:132px;
+	width:42px;
+	height:5px;
+}
+
+#razer_nostromo_button_10 {
+	position:absolute;
+	left:243px;
+	top:132px;
+	width:43px;
+	height:44px;
+}
+
+#razer_nostromo_15 {
+	position:absolute;
+	left:286px;
+	top:132px;
+	width:11px;
+	height:69px;
+}
+
+#razer_nostromo_button_03016 {
+	position:absolute;
+	left:156px;
+	top:137px;
+	width:39px;
+	height:7px;
+}
+
+#razer_nostromo_button_09 {
+	position:absolute;
+	left:195px;
+	top:137px;
+	width:48px;
+	height:46px;
+}
+
+#razer_nostromo_button_02018 {
+	position:absolute;
+	left:112px;
+	top:144px;
+	width:38px;
+	height:9px;
+}
+
+#razer_nostromo_button_08 {
+	position:absolute;
+	left:150px;
+	top:144px;
+	width:45px;
+	height:39px;
+}
+
+#razer_nostromo_button_01020 {
+	position:absolute;
+	left:71px;
+	top:153px;
+	width:35px;
+	height:19px;
+}
+
+#razer_nostromo_button_07 {
+	position:absolute;
+	left:106px;
+	top:153px;
+	width:44px;
+	height:33px;
+}
+
+#razer_nostromo_22 {
+	position:absolute;
+	left:0px;
+	top:172px;
+	width:64px;
+	height:40px;
+}
+
+#razer_nostromo_button_06 {
+	position:absolute;
+	left:64px;
+	top:172px;
+	width:42px;
+	height:22px;
+}
+
+#razer_nostromo_24 {
+	position:absolute;
+	left:243px;
+	top:176px;
+	width:43px;
+	height:10px;
+}
+
+#razer_nostromo_button_08025 {
+	position:absolute;
+	left:150px;
+	top:183px;
+	width:39px;
+	height:3px;
+}
+
+#razer_nostromo_button_14 {
+	position:absolute;
+	left:189px;
+	top:183px;
+	width:42px;
+	height:41px;
+}
+
+#razer_nostromo_27 {
+	position:absolute;
+	left:231px;
+	top:183px;
+	width:12px;
+	height:3px;
+}
+
+#razer_nostromo_button_07028 {
+	position:absolute;
+	left:106px;
+	top:186px;
+	width:36px;
+	height:8px;
+}
+
+#razer_nostromo_button_13 {
+	position:absolute;
+	left:142px;
+	top:186px;
+	width:47px;
+	height:38px;
+}
+
+#razer_nostromo_scrollwheel {
+	position:absolute;
+	left:231px;
+	top:186px;
+	width:48px;
+	height:54px;
+}
+
+#razer_nostromo_31 {
+	position:absolute;
+	left:279px;
+	top:186px;
+	width:7px;
+	height:439px;
+}
+
+#razer_nostromo_button_06032 {
+	position:absolute;
+	left:64px;
+	top:194px;
+	width:36px;
+	height:18px;
+}
+
+#razer_nostromo_button_12 {
+	position:absolute;
+	left:100px;
+	top:194px;
+	width:42px;
+	height:36px;
+}
+
+#razer_nostromo_mode {
+	position:absolute;
+	left:286px;
+	top:201px;
+	width:42px;
+	height:39px;
+}
+
+#razer_nostromo_35 {
+	position:absolute;
+	left:328px;
+	top:201px;
+	width:101px;
+	height:43px;
+}
+
+#razer_nostromo_36 {
+	position:absolute;
+	left:0px;
+	top:212px;
+	width:57px;
+	height:413px;
+}
+
+#razer_nostromo_button_11 {
+	position:absolute;
+	left:57px;
+	top:212px;
+	width:43px;
+	height:45px;
+}
+
+#razer_nostromo_38 {
+	position:absolute;
+	left:142px;
+	top:224px;
+	width:89px;
+	height:401px;
+}
+
+#razer_nostromo_39 {
+	position:absolute;
+	left:100px;
+	top:230px;
+	width:42px;
+	height:395px;
+}
+
+#razer_nostromo_40 {
+	position:absolute;
+	left:231px;
+	top:240px;
+	width:48px;
+	height:385px;
+}
+
+#razer_nostromo_41 {
+	position:absolute;
+	left:286px;
+	top:240px;
+	width:42px;
+	height:4px;
+}
+
+#razer_nostromo_42 {
+	position:absolute;
+	left:286px;
+	top:244px;
+	width:18px;
+	height:96px;
+}
+
+#razer_nostromo_joystick {
+	position:absolute;
+	left:304px;
+	top:244px;
+	width:68px;
+	height:85px;
+}
+
+#razer_nostromo_44 {
+	position:absolute;
+	left:372px;
+	top:244px;
+	width:57px;
+	height:96px;
+}
+
+#razer_nostromo_45 {
+	position:absolute;
+	left:57px;
+	top:257px;
+	width:43px;
+	height:368px;
+}
+
+#razer_nostromo_46 {
+	position:absolute;
+	left:304px;
+	top:329px;
+	width:68px;
+	height:11px;
+}
+
+#razer_nostromo_button_15 {
+	position:absolute;
+	left:286px;
+	top:340px;
+	width:101px;
+	height:94px;
+}
+
+#razer_nostromo_48 {
+	position:absolute;
+	left:387px;
+	top:340px;
+	width:42px;
+	height:285px;
+}
+
+#razer_nostromo_49 {
+	position:absolute;
+	left:286px;
+	top:434px;
+	width:101px;
+	height:191px;
+}
