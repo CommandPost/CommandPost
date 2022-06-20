@@ -720,6 +720,11 @@ end
 
 function plugin.postInit()
     --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Forcefully install the Workflow Extension (once only per update):
     --
     -- NOTE: Apple says that in a "future releases of the OS, using the

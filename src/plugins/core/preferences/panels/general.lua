@@ -24,7 +24,7 @@ function plugin.init(deps)
         label       = i18n("generalPanelLabel"),
         image       = image.imageFromName("NSPreferencesGeneral"),
         tooltip     = i18n("generalPanelTooltip"),
-        height      = 300,
+        height      = 390,
     })
 end
 
