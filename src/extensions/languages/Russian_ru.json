@@ -353,6 +353,7 @@
     "core_console_applications_label": "Консоль: Приложения",
     "core_console_keyboardmaestromacros_label": "Макросы Keyboard Maestro",
     "core_console_label": "Консоль",
+    "core_console_preferences_label": "Настройки: консоль поиска",
     "core_console_scripts_label": "Консоль: Скрипты",
     "core_controlsurfaces_manager_label": "Диспетчер поверхностей управления",
     "core_controlsurfaces_resolve_manager_label": "Поверхности управления DaVinci Resolve: менеджер",
@@ -1769,6 +1770,7 @@
     "pressTopLeft": "Нажмите вверху слева",
     "pressTopMiddle": "Нажмите Top Middle",
     "pressTopRight": "Нажмите вверху справа",
+    "preventExcessiveThumbTaps": "Предотвращение чрезмерных нажатий большого пальца",
     "preventMacFromSleeping": "Предотвратить Mac от сна",
     "previewSelectedApplicationAndBankOnHardware": "Предварительный просмотр выбранного приложения и банка на оборудовании",
     "previous": "предыдущий",
@@ -1922,6 +1924,8 @@
     "scanFinalCutProSetupOne": "CommandPost должен сканировать вашу систему для Final Cut Pro для плагинов и шаблонов движения.",
     "scanFinalCutProSetupTwo": "В зависимости от того, сколько плагинов и эффектов вы установили, это может занять несколько минут.",
     "scanMotionTemplates": "Шаблоны движения сканирования",
+    "scanRunningApplicationMenubarsOnStartup": "Сканировать меню запущенных приложений при запуске",
+    "scanTheMenubarsOfTheActiveApplication": "Сканировать строки меню активного приложения",
     "scanningInProgress": "Выполняется сканирование",
     "screen": "экран",
     "screen9": "экран",
@@ -1950,6 +1954,7 @@
         "one": "второй",
         "other": "Seconds"
     },
+    "seconds": "Секунды",
     "secs": {
         "few": "сек",
         "many": "сек",
