@@ -353,6 +353,7 @@
     "core_console_applications_label": "Konsol: applikationer",
     "core_console_keyboardmaestromacros_label": "Tangentbord Maestro-makron",
     "core_console_label": "Trösta",
+    "core_console_preferences_label": "Inställningar: Search Console",
     "core_console_scripts_label": "Konsol: skript",
     "core_controlsurfaces_manager_label": "Control Surfaces Manager",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: Manager",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Tryck uppe till vänster",
     "pressTopMiddle": "Tryck på Top Middle",
     "pressTopRight": "Tryck uppe till höger",
+    "preventExcessiveThumbTaps": "Förhindra överdrivna tumknackningar",
     "preventMacFromSleeping": "Förhindra att Mac sover",
     "previewSelectedApplicationAndBankOnHardware": "Förhandsgranska vald applikation och bank på hårdvara",
     "previous": "Tidigare",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "CommandPost måste skanna ditt system för Final Cut Pro för plugins & rörelsemallar.",
     "scanFinalCutProSetupTwo": "Beroende på hur många plugins och effekter du har installerat kan det ta flera minuter.",
     "scanMotionTemplates": "Skanna rörelsemallar",
+    "scanRunningApplicationMenubarsOnStartup": "Skanna programmenyrader som körs vid uppstart",
+    "scanTheMenubarsOfTheActiveApplication": "Skanna menyraderna i den aktiva applikationen",
     "scanningInProgress": "Pågående skanning",
     "screen": "Skärm",
     "screen9": "Skärm",
@@ -1936,6 +1940,7 @@
         "one": "Andra",
         "other": "Andra"
     },
+    "seconds": "Sekunder",
     "secs": {
         "one": "sek",
         "other": "sek"
