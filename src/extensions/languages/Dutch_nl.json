@@ -353,6 +353,7 @@
     "core_console_applications_label": "Console: toepassingen",
     "core_console_keyboardmaestromacros_label": "Toetsenbord Maestro-macro's",
     "core_console_label": "Troosten",
+    "core_console_preferences_label": "Voorkeuren: Search Console",
     "core_console_scripts_label": "Console: Scripts",
     "core_controlsurfaces_manager_label": "Beheer Surfaces Manager",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve-besturingsoppervlakken: Manager",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Druk op Linksboven",
     "pressTopMiddle": "Druk op Midden boven",
     "pressTopRight": "Druk op Rechtsboven",
+    "preventExcessiveThumbTaps": "Voorkom overmatig tikken met de duim",
     "preventMacFromSleeping": "Voorkom dat Mac gaat slapen",
     "previewSelectedApplicationAndBankOnHardware": "Voorbeeld van geselecteerde toepassing en bank op hardware",
     "previous": "voorgaand",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "CommandPost moet uw systeem scannen op Final Cut Pro voor plug-ins en bewegingssjablonen.",
     "scanFinalCutProSetupTwo": "Afhankelijk van het aantal plug-ins en effecten dat u hebt geïnstalleerd, kan dit enkele minuten duren.",
     "scanMotionTemplates": "Scan bewegingssjablonen",
+    "scanRunningApplicationMenubarsOnStartup": "Scan de actieve applicatie-menubalken bij het opstarten",
+    "scanTheMenubarsOfTheActiveApplication": "Scan de menubalken van de actieve applicatie",
     "scanningInProgress": "Bezig met scannen",
     "screen": "Scherm",
     "screen9": "Scherm",
@@ -1936,6 +1940,7 @@
         "one": "Tweede",
         "other": "Seconds"
     },
+    "seconds": "seconden",
     "secs": {
         "one": "sec",
         "other": "secs"
