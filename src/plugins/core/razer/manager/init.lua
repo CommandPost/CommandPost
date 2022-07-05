@@ -33,6 +33,17 @@ local tableMatch                = tools.tableMatch
 
 local mod = {}
 
+-- Default Values:
+local DEFAULT_AUTOMATICALLY_SWITCH_APPLICATIONS         = true
+local DEFAULT_DISPLAY_MESSAGE_WHEN_CHANGING_BANKS       = true
+local DEFAULT_LAST_BUNDLE_ID                            = "All Applications"
+local DEFAULT_BACKLIGHTS_MODE                           = "User Defined"
+local DEFAULT_BACKLIGHT_BRIGHTNESS                      = "50"
+local DEFAULT_BACKLIGHT_EFFECT_COLOR_A                  = "000000"
+local DEFAULT_BACKLIGHT_EFFECT_COLOR_B                  = "000000"
+local DEFAULT_BACKLIGHT_EFFECT_SPEED                    = "1"
+local DEFAULT_BACKLIGHT_EFFECT_DIRECTION                = "left"
+
 -- razer -> hs.razer object
 -- Variable
 -- The Razer extension. We only want to load it when Razer support is enabled.
@@ -405,6 +416,16 @@ mod.devices = {}
 -- A table containing all the repeat timers
 local repeatTimers = {}
 
+-- preventExcessiveThumbTapsTimers -> table
+-- Variable
+-- A table containing all the "Prevent Excessive Thumb Taps" timers
+local preventExcessiveThumbTapsTimers = {}
+
+-- cachedPreventExcessiveThumbTaps -> table
+-- Variable
+-- A table containing all the "Prevent Excessive Thumb Taps" caches
+local cachedPreventExcessiveThumbTaps = {}
+
 -- cachedBundleID -> string
 -- Variable
 -- The last bundle ID processed.
@@ -419,6 +440,11 @@ local cachedStatusLights = {}
 -- Variable
 -- A table of cached LED values
 local cachedLedMode = {}
+
+-- cachedBrightness -> table
+-- Variable
+-- A table of cached brightness values
+local cachedBrightness = {}
 
 -- cachedCustomColors -> table
 -- Variable
@@ -436,35 +462,64 @@ local cachedCustomColors = {}
 --  * None
 local function setupDefaults()
     for _, deviceName in pairs(mod.supportedDevices) do
-        if type(mod.automaticallySwitchApplications[deviceName]) ~= "boolean" then
-            mod.automaticallySwitchApplications[deviceName] = true
+        local automaticallySwitchApplications = mod.automaticallySwitchApplications()
+        if type(automaticallySwitchApplications[deviceName]) == "nil" then
+            automaticallySwitchApplications[deviceName] = DEFAULT_AUTOMATICALLY_SWITCH_APPLICATIONS
+            mod.automaticallySwitchApplications(automaticallySwitchApplications)
         end
-        if type(mod.displayMessageWhenChangingBanks[deviceName]) ~= "boolean" then
-            mod.displayMessageWhenChangingBanks[deviceName] = true
+
+        local displayMessageWhenChangingBanks = mod.displayMessageWhenChangingBanks()
+        if type(displayMessageWhenChangingBanks[deviceName]) == "nil" then
+            displayMessageWhenChangingBanks[deviceName] = DEFAULT_DISPLAY_MESSAGE_WHEN_CHANGING_BANKS
+            mod.displayMessageWhenChangingBanks(displayMessageWhenChangingBanks)
         end
-        if type(mod.lastBundleID[deviceName]) ~= "string" then
-            mod.lastBundleID[deviceName] = "All Applications"
+
+        local lastBundleID = mod.lastBundleID()
+        if type(lastBundleID[deviceName]) == "nil" then
+            lastBundleID[deviceName] = DEFAULT_LAST_BUNDLE_ID
+            mod.lastBundleID(lastBundleID)
         end
-        if type(mod.activeBanks[deviceName]) ~= "table" then
-            mod.activeBanks[deviceName] = {}
+
+        local activeBanks = mod.activeBanks()
+        if type(activeBanks[deviceName]) == "nil" then
+            activeBanks[deviceName] = {}
+            mod.activeBanks(activeBanks)
         end
-        if type(mod.backlightsMode[deviceName]) ~= "string" then
-            mod.backlightsMode[deviceName] = "User Defined"
+
+        local backlightsMode = mod.backlightsMode()
+        if type(backlightsMode[deviceName]) == "nil" then
+            backlightsMode[deviceName] = DEFAULT_BACKLIGHTS_MODE
+            mod.backlightsMode(backlightsMode)
         end
-        if type(mod.backlightBrightness[deviceName]) ~= "string" then
-            mod.backlightBrightness[deviceName] = "100"
+
+        local backlightBrightness = mod.backlightBrightness()
+        if type(backlightBrightness[deviceName]) == "nil" then
+            backlightBrightness[deviceName] = DEFAULT_BACKLIGHT_BRIGHTNESS
+            mod.backlightBrightness(backlightBrightness)
         end
-        if type(mod.backlightEffectColorA[deviceName]) ~= "string" then
-            mod.backlightEffectColorA[deviceName] = "000000"
+
+        local backlightEffectColorA = mod.backlightEffectColorA()
+        if type(backlightEffectColorA[deviceName]) == "nil" then
+            backlightEffectColorA[deviceName] = DEFAULT_BACKLIGHT_EFFECT_COLOR_A
+            mod.backlightEffectColorA(backlightEffectColorA)
         end
-        if type(mod.backlightEffectColorB[deviceName]) ~= "string" then
-            mod.backlightEffectColorB[deviceName] = "000000"
+
+        local backlightEffectColorB = mod.backlightEffectColorB()
+        if type(backlightEffectColorB[deviceName]) == "nil" then
+            backlightEffectColorB[deviceName] = DEFAULT_BACKLIGHT_EFFECT_COLOR_B
+            mod.backlightEffectColorB(backlightEffectColorB)
         end
-        if type(mod.backlightEffectSpeed[deviceName]) ~= "string" then
-            mod.backlightEffectSpeed[deviceName] = "1"
+
+        local backlightEffectSpeed = mod.backlightEffectSpeed()
+        if type(backlightEffectSpeed[deviceName]) == "nil" then
+            backlightEffectSpeed[deviceName] = DEFAULT_BACKLIGHT_EFFECT_SPEED
+            mod.backlightEffectSpeed(backlightEffectSpeed)
         end
-        if type(mod.backlightEffectDirection[deviceName]) ~= "string" then
-            mod.backlightEffectDirection[deviceName] = "left"
+
+        local backlightEffectDirection = mod.backlightEffectDirection()
+        if type(backlightEffectDirection[deviceName]) == "nil" then
+            backlightEffectDirection[deviceName] = DEFAULT_BACKLIGHT_EFFECT_DIRECTION
+            mod.backlightEffectDirection(backlightEffectDirection)
         end
     end
 end
@@ -608,19 +663,20 @@ function mod.refresh(trashCache)
         --------------------------------------------------------------------------------
         local deviceName = device:name()
         if trashCache then
-			cachedStatusLights[deviceName] = {}
-			cachedCustomColors[deviceName] = {}
-			cachedLedMode[deviceName] = ""
+			cachedStatusLights[deviceName]  = {}
+			cachedCustomColors[deviceName]  = {}
+			cachedLedMode[deviceName]       = ""
+			cachedBrightness[deviceName]    = ""
 		end
 
         --------------------------------------------------------------------------------
-        -- Get settings from preferences:
+        -- Get settings from preferences (or defaults):
         --------------------------------------------------------------------------------
         local backlightsMode = mod.backlightsMode()
         local currentMode = backlightsMode[deviceName]
 
         local backlightBrightness = mod.backlightBrightness()
-        local brightness = backlightBrightness and backlightBrightness[deviceName] and tonumber(backlightBrightness[deviceName]) or 100
+        local brightness = backlightBrightness and backlightBrightness[deviceName] and tonumber(backlightBrightness[deviceName]) or tonumber(DEFAULT_BACKLIGHT_BRIGHTNESS)
 
         local backlightEffectColorA = mod.backlightEffectColorA()
         local backlightEffectColorB = mod.backlightEffectColorB()
@@ -628,11 +684,11 @@ function mod.refresh(trashCache)
         local backlightEffectDirection = mod.backlightEffectDirection()
         local backlightEffectSpeed = mod.backlightEffectSpeed()
 
-        local speed = backlightEffectSpeed and backlightEffectSpeed[deviceName] and tonumber(backlightEffectSpeed[deviceName]) or 1
+        local speed = backlightEffectSpeed and backlightEffectSpeed[deviceName] and tonumber(backlightEffectSpeed[deviceName]) or tonumber(DEFAULT_BACKLIGHT_EFFECT_SPEED)
         local direction = backlightEffectDirection and backlightEffectDirection[deviceName]
 
-        local colorA = backlightEffectColorA and backlightEffectColorA[deviceName] and {hex=backlightEffectColorA[deviceName]} or {hex="000000"}
-        local colorB = backlightEffectColorB and backlightEffectColorB[deviceName] and {hex=backlightEffectColorB[deviceName]} or {hex="000000"}
+        local colorA = backlightEffectColorA and backlightEffectColorA[deviceName] and {hex=backlightEffectColorA[deviceName]} or {hex=DEFAULT_BACKLIGHT_EFFECT_COLOR_A}
+        local colorB = backlightEffectColorB and backlightEffectColorB[deviceName] and {hex=backlightEffectColorB[deviceName]} or {hex=DEFAULT_BACKLIGHT_EFFECT_COLOR_B}
 
         --------------------------------------------------------------------------------
         -- Get Device Name, and data from Layout File:
@@ -642,9 +698,6 @@ function mod.refresh(trashCache)
         local items = mod.items()
         if not items[deviceName] then
             items[deviceName] = {}
-        end
-        if not items[deviceName][bundleID] then
-            items[deviceName][bundleID] = {}
         end
 
         --------------------------------------------------------------------------------
@@ -657,7 +710,7 @@ function mod.refresh(trashCache)
         --------------------------------------------------------------------------------
         -- Ignore if ignored:
         --------------------------------------------------------------------------------
-        if items[deviceName][bundleID].ignore then
+        if items[deviceName][bundleID] and items[deviceName][bundleID].ignore then
             bundleID = "All Applications"
         end
 
@@ -684,7 +737,10 @@ function mod.refresh(trashCache)
         --------------------------------------------------------------------------------
         -- Brightness:
         --------------------------------------------------------------------------------
-        device:brightness(brightness)
+        if cachedBrightness[deviceName] ~= brightness then
+            device:brightness(brightness)
+            cachedBrightness[deviceName] = brightness
+        end
 
         --------------------------------------------------------------------------------
         -- Update status lights based on current bank:
@@ -933,9 +989,6 @@ local function razerCallback(obj, buttonName, buttonAction)
     if not items[deviceName] then
         items[deviceName] = {}
     end
-    if not items[deviceName][bundleID] then
-        items[deviceName][bundleID] = {}
-    end
 
     --------------------------------------------------------------------------------
     -- Revert to "All Applications" if no settings for frontmost app exist:
@@ -947,7 +1000,7 @@ local function razerCallback(obj, buttonName, buttonAction)
     --------------------------------------------------------------------------------
     -- Ignore if ignored:
     --------------------------------------------------------------------------------
-    if items[deviceName][bundleID].ignore then
+    if items[deviceName][bundleID] and items[deviceName][bundleID].ignore then
         bundleID = "All Applications"
     end
 
@@ -972,21 +1025,45 @@ local function razerCallback(obj, buttonName, buttonAction)
     local theControlID = theControlType and theControlType[controlID]
     local action = theControlID and theControlID[actionType]
 
-    local repeatID = deviceName .. controlType .. controlID .. buttonName
+    local repeatID
+    if controlType and controlID and buttonName then
+        repeatID = deviceName .. controlType .. controlID .. buttonName
+    end
 
     --------------------------------------------------------------------------------
     -- Release any held down buttons:
     --------------------------------------------------------------------------------
-    if actionType:sub(1, 7)  == "release" then
-        if repeatTimers[repeatID] then
-            repeatTimers[repeatID]:stop()
-            repeatTimers[repeatID] = nil
+    if repeatID then
+        if actionType:sub(1, 7) == "release" then
+            if repeatTimers[repeatID] then
+                repeatTimers[repeatID]:stop()
+                repeatTimers[repeatID] = nil
+            end
         end
     end
 
+    --------------------------------------------------------------------------------
+    -- Trigger the action:
+    --------------------------------------------------------------------------------
     if action and action.action then
         --------------------------------------------------------------------------------
-        -- Trigger action:
+        -- Check for "Prevent Excessive Thumb Taps" setting:
+        --------------------------------------------------------------------------------
+        local preventExcessiveThumbTaps = theControlID.preventExcessiveThumbTaps
+        if preventExcessiveThumbTaps and preventExcessiveThumbTaps ~= "" then
+            if cachedPreventExcessiveThumbTaps[repeatID] then
+                return
+            else
+                cachedPreventExcessiveThumbTaps[repeatID] = true
+                preventExcessiveThumbTapsTimers[repeatID] = doAfter(tonumber(preventExcessiveThumbTaps), function()
+                    cachedPreventExcessiveThumbTaps[repeatID] = false
+                    preventExcessiveThumbTapsTimers[repeatID] = nil
+                end)
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Execute action:
         --------------------------------------------------------------------------------
         executeAction(action)
 
@@ -1027,6 +1104,7 @@ local function deviceCallback(connected, device)
         cachedStatusLights[deviceName] = {}
         cachedCustomColors[deviceName] = {}
         cachedLedMode[deviceName] = ""
+        cachedBrightness[deviceName] = ""
 
         --------------------------------------------------------------------------------
         -- Reset the status lights:

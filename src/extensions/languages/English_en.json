@@ -1757,6 +1757,7 @@
     "pressTopLeft": "Press Top Left",
     "pressTopMiddle": "Press Top Middle",
     "pressTopRight": "Press Top Right",
+    "preventExcessiveThumbTaps": "Prevent Excessive Thumb Taps",
     "preventMacFromSleeping": "Prevent Mac from Sleeping",
     "previewSelectedApplicationAndBankOnHardware": "Preview Selected Application & Bank on Hardware",
     "previous": "Previous",
@@ -1938,6 +1939,7 @@
         "one": "Second",
         "other": "Seconds"
     },
+    "seconds": "Seconds",
     "secs": {
         "one": "sec",
         "other": "secs"

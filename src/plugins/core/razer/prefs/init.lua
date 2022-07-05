@@ -251,6 +251,14 @@ local function updateUI(params)
 
     local device        = params["device"]          or mod.lastDevice()
     local app           = params["application"]     or mod.lastApplication()
+
+    -- Make sure the last selected app actually exists:
+    local items = mod.items()
+    if not items[device] or items[device] and not items[device][app] then
+        app = "All Applications"
+        mod.lastApplication("All Applications")
+    end
+
     local bank          = params["bank"]            or mod.lastBank()
     local controlType   = params["controlType"]     or mod.lastControlType()
     local controlID     = params["controlID"]       or mod.lastControlID()
@@ -260,10 +268,7 @@ local function updateUI(params)
     mod.lastControlType(controlType)
     mod.lastControlID(controlID)
 
-    local items = mod.items()
-
     local selectedDevice = items[device]
-
     local selectedApp = selectedDevice and selectedDevice[app]
 
     local ignore = (selectedApp and selectedApp.ignore) or false
@@ -335,6 +340,29 @@ local function updateUI(params)
 
         updateIgnoreVisibility();
     ]]
+
+    --------------------------------------------------------------------------------
+    -- Prevent Excessive Thumb Taps:
+    --------------------------------------------------------------------------------
+    local preventExcessiveThumbTaps = selectedControlID and selectedControlID.preventExcessiveThumbTaps or ""
+    if controlType == "button" then
+        if (device == "Razer Nostromo"          and controlID == "15")
+        or (device == "Razer Orbweaver"         and controlID == "21")
+        or (device == "Razer Orbweaver Chroma"  and controlID == "21")
+        or (device == "Razer Tartarus"          and controlID == "16")
+        or (device == "Razer Tartarus Pro"      and controlID == "20")
+        or (device == "Razer Tartarus V2"       and controlID == "20")
+        then
+            script = script .. [[
+                setStyleDisplayByClass("preventExcessiveThumbTaps", "table");
+                changeValueByID('preventExcessiveThumbTaps', `]] .. escapeTilda(preventExcessiveThumbTaps) .. [[`);
+            ]]
+        else
+            script = script .. [[
+                setStyleDisplayByClass("preventExcessiveThumbTaps", "none");
+            ]]
+        end
+    end
 
     if device == "Razer Nostromo" then
         script = script .. [[
@@ -753,13 +781,25 @@ local function razerPanelCallback(id, params)
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             mod._razerManager.refresh()
+        elseif callbackType == "updatePreventExcessiveThumbTaps" then
+            --------------------------------------------------------------------------------
+            -- Update Prevent Excessive Thumb Taps:
+            --------------------------------------------------------------------------------
+            local device        = params["device"]
+            local app           = params["application"]
+            local bank          = params["bank"]
+            local controlType   = params["controlType"]
+            local controlID     = params["controlID"]
+            local value         = params["value"]
+
+            setItem(device, app, bank, controlType, controlID, "preventExcessiveThumbTaps", value)
         elseif callbackType == "updateBankLabel" then
             --------------------------------------------------------------------------------
             -- Update Bank Label:
             --------------------------------------------------------------------------------
+            local device    = params["device"]
             local app       = params["application"]
             local bank      = params["bank"]
-            local device    = params["device"]
 
             local items = mod.items()
 

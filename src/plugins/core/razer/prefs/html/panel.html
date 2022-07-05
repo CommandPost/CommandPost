@@ -200,6 +200,26 @@
 		}
 	}
 
+	function updatePreventExcessiveThumbTaps() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "updatePreventExcessiveThumbTaps",
+					device: document.getElementById("device").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: document.getElementById("controlType").value,
+					controlID: document.getElementById("controlID").value,
+					value: document.getElementById('preventExcessiveThumbTaps').value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function updateColor() {
 		try {
 			var result = {
@@ -967,6 +987,29 @@
 					</tr>
 
 					<tr class="pressAction"><td></br></td></tr>
+
+                    <!-- PREVENT EXCESSIVE THUMB TAPS: -->
+                    <tr class="preventExcessiveThumbTaps">
+                        <th width="229px">{{ i18n("preventExcessiveThumbTaps") }}:</th>
+                    </tr>
+                    <tr class="preventExcessiveThumbTaps">
+                        <td width="229px">
+                            <select id="preventExcessiveThumbTaps" style="width: 210px;" onchange="updatePreventExcessiveThumbTaps()">
+                                <option value="">{{ i18n("off") }}</option>
+                                <option value="0.1">0.1 {{ i18n("seconds") }}</option>
+                                <option value="0.2">0.2 {{ i18n("seconds") }}</option>
+                                <option value="0.3">0.3 {{ i18n("seconds") }}</option>
+                                <option value="0.4">0.4 {{ i18n("seconds") }}</option>
+                                <option value="0.5">0.5 {{ i18n("seconds") }}</option>
+                                <option value="0.6">0.6 {{ i18n("seconds") }}</option>
+                                <option value="0.7">0.7 {{ i18n("seconds") }}</option>
+                                <option value="0.8">0.8 {{ i18n("seconds") }}</option>
+                                <option value="0.9">0.9 {{ i18n("seconds") }}</option>
+                            </select>
+                        </td>
+                    </tr>
+
+					<tr class="preventExcessiveThumbTaps"><td></br></td></tr>
 
 					<!-- KNOB LEFT & RIGHT: -->
 					<tr class="knob">
