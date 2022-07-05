@@ -353,6 +353,7 @@
     "core_console_applications_label": "控制台：應用程序",
     "core_console_keyboardmaestromacros_label": "鍵盤大師宏",
     "core_console_label": "安慰",
+    "core_console_preferences_label": "首選項：搜索控制台",
     "core_console_scripts_label": "控制台：腳本",
     "core_controlsurfaces_manager_label": "控制面管理器",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve 控制界面：管理器",
@@ -1751,6 +1752,7 @@
     "pressTopLeft": "按左上方",
     "pressTopMiddle": "按頂部中間",
     "pressTopRight": "按右上",
+    "preventExcessiveThumbTaps": "防止過多的拇指敲擊",
     "preventMacFromSleeping": "防止Mac進入睡眠狀態",
     "previewSelectedApplicationAndBankOnHardware": "在硬件上預覽選定的應用程序和銀行",
     "previous": "以前",
@@ -1904,6 +1906,8 @@
     "scanFinalCutProSetupOne": "CommandPost需要掃描您的系統以獲得Final Cut Pro for Plugins＆Motion模板。",
     "scanFinalCutProSetupTwo": "根據您安裝的插件和效果的數量，這可能需要幾分鐘時間。",
     "scanMotionTemplates": "掃描運動模板",
+    "scanRunningApplicationMenubarsOnStartup": "在啟動時掃描正在運行的應用程序菜單欄",
+    "scanTheMenubarsOfTheActiveApplication": "掃描活動應用程序的菜單欄",
     "scanningInProgress": "正在掃描",
     "screen": "屏幕",
     "screen9": "屏幕",
@@ -1929,6 +1933,7 @@
     "second": {
         "other": "第二"
     },
+    "seconds": "秒",
     "secs": {
         "other": "秒"
     },
