@@ -353,6 +353,7 @@
     "core_console_applications_label": "Konsola: aplikacje",
     "core_console_keyboardmaestromacros_label": "Klawiatura Maestro Makra",
     "core_console_label": "Konsola",
+    "core_console_preferences_label": "Preferencje: Search Console",
     "core_console_scripts_label": "Konsola: skrypty",
     "core_controlsurfaces_manager_label": "Menedżer powierzchni sterujących",
     "core_controlsurfaces_resolve_manager_label": "Powierzchnie kontrolne DaVinci Resolve: Menedżer",
@@ -1769,6 +1770,7 @@
     "pressTopLeft": "Naciśnij lewy górny",
     "pressTopMiddle": "Naciśnij Góra Środkowa",
     "pressTopRight": "Naciśnij prawy górny róg",
+    "preventExcessiveThumbTaps": "Zapobiegaj nadmiernemu stukaniu kciukiem",
     "preventMacFromSleeping": "Zapobiegaj uśpieniu komputera Mac",
     "previewSelectedApplicationAndBankOnHardware": "Podgląd wybranej aplikacji i banku na sprzęcie",
     "previous": "Poprzedni",
@@ -1922,6 +1924,8 @@
     "scanFinalCutProSetupOne": "CommandPost musi przeskanować system w poszukiwaniu wtyczek i szablonów Motion Final Cut Pro.",
     "scanFinalCutProSetupTwo": "W zależności od liczby zainstalowanych wtyczek i efektów może to zająć kilka minut.",
     "scanMotionTemplates": "Szablony skanowania ruchu",
+    "scanRunningApplicationMenubarsOnStartup": "Skanuj uruchomione paski menu aplikacji podczas uruchamiania",
+    "scanTheMenubarsOfTheActiveApplication": "Skanuj paski menu aktywnej aplikacji",
     "scanningInProgress": "Trwa skanowanie",
     "screen": "Ekran",
     "screen9": "Ekran",
@@ -1950,6 +1954,7 @@
         "one": "druga",
         "other": "druga"
     },
+    "seconds": "sekundy",
     "secs": {
         "few": "secs",
         "many": "secs",
