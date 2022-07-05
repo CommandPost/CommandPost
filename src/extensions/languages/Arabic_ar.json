@@ -353,6 +353,7 @@
     "core_console_applications_label": "وحدة التحكم: التطبيقات",
     "core_console_keyboardmaestromacros_label": "لوحة المفاتيح مايسترو ماكرو",
     "core_console_label": "وحدة التحكم",
+    "core_console_preferences_label": "التفضيلات: Search Console",
     "core_console_scripts_label": "وحدة التحكم: البرامج النصية",
     "core_controlsurfaces_manager_label": "مدير أسطح التحكم",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: مدير",
@@ -1781,6 +1782,7 @@
     "pressTopLeft": "اضغط أعلى اليسار",
     "pressTopMiddle": "اضغط على أعلى الشرق",
     "pressTopRight": "اضغط أعلى اليمين",
+    "preventExcessiveThumbTaps": "منع الضغطات المفرطة في الإبهام",
     "preventMacFromSleeping": "منع ماك من النوم",
     "previewSelectedApplicationAndBankOnHardware": "معاينة التطبيق المحدد والبنك على الأجهزة",
     "previous": "السابقة",
@@ -1934,6 +1936,8 @@
     "scanFinalCutProSetupOne": "كوماندبوست يحتاج إلى تفحص النظام الخاص بك \"قص النهائي برو\" لقوالب الإضافات آند الحركة.",
     "scanFinalCutProSetupTwo": "اعتماداً على كيفية العديد من الإضافات والتأثيرات التي قمت بتثبيتها، وهذا يمكن أن يستغرق عدة دقائق.",
     "scanMotionTemplates": "مسح قوالب الحركة",
+    "scanRunningApplicationMenubarsOnStartup": "مسح قوائم التطبيق قيد التشغيل عند بدء التشغيل",
+    "scanTheMenubarsOfTheActiveApplication": "امسح شريط القوائم للتطبيق النشط",
     "scanningInProgress": "جاري المسح",
     "screen": "شاشة",
     "screen9": "شاشة",
@@ -1964,6 +1968,7 @@
         "two": "الثانية",
         "zero": "الثانية"
     },
+    "seconds": "ثواني",
     "secs": {
         "few": "ثانية",
         "many": "ثانية",
