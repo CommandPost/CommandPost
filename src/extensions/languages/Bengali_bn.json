@@ -353,6 +353,7 @@
     "core_console_applications_label": "কনসোল: অ্যাপ্লিকেশন",
     "core_console_keyboardmaestromacros_label": "কীবোর্ড মায়েস্ট্রো ম্যাক্রোস",
     "core_console_label": "কনসোল",
+    "core_console_preferences_label": "পছন্দ: সার্চ কনসোল",
     "core_console_scripts_label": "কনসোল: স্ক্রিপ্টস",
     "core_controlsurfaces_manager_label": "নিয়ন্ত্রণ সারফেস ম্যানেজার",
     "core_controlsurfaces_resolve_manager_label": "DaVinci সমাধান নিয়ন্ত্রণ সারফেস: ম্যানেজার",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "উপরে বাম টিপুন",
     "pressTopMiddle": "শীর্ষ মধ্যম টিপুন",
     "pressTopRight": "উপরে ডানদিকে টিপুন",
+    "preventExcessiveThumbTaps": "অতিরিক্ত থাম্ব ট্যাপ প্রতিরোধ করুন",
     "preventMacFromSleeping": "ঘুম থেকে ম্যাক প্রতিরোধ করুন",
     "previewSelectedApplicationAndBankOnHardware": "হার্ডওয়্যারে নির্বাচিত অ্যাপ্লিকেশন এবং ব্যাঙ্কের পূর্বরূপ দেখুন",
     "previous": "আগে",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "কমান্ডপস্ট প্লাগইন ও মোশন টেমপ্লেটগুলির জন্য চূড়ান্ত কাট প্রো জন্য আপনার সিস্টেম স্ক্যান করতে হবে।",
     "scanFinalCutProSetupTwo": "আপনি কতগুলি প্লাগইন এবং প্রভাবগুলি ইনস্টল করেছেন তার উপর নির্ভর করে, এটি কয়েক মিনিট সময় নিতে পারে।",
     "scanMotionTemplates": "মোশন টেমপ্লেটগুলি স্ক্যান করুন",
+    "scanRunningApplicationMenubarsOnStartup": "স্টার্টআপে চলমান অ্যাপ্লিকেশন মেনুবারগুলি স্ক্যান করুন",
+    "scanTheMenubarsOfTheActiveApplication": "সক্রিয় অ্যাপ্লিকেশনের মেনুবারগুলি স্ক্যান করুন",
     "scanningInProgress": "অগ্রগতিতে স্ক্যান করা হচ্ছে",
     "screen": "স্ক্রিন",
     "screen9": "স্ক্রিন",
@@ -1936,6 +1940,7 @@
         "one": "দ্বিতীয়",
         "other": "দ্বিতীয়"
     },
+    "seconds": "সেকেন্ড",
     "secs": {
         "one": "সেকেন্ড",
         "other": "সেকেন্ড"
