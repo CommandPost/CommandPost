@@ -353,6 +353,7 @@
     "core_console_applications_label": "콘솔 : 응용",
     "core_console_keyboardmaestromacros_label": "키보드 마에스트로 매크로",
     "core_console_label": "콘솔",
+    "core_console_preferences_label": "환경 설정: 검색 콘솔",
     "core_console_scripts_label": "콘솔 : 스크립트",
     "core_controlsurfaces_manager_label": "컨트롤 표면 관리자",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve 컨트롤 표면: 관리자",
@@ -1751,6 +1752,7 @@
     "pressTopLeft": "왼쪽 상단 누르기",
     "pressTopMiddle": "상단 중간 누르기",
     "pressTopRight": "오른쪽 상단을 누릅니다.",
+    "preventExcessiveThumbTaps": "과도한 엄지 탭 방지",
     "preventMacFromSleeping": "맥 잠자기 방지 활성화",
     "previewSelectedApplicationAndBankOnHardware": "하드웨어에서 선택한 애플리케이션 및 은행 미리보기",
     "previous": "이전",
@@ -1904,6 +1906,8 @@
     "scanFinalCutProSetupOne": "CommandPost는 시스템에서 Final Cut Pro 플러그인 및 모션 템플릿을 스캔해야합니다.",
     "scanFinalCutProSetupTwo": "설치 한 플러그인 및 효과 수에 따라 몇 분이 걸릴 수 있습니다.",
     "scanMotionTemplates": "모션 템플릿 스캔",
+    "scanRunningApplicationMenubarsOnStartup": "시작 시 실행 중인 응용 프로그램 메뉴 모음 검색",
+    "scanTheMenubarsOfTheActiveApplication": "활성 응용 프로그램의 메뉴 표시줄 스캔",
     "scanningInProgress": "스캔 진행 중",
     "screen": "화면",
     "screen9": "화면",
@@ -1929,6 +1933,7 @@
     "second": {
         "other": "둘째"
     },
+    "seconds": "초",
     "secs": {
         "other": "비서"
     },
