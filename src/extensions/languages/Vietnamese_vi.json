@@ -353,6 +353,7 @@
     "core_console_applications_label": "Bảng điều khiển: Ứng dụng",
     "core_console_keyboardmaestromacros_label": "Bàn phím Maestro Macro",
     "core_console_label": "Bàn điều khiển",
+    "core_console_preferences_label": "Tùy chọn: Search Console",
     "core_console_scripts_label": "Bảng điều khiển: Tập lệnh",
     "core_controlsurfaces_manager_label": "Control Surfaces Manager",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: Manager",
@@ -1751,6 +1752,7 @@
     "pressTopLeft": "Nhấn trên cùng bên trái",
     "pressTopMiddle": "Nhấn trên cùng giữa",
     "pressTopRight": "Nhấn trên cùng bên phải",
+    "preventExcessiveThumbTaps": "Ngăn chặn các lần bấm ngón tay cái quá mức",
     "preventMacFromSleeping": "Ngăn Mac ngủ",
     "previewSelectedApplicationAndBankOnHardware": "Xem trước Ứng dụng & Ngân hàng đã Chọn trên Phần cứng",
     "previous": "Trước",
@@ -1904,6 +1906,8 @@
     "scanFinalCutProSetupOne": "CommandPost cần quét hệ thống của bạn cho Final Cut Pro cho Plugins & Motion Templates.",
     "scanFinalCutProSetupTwo": "Tùy thuộc vào số lượng plugin và hiệu ứng bạn đã cài đặt, quá trình này có thể mất vài phút.",
     "scanMotionTemplates": "Quét các mẫu chuyển động",
+    "scanRunningApplicationMenubarsOnStartup": "Quét menu ứng dụng đang chạy khi khởi động",
+    "scanTheMenubarsOfTheActiveApplication": "Quét các menu của ứng dụng đang hoạt động",
     "scanningInProgress": "Đang quét",
     "screen": "Màn",
     "screen9": "Màn",
@@ -1929,6 +1933,7 @@
     "second": {
         "other": "Thứ hai"
     },
+    "seconds": "Giây",
     "secs": {
         "other": "giây"
     },
