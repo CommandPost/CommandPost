@@ -353,6 +353,7 @@
     "core_console_applications_label": "コンソール：アプリケーション",
     "core_console_keyboardmaestromacros_label": "キーボードマエストロマクロ",
     "core_console_label": "コンソール",
+    "core_console_preferences_label": "設定：検索コンソール",
     "core_console_scripts_label": "コンソール：スクリプト",
     "core_controlsurfaces_manager_label": "コントロールサーフェスマネージャー",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolveコントロールサーフェス：マネージャー",
@@ -1751,6 +1752,7 @@
     "pressTopLeft": "左上を押す",
     "pressTopMiddle": "トップミドルを押す",
     "pressTopRight": "右上を押す",
+    "preventExcessiveThumbTaps": "過度の親指タップを防ぐ",
     "preventMacFromSleeping": "Macがスリープしないようにする",
     "previewSelectedApplicationAndBankOnHardware": "選択したアプリケーションとバンクをハードウェアでプレビュー",
     "previous": "前",
@@ -1904,6 +1906,8 @@
     "scanFinalCutProSetupOne": "CommandPostは、Final Cut Pro for Plugins＆Motion Templates用のシステムをスキャンする必要があります。",
     "scanFinalCutProSetupTwo": "インストールしたプラグインとエフェクトの数によっては、数分かかることがあります。",
     "scanMotionTemplates": "モーションテンプレートをスキャンする",
+    "scanRunningApplicationMenubarsOnStartup": "起動時に実行中のアプリケーションメニューバーをスキャンする",
+    "scanTheMenubarsOfTheActiveApplication": "アクティブなアプリケーションのメニューバーをスキャンします",
     "scanningInProgress": "スキャン中",
     "screen": "画面",
     "screen9": "画面",
@@ -1929,6 +1933,7 @@
     "second": {
         "other": "2番目"
     },
+    "seconds": "秒",
     "secs": {
         "other": "秒"
     },
