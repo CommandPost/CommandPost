@@ -353,6 +353,7 @@
     "core_console_applications_label": "Konzol: Alkalmazások",
     "core_console_keyboardmaestromacros_label": "Billentyűzet Maestro makrók",
     "core_console_label": "Konzol",
+    "core_console_preferences_label": "Beállítások: Search Console",
     "core_console_scripts_label": "Konzol: Szkriptek",
     "core_controlsurfaces_manager_label": "Külső vezérlők kezelése",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: Manager",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Nyomja meg a bal felső gombot",
     "pressTopMiddle": "Nyomja meg a Felső közép gombot",
     "pressTopRight": "Nyomja meg a jobb felső gombot",
+    "preventExcessiveThumbTaps": "Akadályozza meg a túlzott hüvelykujj koppintását",
     "preventMacFromSleeping": "A Mac elalvásának megakadályozása.",
     "previewSelectedApplicationAndBankOnHardware": "A kiválasztott alkalmazás és bank előnézete a hardveren",
     "previous": "Előző",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "A CommandPostnak ellenőriznie kell a rendszert a Final Cut Pro plugins és mozgássablonok szempontjából.",
     "scanFinalCutProSetupTwo": "Attól függően, hogy hány beépülő modult és hatást telepített, ez néhány percet is igénybe vehet.",
     "scanMotionTemplates": "Mozgássablonok beolvasása",
+    "scanRunningApplicationMenubarsOnStartup": "A futó alkalmazások menüsorainak vizsgálata indításkor",
+    "scanTheMenubarsOfTheActiveApplication": "Olvassa be az aktív alkalmazás menüsorait",
     "scanningInProgress": "A szkennelés folyamatban van",
     "screen": "Képernyő",
     "screen9": "Képernyő",
@@ -1936,6 +1940,7 @@
         "one": "Második",
         "other": "Seconds"
     },
+    "seconds": "Másodpercek",
     "secs": {
         "one": "sec",
         "other": "secs"
