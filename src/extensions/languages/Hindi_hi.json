@@ -353,6 +353,7 @@
     "core_console_applications_label": "कंसोल: अनुप्रयोग",
     "core_console_keyboardmaestromacros_label": "कीबोर्ड मेस्त्रो मैक्रोज़",
     "core_console_label": "कंसोल",
+    "core_console_preferences_label": "प्राथमिकताएं: सर्च कंसोल",
     "core_console_scripts_label": "कंसोल: लिपियों",
     "core_controlsurfaces_manager_label": "नियंत्रण सतहों प्रबंधक",
     "core_controlsurfaces_resolve_manager_label": "DaVinci समाधान नियंत्रण सतहों: प्रबंधक",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "शीर्ष बाएँ दबाएं",
     "pressTopMiddle": "शीर्ष मध्य दबाएं",
     "pressTopRight": "शीर्ष दायां दबाएँ",
+    "preventExcessiveThumbTaps": "अत्यधिक अंगूठे के नल को रोकें",
     "preventMacFromSleeping": "मैक को सोने से रोकें",
     "previewSelectedApplicationAndBankOnHardware": "हार्डवेयर पर चयनित एप्लिकेशन और बैंक का पूर्वावलोकन करें",
     "previous": "पिछला",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "scanFinalCutProSetupOne",
     "scanFinalCutProSetupTwo": "scanFinalCutProSetupTwo",
     "scanMotionTemplates": "मोशन टेम्प्लेट स्कैन करें",
+    "scanRunningApplicationMenubarsOnStartup": "स्टार्टअप पर चल रहे एप्लिकेशन मेनूबार को स्कैन करें",
+    "scanTheMenubarsOfTheActiveApplication": "सक्रिय एप्लिकेशन के मेनूबार को स्कैन करें",
     "scanningInProgress": "scanningInProgress",
     "screen": "स्क्रीन",
     "screen9": "स्क्रीन",
@@ -1936,6 +1940,7 @@
         "one": "दूसरा",
         "other": "Seconds"
     },
+    "seconds": "सेकंड",
     "secs": {
         "one": "सेकेंड",
         "other": "secs"
