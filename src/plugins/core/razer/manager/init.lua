@@ -416,11 +416,6 @@ mod.devices = {}
 -- A table containing all the repeat timers
 local repeatTimers = {}
 
--- preventExcessiveThumbTapsTimers -> table
--- Variable
--- A table containing all the "Prevent Excessive Thumb Taps" timers
-local preventExcessiveThumbTapsTimers = {}
-
 -- cachedPreventExcessiveThumbTaps -> table
 -- Variable
 -- A table containing all the "Prevent Excessive Thumb Taps" caches
@@ -1055,9 +1050,8 @@ local function razerCallback(obj, buttonName, buttonAction)
                 return
             else
                 cachedPreventExcessiveThumbTaps[repeatID] = true
-                preventExcessiveThumbTapsTimers[repeatID] = doAfter(tonumber(preventExcessiveThumbTaps), function()
+                doAfter(tonumber(preventExcessiveThumbTaps), function()
                     cachedPreventExcessiveThumbTaps[repeatID] = false
-                    preventExcessiveThumbTapsTimers[repeatID] = nil
                 end)
             end
         end
