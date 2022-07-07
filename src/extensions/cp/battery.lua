@@ -182,7 +182,9 @@ end
 local function init()
     for key,value in pairs(battery) do
         if EXCLUDED[key] ~= true and type(value) == "function" then
-            mod[key] = prop(value):label(string.format("cp.battery: %s", key))
+            mod[key] = prop(function()
+                return value()
+            end):label(string.format("cp.battery: %s", key))
         end
     end
     return mod
