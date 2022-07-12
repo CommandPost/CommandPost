@@ -1,0 +1,381 @@
+/* RAZER ORBWEAVER CHROMA - INTERFACE: */
+
+#razer_orbweaver_chroma {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:429px;
+	height:625px;
+	font-size:0px;
+	background-image:url({* insertImage('images/razer_orbweaver_chroma.png') *});
+	background-repeat: no-repeat;
+	background-size: 429px 625px;
+}
+
+#razer_orbweaver_chroma_01 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:429px;
+	height:79px;
+}
+
+#razer_orbweaver_chroma_02 {
+	position:absolute;
+	left:0px;
+	top:79px;
+	width:129px;
+	height:7px;
+}
+
+#razer_orbweaver_chroma_button_03 {
+	position:absolute;
+	left:129px;
+	top:79px;
+	width:58px;
+	height:56px;
+}
+
+#razer_orbweaver_chroma_button_04 {
+	position:absolute;
+	left:187px;
+	top:79px;
+	width:54px;
+	height:56px;
+}
+
+#razer_orbweaver_chroma_button_05 {
+	position:absolute;
+	left:241px;
+	top:79px;
+	width:60px;
+	height:50px;
+}
+
+#razer_orbweaver_chroma_06 {
+	position:absolute;
+	left:301px;
+	top:79px;
+	width:128px;
+	height:242px;
+}
+
+#razer_orbweaver_chroma_07 {
+	position:absolute;
+	left:0px;
+	top:86px;
+	width:76px;
+	height:15px;
+}
+
+#razer_orbweaver_chroma_button_02 {
+	position:absolute;
+	left:76px;
+	top:86px;
+	width:53px;
+	height:52px;
+}
+
+#razer_orbweaver_chroma_09 {
+	position:absolute;
+	left:0px;
+	top:101px;
+	width:20px;
+	height:524px;
+}
+
+#razer_orbweaver_chroma_button_01 {
+	position:absolute;
+	left:20px;
+	top:101px;
+	width:56px;
+	height:54px;
+}
+
+#razer_orbweaver_chroma_button_10 {
+	position:absolute;
+	left:241px;
+	top:129px;
+	width:60px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_12 {
+	position:absolute;
+	left:129px;
+	top:135px;
+	width:7px;
+	height:3px;
+}
+
+#razer_orbweaver_chroma_button_8 {
+	position:absolute;
+	left:136px;
+	top:135px;
+	width:51px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_button_9 {
+	position:absolute;
+	left:187px;
+	top:135px;
+	width:54px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_15 {
+	position:absolute;
+	left:76px;
+	top:138px;
+	width:6px;
+	height:17px;
+}
+
+#razer_orbweaver_chroma_button_7 {
+	position:absolute;
+	left:82px;
+	top:138px;
+	width:54px;
+	height:58px;
+}
+
+#razer_orbweaver_chroma_17 {
+	position:absolute;
+	left:20px;
+	top:155px;
+	width:11px;
+	height:470px;
+}
+
+#razer_orbweaver_chroma_button_06 {
+	position:absolute;
+	left:31px;
+	top:155px;
+	width:51px;
+	height:60px;
+}
+
+#razer_orbweaver_chroma_button_15 {
+	position:absolute;
+	left:241px;
+	top:184px;
+	width:60px;
+	height:52px;
+}
+
+#razer_orbweaver_chroma_button_13 {
+	position:absolute;
+	left:136px;
+	top:190px;
+	width:51px;
+	height:53px;
+}
+
+#razer_orbweaver_chroma_21 {
+	position:absolute;
+	left:187px;
+	top:190px;
+	width:6px;
+	height:53px;
+}
+
+#razer_orbweaver_chroma_button_14 {
+	position:absolute;
+	left:193px;
+	top:190px;
+	width:48px;
+	height:53px;
+}
+
+#razer_orbweaver_chroma_button_12 {
+	position:absolute;
+	left:82px;
+	top:196px;
+	width:54px;
+	height:53px;
+}
+
+#razer_orbweaver_chroma_24 {
+	position:absolute;
+	left:31px;
+	top:215px;
+	width:6px;
+	height:410px;
+}
+
+#razer_orbweaver_chroma_button_11 {
+	position:absolute;
+	left:37px;
+	top:215px;
+	width:45px;
+	height:51px;
+}
+
+#razer_orbweaver_chroma_26 {
+	position:absolute;
+	left:241px;
+	top:236px;
+	width:6px;
+	height:7px;
+}
+
+#razer_orbweaver_chroma_button_20 {
+	position:absolute;
+	left:247px;
+	top:236px;
+	width:54px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_28 {
+	position:absolute;
+	left:136px;
+	top:243px;
+	width:6px;
+	height:6px;
+}
+
+#razer_orbweaver_chroma_button_18 {
+	position:absolute;
+	left:142px;
+	top:243px;
+	width:51px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_button_19 {
+	position:absolute;
+	left:193px;
+	top:243px;
+	width:54px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_31 {
+	position:absolute;
+	left:82px;
+	top:249px;
+	width:10px;
+	height:17px;
+}
+
+#razer_orbweaver_chroma_button_17 {
+	position:absolute;
+	left:92px;
+	top:249px;
+	width:50px;
+	height:49px;
+}
+
+#razer_orbweaver_chroma_33 {
+	position:absolute;
+	left:37px;
+	top:266px;
+	width:7px;
+	height:359px;
+}
+
+#razer_orbweaver_chroma_button_16 {
+	position:absolute;
+	left:44px;
+	top:266px;
+	width:48px;
+	height:55px;
+}
+
+#razer_orbweaver_chroma_35 {
+	position:absolute;
+	left:247px;
+	top:291px;
+	width:54px;
+	height:334px;
+}
+
+#razer_orbweaver_chroma_36 {
+	position:absolute;
+	left:92px;
+	top:298px;
+	width:155px;
+	height:327px;
+}
+
+#razer_orbweaver_chroma_37 {
+	position:absolute;
+	left:44px;
+	top:321px;
+	width:48px;
+	height:304px;
+}
+
+#razer_orbweaver_chroma_38 {
+	position:absolute;
+	left:301px;
+	top:321px;
+	width:6px;
+	height:304px;
+}
+
+#razer_orbweaver_chroma_button_mode {
+	position:absolute;
+	left:307px;
+	top:321px;
+	width:56px;
+	height:45px;
+}
+
+#razer_orbweaver_chroma_40 {
+	position:absolute;
+	left:363px;
+	top:321px;
+	width:66px;
+	height:45px;
+}
+
+#razer_orbweaver_chroma_41 {
+	position:absolute;
+	left:307px;
+	top:366px;
+	width:14px;
+	height:259px;
+}
+
+#razer_orbweaver_chroma_button_joystick {
+	position:absolute;
+	left:321px;
+	top:366px;
+	width:52px;
+	height:40px;
+}
+
+#razer_orbweaver_chroma_43 {
+	position:absolute;
+	left:373px;
+	top:366px;
+	width:56px;
+	height:40px;
+}
+
+#razer_orbweaver_chroma_button_21 {
+	position:absolute;
+	left:321px;
+	top:406px;
+	width:104px;
+	height:94px;
+}
+
+#razer_orbweaver_chroma_45 {
+	position:absolute;
+	left:425px;
+	top:406px;
+	width:4px;
+	height:219px;
+}
+
+#razer_orbweaver_chroma_46 {
+	position:absolute;
+	left:321px;
+	top:500px;
+	width:104px;
+	height:125px;
+}

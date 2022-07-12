@@ -353,6 +353,7 @@
     "core_console_applications_label": "ਕੰਸੋਲ: ਕਾਰਜ",
     "core_console_keyboardmaestromacros_label": "ਕੀਬੋਰਡ ਮਾਸਟਰੋ ਮੈਕਰੋਸ",
     "core_console_label": "ਕਨਸੋਲ",
+    "core_console_preferences_label": "ਤਰਜੀਹਾਂ: ਖੋਜ ਕੰਸੋਲ",
     "core_console_scripts_label": "ਕੰਸੋਲ: ਸਕ੍ਰਿਪਟ",
     "core_controlsurfaces_manager_label": "ਕੰਟਰੋਲ ਸਰਫੇਸ ਮੈਨੇਜਰ",
     "core_controlsurfaces_resolve_manager_label": "DaVinci ਰੈਜ਼ੋਲਵ ਕੰਟਰੋਲ ਸਰਫੇਸ: ਮੈਨੇਜਰ",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "ਉੱਪਰ ਖੱਬੇ ਦਬਾਓ",
     "pressTopMiddle": "ਪ੍ਰੈਸ ਟਾਪ ਮਿਡਲ",
     "pressTopRight": "ਉੱਪਰ ਸੱਜੇ ਦਬਾਓ",
+    "preventExcessiveThumbTaps": "ਬਹੁਤ ਜ਼ਿਆਦਾ ਥੰਬ ਟੂਟੀਆਂ ਨੂੰ ਰੋਕੋ",
     "preventMacFromSleeping": "ਸੌਣ ਤੋਂ ਮੈਕ ਨੂੰ ਰੋਕੋ",
     "previewSelectedApplicationAndBankOnHardware": "ਹਾਰਡਵੇਅਰ 'ਤੇ ਚੁਣੀ ਗਈ ਐਪਲੀਕੇਸ਼ਨ ਅਤੇ ਬੈਂਕ ਦੀ ਪੂਰਵਦਰਸ਼ਨ ਕਰੋ",
     "previous": "ਪਿਛਲਾ",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "ਕਮਾਂਡਪੋਸਟ ਨੂੰ ਤੁਹਾਡੇ ਸਿਸਟਮ ਨੂੰ ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਪਲੱਗਇਨ ਅਤੇ ਮੋਸ਼ਨ ਟੈਪਲੇਟਾਂ ਲਈ ਸਕੈਨ ਕਰਨ ਦੀ ਜ਼ਰੂਰਤ ਹੈ.",
     "scanFinalCutProSetupTwo": "ਤੁਹਾਡੇ ਦੁਆਰਾ ਕਿੰਨੇ ਪਲੱਗਇਨ ਅਤੇ ਪ੍ਰਭਾਵਾਂ ਸਥਾਪਿਤ ਕੀਤੇ ਗਏ ਹਨ ਇਸ 'ਤੇ ਨਿਰਭਰ ਕਰਦਿਆਂ, ਇਸ ਨੂੰ ਕਈ ਮਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ.",
     "scanMotionTemplates": "ਮੋਸ਼ਨ ਟੈਂਪਲੇਟਸ ਸਕੈਨ ਕਰੋ",
+    "scanRunningApplicationMenubarsOnStartup": "ਸਟਾਰਟਅੱਪ 'ਤੇ ਚੱਲ ਰਹੀ ਐਪਲੀਕੇਸ਼ਨ ਮੀਨੂਬਾਰ ਨੂੰ ਸਕੈਨ ਕਰੋ",
+    "scanTheMenubarsOfTheActiveApplication": "ਐਕਟਿਵ ਐਪਲੀਕੇਸ਼ਨ ਦੇ ਮੇਨੂਬਾਰਾਂ ਨੂੰ ਸਕੈਨ ਕਰੋ",
     "scanningInProgress": "ਸਕੈਨਿੰਗ ਪ੍ਰਗਤੀ ਵਿੱਚ ਹੈ",
     "screen": "ਸਕਰੀਨ",
     "screen9": "ਸਕਰੀਨ",
@@ -1936,6 +1940,7 @@
         "one": "ਦੂਜਾ",
         "other": "Seconds"
     },
+    "seconds": "ਸਕਿੰਟ",
     "secs": {
         "one": "ਸਕਿੰਟ",
         "other": "secs"

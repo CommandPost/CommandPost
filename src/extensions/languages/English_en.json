@@ -351,6 +351,7 @@
     "core_console_applications_label": "Console: Applications",
     "core_console_keyboardmaestromacros_label": "Keyboard Maestro Macros",
     "core_console_label": "Console",
+    "core_console_preferences_label": "Preferences: Search Console",
     "core_console_scripts_label": "Console: Scripts",
     "core_controlsurfaces_manager_label": "Control Surfaces Manager",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: Manager",
@@ -1756,6 +1757,7 @@
     "pressTopLeft": "Press Top Left",
     "pressTopMiddle": "Press Top Middle",
     "pressTopRight": "Press Top Right",
+    "preventExcessiveThumbTaps": "Prevent Excessive Thumb Taps",
     "preventMacFromSleeping": "Prevent Mac from Sleeping",
     "previewSelectedApplicationAndBankOnHardware": "Preview Selected Application & Bank on Hardware",
     "previous": "Previous",
@@ -1909,6 +1911,8 @@
     "scanFinalCutProSetupTwo": "Depending on how many plugins and effects you have installed, this can take several minutes.",
     "scanMotionTemplates": "Scan Motion Templates",
     "scanningInProgress": "Scanning in progress",
+    "scanRunningApplicationMenubarsOnStartup": "Scan Running Application Menubars on Startup",
+    "scanTheMenubarsOfTheActiveApplication": "Scan the Menubars of the Active Application",
     "screen": "Screen",
     "screen9": "Screen",
     "screenRecordingNote": "CommandPost requires <strong>Screen Recording</strong> permission to detect the state of various user interface elements - for example, to detect when Final Cut Pro is playing or stopped. We also allow users to <strong>optionally</strong> share screenshots when submitting feedback.<br /><br />To continue, please press <strong>Allow Screen Recording</strong>, which will open System Preferences allowing you to grant CommandPost Screen Recording permission. CommandPost will automatically restart once granted permission.",
@@ -1935,6 +1939,7 @@
         "one": "Second",
         "other": "Seconds"
     },
+    "seconds": "Seconds",
     "secs": {
         "one": "sec",
         "other": "secs"

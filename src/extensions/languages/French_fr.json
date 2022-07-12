@@ -353,6 +353,7 @@
     "core_console_applications_label": "Console : Applications",
     "core_console_keyboardmaestromacros_label": "Macros de clavier Maestro",
     "core_console_label": "Console",
+    "core_console_preferences_label": "Préférences : Search Console",
     "core_console_scripts_label": "Console : Scripts",
     "core_controlsurfaces_manager_label": "Gestionnaire des surfaces de contrôle",
     "core_controlsurfaces_resolve_manager_label": "Surfaces de contrôle DaVinci Resolve : gestionnaire",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Appuyez en haut à gauche",
     "pressTopMiddle": "Appuyez au milieu supérieur",
     "pressTopRight": "Appuyez en haut à droite",
+    "preventExcessiveThumbTaps": "Empêcher les tapotements excessifs du pouce",
     "preventMacFromSleeping": "Empêcher la mise en veille du Mac",
     "previewSelectedApplicationAndBankOnHardware": "Aperçu de l'application sélectionnée et de la banque sur le matériel",
     "previous": "précédent",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "CommandPost doit scanner votre système de Plug-ins Final Cut Pro & Motion Templates",
     "scanFinalCutProSetupTwo": "Selon le nombre de plug-ins et effets installés, l'opération peut prendre un certain temps.",
     "scanMotionTemplates": "Analyser les modèles de mouvement",
+    "scanRunningApplicationMenubarsOnStartup": "Analyser les barres de menus des applications en cours d'exécution au démarrage",
+    "scanTheMenubarsOfTheActiveApplication": "Scannez les barres de menus de l'application active",
     "scanningInProgress": "analyseIntroduction",
     "screen": "Écran",
     "screen9": "Écran",
@@ -1936,6 +1940,7 @@
         "one": "seconde",
         "other": "Seconds"
     },
+    "seconds": "Secondes",
     "secs": {
         "one": "secs",
         "other": "sec"

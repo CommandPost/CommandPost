@@ -353,6 +353,7 @@
     "core_console_applications_label": "Console: Aplicativos",
     "core_console_keyboardmaestromacros_label": "Macros do Maestro do teclado",
     "core_console_label": "Console",
+    "core_console_preferences_label": "Preferências: Search Console",
     "core_console_scripts_label": "Console: Scripts",
     "core_controlsurfaces_manager_label": "Gerente de superfícies de controle",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: Manager",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Pressione Superior Esquerdo",
     "pressTopMiddle": "Pressione Top Middle",
     "pressTopRight": "Pressione o canto superior direito",
+    "preventExcessiveThumbTaps": "Evite toques de polegar excessivos",
     "preventMacFromSleeping": "Impedir que o Mac durma",
     "previewSelectedApplicationAndBankOnHardware": "Visualizar aplicativo e banco selecionados no hardware",
     "previous": "Anterior",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "O CommandPost precisa varrer seu sistema para o Final Cut Pro para Plugins & Motion Templates.",
     "scanFinalCutProSetupTwo": "Dependendo de quantos plugins e efeitos você instalou, isso pode levar vários minutos.",
     "scanMotionTemplates": "Scan Motion Templates",
+    "scanRunningApplicationMenubarsOnStartup": "Verificar as barras de menu do aplicativo em execução na inicialização",
+    "scanTheMenubarsOfTheActiveApplication": "Digitalize as barras de menu do aplicativo ativo",
     "scanningInProgress": "Digitalização em andamento",
     "screen": "Tela",
     "screen9": "Tela",
@@ -1936,6 +1940,7 @@
         "one": "Segundo",
         "other": "Seconds"
     },
+    "seconds": "Segundos",
     "secs": {
         "one": "sec",
         "other": "secs"

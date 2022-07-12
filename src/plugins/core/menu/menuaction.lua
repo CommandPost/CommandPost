@@ -158,13 +158,15 @@ local plugin = {
         ["core.tourbox.manager"]                    = "tourboxmanager",
         ["core.razer.manager"]                      = "razermanager",
         ["core.controlsurfaces.resolve.manager"]    = "resolvemanager",
-
+        ["core.console.preferences"]                = "consolePreferences",
     }
 }
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Watch for application changes:
+    -- Watch for application changes (if enabled in preferences):
+    --
+    -- NOTE: This is off be default for performance reasons.
     --------------------------------------------------------------------------------
     mod._appWatcher = watcher.new(function(_, event, app)
         if app and event == watcher.activated and app:bundleID() then
@@ -189,7 +191,17 @@ function plugin.init(deps)
                 end)
             end
         end
-    end):start()
+    end)
+
+    mod.scanTheMenubarsOfTheActiveApplication = deps.consolePreferences.scanTheMenubarsOfTheActiveApplication:watch(function(enabled)
+        if enabled then
+            mod._appWatcher:start()
+        else
+            mod._appWatcher:stop()
+        end
+    end)
+
+    mod.scanTheMenubarsOfTheActiveApplication:update()
 
     --------------------------------------------------------------------------------
     -- Setup the Global Menu Actions Handler:
@@ -381,27 +393,32 @@ function plugin.postInit(deps)
     scanPreferences()
 
     --------------------------------------------------------------------------------
-    -- Scan open applications to give ourselves a head start:
+    -- Scan open applications to give ourselves a head start.
+    --
+    -- NOTE: This is off by default, as it's fairly slow.
     --------------------------------------------------------------------------------
-    local apps = runningApplications()
-    for _, app in pairs(apps) do
-        local bundleID = app:bundleID()
-        --------------------------------------------------------------------------------
-        -- For some reason, some apps don't have a bundle ID:
-        --------------------------------------------------------------------------------
-        if bundleID and bundleID ~= "" then
-            if not mod._cache[bundleID] then
-                local visibleWindows = app:visibleWindows()
-                if next(visibleWindows) and accessibilityState() then
-                    getMenuItems(app, function(result)
-                        if not mod._cache[bundleID] then
-                            mod._cache[bundleID] = result
-                            mod._handler:reset()
-                            if mod._handlers[bundleID] then
-                                mod._handlers[bundleID]:reset()
+    if deps.consolePreferences.scanRunningApplicationMenubarsOnStartup() then
+        --log.df("Scanning running application menubars for the Search Console")
+        local apps = runningApplications()
+        for _, app in pairs(apps) do
+            local bundleID = app:bundleID()
+            --------------------------------------------------------------------------------
+            -- For some reason, some apps don't have a bundle ID:
+            --------------------------------------------------------------------------------
+            if bundleID and bundleID ~= "" then
+                if not mod._cache[bundleID] then
+                    local visibleWindows = app:visibleWindows()
+                    if next(visibleWindows) and accessibilityState() then
+                        getMenuItems(app, function(result)
+                            if not mod._cache[bundleID] then
+                                mod._cache[bundleID] = result
+                                mod._handler:reset()
+                                if mod._handlers[bundleID] then
+                                    mod._handlers[bundleID]:reset()
+                                end
                             end
-                        end
-                    end)
+                        end)
+                    end
                 end
             end
         end

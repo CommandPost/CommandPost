@@ -1,0 +1,325 @@
+/* RAZER TARTARUS - INTERFACE: */
+
+#razer_tartarus {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:429px;
+	height:625px;
+	font-size:0px;
+	background-image:url({* insertImage('images/razer_tartarus.png') *});
+	background-repeat: no-repeat;
+	background-size: 429px 625px;
+}
+
+#razer_tartarus_01 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:429px;
+	height:109px;
+}
+
+#razer_tartarus_02 {
+	position:absolute;
+	left:0px;
+	top:109px;
+	width:188px;
+	height:4px;
+}
+
+#razer_tartarus_button_04 {
+	position:absolute;
+	left:188px;
+	top:109px;
+	width:54px;
+	height:54px;
+}
+
+#razer_tartarus_button_05 {
+	position:absolute;
+	left:242px;
+	top:109px;
+	width:56px;
+	height:54px;
+}
+
+#razer_tartarus_05 {
+	position:absolute;
+	left:298px;
+	top:109px;
+	width:131px;
+	height:192px;
+}
+
+#razer_tartarus_06 {
+	position:absolute;
+	left:0px;
+	top:113px;
+	width:137px;
+	height:7px;
+}
+
+#razer_tartarus_button_03 {
+	position:absolute;
+	left:137px;
+	top:113px;
+	width:51px;
+	height:56px;
+}
+
+#razer_tartarus_08 {
+	position:absolute;
+	left:0px;
+	top:120px;
+	width:85px;
+	height:21px;
+}
+
+#razer_tartarus_button_02 {
+	position:absolute;
+	left:85px;
+	top:120px;
+	width:52px;
+	height:54px;
+}
+
+#razer_tartarus_10 {
+	position:absolute;
+	left:0px;
+	top:141px;
+	width:27px;
+	height:484px;
+}
+
+#razer_tartarus_button_01 {
+	position:absolute;
+	left:27px;
+	top:141px;
+	width:58px;
+	height:51px;
+}
+
+#razer_tartarus_button_09 {
+	position:absolute;
+	left:188px;
+	top:163px;
+	width:54px;
+	height:58px;
+}
+
+#razer_tartarus_button_10 {
+	position:absolute;
+	left:242px;
+	top:163px;
+	width:56px;
+	height:51px;
+}
+
+#razer_tartarus_button_08 {
+	position:absolute;
+	left:137px;
+	top:169px;
+	width:51px;
+	height:52px;
+}
+
+#razer_tartarus_button_07 {
+	position:absolute;
+	left:85px;
+	top:174px;
+	width:52px;
+	height:52px;
+}
+
+#razer_tartarus_16 {
+	position:absolute;
+	left:27px;
+	top:192px;
+	width:11px;
+	height:433px;
+}
+
+#razer_tartarus_button_06 {
+	position:absolute;
+	left:38px;
+	top:192px;
+	width:47px;
+	height:54px;
+}
+
+#razer_tartarus_button_15 {
+	position:absolute;
+	left:242px;
+	top:214px;
+	width:56px;
+	height:55px;
+}
+
+#razer_tartarus_19 {
+	position:absolute;
+	left:137px;
+	top:221px;
+	width:5px;
+	height:5px;
+}
+
+#razer_tartarus_button_13 {
+	position:absolute;
+	left:142px;
+	top:221px;
+	width:51px;
+	height:53px;
+}
+
+#razer_tartarus_button_14 {
+	position:absolute;
+	left:193px;
+	top:221px;
+	width:49px;
+	height:53px;
+}
+
+#razer_tartarus_22 {
+	position:absolute;
+	left:85px;
+	top:226px;
+	width:8px;
+	height:20px;
+}
+
+#razer_tartarus_button_12 {
+	position:absolute;
+	left:93px;
+	top:226px;
+	width:49px;
+	height:53px;
+}
+
+#razer_tartarus_24 {
+	position:absolute;
+	left:38px;
+	top:246px;
+	width:5px;
+	height:379px;
+}
+
+#razer_tartarus_button_11 {
+	position:absolute;
+	left:43px;
+	top:246px;
+	width:50px;
+	height:55px;
+}
+
+#razer_tartarus_26 {
+	position:absolute;
+	left:242px;
+	top:269px;
+	width:56px;
+	height:356px;
+}
+
+#razer_tartarus_27 {
+	position:absolute;
+	left:142px;
+	top:274px;
+	width:100px;
+	height:351px;
+}
+
+#razer_tartarus_28 {
+	position:absolute;
+	left:93px;
+	top:279px;
+	width:49px;
+	height:346px;
+}
+
+#razer_tartarus_29 {
+	position:absolute;
+	left:43px;
+	top:301px;
+	width:50px;
+	height:324px;
+}
+
+#razer_tartarus_30 {
+	position:absolute;
+	left:298px;
+	top:301px;
+	width:8px;
+	height:324px;
+}
+
+#razer_tartarus_mode {
+	position:absolute;
+	left:306px;
+	top:301px;
+	width:52px;
+	height:39px;
+}
+
+#razer_tartarus_32 {
+	position:absolute;
+	left:358px;
+	top:301px;
+	width:71px;
+	height:39px;
+}
+
+#razer_tartarus_33 {
+	position:absolute;
+	left:306px;
+	top:340px;
+	width:12px;
+	height:285px;
+}
+
+#razer_tartarus_joystick {
+	position:absolute;
+	left:318px;
+	top:340px;
+	width:54px;
+	height:45px;
+}
+
+#razer_tartarus_35 {
+	position:absolute;
+	left:372px;
+	top:340px;
+	width:57px;
+	height:45px;
+}
+
+#razer_tartarus_36 {
+	position:absolute;
+	left:318px;
+	top:385px;
+	width:13px;
+	height:240px;
+}
+
+#razer_tartarus_button_16 {
+	position:absolute;
+	left:331px;
+	top:385px;
+	width:92px;
+	height:85px;
+}
+
+#razer_tartarus_38 {
+	position:absolute;
+	left:423px;
+	top:385px;
+	width:6px;
+	height:240px;
+}
+
+#razer_tartarus_39 {
+	position:absolute;
+	left:331px;
+	top:470px;
+	width:92px;
+	height:155px;
+}

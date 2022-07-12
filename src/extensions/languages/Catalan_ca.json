@@ -353,6 +353,7 @@
     "core_console_applications_label": "Consola: Aplicacions",
     "core_console_keyboardmaestromacros_label": "Macros del teclat Mestre",
     "core_console_label": "Consola",
+    "core_console_preferences_label": "Preferències: Search Console",
     "core_console_scripts_label": "Consola: Scripts",
     "core_controlsurfaces_manager_label": "Gestor de superfícies de control",
     "core_controlsurfaces_resolve_manager_label": "Superfícies de control DaVinci Resolve: Gestor",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Premeu la part superior esquerra",
     "pressTopMiddle": "Premeu superior central",
     "pressTopRight": "Premeu la part superior dreta",
+    "preventExcessiveThumbTaps": "Eviteu els tocs excessius amb el polze",
     "preventMacFromSleeping": "Eviteu que Mac s'adormi",
     "previewSelectedApplicationAndBankOnHardware": "Previsualitza l'aplicació seleccionada i el banc al maquinari",
     "previous": "Anterior",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "CommandPost ha d'escanejar el vostre sistema per buscar complements i plantilles de moviment de Final Cut Pro.",
     "scanFinalCutProSetupTwo": "Depenent de quants connectors i efectes hàgiu instal·lat, això pot trigar uns quants minuts.",
     "scanMotionTemplates": "Escaneja plantilles de moviment",
+    "scanRunningApplicationMenubarsOnStartup": "Escaneja les barres de menú de l'aplicació en execució a l'inici",
+    "scanTheMenubarsOfTheActiveApplication": "Escaneja les barres de menú de l'aplicació activa",
     "scanningInProgress": "Escaneig en curs",
     "screen": "Pantalla",
     "screen9": "Pantalla",
@@ -1936,6 +1940,7 @@
         "one": "Segon",
         "other": "Segons"
     },
+    "seconds": "segons",
     "secs": {
         "one": "sec",
         "other": "secs"

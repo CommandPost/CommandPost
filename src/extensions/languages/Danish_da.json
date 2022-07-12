@@ -353,6 +353,7 @@
     "core_console_applications_label": "Konsol: applikationer",
     "core_console_keyboardmaestromacros_label": "Tastatur Maestro-makroer",
     "core_console_label": "konsol",
+    "core_console_preferences_label": "Præferencer: Search Console",
     "core_console_scripts_label": "Konsol: manuskripter",
     "core_controlsurfaces_manager_label": "Styr overflademanager",
     "core_controlsurfaces_resolve_manager_label": "DaVinci Resolve Control Surfaces: Manager",
@@ -1757,6 +1758,7 @@
     "pressTopLeft": "Tryk øverst til venstre",
     "pressTopMiddle": "Tryk på Top Mellem",
     "pressTopRight": "Tryk øverst til højre",
+    "preventExcessiveThumbTaps": "Undgå overdreven tryk på tommelfingeren",
     "preventMacFromSleeping": "Undgå, at Mac sover",
     "previewSelectedApplicationAndBankOnHardware": "Forhåndsvisning af udvalgt applikation og bank på hardware",
     "previous": "Tidligere",
@@ -1910,6 +1912,8 @@
     "scanFinalCutProSetupOne": "CommandPost skal scanne dit system for Final Cut Pro-plugins og bevægelsesskabeloner.",
     "scanFinalCutProSetupTwo": "Afhængig af hvor mange plugins og effekter du har installeret, kan dette tage flere minutter.",
     "scanMotionTemplates": "Scan bevægelsesskabeloner",
+    "scanRunningApplicationMenubarsOnStartup": "Scan kørende programmenulinjer ved opstart",
+    "scanTheMenubarsOfTheActiveApplication": "Scan menulinjerne i den aktive applikation",
     "scanningInProgress": "Scanning i gang",
     "screen": "skærm",
     "screen9": "skærm",
@@ -1936,6 +1940,7 @@
         "one": "Anden",
         "other": "Seconds"
     },
+    "seconds": "Sekunder",
     "secs": {
         "one": "sek",
         "other": "secs"
