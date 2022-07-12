@@ -90,32 +90,6 @@ end
 
 local Builder = class("cp.ui.Builder")
 
---- cp.ui.Builder:isClassOf(thing) -> boolean
---- Field
---- Checks if the `thing` is a `Builder`.
----
---- Parameters:
----  * thing - The thing to check.
----
---- Returns:
----  * `true` if the `thing` is a `Builder`, otherwise `false`.
-function Builder.static:isClassOf(thing)
-    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(self)
-end
-
---- cp.ui.Builder:isSupertypeOf(thing) -> boolean
---- Field
---- Checks if the `thing` is a `Builder` or a subclass of `Builder`.
----
---- Parameters:
----  * thing - The thing to check.
----
---- Returns:
----  * `true` if the `thing` is a `Builder` or a subclass of `Builder`, otherwise `false`.
-function Builder.static:isSupertypeOf(thing)
-    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self) or self == thing
-end
-
 function Builder:initialize(elementType, ...)
     self[ELEMENT_TYPE] = elementType
     self.matches = elementType.matches

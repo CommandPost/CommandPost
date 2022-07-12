@@ -1,6 +1,8 @@
 --- === cp.apple.finalcutpro.cmd.CommandEditor ===
 ---
 --- Command Editor Module.
+---
+--- Extends: [Dialog](cp.ui.Dialog.md)
 
 local require                       = require
 

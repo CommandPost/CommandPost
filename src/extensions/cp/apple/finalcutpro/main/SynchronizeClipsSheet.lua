@@ -20,9 +20,11 @@ local StaticText            = require "cp.ui.StaticText"
 local TextField             = require "cp.ui.TextField"
 local PopUpButton           = require "cp.ui.PopUpButton"
 
-local delegator             = require "cp.delegator"
-
 local has                   = require "cp.ui.has"
+
+local go                    = require "cp.rx.go"
+local Do, If                = go.Do, go.If
+local Given, WaitUntil      = go.Given, go.WaitUntil
 
 local chain                 = fn.chain
 local get                   = fn.table.get
@@ -80,8 +82,9 @@ SynchronizeClipsSheet.static.children = list {
                     oneOf { -- can either be a pop-up or width/height
                         alias "preset" { PopUpButton },
                         alias "custom" {
-                            alias "height" { TextField },
                             alias "width" { TextField },
+                            StaticText, -- "X"
+                            alias "height" { TextField },
                         },
                     }
                 },
@@ -260,5 +263,49 @@ function SynchronizeClipsSheet.lazy.prop:isAutomatic()
     )
     :monitor(self.UI)
 end
+
+--------------------------------------------------------------------------------
+-- Other Functions
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.SynchronizeClipsSheet:doShow() <cp.rx.go.Statement>
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempt to show the sheet.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` object.
+function SynchronizeClipsSheet.lazy.method:doShow()
+    local app = self:app()
+    return If(app:doLaunch())
+    :Then(app.browser)
+    :Then(
+        app.menu:doSelectMenu({"Clip", "Synchronize Clips…"})
+    )
+    :Then(
+        WaitUntil(self.isShowing):TimeoutAfter(2000)
+    )
+    :Otherwise(false)
+    :Label("SynchronizeClipsSheet:doShow")
+end
+
+--- cp.apple.finalcutpro.main.SynchronizeClipsSheet:doHide() <cp.rx.go.Statement>
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempt to hide the sheet, if it is visible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` object.
+function SynchronizeClipsSheet.lazy.method:doHide()
+    return If(self.isShowing):Is(true):Then(
+        self.cancel:doPress()
+    )
+    :Label("SynchronizeClipsSheet:doHide")
+end
+
 
 return SynchronizeClipsSheet

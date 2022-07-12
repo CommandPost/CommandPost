@@ -8,10 +8,8 @@ local require                       = require
 local inspect                       = require "hs.inspect"
 local is                            = require "cp.is"
 
-local ListHandler                   = require "cp.ui.has.ListHandler"
 local UIHandler                     = require "cp.ui.has.UIHandler"
 
-local isTable                       = is.table
 local format                        = string.format
 
 local OptionalHandler = UIHandler:subclass("cp.ui.has.OptionalHandler")
@@ -27,7 +25,7 @@ local OptionalHandler = UIHandler:subclass("cp.ui.has.OptionalHandler")
 ---  * The new `OptionalHandler` instance.
 function OptionalHandler:initialize(handler)
     UIHandler.initialize(self)
-    if UIHandler:isClassOf(handler) then
+    if UIHandler:isSuperclassFor(handler) then
         self.handler = handler
     else
         error(format("expected a UIHandler or a table of UIHandlers: %s", inspect(handler)))

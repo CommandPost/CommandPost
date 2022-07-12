@@ -5,6 +5,7 @@
 
 local require                   = require
 
+local ax                        = require "cp.fn.ax"
 local slice                     = require "cp.slice"
 local UIHandler                 = require "cp.ui.has.UIHandler"
 
@@ -54,12 +55,15 @@ end
 --- Returns:
 ---  * The new [Element](cp.ui.Element.md) instance.
 function ElementHandler:build(parent, uiListFinder)
-    local ui = uiListFinder:mutate(function(original)
-        local uiList = original()
-        if uiList and self:matches(slice.from(uiList)) then
-            return uiList[1]
-        end
-    end)
+    local key = {}
+    local ui = uiListFinder:mutate(
+        ax.cache(parent, key, self.elementBuilder.matches)(function(original)
+            local uiList = original()
+            if uiList and self:matches(slice.from(uiList)) then
+                return uiList[1]
+            end
+        end)
+    )
     return self.elementBuilder(parent, ui)
 end
 

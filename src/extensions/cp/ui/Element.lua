@@ -1,6 +1,10 @@
 --- === cp.ui.Element ===
 ---
---- A support class for `hs.axuielement` management.
+--- The base class for `hs.axuielement` management.
+---
+--- Includes:
+---  * [cp.lazy](cp.lazy.md)
+---  * [cp.delegator](cp.delegator.md)
 ---
 --- See:
 ---  * [Button](cp.ui.Button.md)
@@ -14,16 +18,17 @@ local inspect           = require "cp.dev" .inspect
 
 local drawing           = require "hs.drawing"
 
+local deferred          = require "cp.deferred"
+local is                = require "cp.is"
+local prop              = require "cp.prop"
+local go	            = require "cp.rx.go"
 local axutils           = require "cp.ui.axutils"
 local Builder           = require "cp.ui.Builder"
-local delegator         = require "cp.delegator"
-local go	            = require "cp.rx.go"
-local is                = require "cp.is"
-local lazy              = require "cp.lazy"
 local notifier          = require "cp.ui.notifier"
-local prop              = require "cp.prop"
 
 local class             = require "middleclass"
+local lazy              = require "cp.lazy"
+local delegator         = require "cp.delegator"
 
 local cache             = axutils.cache
 local Do, Given, If     = go.Do, go.Given, go.If
@@ -85,41 +90,6 @@ function Element.static:defineBuilder(...)
         end
     end
     return self
-end
-
---- cp.ui.Element:isClassOf(thing) -> boolean
---- Function
---- Checks if the `thing` is an `Element`. If called on subclasses, it will check
---- if the `thing` is an instance of the subclass.
----
---- Parameters:
----  * `thing`		- The thing to check
----
---- Returns:
----  * `true` if the thing is a `Element` instance.
----
---- Notes:
----  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
----    not an instance. For example `Element:isClassOf(value)`
-function Element.static:isClassOf(thing)
-    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(self)
-end
-
---- cp.ui.Element:isSupertypeOf(thing) -> boolean
---- Function
---- Checks if the `thing` is a subclass of `Element`.
----
---- Parameters:
----  * `thing`		- The thing to check
----
---- Returns:
----  * `true` if the thing is a subclass of `Element`.
----
---- Notes:
----  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
----    not an instance. For example `Element:isSupertypeof(value)`
-function Element.static:isSupertypeOf(thing)
-    return type(thing) == "table" and thing.isSubclassOf ~= nil and thing:isSubclassOf(self) or self == thing
 end
 
 --- cp.ui.Element.matches(element) -> boolean
@@ -503,6 +473,56 @@ end
 function Element.lazy.method:notifier()
     return notifier.new(self:app():bundleID(), self.UI)
 end
+
+--- cp.ui.Element:watchFor(eventList, callback[, deferBy]) -> function | cp.prop
+--- Method
+--- Watches for the specified `AX` events and calls the callback when they occur.
+--- If the `callback` is a `cp.prop`, the `cp.prop:update()` method will be called instead.
+---
+--- Parameters:
+---  * eventList - The list of events to watch for.
+---  * callback   - The callback or `cp.prop` to call when the event occurs.
+---  * deferBy    - The number of seconds to defer the callback. Defaults to instantaneous.
+---
+--- Returns:
+---  * The original callback value
+---
+--- Notes:
+---  * Common events:
+---    * `AXFocusedWindowChanged` - The focused window has changed.
+---    * `AXFocusedUIElementChanged` - The focused element has changed.
+---    * `AXLiveRegionChanged` - The live region has changed.
+---    * `AXMenuClosedNotification` - The menu has been closed.
+---    * `AXMenuItemSelectedNotification` - The menu item has been selected.
+---    * `AXMenuOpenedNotification` - The menu has been opened.
+---    * `AXSelectedChildrenChanged` - The selected children have changed.
+---    * `AXUIElementCreated` - The element has been created.
+---    * `AXUIElementDestroyed` - The element has been destroyed.
+---    * `AXValidationErrorChanged` - The validation error has changed.
+---    * `AXValueChanged` - The value of the element has changed.
+---    * `AXWindowCreated` - The window has been created.
+---    * `AXWindowDestroyed` - The window has been destroyed.
+function Element:watchFor(eventList, callback, deferBy)
+    local originalCallback = callback
+    if prop.is(callback) then
+        local propToUpdate = callback
+        callback = function()
+            propToUpdate:update()
+        end
+    elseif not isCallable(callback) then
+        error("The callback must be a function or a cp.prop.", 2)
+    end
+
+    if deferBy then
+        local deferredFn = callback
+        callback = deferred.new(deferBy):action(deferredFn)
+    end
+
+    self:notifier():start():watchFor(eventList, callback)
+
+    return originalCallback
+end
+
 
 --- cp.ui.Element:snapshot([path]) -> hs.image | nil
 --- Method

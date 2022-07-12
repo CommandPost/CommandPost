@@ -388,7 +388,7 @@ end
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:applyItem(itemUI)
     if itemUI then
-        self.contents:showChild(itemUI)
+        self.contents:showChildUI(itemUI)
         local frame = itemUI:attributeValue("AXFrame")
         local targetPoint = geometry.rect(frame).center
         ninjaDoubleClick(targetPoint)

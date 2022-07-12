@@ -36,7 +36,7 @@ local ninjaDoubleClick                  = tools.ninjaDoubleClick
 local upper                             = tools.upper
 local chain                             = fn.chain
 
-local list, alias                       = has.list, has.alias
+local list, alias, optional             = has.list, has.alias, has.optional
 
 local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
 
@@ -78,7 +78,7 @@ EffectsBrowser.static.children = list {
                 alias "sidebar" { Table },
             },
             alias "effects" {
-                alias "only4K" { CheckBox },
+                alias "only4K" { optional { CheckBox } },
                 alias "group" { PopUpButton },
                 alias "contents" { ScrollArea:containing(
                     Grid:containing(EffectsBrowser.Effect)

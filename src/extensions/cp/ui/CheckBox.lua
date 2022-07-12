@@ -21,7 +21,6 @@
 
 local require = require
 
-local inspect           = require "hs.inspect"
 local axutils           = require "cp.ui.axutils"
 local Element			= require "cp.ui.Element"
 local tools             = require "cp.tools"

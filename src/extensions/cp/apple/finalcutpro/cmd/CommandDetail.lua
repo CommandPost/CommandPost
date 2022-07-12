@@ -1,6 +1,8 @@
 --- === cp.apple.finalcutpro.cmd.CommandDetail ===
 ---
 --- This class provides a UI for displaying the details of a command when it is selected on the `CommandList`.
+---
+--- Extends: [Group](cp.ui.Group.md)
 
 local require = require
 

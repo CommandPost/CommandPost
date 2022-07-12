@@ -169,26 +169,4 @@ return describe "cp.ui.Builder" {
             expect(c.beta):is("beta")
         end),
     },
-
-    context("isClassOf") {
-        it "returns true if the given object is of the given type"
-        :doing(function()
-            local MyElement = Element:subclass("MyElement")
-            function MyElement:initialize(parent, uiFinder, alpha)
-                Element.initialize(self, parent, uiFinder)
-                self.alpha = alpha
-            end
-
-            local myBuilder = Builder(MyElement, "withAlpha")
-            expect(Builder:isClassOf(myBuilder)):is(true)
-        end),
-
-        it "returns false if the given object is not of the given type"
-        :doing(function()
-            local MyElement = Element:subclass("MyElement")
-            local myElement = MyElement({}, function() end)
-            expect(Builder:isClassOf(myElement)):is(false)
-            expect(Builder:isClassOf("value")):is(false)
-        end),
-    },
 }
