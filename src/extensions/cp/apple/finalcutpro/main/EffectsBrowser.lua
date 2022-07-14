@@ -4,7 +4,7 @@
 
 local require = require
 
--- local log								= require "hs.logger".new("EffectsBrowser")
+local log								= require "hs.logger".new("EffectsBrowser")
 
 local geometry							= require "hs.geometry"
 local fnutils							= require "hs.fnutils"
@@ -39,11 +39,13 @@ local chain                             = fn.chain
 local list, alias, optional             = has.list, has.alias, has.optional
 
 local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
+                            :delegateTo("area")
 
 --- === cp.apple.finalcutpro.main.EffectsBrowser.Effect ===
 ---
 --- An `Effect` is a single effect/transition in the Effects Browser.
-
+---
+--- Extends: [cp.ui.Image](cp.ui.Image.md)
 EffectsBrowser.static.Effect = Image:subclass("cp.apple.finalcutpro.main.EffectsBrowser.Effect")
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.EFFECTS -> string
@@ -80,7 +82,7 @@ EffectsBrowser.static.children = list {
             alias "effects" {
                 alias "only4K" { optional { CheckBox } },
                 alias "group" { PopUpButton },
-                alias "contents" { ScrollArea:containing(
+                alias "area" { ScrollArea:containing(
                     Grid:containing(EffectsBrowser.Effect)
                 ) }
             }
@@ -220,7 +222,7 @@ function EffectsBrowser.lazy.method:doHide()
     local app = self:app()
 
     return If(app.timeline.isShowing)
-    :Then(button:doCheck())
+    :Then(button:doUncheck())
     :Then(WaitUntil(button.isShowing):Is(false))
 end
 
@@ -441,7 +443,7 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function EffectsBrowser:audioCategoryRowsUI()
-    local audio = self:app():string("FFAudio"):upper()
+    local audio = upper(self:app():string("FFAudio"))
     return self:_startEndRowsUI(audio, nil)
 end
 
@@ -579,7 +581,14 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function EffectsBrowser:currentItemsUI()
-    return self.contents:childrenUI()
+    return self.area.contents:childrenUI()
+end
+
+--- cp.apple.finalcutpro.main.EffectsBrowser.currentItems -> cp.ui.ElementRepeater<EffectBrowser.Effect>
+--- Field
+--- The current items.
+function EffectsBrowser.lazy.value:currentItems()
+    return self.area.contents.children
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:selectedItemsUI() -> axuielementObject
@@ -592,7 +601,14 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function EffectsBrowser.lazy.prop:selectedItemsUI()
-    return self.contents.selectedChildrenUI
+    return self.area.contents.selectedChildrenUI
+end
+
+--- cp.apple.finalcutpro.main.EffectsBrowser.selectedItems -> cp.ui.ElementRepeater<EffectBrowser.Effect>
+--- Field
+--- The selected items.
+function EffectsBrowser.lazy.value:selectedItems()
+    return self.area.contents.selectedChildren
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:itemIsSelected(itemUI) -> boolean
@@ -627,8 +643,8 @@ end
 ---  * The `EffectsBrowser` object.
 function EffectsBrowser:applyItem(itemUI)
     if itemUI then
-        self.contents:showChild(itemUI)
-        local uiFrame = itemUI:attributeValue("AXFrame")
+        self.area:showChildUI(itemUI)
+        local uiFrame = itemUI.AXFrame
         if uiFrame then
             local rect = geometry.rect(uiFrame)
             local targetPoint = rect and rect.center
@@ -650,9 +666,9 @@ end
 --- Returns:
 ---  * A table
 function EffectsBrowser:getCurrentTitles()
-    local contents = self.contents:childrenUI()
-    if contents ~= nil then
-        return fnutils.map(contents, function(child)
+    local area = self.area:childrenUI()
+    if area ~= nil then
+        return fnutils.map(area, function(child)
             return child:attributeValue("AXTitle")
         end)
     end
@@ -672,18 +688,18 @@ function EffectsBrowser.lazy.value:sidebar()
     return self.children.main.categories.sidebar
 end
 
---- cp.apple.finalcutpro.main.EffectsBrowser.contents <cp.ui.ScrollArea>
+--- cp.apple.finalcutpro.main.EffectsBrowser.area <cp.ui.ScrollArea>
 --- Field
 --- The Effects Browser Contents.
-function EffectsBrowser.lazy.value:contents()
-    return self.children.main.effects.contents
+function EffectsBrowser.lazy.value:area()
+    return self.children.main.effects.area
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.group <cp.ui.PopUpButton>
 --- Field
 --- The group `PopUpButton`.
 function EffectsBrowser.lazy.value:group()
-    return self.children.main.contents.group
+    return self.children.main.effects.group
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.sidebarToggle <cp.ui.CheckBox>
@@ -722,7 +738,7 @@ function EffectsBrowser:saveLayout()
         layout.sidebar = self.sidebar:saveLayout()
         self.sidebarToggle:loadLayout(layout.sidebarToggle)
 
-        layout.contents = self.contents:saveLayout()
+        layout.area = self.area:saveLayout()
         layout.group = self.group:saveLayout()
         layout.search = self.search:saveLayout()
     end
@@ -749,11 +765,15 @@ function EffectsBrowser:loadLayout(layout)
         self.group:loadLayout(layout.group)
 
         self.search:loadLayout(layout.search)
-        self.contents:loadLayout(layout.contents)
+        self.area:loadLayout(layout.area)
     else
         self:hide()
     end
 end
+
+-----------------------------------------------------------------------
+-- EffectsBrowser.Effect
+-----------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.Effect.menu <cp.ui.Menu>
 --- Field
@@ -762,6 +782,33 @@ function EffectsBrowser.Effect.lazy.value:menu()
     return Menu(self, self.UI:mutate(
         ax.childMatching(Menu.matches)
     ))
+end
+
+--- cp.apple.finalcutpro.main.EffectsBrowser.Effect:doApply() -> cp.rx.go.Statement
+--- Method
+--- Applies the effect.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Statement` object.
+function EffectsBrowser.Effect:doApply()
+    return Given(self.UI):Then(function(itemUI)
+        if not itemUI then return end
+        local uiFrame = itemUI.AXFrame
+        if not uiFrame then return end
+
+        self:parent():showContentsAt(uiFrame)
+        -- update the frame to the new location
+        uiFrame = itemUI.AXFrame
+        local rect = geometry.rect(uiFrame)
+        local targetPoint = rect and rect.center
+        if targetPoint then
+            ninjaDoubleClick(targetPoint)
+        end
+    end)
+    :Label("EffectsBrowser.Effect:doApply()")
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.Effect:doShowMenu() -> cp.rx.go.Statement

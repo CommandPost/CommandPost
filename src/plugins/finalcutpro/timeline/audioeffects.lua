@@ -4,15 +4,14 @@
 
 local require = require
 
-local log				= require "hs.logger".new "audiofx"
-
-local timer				= require "hs.timer"
+-- local log				= require "hs.logger".new "audiofx"
 
 local dialog            = require "cp.dialog"
 local fcp				= require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 
-local doAfter           = timer.doAfter
+local go                = require "cp.rx.go"
+local Do, If, Throw     = go.Do, go.If, go.Throw
 
 local mod = {}
 
@@ -61,7 +60,6 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     local effects = fcp.effects
     local effectsShowing = effects:isShowing()
-    local effectsLayout = effects:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Make sure FCPX is at the front.
@@ -73,18 +71,17 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     effects:show()
 
+    local effectsLayout = effects:saveLayout()
+
     --------------------------------------------------------------------------------
     -- Make sure "Installed Effects" is selected:
     --------------------------------------------------------------------------------
-    local group = effects.group:UI()
-    if group then
-        local groupValue = group:attributeValue("AXValue")
-        if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
-            effects:showInstalledEffects()
-        end
-    else
-        log.ef("Failed to find Effects Group UI.")
-    end
+    effects.group:doSelectValue(fcp:string("PEMediaBrowserInstalledEffectsMenuItem")):Now()
+
+    --------------------------------------------------------------------------------
+    -- Get original search value:
+    --------------------------------------------------------------------------------
+    local originalSearch = effects.search:value()
 
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
@@ -105,33 +102,29 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Perform Search:
     --------------------------------------------------------------------------------
-    effects.search:setValue(name)
+    effects.search.value:set(name)
 
     --------------------------------------------------------------------------------
     -- Get the list of matching effects:
     --------------------------------------------------------------------------------
-    local matches = effects:currentItemsUI()
-    if not matches or #matches == 0 then
+    local effect = effects.childrenInNavigationOrder[1]
+    if not effect then
         dialog.displayErrorMessage("Unable to find an audio effect called '"..name.."'.")
         return false
     end
 
-    local effect = matches[1]
-
     --------------------------------------------------------------------------------
     -- Apply the selected Transition:
     --------------------------------------------------------------------------------
-    effects:applyItem(effect)
-
-    --------------------------------------------------------------------------------
-    -- TODO: HACK: This timer exists to  work around a mouse bug in
-    --       Hammerspoon Sierra
-    --------------------------------------------------------------------------------
-    doAfter(0.1, function()
+    Do(effect:doApply())
+    :Then(function()
+        effects.search.value:set(originalSearch)
         effects:loadLayout(effectsLayout)
         if transitionsLayout then transitions:loadLayout(transitionsLayout) end
         if not effectsShowing then effects:hide() end
     end)
+    :Now()
+
 
     --------------------------------------------------------------------------------
     -- Success:

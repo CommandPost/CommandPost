@@ -41,9 +41,13 @@
 
 local require                           = require
 
+local log                               = require "hs.logger".new "ScrollArea"
+
 local fn                                = require "cp.fn"
 local ax                                = require "cp.fn.ax"
-
+local is                                = require "cp.is"
+local Observable                        = require "cp.rx.Observable"
+local go                                = require "cp.rx.go"
 local has                               = require "cp.ui.has"
 local Element                           = require "cp.ui.Element"
 local ScrollBar                         = require "cp.ui.ScrollBar"
@@ -51,6 +55,8 @@ local ScrollBar                         = require "cp.ui.ScrollBar"
 local chain                             = fn.chain
 local handler                           = has.handler
 local sort                              = fn.table.sort
+local isFunction                        = is.fn
+local Do, If, Given                     = go.Do, go.If, go.Given
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
     :delegateTo("contents")
@@ -121,7 +127,7 @@ end
 --- Field
 --- The `hs.axuielement`s for the `AXChildren` attribute.
 function ScrollArea.lazy.prop:childrenUI()
-    return ax.prop(self.UI, "AXContents")
+    return ax.prop(self.UI, "AXChildren")
 end
 
 --- cp.ui.ScrollArea.childrenInNavigationOrderUI <cp.prop: hs.axuielement; read-only; live?>
@@ -159,13 +165,6 @@ function ScrollArea.lazy.value:horizontalScrollBar()
     return ScrollBar(self, ax.prop(self.UI, "AXHorizontalScrollBar"))
 end
 
---- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs.axuielement; read-only; live?>
---- Field
---- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
-function ScrollArea.lazy.prop:selectedChildrenUI()
-    return ax.prop(self.contentsUI, "AXSelectedChildren")
-end
-
 -----------------------------------------------------------------------
 --
 -- CONTENT UI:
@@ -196,7 +195,7 @@ function ScrollArea.lazy.prop:viewFrame()
     :monitor(self.verticalScrollBar.frame)
 end
 
---- cp.ui.ScrollArea:showChild(childUI) -> self
+--- cp.ui.ScrollArea:showChildUI(childUI) -> self
 --- Method
 --- Show's a child element in a Scroll Area.
 ---
@@ -205,7 +204,7 @@ end
 ---
 --- Return:
 ---  * Self
-function ScrollArea:showChild(childUI)
+function ScrollArea:showChildUI(childUI)
     local ui = self:UI()
     if ui and childUI then
         local vFrame = self:viewFrame()
@@ -234,6 +233,52 @@ function ScrollArea:showChild(childUI)
     return self
 end
 
+--- cp.ui.ScrollArea:doShowContentsAt(frame) -> self
+--- Method
+--- Shows the contents of the Scroll Area at the given frame.
+---
+--- Parameters:
+---  * frame - The frame to show the contents at.
+---
+--- Returns:
+---  * Self
+function ScrollArea:showContentsAt(childFrame)
+    -- show ourself first
+    self:show()
+
+    -- check we're actually showing...
+    if not self:isShowing() then
+        log.w("ScrollArea:showContentsAt: Scroll Area is not showing.")
+        return self
+    end
+
+    -- get the view frame
+    local vFrame = self:viewFrame()
+
+    -- show the contents at the given frame
+    local top = vFrame.y
+    local bottom = vFrame.y + vFrame.h
+
+    local childTop = childFrame.y
+    local childBottom = childFrame.y + childFrame.h
+
+    if childTop < top or childBottom > bottom then
+        -- we need to scroll
+        local oFrame = self.contents:frame()
+        local scrollHeight = oFrame.h - vFrame.h
+
+        local vValue
+        if childTop < top or childFrame.h > vFrame.h then
+            vValue = (childTop-oFrame.y)/scrollHeight
+        else
+            vValue = 1.0 - (oFrame.y + oFrame.h - childBottom)/scrollHeight
+        end
+        self.verticalScrollBar.value:set(vValue)
+    end
+
+    return self
+end
+
 --- cp.ui.ScrollArea:showChildAt(index) -> self
 --- Method
 --- Show's a child element in a Scroll Area given a specific index.
@@ -246,79 +291,7 @@ end
 function ScrollArea:showChildAt(index)
     local ui = self:childrenUI()
     if ui and #ui >= index then
-        self:showChild(ui[index])
-    end
-    return self
-end
-
---- cp.ui.ScrollArea:selectChild(childUI) -> self
---- Method
---- Select a specific child within a Scroll Area.
----
---- Parameters:
----  * childUI - The `hs.axuielement` object of the child you want to select.
----
---- Return:
----  * Self
-function ScrollArea:selectChild(childUI)
-    if childUI then
-        local parent = childUI.parent and childUI:parent()
-        if parent then
-            parent:setAttributeValue("AXSelectedChildren", { childUI } )
-        end
-    end
-    return self
-end
-
---- cp.ui.ScrollArea:selectChildAt(index) -> self
---- Method
---- Select a child element in a Scroll Area given a specific index.
----
---- Parameters:
----  * index - The index of the child you want to select.
----
---- Return:
----  * Self
-function ScrollArea:selectChildAt(index)
-    local ui = self:childrenUI()
-    if ui and #ui >= index then
-        self:selectChild(ui[index])
-    end
-    return self
-end
-
---- cp.ui.ScrollArea:selectAll(childrenUI) -> self
---- Method
---- Select all children in a scroll area.
----
---- Parameters:
----  * childrenUI - A table of `hs.axuielement` objects.
----
---- Return:
----  * Self
-function ScrollArea:selectAll(childrenUI)
-    childrenUI = childrenUI or self:childrenUI()
-    if childrenUI then
-        for _,clip in ipairs(childrenUI) do
-            self:selectChild(clip)
-        end
-    end
-    return self
-end
-
---- cp.ui.ScrollArea:deselectAll() -> self
---- Method
---- Deselect all children in a scroll area.
----
---- Parameters:
----  * None
----
---- Return:
----  * Self
-function ScrollArea:deselectAll()
-    local contents = self:contentsUI()
-    if contents then
-        contents:setAttributeValue("AXSelectedChildren", {})
+        self:showChildUI(ui[index])
     end
     return self
 end
@@ -389,7 +362,11 @@ function ScrollArea:saveLayout()
 
     layout.horizontalScrollBar = self.horizontalScrollBar:saveLayout()
     layout.verticalScrollBar = self.verticalScrollBar:saveLayout()
-    layout.selectedChildren = self:selectedChildrenUI()
+
+    local contents = self.contents
+    if contents and isFunction(contents.saveLayout) then
+        layout.contents = contents:saveLayout()
+    end
 
     return layout
 end
@@ -409,6 +386,11 @@ function ScrollArea:loadLayout(layout)
 
         self.verticalScrollBar:loadLayout(layout.verticalScrollBar)
         self.horizontalScrollBar:loadLayout(layout.horizontalScrollBar)
+
+        local contents = self.contents
+        if contents and isFunction(contents.loadLayout) then
+            contents:loadLayout(layout.contents)
+        end
 
         Element.loadLayout(layout)
     end

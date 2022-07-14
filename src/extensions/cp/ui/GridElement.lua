@@ -467,6 +467,36 @@ function GridElement:doSelectRowAt(path)
     end)
 end
 
+--- cp.ui.GridElement:saveLayout() -> table
+--- Method
+--- Saves the current layout of the grid.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current layout of the grid.
+function GridElement:saveLayout()
+    local layout = {}
+    layout.selectedRowsUI = self:selectedRowsUI()
+    return layout
+end
+
+--- cp.ui.GridElement:loadLayout(layout) -> nil
+--- Method
+--- Loads the layout of the grid.
+---
+--- Parameters:
+---  * layout - A table containing the layout to load.
+---
+--- Returns:
+---  * `nil`
+function GridElement:loadLayout(layout)
+    if layout.selectedRowsUI then
+        self:selectedRowsUI(layout.selectedRowsUI)
+    end
+end
+
 -- === cp.ui.GridElement.Factory ===
 --
 -- A factory for processing `GridElement` contents, such as [Rows](cp.ui.Row.md) and [Columns](cp.ui.Column.md).

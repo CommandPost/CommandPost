@@ -4,17 +4,18 @@
 
 local require = require
 
-local timer             = require("hs.timer")
+-- local log               = require "hs.logger".new "videoeffects"
 
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
-local doAfter           = timer.doAfter
+local go                = require "cp.rx.go"
+local Do, Throw         = go.Do, go.Throw
 
 local mod = {}
 
---- plugins.finalcutpro.timeline.videoeffects(action) -> boolean
+--- plugins.finalcutpro.timeline.videoeffects.apply(action) -> boolean
 --- Function
 --- Applies the specified action as a video effect. Expects action to be a table with the following structure:
 ---
@@ -59,8 +60,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     local effects = fcp.effects
     local effectsShowing = effects:isShowing()
-    local effectsLayout = effects:saveLayout()
-
+    
     --------------------------------------------------------------------------------
     -- Make sure FCPX is at the front.
     --------------------------------------------------------------------------------
@@ -71,14 +71,18 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     effects:show()
 
+    local effectsLayout = effects:saveLayout()
+
     --------------------------------------------------------------------------------
     -- Make sure "Installed Effects" is selected:
     --------------------------------------------------------------------------------
-    local group = effects.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
-        effects:showInstalledEffects()
-    end
+    effects.group:doSelectValue(fcp:string("PEMediaBrowserInstalledEffectsMenuItem")):Now()
+
+    -- local group = effects.group:UI()
+    -- local groupValue = group:attributeValue("AXValue")
+    -- if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
+    --     effects:showInstalledEffects()
+    -- end
 
     --------------------------------------------------------------------------------
     -- Get original search value:
@@ -102,36 +106,32 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Perform Search:
     --------------------------------------------------------------------------------
-    effects.search:setValue(name)
+    effects.search.value:set(name)
 
     --------------------------------------------------------------------------------
     -- Get the list of matching effects
     --------------------------------------------------------------------------------
-    local matches = effects:currentItemsUI()
-    if not matches or #matches == 0 then
+    local effect = effects.childrenInNavigationOrder[1]
+    if not effect then
         dialog.displayErrorMessage("Unable to find a video effect called '"..name.."'.")
         return false
     end
 
-    local effect = matches[1]
-
     --------------------------------------------------------------------------------
     -- Apply the selected Transition:
     --------------------------------------------------------------------------------
-    effects:applyItem(effect)
-
-    -- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-    doAfter(0.1, function()
-        effects.search:setValue(originalSearch)
+    Do(effect:doApply())
+    :Then(function()
+        effects.search.value:set(originalSearch)
         effects:loadLayout(effectsLayout)
         if transitionsLayout then transitions:loadLayout(transitionsLayout) end
         if not effectsShowing then effects:hide() end
     end)
+    :Now()
 
     -- Success!
     return true
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.videoeffects",

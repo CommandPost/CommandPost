@@ -20,7 +20,7 @@
 ---
 --- function MyElement:initialize(parent, uiFinder)
 ---    Element.initialize(self, parent, uiFinder)
----    self:childType(MyChildElement)
+---    self:childrenHandler(cp.ui.has.zeroOrMore(MyChildElement))
 --- end
 ---
 --- See also:
@@ -30,7 +30,6 @@ local require                       = require
 
 local fn                            = require "cp.fn"
 local ax                            = require "cp.fn.ax"
-local deferred                      = require "cp.deferred"
 local Element                       = require "cp.ui.Element"
 local has                           = require "cp.ui.has"
 
@@ -54,27 +53,25 @@ local CHILDREN_HANDLER = {}
 --- Returns:
 ---  * `nil`
 function HasRepeatingChildren:childrenHandler(childrenHandler)
-    childrenHandler = childrenHandler and zeroOrMore(handler(childrenHandler)) or DEFAULT_HANDLER
+    childrenHandler = childrenHandler and handler(childrenHandler) or DEFAULT_HANDLER
     self[CHILDREN_HANDLER] = childrenHandler
 end
 
--- cp.ui.HasRepeatingChildren:_updateOnChanges(propToUpdate) -> cp.prop
--- Method
--- Updates the `propToUpdate` property something has changed in the UI.
---
--- Parameters:
---  * propToUpdate - The property to update.
---
--- Returns:
---  * the prop being updated.
-function HasRepeatingChildren:_updateOnChanges(propToUpdate)
-    local updateFn = deferred.new(0.01):action(function()
-        propToUpdate:update()
-    end)
-
-    self:notifier():start():watchFor({"AXCreated", "AXUIElementDestroyed"}, function() updateFn() end)
-    return propToUpdate
+--- cp.ui.HasRepeatingChildren:childHandler(childHandler) -> nil
+--- Method
+--- Sets the [UIHandler](cp.ui.has.UIHandler.md) for individual child `Element`.
+--- This `Element` will allow zero or more of the specified child handler to match.
+---
+--- Parameters:
+---  * childHandler - The [UIHandler](cp.ui.has.UIHandler.md) to use.
+---
+--- Returns:
+---  * `nil`
+function HasRepeatingChildren:childHandler(childHandler)
+    childHandler = childHandler and handler(childHandler or Element)
+    self:childrenHandler(zeroOrMore(childHandler))
 end
+
 
 --- cp.ui.HasRepeatingChildren.childrenUI <cp.prop: table of hs.axuielement>
 --- Field
@@ -83,7 +80,7 @@ function HasRepeatingChildren.lazy.prop:childrenUI()
     return ax.prop(self.UI, "AXChildren")
 end
 
---- cp.ui.HasRepeatingChildren.children <cp.ui.ElementCache: cp.ui.Element>
+--- cp.ui.HasRepeatingChildren.children <cp.ui.ElementRepeater: cp.ui.Element>
 --- Field
 --- Provides access to the [Elements](cp.ui.Element.md) of this `Element`'s children.
 function HasRepeatingChildren.lazy.value:children()
@@ -97,14 +94,16 @@ end
 --- Notes:
 ---  * This may be expensive on [Elements](cp.ui.Element.md) that have many children.
 function HasRepeatingChildren.lazy.prop:childrenInTopDownOrderUI()
-    return self:_updateOnChanges(
+    return self:watchFor(
+        {"AXCreated", "AXUIElementDestroyed", "AXLiveRegionChanged"},
         self.childrenUI:mutate(
             chain // ax.children >> fn.table.sort(ax.topDown)
-        ):cached()
+        ):cached(),
+        0.01
     )
 end
 
---- cp.ui.HasRepeatingChildren.childrenInTopDownOrder <cp.ui.ElementCache: cp.ui.Element>
+--- cp.ui.HasRepeatingChildren.childrenInTopDownOrder <cp.ui.ElementRepeater: cp.ui.Element>
 --- Field
 --- Provides access to the [Elements](cp.ui.Element.md) of this `Element`'s children in top-down order.
 ---
@@ -121,7 +120,7 @@ function HasRepeatingChildren.lazy.prop:childrenInNavigationOrderUI()
     return ax.prop(self.UI, "AXChildrenInNavigationOrder")
 end
 
---- cp.ui.HasRepeatingChildren.childrenInNavigationOrder <cp.ui.ElementCache: cp.ui.Element>
+--- cp.ui.HasRepeatingChildren.childrenInNavigationOrder <cp.ui.ElementRepeater: cp.ui.Element>
 --- Field
 --- The child [Elements](cp.ui.Element.md) of this `HasRepeatingChildren` in navigation order.
 --- This will return an element for any number requested from `1` or above,
@@ -138,7 +137,7 @@ function HasRepeatingChildren.lazy.prop:visibleChildrenUI()
     return ax.prop(self.UI, "AXVisibleChildren")
 end
 
---- cp.ui.HasRepeatingChildren.visibleChildren <cp.ui.ElementCache: cp.ui.Element>
+--- cp.ui.HasRepeatingChildren.visibleChildren <cp.ui.ElementRepeater: cp.ui.Element>
 --- Field
 --- The visible child [Elements](cp.ui.Element.md) of this `HasRepeatingChildren`.
 --- This will return an element for any number requested from `1` or above,

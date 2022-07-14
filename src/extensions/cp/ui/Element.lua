@@ -230,6 +230,23 @@ function Element.lazy.method:doShow()
     return If(function() return self:parent() end)
     :Then(function(parent) return parent.doShow and parent:doShow() end)
     :Otherwise(false)
+    :Label("Element:doShow()")
+end
+
+--- cp.ui.Element:doShowContentsAt(frame) -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the Element is showing its contents
+--- at the provided frame/rectangle.
+--- Does nothing by default - subclasses that have variable contents should override this.
+---
+--- Parameters:
+---  * frame - The frame to show the contents at.
+---
+--- Returns:
+---  * A Statement
+function Element.lazy.method:doShowContentsAt(frame)
+    return Do(function() self:showContentsAt(frame) end)
+    :Label("Element:doShowContentsAt(frame)")
 end
 
 --- cp.ui.Element:show() -> self
@@ -245,6 +262,24 @@ function Element:show()
     local parent = self:parent()
     if parent then
         parent:show()
+    end
+    return self
+end
+
+--- cp.ui.Element:showContentsAt(frame) -> self
+--- Method
+--- Shows the Element's contents at the provided frame/rectangle.
+--- Does nothing by default - subclasses that have variable contents should override this.
+---
+--- Parameters:
+---  * frame - The frame to show the contents at.
+---
+--- Returns:
+---  * self
+function Element:showContentsAt(frame)
+    local parent = self:parent()
+    if parent then
+        parent:showContentsAt(frame)
     end
     return self
 end
@@ -515,14 +550,14 @@ function Element:watchFor(eventList, callback, deferBy)
 
     if deferBy then
         local deferredFn = callback
-        callback = deferred.new(deferBy):action(deferredFn)
+        local d = deferred.new(deferBy):action(deferredFn)
+        callback = function() d:run() end
     end
 
     self:notifier():start():watchFor(eventList, callback)
 
     return originalCallback
 end
-
 
 --- cp.ui.Element:snapshot([path]) -> hs.image | nil
 --- Method
