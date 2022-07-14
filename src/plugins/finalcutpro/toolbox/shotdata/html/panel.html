@@ -27,11 +27,18 @@
     }
 
     .notionLabelRow {
-        width: 200px;
+        width: 300px;
     }
 
     .notionText {
         font-weight: normal;
+        text-align: left;
+    }
+
+    .notionHelpText {
+        font-size: 9px;
+        font-weight: normal;
+        font-style: italic;
         text-align: left;
     }
 
@@ -71,6 +78,24 @@
     }
 </style>
 <script>
+    function saveSettings() {
+		var label = prompt("{{ i18n("pleaseEnterAUniqueLabelForTheSettings") }}:", "");
+		if (label !== null || label !== "") {
+			try {
+				var result = {
+					id: "shotDataPanelCallback",
+					params: {
+						type: "saveSettings",
+						label: label,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
     function setStatus(statusColor, statusText) {
         document.getElementById("status").innerText = statusText;
         document.getElementById("status").style.color = statusColor;
@@ -222,47 +247,46 @@
 
 <hr />
 
-<h3 class="uiItem">Upload to Notion</h3>
-<p class="uiItem">You can also optionally upload all your Shot Data information to an online Notion Database.</p>
+<h3 class="uiItem">{{ i18n("uploadToNotion") }}</h3>
+<p class="uiItem">{{ i18n("uploadToNotionDescription") }}</p>
 
 <br />
 
-<p class="uiItem"><label><input type="checkbox" id="automaticallyUploadCSV" onchange="updateChecked(this)"> Automatically Upload Converted FCPXMLs</label></p>
-<p class="uiItem"><label><input type="checkbox" id="mergeData" onchange="updateChecked(this)"> Merge with Existing Database</label></p>
-<p class="uiItem"><label><input type="checkbox" id="onlyUpdateImages" onchange="updateChecked(this)"> Upload Image Files Only</label></p>
+<p class="uiItem"><label><input type="checkbox" id="automaticallyUploadCSV" onchange="updateChecked(this)"> {{ i18n("automaticallyUploadConvertedFCPXMLs") }}</label></p>
+<p class="uiItem"><label><input type="checkbox" id="mergeData" onchange="updateChecked(this)"> {{ i18n("mergeWithExistingDatabase") }}</label></p>
 
 <table class="notionTable">
     <tr>
         <th class="notionLabelRow">
-           <p class="notionText">Notion Token:</p>
+           <p class="notionText">{{ i18n("notionToken") }} ({{ string.lower(i18n("required")) }}):</p>
         </th>
         <th>
             <input class="notionTextBox" id="token" type="password" onchange="updateText(this)">
         </th>
         <th width="10px"></th>
 		<th>
-			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findToken')">Find Token</a>
+			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findToken')">{{ i18n("findToken") }}</a>
 		</th>
     </tr>
     <tr>
         <th class="notionLabelRow">
-           <p class="notionText">Notion Database URL:</p>
+           <p class="notionText">{{ i18n("notionDatabaseURL") }} ({{ string.lower(i18n("optional")) }}):</p>
         </th>
         <th>
             <input class="notionTextBox" id="databaseURL" type="text" onchange="updateText(this)">
         </th>
         <th width="10px"></th>
 		<th>
-			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findDatabaseURL')">Find Database URL</a>
+			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findDatabaseURL')">{{ i18n("findDatabaseURL") }}</a>
 		</th>
     </tr>
     <tr>
         <th class="notionLabelRow">
-           <p class="notionText">Ignore Selected Columns:</p>
+            <p class="notionText">{{ i18n("ignoreSelectedColumns") }} ({{ string.lower(i18n("optional")) }}):</p>
+            <p class="notionHelpText">{{ i18n("ignoreSelectedColumnsDescription") }}</p>
         </th>
         <th>
             <select id="ignoreColumns" class="notionMultiSelect" multiple onchange="updateOptions(this)">
-                <!-- <option value="Shot ID">Shot ID</option> -->
                 <option value="Shot Number">Shot Number</option>
                 <option value="Scene Location">Scene Location</option>
                 <option value="Shot Duration">Shot Duration</option>
@@ -305,7 +329,7 @@
     </tr>
     <tr>
         <th class="notionLabelRow">
-           <p class="notionText">Default Emoji:</p>
+           <p class="notionText">{{ i18n("defaultEmoji") }} ({{ string.lower(i18n("optional")) }}):</p>
         </th>
         <th style="text-align: left;">
             <input style="width:50px;" class="notionTextBox" id="defaultEmoji" type="text" maxlength="1" onchange="updateText(this)">
@@ -315,15 +339,27 @@
 
 <br />
 
-<table>
+<table style="margin-left: 20px; text-align:left;">
 	<tr>
-		<th style="width: 10px;"></th>
 		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('uploadCSV')">Select & Upload CSV</a>
+			<a href="#" class="bottomButton" onclick="pressButton('uploadCSV')">{{ i18n("selectAndUploadCSV") }}</a>
 		</th>
-		<th width="10px"></th>
-		<th width="500px" style="text-align: left; font-weight:normal;">
-		    <p><strong>Status:</strong> <span id="status"></span></p>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('openNotionTemplate')">{{ i18n("openNotionTemplate") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('loadSettings')">{{ i18n("loadSettings") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="saveSettings()">{{ i18n("saveSettings") }}</a>
+		</th>
+	</tr>
+</table>
+<hr />
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th style="font-weight:normal;">
+		    <p><strong>{{ i18n("uploadStatus") }}:</strong> <span id="status"></span></p>
 		</th>
 	</tr>
 </table>

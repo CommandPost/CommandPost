@@ -12,12 +12,15 @@ local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
 local task                      = require "hs.task"
 
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
@@ -34,11 +37,17 @@ local removeFilenameFromPath    = tools.removeFilenameFromPath
 local replace                   = tools.replace
 local spairs                    = tools.spairs
 local split                     = tools.split
+local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
+
+-- NOTION_TEMPLATE_URL -> string
+-- Constant
+-- URL to the Notion Template
+local NOTION_TEMPLATE_URL = "https://soothsayer.notion.site/1e6a317008e546159ca7015011cdb173?v=a1b16c2a1fa447138268a8f1fe515bd7"
 
 -- NOTION_TOKEN_HELP_URL -> string
 -- Constant
@@ -257,6 +266,11 @@ local TEMPLATE = {
     [126]   = { label = "Days",                 ignore = true },
 }
 
+--- plugins.finalcutpro.toolbox.shotdata.settings <cp.prop: table>
+--- Field
+--- Snippets
+mod.settings = json.prop(config.userConfigRootPath, "Shot Data", "Settings.cpShotData", {})
+
 -- data -> table
 -- Variable
 -- A table containing all the current data being processed.
@@ -311,11 +325,6 @@ mod.automaticallyUploadCSV = config.prop("toolbox.shotdata.automaticallyUploadCS
 --- Field
 --- Merge data?
 mod.mergeData = config.prop("toolbox.shotdata.mergeData", true)
-
---- plugins.finalcutpro.toolbox.shotdata.onlyUpdateImages <cp.prop: boolean>
---- Field
---- Only Update Images?
-mod.onlyUpdateImages = config.prop("toolbox.shotdata.onlyUpdateImages", false)
 
 --- plugins.finalcutpro.toolbox.shotdata.token <cp.prop: string>
 --- Field
@@ -593,237 +602,15 @@ local function processTitles(nodes)
     end
 end
 
--- processFCPXML(path) -> none
+-- uploadToNotion(csvPath) -> none
 -- Function
--- Process a FCPXML file.
+-- Uploads a CSV files to Notion.
 --
 -- Parameters:
---  * path - A string containing the path to the FCPXML file.
+--  * csvPath - A string containing the path to the CSV file.
 --
 -- Returns:
 --  * None
-local function processFCPXML(path)
-    if path then
-        local fcpxmlPath = fcpxml.valid(path)
-        if fcpxmlPath then
-            --------------------------------------------------------------------------------
-            -- Open the FCPXML:
-            --------------------------------------------------------------------------------
-            local document = xml.open(fcpxmlPath)
-
-            --------------------------------------------------------------------------------
-            -- Process Resources:
-            --------------------------------------------------------------------------------
-            filesToCopy = {}
-            resourceCache = {}
-            local resources = document:XPathQuery("/fcpxml[1]/resources[1]")
-            local resourcesChildren = resources and resources[1] and resources[1]:children()
-            if resourcesChildren then
-                for _, element in pairs(resourcesChildren) do
-                    if element:name() == "asset" then
-                        local rawAttributes = element:rawAttributes()
-                        local id, src
-                        for _, v in pairs(rawAttributes) do
-                            if v:name() == "id" then
-                                id = v:stringValue()
-                            end
-                        end
-                        local elementChildren = element:children()
-                        for _, v in pairs(elementChildren) do
-                            if v:name() == "media-rep" then
-                                for _, attribute in pairs(v:rawAttributes()) do
-                                    if attribute:name() == "src" then
-                                        src = attribute:stringValue()
-                                        --------------------------------------------------------------------------------
-                                        -- Remove the file://
-                                        --------------------------------------------------------------------------------
-                                        src = replace(src, "file://", "")
-
-                                        --------------------------------------------------------------------------------
-                                        -- Remove any URL encoding:
-                                        --------------------------------------------------------------------------------
-                                        src = src:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
-                                    end
-                                end
-                            end
-                        end
-                        if id and src then
-                            resourceCache[id] = src
-                        end
-                    end
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Process Sequence Spine:
-            --------------------------------------------------------------------------------
-            local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
-            local spineChildren = spine and spine[1] and spine[1]:children()
-
-            --------------------------------------------------------------------------------
-            -- If there's no spineChildren, then try another path (for drag & drop):
-            --------------------------------------------------------------------------------
-            if not spineChildren then
-                spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
-                spineChildren = spine and spine[1] and spine[1]:children()
-            end
-
-            --------------------------------------------------------------------------------
-            -- If drag and drop FCPXML, then use the project name for the filename:
-            --------------------------------------------------------------------------------
-            if spineChildren and not originalFilename then
-                local projectName = spine and spine[1] and spine[1]:parent():parent():rawAttributes()[1]:stringValue()
-                originalFilename = projectName
-            end
-
-            --------------------------------------------------------------------------------
-            -- Reset our data table:
-            --------------------------------------------------------------------------------
-            data = {}
-
-            --------------------------------------------------------------------------------
-            -- Process the titles:
-            --------------------------------------------------------------------------------
-            processTitles(spineChildren)
-
-            --------------------------------------------------------------------------------
-            -- Abort if we didn't get any results:
-            --------------------------------------------------------------------------------
-            if not next(data) then
-                webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessFCPXML"), i18n("shotDataFCPXMLFailedDescription"), i18n("ok"), nil, "warning")
-                return
-            end
-
-            --------------------------------------------------------------------------------
-            -- Convert the titles data to CSV data:
-            --------------------------------------------------------------------------------
-            local output = ""
-
-            local numberOfHeadings = tableCount(TEMPLATE_ORDER)
-
-            for i=1, numberOfHeadings do
-                output = output .. TEMPLATE_ORDER[i]
-                if i ~= numberOfHeadings then
-                    output = output .. ","
-                end
-            end
-
-            output = output .. "\n"
-
-            for _, row in pairs(data) do
-                for i=1, numberOfHeadings do
-                    local currentHeading = TEMPLATE_ORDER[i]
-                    local value = row[currentHeading]
-                    if value then
-                        if value:match(",") or value:match([["]]) then
-                            output = output .. [["]] .. value:gsub([["]], [[""]]) .. [["]]
-                        else
-                            output = output .. value
-                        end
-                        if i ~= numberOfHeadings then
-                            output = output .. ","
-                        end
-                    else
-                        --------------------------------------------------------------------------------
-                        -- It's a blank/empty field:
-                        --------------------------------------------------------------------------------
-                        if i ~= numberOfHeadings then
-                            output = output .. ","
-                        end
-                    end
-                end
-                output = output .. "\n"
-            end
-
-            --------------------------------------------------------------------------------
-            -- Make sure last save path still exists, otherwise use Desktop:
-            --------------------------------------------------------------------------------
-            if not doesDirectoryExist(mod.lastSavePath()) then
-                mod.lastSavePath(desktopPath)
-            end
-
-            local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheCSVTo") .. ":", mod.lastSavePath(), false, true, false)
-            local exportPath = exportPathResult and exportPathResult["1"]
-
-            if exportPath then
-                --------------------------------------------------------------------------------
-                -- Consolidate images:
-                --------------------------------------------------------------------------------
-                local consolidateSuccessful = true
-                if tableCount(filesToCopy) >= 1 then
-                    --------------------------------------------------------------------------------
-                    -- Make sure last save path still exists, otherwise use Desktop:
-                    --------------------------------------------------------------------------------
-                    if not doesDirectoryExist(mod.lastConsolidatePath()) then
-                        mod.lastConsolidatePath(desktopPath)
-                    end
-
-                    local consolidatePathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheConsolidatedImages") .. ":", mod.lastConsolidatePath(), false, true, false)
-                    local consolidatePath = consolidatePathResult and consolidatePathResult["1"]
-                    if consolidatePath then
-                        mod.lastConsolidatePath(consolidatePath)
-                        for destinationFilename, sourcePath in pairs(filesToCopy) do
-                            local status = false
-                            if doesFileExist(sourcePath) then
-                                --------------------------------------------------------------------------------
-                                -- Save the image as PNG:
-                                --------------------------------------------------------------------------------
-                                local originalImage = image.imageFromPath(sourcePath)
-                                if originalImage then
-                                    local destinationPath = consolidatePath .. "/" .. destinationFilename .. ".png"
-                                    status = originalImage:saveToFile(destinationPath)
-                                end
-                            end
-                            if not status then
-                                consolidateSuccessful = false
-                                log.ef("Failed to copy source file: %s", sourcePath)
-                            end
-                        end
-                    end
-                end
-
-                mod.lastSavePath(exportPath)
-                local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
-                writeToFile(exportedFilePath, output)
-
-                if consolidateSuccessful then
-                    if tableCount(filesToCopy) >= 1 then
-                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVAndConsolidatedImagesHasBeenExportedSuccessfully"), i18n("ok"))
-                    else
-                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
-                    end
-                else
-                    webviewAlert(mod._manager.getWebview(), function() end, i18n("someErrorsHaveOccurred"), i18n("csvExportedSuccessfullyImagesCouldNotBeConsolidated"), i18n("ok"))
-                end
-            end
-        else
-            webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
-        end
-    end
-end
-
--- convertFCPXMLtoCSV() -> none
--- Function
--- Converts a FCPXML to a CSV.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function convertFCPXMLtoCSV()
-    if not doesDirectoryExist(mod.lastOpenPath()) then
-        mod.lastOpenPath(desktopPath)
-    end
-    local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLFileToConvert") .. ":", mod.lastOpenPath(), true, false, false, {"fcpxml", "fcpxmld"}, true)
-    local path = result and result["1"]
-    if path then
-        originalFilename = getFilenameFromPath(path, true)
-        mod.lastOpenPath(removeFilenameFromPath(path))
-        processFCPXML(path)
-    end
-end
-
 local function uploadToNotion(csvPath)
 
     local injectScript = mod._manager.injectScript
@@ -837,6 +624,13 @@ local function uploadToNotion(csvPath)
     local ignoreColumns         = mod.ignoreColumns()
     local defaultEmoji          = mod.defaultEmoji()
 
+    --------------------------------------------------------------------------------
+    -- Make sure there's a valid token!
+    --------------------------------------------------------------------------------
+    if not token or tools.trim(token) == "" then
+        injectScript("setStatus('red', 'A valid token is required.');")
+        return
+    end
 
     --log.df("mergeData: %s", mergeData)
     --log.df("databaseURL: %s", databaseURL)
@@ -915,6 +709,7 @@ local function uploadToNotion(csvPath)
         --log.df("obj: %s", obj)
         --log.df("stdOut: %s", stdOut)
         if stdErr and stdErr ~= "" then
+
             --------------------------------------------------------------------------------
             -- Remove Line Breaks:
             --------------------------------------------------------------------------------
@@ -937,15 +732,255 @@ local function uploadToNotion(csvPath)
                 statusColour = "red"
             end
 
-            log.df("Shot Data Status: '%s'", status)
-
+            --------------------------------------------------------------------------------
+            -- Update the User Interface:
+            --------------------------------------------------------------------------------
             injectScript("setStatus(`" .. statusColour .. "`, `" .. status .. "`);")
+
+            --------------------------------------------------------------------------------
+            -- Write to Debug Console:
+            --------------------------------------------------------------------------------
+            log.df("Shot Data Upload Status: '%s'", status)
         end
 
         return true
     end, arguments):start()
+end
 
-    -- hs.task.new(launchPath, callbackFn[, streamCallbackFn][, arguments])
+-- processFCPXML(path) -> none
+-- Function
+-- Process a FCPXML file.
+--
+-- Parameters:
+--  * path - A string containing the path to the FCPXML file.
+--
+-- Returns:
+--  * None
+local function processFCPXML(path)
+    local fcpxmlPath = path and fcpxml.valid(path)
+    if fcpxmlPath then
+        --------------------------------------------------------------------------------
+        -- Open the FCPXML:
+        --------------------------------------------------------------------------------
+        local document = xml.open(fcpxmlPath)
+
+        --------------------------------------------------------------------------------
+        -- Process Resources:
+        --------------------------------------------------------------------------------
+        filesToCopy = {}
+        resourceCache = {}
+        local resources = document:XPathQuery("/fcpxml[1]/resources[1]")
+        local resourcesChildren = resources and resources[1] and resources[1]:children()
+        if resourcesChildren then
+            for _, element in pairs(resourcesChildren) do
+                if element:name() == "asset" then
+                    local rawAttributes = element:rawAttributes()
+                    local id, src
+                    for _, v in pairs(rawAttributes) do
+                        if v:name() == "id" then
+                            id = v:stringValue()
+                        end
+                    end
+                    local elementChildren = element:children()
+                    for _, v in pairs(elementChildren) do
+                        if v:name() == "media-rep" then
+                            for _, attribute in pairs(v:rawAttributes()) do
+                                if attribute:name() == "src" then
+                                    src = attribute:stringValue()
+                                    --------------------------------------------------------------------------------
+                                    -- Remove the file://
+                                    --------------------------------------------------------------------------------
+                                    src = replace(src, "file://", "")
+
+                                    --------------------------------------------------------------------------------
+                                    -- Remove any URL encoding:
+                                    --------------------------------------------------------------------------------
+                                    src = src:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+                                end
+                            end
+                        end
+                    end
+                    if id and src then
+                        resourceCache[id] = src
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Process Sequence Spine:
+        --------------------------------------------------------------------------------
+        local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+        local spineChildren = spine and spine[1] and spine[1]:children()
+
+        --------------------------------------------------------------------------------
+        -- If there's no spineChildren, then try another path (for drag & drop):
+        --------------------------------------------------------------------------------
+        if not spineChildren then
+            spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+            spineChildren = spine and spine[1] and spine[1]:children()
+        end
+
+        --------------------------------------------------------------------------------
+        -- If drag and drop FCPXML, then use the project name for the filename:
+        --------------------------------------------------------------------------------
+        if spineChildren and not originalFilename then
+            local projectName = spine and spine[1] and spine[1]:parent():parent():rawAttributes()[1]:stringValue()
+            originalFilename = projectName
+        end
+
+        --------------------------------------------------------------------------------
+        -- Reset our data table:
+        --------------------------------------------------------------------------------
+        data = {}
+
+        --------------------------------------------------------------------------------
+        -- Process the titles:
+        --------------------------------------------------------------------------------
+        processTitles(spineChildren)
+
+        --------------------------------------------------------------------------------
+        -- Abort if we didn't get any results:
+        --------------------------------------------------------------------------------
+        if not next(data) then
+            webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessFCPXML"), i18n("shotDataFCPXMLFailedDescription"), i18n("ok"), nil, "warning")
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Convert the titles data to CSV data:
+        --------------------------------------------------------------------------------
+        local output = ""
+
+        local numberOfHeadings = tableCount(TEMPLATE_ORDER)
+
+        for i=1, numberOfHeadings do
+            output = output .. TEMPLATE_ORDER[i]
+            if i ~= numberOfHeadings then
+                output = output .. ","
+            end
+        end
+
+        output = output .. "\n"
+
+        for _, row in pairs(data) do
+            for i=1, numberOfHeadings do
+                local currentHeading = TEMPLATE_ORDER[i]
+                local value = row[currentHeading]
+                if value then
+                    if value:match(",") or value:match([["]]) then
+                        output = output .. [["]] .. value:gsub([["]], [[""]]) .. [["]]
+                    else
+                        output = output .. value
+                    end
+                    if i ~= numberOfHeadings then
+                        output = output .. ","
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- It's a blank/empty field:
+                    --------------------------------------------------------------------------------
+                    if i ~= numberOfHeadings then
+                        output = output .. ","
+                    end
+                end
+            end
+            output = output .. "\n"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Make sure last save path still exists, otherwise use Desktop:
+        --------------------------------------------------------------------------------
+        if not doesDirectoryExist(mod.lastSavePath()) then
+            mod.lastSavePath(desktopPath)
+        end
+
+        local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheCSVTo") .. ":", mod.lastSavePath(), false, true, false)
+        local exportPath = exportPathResult and exportPathResult["1"]
+
+        if exportPath then
+            --------------------------------------------------------------------------------
+            -- Consolidate images:
+            --------------------------------------------------------------------------------
+            local consolidateSuccessful = true
+            if tableCount(filesToCopy) >= 1 then
+                --------------------------------------------------------------------------------
+                -- Make sure last save path still exists, otherwise use Desktop:
+                --------------------------------------------------------------------------------
+                if not doesDirectoryExist(mod.lastConsolidatePath()) then
+                    mod.lastConsolidatePath(desktopPath)
+                end
+
+                local consolidatePathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheConsolidatedImages") .. ":", mod.lastConsolidatePath(), false, true, false)
+                local consolidatePath = consolidatePathResult and consolidatePathResult["1"]
+                if consolidatePath then
+                    mod.lastConsolidatePath(consolidatePath)
+                    for destinationFilename, sourcePath in pairs(filesToCopy) do
+                        local status = false
+                        if doesFileExist(sourcePath) then
+                            --------------------------------------------------------------------------------
+                            -- Save the image as PNG:
+                            --------------------------------------------------------------------------------
+                            local originalImage = image.imageFromPath(sourcePath)
+                            if originalImage then
+                                local destinationPath = consolidatePath .. "/" .. destinationFilename .. ".png"
+                                status = originalImage:saveToFile(destinationPath)
+                            end
+                        end
+                        if not status then
+                            consolidateSuccessful = false
+                            log.ef("Failed to copy source file: %s", sourcePath)
+                        end
+                    end
+                end
+            end
+
+            mod.lastSavePath(exportPath)
+            local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
+            writeToFile(exportedFilePath, output)
+
+            if consolidateSuccessful then
+                if tableCount(filesToCopy) >= 1 then
+                    webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVAndConsolidatedImagesHasBeenExportedSuccessfully"), i18n("ok"))
+                else
+                    webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                end
+            else
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("someErrorsHaveOccurred"), i18n("csvExportedSuccessfullyImagesCouldNotBeConsolidated"), i18n("ok"))
+            end
+
+            --------------------------------------------------------------------------------
+            -- Upload to Notion:
+            --------------------------------------------------------------------------------
+            if mod.automaticallyUploadCSV() then
+                uploadToNotion(exportedFilePath)
+            end
+        end
+    else
+        webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
+    end
+end
+
+-- convertFCPXMLtoCSV() -> none
+-- Function
+-- Converts a FCPXML to a CSV.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function convertFCPXMLtoCSV()
+    if not doesDirectoryExist(mod.lastOpenPath()) then
+        mod.lastOpenPath(desktopPath)
+    end
+    local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLFileToConvert") .. ":", mod.lastOpenPath(), true, false, false, {"fcpxml", "fcpxmld"}, true)
+    local path = result and result["1"]
+    if path then
+        originalFilename = getFilenameFromPath(path, true)
+        mod.lastOpenPath(removeFilenameFromPath(path))
+        processFCPXML(path)
+    end
 end
 
 -- selectAndUploadCSV() -> none
@@ -967,6 +1002,38 @@ local function selectAndUploadCSV()
         mod.lastUploadPath(removeFilenameFromPath(path))
         uploadToNotion(path)
     end
+end
+
+-- updateUI() -> none
+-- Function
+-- Update the user interface.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function updateUI()
+    local injectScript = mod._manager.injectScript
+    local script = ""
+    script = script .. [[
+        setStatus("#999999", "Ready!");
+        changeCheckedByID("automaticallyUploadCSV", ]] .. tostring(mod.automaticallyUploadCSV()) .. [[);
+        changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
+
+        changeValueByID("token", "]] .. mod.token() .. [[");
+        changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
+        changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
+    ]]
+
+    local ignoreColumns = mod.ignoreColumns()
+    for _, id in pairs(TEMPLATE_ORDER) do
+        script = script .. [[
+            changeIgnoreColumnsOptionSelected("]] .. id .. [[", ]] .. tostring(tableContains(ignoreColumns, id)) .. [[)
+        ]]
+    end
+
+    injectScript(script)
 end
 
 -- callback() -> none
@@ -1041,31 +1108,16 @@ local function callback(id, params)
         -- Find Database Help Button:
         --------------------------------------------------------------------------------
         execute("open " .. NOTION_DATABASE_VIEW_HELP_URL)
+    elseif callbackType == "openNotionTemplate" then
+        --------------------------------------------------------------------------------
+        -- Open Notion Template URL:
+        --------------------------------------------------------------------------------
+        execute("open " .. NOTION_TEMPLATE_URL)
     elseif callbackType == "updateUI" then
         --------------------------------------------------------------------------------
         -- Update the User Interface:
         --------------------------------------------------------------------------------
-        local injectScript = mod._manager.injectScript
-        local script = ""
-        script = script .. [[
-            setStatus("#999999", "Ready!");
-            changeCheckedByID("automaticallyUploadCSV", ]] .. tostring(mod.automaticallyUploadCSV()) .. [[);
-            changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
-            changeCheckedByID("onlyUpdateImages", ]] .. tostring(mod.onlyUpdateImages()) .. [[);
-
-            changeValueByID("token", "]] .. mod.token() .. [[");
-            changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
-            changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
-        ]]
-
-        local ignoreColumns = mod.ignoreColumns()
-        for _, id in pairs(TEMPLATE_ORDER) do
-            script = script .. [[
-                changeIgnoreColumnsOptionSelected("]] .. id .. [[", ]] .. tostring(tools.tableContains(ignoreColumns, id)) .. [[)
-            ]]
-        end
-
-        injectScript(script)
+        updateUI()
     elseif callbackType == "updateText" then
         --------------------------------------------------------------------------------
         -- Updated Text Values from the User Interface:
@@ -1093,8 +1145,6 @@ local function callback(id, params)
                 mod.automaticallyUploadCSV(value)
             elseif id == "mergeData" then
                 mod.mergeData(value)
-            elseif id == "onlyUpdateImages" then
-                mod.onlyUpdateImages(value)
             end
         end
     elseif callbackType == "updateOptions" then
@@ -1107,6 +1157,75 @@ local function callback(id, params)
             if id == "ignoreColumns" then
                 mod.ignoreColumns(value)
             end
+        end
+    elseif callbackType == "loadSettings" then
+        --------------------------------------------------------------------------------
+        -- Load Settings:
+        --------------------------------------------------------------------------------
+
+        local menu = {}
+
+        local settings = mod.settings()
+
+        local numberOfSettings = tableCount(settings)
+
+        local function updateSettings(setting)
+            mod.token(setting["token"])
+            mod.databaseURL(setting["databaseURL"])
+            mod.defaultEmoji(setting["defaultEmoji"])
+            mod.automaticallyUploadCSV(setting["automaticallyUploadCSV"])
+            mod.mergeData(setting["mergeData"])
+            mod.ignoreColumns(setting["ignoreColumns"])
+            updateUI()
+        end
+
+        if numberOfSettings == 0 then
+            table.insert(menu, {
+                title = i18n("none"),
+                disabled = true,
+            })
+        else
+            for id, data in pairs(settings) do
+                table.insert(menu, {
+                    title = id,
+                    fn = function() updateSettings(data) end
+                })
+            end
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+            table.insert(menu, {
+                title = i18n("deleteAllSettings"),
+                fn = function()
+                    mod.settings({})
+                    updateUI()
+                end,
+            })
+
+        end
+
+        local popup = menubar.new()
+        popup:setMenu(menu):removeFromMenuBar()
+        popup:popupMenu(mouse.absolutePosition(), true)
+    elseif callbackType == "saveSettings" then
+        --------------------------------------------------------------------------------
+        -- Save Settings:
+        --------------------------------------------------------------------------------
+        local label = params and params["label"]
+        if label and label ~= "" then
+            local settings = mod.settings()
+
+            settings[label] = {
+                ["token"]                           = mod.token(),
+                ["databaseURL"]                     = mod.databaseURL(),
+                ["defaultEmoji"]                    = mod.defaultEmoji(),
+                ["automaticallyUploadCSV"]          = mod.automaticallyUploadCSV(),
+                ["mergeData"]                       = mod.mergeData(),
+                ["ignoreColumns"]                   = mod.ignoreColumns(),
+            }
+
+            mod.settings(settings)
         end
     else
         --------------------------------------------------------------------------------
@@ -1147,7 +1266,7 @@ function plugin.init(deps, env)
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 910,
+        height          = 935,
     })
     :addContent(1, generateContent, false)
 
