@@ -15,14 +15,173 @@
 		color: transparent;
 	    text-shadow: 0px 0px 0px tomato;
 	}
+
+	.notionProgress {
+	    width: 100px;
+	    height: 20px;
+	    border-radius: 9px;
+	}
+
+    .notionTable {
+        margin-left: 20px;
+    }
+
+    .notionLabelRow {
+        width: 300px;
+    }
+
+    .notionText {
+        font-weight: normal;
+        text-align: left;
+    }
+
+    .notionHelpText {
+        font-size: 9px;
+        font-weight: normal;
+        font-style: italic;
+        text-align: left;
+    }
+
+    .notionTextBox {
+        -webkit-appearance: none;
+        -webkit-box-shadow: none;
+        -webkit-rtl-ordering: logical;
+        -webkit-user-select: text;
+        color: #959595;
+        background-color:#161616;
+        border-style: solid;
+        border-color: #0a0a0a;
+        border-width: 2px;
+        border-radius: 6px;
+        width: 400px;
+        text-align: center;
+        font-size: 13px;
+        height: 20px;
+    }
+
+    .notionMultiSelect {
+        background: none;
+        -webkit-appearance: none;
+        -webkit-box-shadow: none;
+        -webkit-rtl-ordering: logical;
+        -webkit-user-select: text;
+        color: #959595;
+        background-color:#161616;
+        border-style: solid;
+        border-color: #0a0a0a;
+        border-width: 2px;
+        border-radius: 6px;
+        width: 400px;
+        text-align: left;
+        font-size: 13px;
+        height: 150px;
+    }
 </style>
 <script>
+    function saveSettings() {
+		var label = prompt("{{ i18n("pleaseEnterAUniqueLabelForTheSettings") }}:", "");
+		if (label !== null || label !== "") {
+			try {
+				var result = {
+					id: "shotDataPanelCallback",
+					params: {
+						type: "saveSettings",
+						label: label,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
+    function setStatus(statusColor, statusText) {
+        document.getElementById("status").innerText = statusText;
+        document.getElementById("status").style.color = statusColor;
+    }
+
+	function updateUI() {
+		try {
+			var result = {
+				id: "shotDataPanelCallback",
+				params: {
+					type: "updateUI",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function pressButton(whichButton) {
 		try {
 			var result = {
 				id: "shotDataPanelCallback",
 				params: {
 					type: whichButton,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateText(whichElement) {
+		try {
+			var result = {
+				id: "shotDataPanelCallback",
+				params: {
+					type: "updateText",
+					id: whichElement.id,
+					value: whichElement.value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateChecked(whichElement) {
+		try {
+			var result = {
+				id: "shotDataPanelCallback",
+				params: {
+					type: "updateChecked",
+					id: whichElement.id,
+					value: whichElement.checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+    function changeIgnoreColumnsOptionSelected(id, selected) {
+        var element = document.getElementById('ignoreColumns');
+        for (var i = 0; i < element.options.length; i++) {
+
+            if (element.options[i].value == id) {
+                 element.options[i].selected = selected;
+            }
+        }
+
+    }
+
+	function updateOptions(whichElement) {
+		try {
+            var options = whichElement.selectedOptions;
+            var values = Array.from(options).map(({ value }) => value);
+			var result = {
+				id: "shotDataPanelCallback",
+				params: {
+					type: "updateOptions",
+					id: whichElement.id,
+					value: values,
 				},
 			}
 			postMessage(result);
@@ -85,3 +244,124 @@
 		</th>
 	</tr>
 </table>
+
+<hr />
+
+<h3 class="uiItem">{{ i18n("uploadToNotion") }}</h3>
+<p class="uiItem">{{ i18n("uploadToNotionDescription") }}</p>
+
+<br />
+
+<p class="uiItem"><label><input type="checkbox" id="automaticallyUploadCSV" onchange="updateChecked(this)"> {{ i18n("automaticallyUploadConvertedFCPXMLs") }}</label></p>
+<p class="uiItem"><label><input type="checkbox" id="mergeData" onchange="updateChecked(this)"> {{ i18n("mergeWithExistingDatabase") }}</label></p>
+
+<table class="notionTable">
+    <tr>
+        <th class="notionLabelRow">
+           <p class="notionText">{{ i18n("notionToken") }} ({{ string.lower(i18n("required")) }}):</p>
+        </th>
+        <th>
+            <input class="notionTextBox" id="token" type="password" onchange="updateText(this)">
+        </th>
+        <th width="10px"></th>
+		<th>
+			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findToken')">{{ i18n("findToken") }}</a>
+		</th>
+    </tr>
+    <tr>
+        <th class="notionLabelRow">
+           <p class="notionText">{{ i18n("notionDatabaseURL") }} ({{ string.lower(i18n("optional")) }}):</p>
+        </th>
+        <th>
+            <input class="notionTextBox" id="databaseURL" type="text" onchange="updateText(this)">
+        </th>
+        <th width="10px"></th>
+		<th>
+			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findDatabaseURL')">{{ i18n("findDatabaseURL") }}</a>
+		</th>
+    </tr>
+    <tr>
+        <th class="notionLabelRow">
+            <p class="notionText">{{ i18n("ignoreSelectedColumns") }} ({{ string.lower(i18n("optional")) }}):</p>
+            <p class="notionHelpText">{{ i18n("ignoreSelectedColumnsDescription") }}</p>
+        </th>
+        <th>
+            <select id="ignoreColumns" class="notionMultiSelect" multiple onchange="updateOptions(this)">
+                <option value="Shot Number">Shot Number</option>
+                <option value="Scene Location">Scene Location</option>
+                <option value="Shot Duration">Shot Duration</option>
+                <option value="Scene Number">Scene Number</option>
+                <option value="Scene Prefix">Scene Prefix</option>
+                <option value="Scene Time">Scene Time</option>
+                <option value="Scene Time Range">Scene Time Range</option>
+                <option value="Scene Set">Scene Set</option>
+                <option value="Script Page No.">Script Page No.</option>
+                <option value="Scene Characters">Scene Characters</option>
+                <option value="Scene Cast">Scene Cast</option>
+                <option value="Scene Description">Scene Description</option>
+                <option value="Shot Size & Type">Shot Size & Type</option>
+                <option value="Camera Movement">Camera Movement</option>
+                <option value="Camera Angle">Camera Angle</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Lens">Lens</option>
+                <option value="Lighting Notes">Lighting Notes</option>
+                <option value="VFX">VFX</option>
+                <option value="VFX Description">VFX Description</option>
+                <option value="SFX">SFX</option>
+                <option value="SFX Description">SFX Description</option>
+                <option value="Music Track">Music Track</option>
+                <option value="Production Design">Production Design</option>
+                <option value="Props">Props</option>
+                <option value="Props Notes">Props Notes</option>
+                <option value="Wardrobe ID">Wardrobe ID</option>
+                <option value="Wardrobe Notes">Wardrobe Notes</option>
+                <option value="Hair">Hair</option>
+                <option value="Make Up">Make Up</option>
+                <option value="Flag">Flag</option>
+                <option value="User Notes 1">User Notes 1</option>
+                <option value="User Notes 2">User Notes 2</option>
+                <option value="Start Date">Start Date</option>
+                <option value="End Date">End Date</option>
+                <option value="Days">Days</option>
+                <option value="Image Filename">Image Filename</option>
+            </select>
+        </th>
+    </tr>
+    <tr>
+        <th class="notionLabelRow">
+           <p class="notionText">{{ i18n("defaultEmoji") }} ({{ string.lower(i18n("optional")) }}):</p>
+        </th>
+        <th style="text-align: left;">
+            <input style="width:50px;" class="notionTextBox" id="defaultEmoji" type="text" maxlength="1" onchange="updateText(this)">
+        </th>
+    </tr>
+</table>
+
+<br />
+
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('uploadCSV')">{{ i18n("selectAndUploadCSV") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('openNotionTemplate')">{{ i18n("openNotionTemplate") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('loadSettings')">{{ i18n("loadSettings") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="saveSettings()">{{ i18n("saveSettings") }}</a>
+		</th>
+	</tr>
+</table>
+<hr />
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th style="font-weight:normal;">
+		    <p><strong>{{ i18n("uploadStatus") }}:</strong> <span id="status"></span></p>
+		</th>
+	</tr>
+</table>
+
+<script>updateUI();</script>
