@@ -691,7 +691,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Trigger new hs.task that calls csv2notion:
     --------------------------------------------------------------------------------
-    local notionTask = task.new(binPath, function(exitCode, stdOut, stdErr)
+    local notionTask = task.new(binPath, function() -- (exitCode, stdOut, stdErr)
         --------------------------------------------------------------------------------
         -- Callback Function:
         --------------------------------------------------------------------------------
@@ -701,7 +701,7 @@ local function uploadToNotion(csvPath)
         log.df("stdOut: %s", stdOut)
         log.df("stdErr: %s", stdErr)
         --]]
-    end, function(obj, stdOut, stdErr)
+    end, function(_, _, stdErr) -- (obj, stdOut, stdErr)
         --------------------------------------------------------------------------------
         -- Stream Callback Function:
         --------------------------------------------------------------------------------
@@ -740,7 +740,7 @@ local function uploadToNotion(csvPath)
             --------------------------------------------------------------------------------
             -- Write to Debug Console:
             --------------------------------------------------------------------------------
-            log.df("Shot Data Upload Status: '%s'", status)
+            log.df("Shot Data Upload Status: %s", status)
         end
 
         return true
@@ -1122,14 +1122,14 @@ local function callback(id, params)
         --------------------------------------------------------------------------------
         -- Updated Text Values from the User Interface:
         --------------------------------------------------------------------------------
-        local id = params and params["id"]
+        local tid = params and params["id"]
         local value = params and params["value"]
-        if id then
-            if id == "token" then
+        if tid then
+            if tid == "token" then
                 mod.token(value)
-            elseif id == "databaseURL" then
+            elseif tid == "databaseURL" then
                 mod.databaseURL(value)
-            elseif id == "defaultEmoji" then
+            elseif tid == "defaultEmoji" then
                 mod.defaultEmoji(value)
             end
         end
@@ -1137,13 +1137,13 @@ local function callback(id, params)
         --------------------------------------------------------------------------------
         -- Updated Checked Values from the User Interface:
         --------------------------------------------------------------------------------
-        local id = params and params["id"]
+        local tid = params and params["id"]
         local value = params and params["value"]
 
-        if id then
-            if id == "automaticallyUploadCSV" then
+        if tid then
+            if tid == "automaticallyUploadCSV" then
                 mod.automaticallyUploadCSV(value)
-            elseif id == "mergeData" then
+            elseif tid == "mergeData" then
                 mod.mergeData(value)
             end
         end
@@ -1151,10 +1151,10 @@ local function callback(id, params)
         --------------------------------------------------------------------------------
         -- Updated Select Values from the User Interface:
         --------------------------------------------------------------------------------
-        local id = params and params["id"]
+        local tid = params and params["id"]
         local value = params and params["value"]
-        if id then
-            if id == "ignoreColumns" then
+        if tid then
+            if tid == "ignoreColumns" then
                 mod.ignoreColumns(value)
             end
         end
@@ -1185,10 +1185,10 @@ local function callback(id, params)
                 disabled = true,
             })
         else
-            for id, data in pairs(settings) do
+            for tid, setting in pairs(settings) do
                 table.insert(menu, {
-                    title = id,
-                    fn = function() updateSettings(data) end
+                    title = tid,
+                    fn = function() updateSettings(setting) end
                 })
             end
             table.insert(menu, {
