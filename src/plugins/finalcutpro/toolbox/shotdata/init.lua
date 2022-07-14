@@ -691,7 +691,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Trigger new hs.task that calls csv2notion:
     --------------------------------------------------------------------------------
-    local notionTask = task.new(binPath, function() -- (exitCode, stdOut, stdErr)
+    mod.notionTask = task.new(binPath, function() -- (exitCode, stdOut, stdErr)
         --------------------------------------------------------------------------------
         -- Callback Function:
         --------------------------------------------------------------------------------
