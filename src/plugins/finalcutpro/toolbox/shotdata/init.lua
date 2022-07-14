@@ -12,6 +12,7 @@ local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
+local task                      = require "hs.task"
 
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
@@ -26,6 +27,7 @@ local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
+local execute                   = hs.execute
 local getFileExtensionFromPath  = tools.getFileExtensionFromPath
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
@@ -37,6 +39,16 @@ local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
+
+-- NOTION_TOKEN_HELP_URL -> string
+-- Constant
+-- URL to Token Help
+local NOTION_TOKEN_HELP_URL = "https://vzhd1701.notion.site/Find-Your-Notion-Token-5f57951434c1414d84ac72f88226eede"
+
+-- NOTION_DATABASE_VIEW_HELP_URL -> string
+-- Constant
+-- URL to Database View Help
+local NOTION_DATABASE_VIEW_HELP_URL = "https://github.com/vzhd1701/csv2notion/raw/master/examples/db_link.png"
 
 -- TEMPLATE_NUMBER_OF_NODES -> number
 -- Constant
@@ -82,7 +94,7 @@ local TEMPLATE_ORDER = {
     [7]     = "Scene Time",
     [8]     = "Scene Time Range",
     [9]     = "Scene Set",
-    [10]     = "Script Page No.",
+    [10]    = "Script Page No.",
     [11]    = "Scene Characters",
     [12]    = "Scene Cast",
     [13]    = "Scene Description",
@@ -275,6 +287,11 @@ local desktopPath = os.getenv("HOME") .. "/Desktop/"
 --- Last open path
 mod.lastOpenPath = config.prop("toolbox.shotdata.lastOpenPath", desktopPath)
 
+--- plugins.finalcutpro.toolbox.shotdata.lastUploadPath <cp.prop: string>
+--- Field
+--- Last upload path
+mod.lastUploadPath = config.prop("toolbox.shotdata.lastUploadPath", desktopPath)
+
 --- plugins.finalcutpro.toolbox.shotdata.lastSavePath <cp.prop: string>
 --- Field
 --- Last save path
@@ -284,6 +301,41 @@ mod.lastSavePath = config.prop("toolbox.shotdata.lastSavePath", desktopPath)
 --- Field
 --- Last folder to consolidate the files to
 mod.lastConsolidatePath = config.prop("toolbox.shotdata.lastConsolidatePath", desktopPath)
+
+--- plugins.finalcutpro.toolbox.shotdata.automaticallyUploadCSV <cp.prop: boolean>
+--- Field
+--- Automatically Upload CSV?
+mod.automaticallyUploadCSV = config.prop("toolbox.shotdata.automaticallyUploadCSV", true)
+
+--- plugins.finalcutpro.toolbox.shotdata.mergeData <cp.prop: boolean>
+--- Field
+--- Merge data?
+mod.mergeData = config.prop("toolbox.shotdata.mergeData", true)
+
+--- plugins.finalcutpro.toolbox.shotdata.onlyUpdateImages <cp.prop: boolean>
+--- Field
+--- Only Update Images?
+mod.onlyUpdateImages = config.prop("toolbox.shotdata.onlyUpdateImages", false)
+
+--- plugins.finalcutpro.toolbox.shotdata.token <cp.prop: string>
+--- Field
+--- Notion Token.
+mod.token = config.prop("toolbox.shotdata.token", "")
+
+--- plugins.finalcutpro.toolbox.shotdata.databaseURL <cp.prop: string>
+--- Field
+--- Notion Database URL.
+mod.databaseURL = config.prop("toolbox.shotdata.databaseURL", "")
+
+--- plugins.finalcutpro.toolbox.shotdata.defaultEmoji <cp.prop: string>
+--- Field
+--- Default Emoji
+mod.defaultEmoji = config.prop("toolbox.shotdata.defaultEmoji", "🎬")
+
+--- plugins.finalcutpro.toolbox.shotdata.defaultEmoji <cp.prop: table>
+--- Field
+--- Ignore Columns
+mod.ignoreColumns = config.prop("toolbox.shotdata.ignoreColumns", {})
 
 -- renderPanel(context) -> none
 -- Function
@@ -339,7 +391,7 @@ local function installMotionTemplate()
                 return
             end
             local runString = [[cp -R "]] .. config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/motiontemplate/Shot Data" .. [[" "]] .. os.getenv("HOME") .. "/Movies/Motion Templates.localized/Titles.localized/CommandPost" .. [["]]
-            local output, status = hs.execute(runString)
+            local output, status = execute(runString)
             if output and status then
                 webviewAlert(mod._manager.getWebview(), function() end, i18n("shotDataInstalledSuccessfully"), i18n("shotDataInstalledSuccessfullyDescription"), i18n("ok"), nil, "informational")
             else
@@ -675,7 +727,9 @@ local function processFCPXML(path)
                         --------------------------------------------------------------------------------
                         -- It's a blank/empty field:
                         --------------------------------------------------------------------------------
-                        output = output .. ","
+                        if i ~= numberOfHeadings then
+                            output = output .. ","
+                        end
                     end
                 end
                 output = output .. "\n"
@@ -770,6 +824,151 @@ local function convertFCPXMLtoCSV()
     end
 end
 
+local function uploadToNotion(csvPath)
+
+    local injectScript = mod._manager.injectScript
+    injectScript("setStatus('orange', 'Preparing to upload to Notion...');")
+
+    --log.df("lets process: %s", csvPath)
+
+    local token                 = mod.token()
+    local databaseURL           = mod.databaseURL()
+    local mergeData             = mod.mergeData()
+    local ignoreColumns         = mod.ignoreColumns()
+    local defaultEmoji          = mod.defaultEmoji()
+
+
+    --log.df("mergeData: %s", mergeData)
+    --log.df("databaseURL: %s", databaseURL)
+    --log.df("defaultEmoji: %s", defaultEmoji)
+    --log.df("token: %s", token)
+
+    --------------------------------------------------------------------------------
+    -- Define path to csv2notion:
+    --------------------------------------------------------------------------------
+    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+
+    --------------------------------------------------------------------------------
+    -- Setup Arguments for csv2notion:
+    --------------------------------------------------------------------------------
+    local arguments = {
+        "--token",
+        token,
+    }
+
+    if databaseURL and databaseURL ~= "" then
+        table.insert(arguments, "--url")
+        table.insert(arguments, databaseURL)
+    end
+
+    table.insert(arguments, "--mandatory-column")
+    table.insert(arguments, "Shot ID")
+
+    table.insert(arguments, "--image-column")
+    table.insert(arguments, "Image Filename")
+
+    table.insert(arguments, "--image-column-keep")
+
+    table.insert(arguments, "--image-caption-column")
+    table.insert(arguments, "Scene Description")
+
+    if mergeData then
+        table.insert(arguments, "--merge")
+        for _, id in pairs(TEMPLATE_ORDER) do
+            if not tableContains(ignoreColumns, id) then
+                --------------------------------------------------------------------------------
+                -- Don't ignore this column:
+                --------------------------------------------------------------------------------
+                table.insert(arguments, "--merge-only-column")
+                table.insert(arguments, id)
+            end
+        end
+    end
+
+    if defaultEmoji and defaultEmoji ~= "" then
+        table.insert(arguments, "--default-icon")
+        table.insert(arguments, defaultEmoji)
+    end
+
+    table.insert(arguments, "--verbose")
+
+    table.insert(arguments, csvPath)
+
+    --------------------------------------------------------------------------------
+    -- Trigger new hs.task that calls csv2notion:
+    --------------------------------------------------------------------------------
+    local notionTask = task.new(binPath, function(exitCode, stdOut, stdErr)
+        --------------------------------------------------------------------------------
+        -- Callback Function:
+        --------------------------------------------------------------------------------
+        --[[
+        log.df("Callback Function")
+        log.df("exitCode: %s", exitCode)
+        log.df("stdOut: %s", stdOut)
+        log.df("stdErr: %s", stdErr)
+        --]]
+    end, function(obj, stdOut, stdErr)
+        --------------------------------------------------------------------------------
+        -- Stream Callback Function:
+        --------------------------------------------------------------------------------
+        --log.df("Stream Callback Function")
+        --log.df("obj: %s", obj)
+        --log.df("stdOut: %s", stdOut)
+        if stdErr and stdErr ~= "" then
+            --------------------------------------------------------------------------------
+            -- Remove Line Breaks:
+            --------------------------------------------------------------------------------
+            local status = stdErr:gsub("[\r\n%z]", "")
+
+            --------------------------------------------------------------------------------
+            -- Trim any white space:
+            --------------------------------------------------------------------------------
+            status = tools.trim(status)
+
+            --------------------------------------------------------------------------------
+            -- Remove type prefix:
+            --------------------------------------------------------------------------------
+            local statusColour = "green"
+
+            if status:sub(1, 6) == "INFO: " then
+                status = status:sub(7)
+            elseif status:sub(1, 10) == "CRITICAL: " then
+                status = status:sub(11)
+                statusColour = "red"
+            end
+
+            log.df("Shot Data Status: '%s'", status)
+
+            injectScript("setStatus(`" .. statusColour .. "`, `" .. status .. "`);")
+        end
+
+        return true
+    end, arguments):start()
+
+    -- hs.task.new(launchPath, callbackFn[, streamCallbackFn][, arguments])
+end
+
+-- selectAndUploadCSV() -> none
+-- Function
+-- Converts a FCPXML to a CSV.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function selectAndUploadCSV()
+    if not doesDirectoryExist(mod.lastUploadPath()) then
+        mod.lastUploadPath(desktopPath)
+    end
+    local result = chooseFileOrFolder(i18n("pleaseSelectACSVFile") .. ":", mod.lastUploadPath(), true, false, false, {"csv"}, true)
+    local path = result and result["1"]
+    if path then
+        mod.lastUploadPath(removeFilenameFromPath(path))
+        uploadToNotion(path)
+    end
+end
+
 -- callback() -> none
 -- Function
 -- JavaScript Callback for the Panel
@@ -782,55 +981,140 @@ end
 --  * None
 local function callback(id, params)
     local callbackType = params and params["type"]
-    if callbackType then
+    if not callbackType then
+        log.ef("Invalid callback type in Shot Data Toolbox Panel.")
+        return
+    end
+    if callbackType == "installMotionTemplate" then
         --------------------------------------------------------------------------------
         -- Install Motion Template:
         --------------------------------------------------------------------------------
-        if callbackType == "installMotionTemplate" then
-            installMotionTemplate()
+        installMotionTemplate()
+    elseif callbackType == "convertFCPXMLtoCSV" then
         --------------------------------------------------------------------------------
         -- Convert a FCPXML to CSV:
         --------------------------------------------------------------------------------
-        elseif callbackType == "convertFCPXMLtoCSV" then
-            convertFCPXMLtoCSV()
+        convertFCPXMLtoCSV()
+    elseif callbackType == "dropbox" then
         --------------------------------------------------------------------------------
         -- Convert a FCPXML to CSV via Drop Zone:
-        -----------------------------
-        elseif callbackType == "dropbox" then
-            ---------------------------------------------------
-            -- Make CommandPost active:
-            ---------------------------------------------------
-            hs.focus()
+        --------------------------------------------------------------------------------
 
-            ---------------------------------------------------
-            -- Get value from UI:
-            ---------------------------------------------------
-            local value = params["value"] or ""
-            local path = os.tmpname() .. ".fcpxml"
+        ---------------------------------------------------
+        -- Make CommandPost active:
+        ---------------------------------------------------
+        hs.focus()
 
-            ---------------------------------------------------
-            -- Reset the original filename (as we'll use
-            -- the project name instead):
-            ---------------------------------------------------
-            originalFilename = nil
+        ---------------------------------------------------
+        -- Get value from UI:
+        ---------------------------------------------------
+        local value = params["value"] or ""
+        local path = os.tmpname() .. ".fcpxml"
 
-            ---------------------------------------------------
-            -- Write the FCPXML data to a temporary file:
-            ---------------------------------------------------
-            writeToFile(path, value)
+        ---------------------------------------------------
+        -- Reset the original filename (as we'll use
+        -- the project name instead):
+        ---------------------------------------------------
+        originalFilename = nil
 
-            ---------------------------------------------------
-            -- Process the FCPXML:
-            ---------------------------------------------------
-            processFCPXML(path)
-        else
-            --------------------------------------------------------------------------------
-            -- Unknown Callback:
-            --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Shot Data Toolbox Panel:")
-            log.df("id: %s", inspect(id))
-            log.df("params: %s", inspect(params))
+        ---------------------------------------------------
+        -- Write the FCPXML data to a temporary file:
+        ---------------------------------------------------
+        writeToFile(path, value)
+
+        ---------------------------------------------------
+        -- Process the FCPXML:
+        ---------------------------------------------------
+        processFCPXML(path)
+    elseif callbackType == "uploadCSV" then
+        --------------------------------------------------------------------------------
+        -- The Upload CSV Button has been pressed:
+        --------------------------------------------------------------------------------
+        selectAndUploadCSV()
+    elseif callbackType == "findToken" then
+        --------------------------------------------------------------------------------
+        -- Find Token Help Button:
+        --------------------------------------------------------------------------------
+        execute("open " .. NOTION_TOKEN_HELP_URL)
+    elseif callbackType == "findDatabaseURL" then
+        --------------------------------------------------------------------------------
+        -- Find Database Help Button:
+        --------------------------------------------------------------------------------
+        execute("open " .. NOTION_DATABASE_VIEW_HELP_URL)
+    elseif callbackType == "updateUI" then
+        --------------------------------------------------------------------------------
+        -- Update the User Interface:
+        --------------------------------------------------------------------------------
+        local injectScript = mod._manager.injectScript
+        local script = ""
+        script = script .. [[
+            setStatus("#999999", "Ready!");
+            changeCheckedByID("automaticallyUploadCSV", ]] .. tostring(mod.automaticallyUploadCSV()) .. [[);
+            changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
+            changeCheckedByID("onlyUpdateImages", ]] .. tostring(mod.onlyUpdateImages()) .. [[);
+
+            changeValueByID("token", "]] .. mod.token() .. [[");
+            changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
+            changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
+        ]]
+
+        local ignoreColumns = mod.ignoreColumns()
+        for _, id in pairs(TEMPLATE_ORDER) do
+            script = script .. [[
+                changeIgnoreColumnsOptionSelected("]] .. id .. [[", ]] .. tostring(tools.tableContains(ignoreColumns, id)) .. [[)
+            ]]
         end
+
+        injectScript(script)
+    elseif callbackType == "updateText" then
+        --------------------------------------------------------------------------------
+        -- Updated Text Values from the User Interface:
+        --------------------------------------------------------------------------------
+        local id = params and params["id"]
+        local value = params and params["value"]
+        if id then
+            if id == "token" then
+                mod.token(value)
+            elseif id == "databaseURL" then
+                mod.databaseURL(value)
+            elseif id == "defaultEmoji" then
+                mod.defaultEmoji(value)
+            end
+        end
+    elseif callbackType == "updateChecked" then
+        --------------------------------------------------------------------------------
+        -- Updated Checked Values from the User Interface:
+        --------------------------------------------------------------------------------
+        local id = params and params["id"]
+        local value = params and params["value"]
+
+        if id then
+            if id == "automaticallyUploadCSV" then
+                mod.automaticallyUploadCSV(value)
+            elseif id == "mergeData" then
+                mod.mergeData(value)
+            elseif id == "onlyUpdateImages" then
+                mod.onlyUpdateImages(value)
+            end
+        end
+    elseif callbackType == "updateOptions" then
+        --------------------------------------------------------------------------------
+        -- Updated Select Values from the User Interface:
+        --------------------------------------------------------------------------------
+        local id = params and params["id"]
+        local value = params and params["value"]
+        if id then
+            if id == "ignoreColumns" then
+                mod.ignoreColumns(value)
+            end
+        end
+    else
+        --------------------------------------------------------------------------------
+        -- Unknown Callback:
+        --------------------------------------------------------------------------------
+        log.df("Unknown Callback in Shot Data Toolbox Panel:")
+        log.df("id: %s", inspect(id))
+        log.df("params: %s", inspect(params))
     end
 end
 
@@ -863,7 +1147,7 @@ function plugin.init(deps, env)
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 400,
+        height          = 910,
     })
     :addContent(1, generateContent, false)
 

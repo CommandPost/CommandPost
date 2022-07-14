@@ -2064,7 +2064,7 @@
     "shortcutsResetConfirmation": "This will reset all modified shortcuts to the default values.",
     "shortcutsSetNoneConfirmation": "This will reset all of the shortcuts to None.",
     "shotData": "Shot Data",
-    "shotDataDescriptionFive": "The images be renamed based on the Scene and Shot number in the connected Shot Data Title.",
+    "shotDataDescriptionFive": "The images will be renamed based on the Scene and Shot number in the connected Shot Data Title.",
     "shotDataDescriptionFour": "on the timeline (but not in a secondary storyline), you'll be asked for an additional folder to consolidate the images to.",
     "shotDataDescriptionOne": "This utility allows you to import a FCPXML which contains one or more Shot Data Titles in a timeline, and converts",
     "shotDataDescriptionSix": "This utility was commissioned by Vigneswaran Rajkumar for a feature film project.",
