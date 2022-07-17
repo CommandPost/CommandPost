@@ -33,12 +33,14 @@ local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
 local getFileExtensionFromPath  = tools.getFileExtensionFromPath
 local getFilenameFromPath       = tools.getFilenameFromPath
+local imageFromPath             = image.imageFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local replace                   = tools.replace
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
+local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
@@ -306,15 +308,10 @@ mod.lastOpenPath = config.prop("toolbox.shotdata.lastOpenPath", desktopPath)
 --- Last upload path
 mod.lastUploadPath = config.prop("toolbox.shotdata.lastUploadPath", desktopPath)
 
---- plugins.finalcutpro.toolbox.shotdata.lastSavePath <cp.prop: string>
+--- plugins.finalcutpro.toolbox.shotdata.destinationPath <cp.prop: string>
 --- Field
 --- Last save path
-mod.lastSavePath = config.prop("toolbox.shotdata.lastSavePath", desktopPath)
-
---- plugins.finalcutpro.toolbox.shotdata.lastConsolidatePath <cp.prop: string>
---- Field
---- Last folder to consolidate the files to
-mod.lastConsolidatePath = config.prop("toolbox.shotdata.lastConsolidatePath", desktopPath)
+mod.destinationPath = config.prop("toolbox.shotdata.destinationPath", desktopPath)
 
 --- plugins.finalcutpro.toolbox.shotdata.automaticallyUploadCSV <cp.prop: boolean>
 --- Field
@@ -627,7 +624,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Make sure there's a valid token!
     --------------------------------------------------------------------------------
-    if not token or tools.trim(token) == "" then
+    if not token or trim(token) == "" then
         injectScript("setStatus('red', 'A valid token is required.');")
         return
     end
@@ -718,7 +715,7 @@ local function uploadToNotion(csvPath)
             --------------------------------------------------------------------------------
             -- Trim any white space:
             --------------------------------------------------------------------------------
-            status = tools.trim(status)
+            status = trim(status)
 
             --------------------------------------------------------------------------------
             -- Remove type prefix:
@@ -889,71 +886,79 @@ local function processFCPXML(path)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure last save path still exists, otherwise use Desktop:
+        -- Make sure the destination path still exists, otherwise use Desktop:
         --------------------------------------------------------------------------------
-        if not doesDirectoryExist(mod.lastSavePath()) then
-            mod.lastSavePath(desktopPath)
+        if not doesDirectoryExist(mod.destinationPath()) then
+            mod.destinationPath(desktopPath)
         end
 
-        local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheCSVTo") .. ":", mod.lastSavePath(), false, true, false)
-        local exportPath = exportPathResult and exportPathResult["1"]
+        local destinationPath = mod.destinationPath()
 
-        if exportPath then
+        if destinationPath then
+            --------------------------------------------------------------------------------
+            -- Make a sub-folder for the year/month/day/time:
+            --------------------------------------------------------------------------------
+            local dateFolderName = os.date("%Y%m%d %H%M")
+            local exportPath = destinationPath .. "/" .. dateFolderName
+
+            if doesDirectoryExist(exportPath) then
+                --------------------------------------------------------------------------------
+                -- If the folder already exists, add the seconds as well:
+                --------------------------------------------------------------------------------
+                dateFolderName = os.date("%Y%m%d %H%M %S")
+                exportPath = destinationPath .. "/" .. dateFolderName
+            end
+
+            if not ensureDirectoryExists(destinationPath, dateFolderName) then
+                --------------------------------------------------------------------------------
+                -- Failed to create the necessary sub-folder:
+                --------------------------------------------------------------------------------
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToCreateExportDestination"), i18n("failedToCreateExportDestinationDescription"), i18n("ok"))
+                return
+            end
+
             --------------------------------------------------------------------------------
             -- Consolidate images:
             --------------------------------------------------------------------------------
             local consolidateSuccessful = true
             if tableCount(filesToCopy) >= 1 then
-                --------------------------------------------------------------------------------
-                -- Make sure last save path still exists, otherwise use Desktop:
-                --------------------------------------------------------------------------------
-                if not doesDirectoryExist(mod.lastConsolidatePath()) then
-                    mod.lastConsolidatePath(desktopPath)
-                end
-
-                local consolidatePathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheConsolidatedImages") .. ":", mod.lastConsolidatePath(), false, true, false)
-                local consolidatePath = consolidatePathResult and consolidatePathResult["1"]
-                if consolidatePath then
-                    mod.lastConsolidatePath(consolidatePath)
-                    for destinationFilename, sourcePath in pairs(filesToCopy) do
-                        local status = false
-                        if doesFileExist(sourcePath) then
-                            --------------------------------------------------------------------------------
-                            -- Save the image as PNG:
-                            --------------------------------------------------------------------------------
-                            local originalImage = image.imageFromPath(sourcePath)
-                            if originalImage then
-                                local destinationPath = consolidatePath .. "/" .. destinationFilename .. ".png"
-                                status = originalImage:saveToFile(destinationPath)
-                            end
+                for destinationFilename, sourcePath in pairs(filesToCopy) do
+                    local status = false
+                    if doesFileExist(sourcePath) then
+                        --------------------------------------------------------------------------------
+                        -- Save the image as PNG:
+                        --------------------------------------------------------------------------------
+                        local originalImage = imageFromPath(sourcePath)
+                        if originalImage then
+                            local pngPath = exportPath .. "/" .. destinationFilename .. ".png"
+                            status = originalImage:saveToFile(pngPath)
                         end
-                        if not status then
-                            consolidateSuccessful = false
-                            log.ef("Failed to copy source file: %s", sourcePath)
-                        end
+                    end
+                    if not status then
+                        consolidateSuccessful = false
+                        log.ef("Failed to copy source file: %s", sourcePath)
                     end
                 end
             end
 
-            mod.lastSavePath(exportPath)
             local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
             writeToFile(exportedFilePath, output)
 
             if consolidateSuccessful then
-                if tableCount(filesToCopy) >= 1 then
-                    webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVAndConsolidatedImagesHasBeenExportedSuccessfully"), i18n("ok"))
+                --------------------------------------------------------------------------------
+                -- Upload to Notion:
+                --------------------------------------------------------------------------------
+                if mod.automaticallyUploadCSV() then
+                    uploadToNotion(exportedFilePath)
                 else
-                    webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                    if tableCount(filesToCopy) >= 1 then
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVAndConsolidatedImagesHasBeenExportedSuccessfully"), i18n("ok"))
+                    else
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("success") .. "!", i18n("theCSVHasBeenExportedSuccessfully"), i18n("ok"))
+                    end
                 end
             else
                 webviewAlert(mod._manager.getWebview(), function() end, i18n("someErrorsHaveOccurred"), i18n("csvExportedSuccessfullyImagesCouldNotBeConsolidated"), i18n("ok"))
-            end
-
-            --------------------------------------------------------------------------------
-            -- Upload to Notion:
-            --------------------------------------------------------------------------------
-            if mod.automaticallyUploadCSV() then
-                uploadToNotion(exportedFilePath)
             end
         end
     else
@@ -1014,6 +1019,13 @@ end
 -- Returns:
 --  * None
 local function updateUI()
+    --------------------------------------------------------------------------------
+    -- Make sure the destination path still exists, otherwise use Desktop:
+    --------------------------------------------------------------------------------
+    if not doesDirectoryExist(mod.destinationPath()) then
+        mod.destinationPath(desktopPath)
+    end
+
     local injectScript = mod._manager.injectScript
     local script = ""
     script = script .. [[
@@ -1024,6 +1036,7 @@ local function updateUI()
         changeValueByID("token", "]] .. mod.token() .. [[");
         changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
         changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
+        changeInnerHTMLByID("destinationPath", `]] .. mod.destinationPath() .. [[`);
     ]]
 
     local ignoreColumns = mod.ignoreColumns()
@@ -1162,7 +1175,6 @@ local function callback(id, params)
         --------------------------------------------------------------------------------
         -- Load Settings:
         --------------------------------------------------------------------------------
-
         local menu = {}
 
         local settings = mod.settings()
@@ -1227,6 +1239,28 @@ local function callback(id, params)
 
             mod.settings(settings)
         end
+    elseif callbackType == "changeExportDestination" then
+        --------------------------------------------------------------------------------
+        -- Change Export Destination:
+        --------------------------------------------------------------------------------
+        if not doesDirectoryExist(mod.destinationPath()) then
+            --------------------------------------------------------------------------------
+            -- Make sure the destination path still exists, otherwise use Desktop:
+            --------------------------------------------------------------------------------
+            mod.destinationPath(desktopPath)
+        end
+
+        local destinationPathResult = chooseFileOrFolder(i18n("pleaseSelectAFolderToSaveTheCSVTo") .. ":", mod.destinationPath(), false, true, false)
+        local destinationPath = destinationPathResult and destinationPathResult["1"]
+
+        if destinationPath then
+           mod.destinationPath(destinationPath)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Update the user interface:
+        --------------------------------------------------------------------------------
+        updateUI()
     else
         --------------------------------------------------------------------------------
         -- Unknown Callback:
@@ -1264,9 +1298,9 @@ function plugin.init(deps, env)
         priority        = 3,
         id              = "shotdata",
         label           = i18n("shotData"),
-        image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
+        image           = imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 935,
+        height          = 1070,
     })
     :addContent(1, generateContent, false)
 

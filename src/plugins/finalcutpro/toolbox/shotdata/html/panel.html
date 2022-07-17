@@ -35,6 +35,14 @@
         text-align: left;
     }
 
+    .destinationText {
+        font-weight: bold;
+        text-align: left;
+        font-size: 13px;
+        color: #037ffc;
+        margin-left: 20px;
+    }
+
     .notionHelpText {
         font-size: 9px;
         font-weight: normal;
@@ -218,10 +226,19 @@
 
 <br />
 <p class="uiItem">{{ i18n("shotDataDescriptionSix") }}</p>
-<table>
+<br />
+
+<table width="100%">
 	<tr>
-		<th style="height: 10px;"></th>
+		<th style="width: 100%;">
+			<form>
+				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("shotDataDropZone")) }}"></textarea>
+			</form>
+		</th>
 	</tr>
+</table>
+
+<table>
 	<tr>
 		<th style="width: 10px;"></th>
 		<th>
@@ -232,15 +249,19 @@
 		</th>
 	</tr>
 </table>
-<table width="100%">
+
+<hr />
+
+<h3 class="uiItem">{{ i18n("exportDestination") }}</h3>
+
+<p class="uiItem">{{ i18n("shotDataExportDestinationDescription") }}:</p>
+<p class="destinationText" id="destinationPath"></p>
+
+<table>
 	<tr>
-		<th style="height: 10px;"></th>
-	</tr>
-	<tr>
-		<th style="width: 100%;">
-			<form>
-				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("shotDataDropZone")) }}"></textarea>
-			</form>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('changeExportDestination')">{{ i18n("changeExportDestination") }}</a>
 		</th>
 	</tr>
 </table>

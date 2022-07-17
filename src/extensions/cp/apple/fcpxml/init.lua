@@ -767,6 +767,14 @@ end
 ---    to the latest FCPXML version.
 function mod.valid(path, version)
     --------------------------------------------------------------------------------
+    -- Look inside FCPXML Bundles for metadata:
+    --------------------------------------------------------------------------------
+    local extension = tools.getFileExtensionFromPath(path)
+    if extension and extension == "fcpxmld" then
+        path = path .. "/Info.fcpxml"
+    end
+
+    --------------------------------------------------------------------------------
     -- Make sure the file actually exists:
     --------------------------------------------------------------------------------
     if not path or not tools.doesFileExist(path) then
@@ -812,14 +820,6 @@ function mod.valid(path, version)
         version = semver(version)
     else
         version = semver(mod.latestDTDVersion())
-    end
-
-    --------------------------------------------------------------------------------
-    -- Look inside FCPXML Bundles for metadata:
-    --------------------------------------------------------------------------------
-    local extension = tools.getFileExtensionFromPath(path)
-    if extension and extension == "fcpxmld" then
-        path = path .. "/Info.fcpxml"
     end
 
     --------------------------------------------------------------------------------
