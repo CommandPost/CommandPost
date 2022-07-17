@@ -33,12 +33,14 @@ local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
 local getFileExtensionFromPath  = tools.getFileExtensionFromPath
 local getFilenameFromPath       = tools.getFilenameFromPath
+local imageFromPath             = image.imageFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local replace                   = tools.replace
 local spairs                    = tools.spairs
 local split                     = tools.split
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
+local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
@@ -622,7 +624,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Make sure there's a valid token!
     --------------------------------------------------------------------------------
-    if not token or tools.trim(token) == "" then
+    if not token or trim(token) == "" then
         injectScript("setStatus('red', 'A valid token is required.');")
         return
     end
@@ -713,7 +715,7 @@ local function uploadToNotion(csvPath)
             --------------------------------------------------------------------------------
             -- Trim any white space:
             --------------------------------------------------------------------------------
-            status = tools.trim(status)
+            status = trim(status)
 
             --------------------------------------------------------------------------------
             -- Remove type prefix:
@@ -907,7 +909,7 @@ local function processFCPXML(path)
                 exportPath = destinationPath .. "/" .. dateFolderName
             end
 
-            if not tools.ensureDirectoryExists(destinationPath, dateFolderName) then
+            if not ensureDirectoryExists(destinationPath, dateFolderName) then
                 --------------------------------------------------------------------------------
                 -- Failed to create the necessary sub-folder:
                 --------------------------------------------------------------------------------
@@ -926,10 +928,10 @@ local function processFCPXML(path)
                         --------------------------------------------------------------------------------
                         -- Save the image as PNG:
                         --------------------------------------------------------------------------------
-                        local originalImage = image.imageFromPath(sourcePath)
+                        local originalImage = imageFromPath(sourcePath)
                         if originalImage then
-                            local destinationPath = exportPath .. "/" .. destinationFilename .. ".png"
-                            status = originalImage:saveToFile(destinationPath)
+                            local pngPath = exportPath .. "/" .. destinationFilename .. ".png"
+                            status = originalImage:saveToFile(pngPath)
                         end
                     end
                     if not status then
@@ -1296,7 +1298,7 @@ function plugin.init(deps, env)
         priority        = 3,
         id              = "shotdata",
         label           = i18n("shotData"),
-        image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
+        image           = imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
         height          = 1070,
     })
