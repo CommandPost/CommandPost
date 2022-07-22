@@ -555,7 +555,6 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
@@ -564,8 +563,26 @@ function plugin.init(deps, env)
         :whenActivated(mod.show)
         :groupedBy("commandPost")
 
-
     return mod.init(env)
+end
+
+function plugin.postInit(deps)
+    --------------------------------------------------------------------------------
+    -- Add Commands to open individual panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(mod._panels) do
+        local id = v.id
+        local label = v.label
+        local img = v.image
+        deps.global
+            :add("watchFolders" .. id)
+            :whenActivated(function()
+                mod.show(id)
+            end)
+            :titled(label)
+            :subtitled(i18n("watchFolders"))
+            :image(img)
+    end
 end
 
 return plugin

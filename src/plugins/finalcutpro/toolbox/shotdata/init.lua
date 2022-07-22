@@ -9,12 +9,14 @@ local log                       = require "hs.logger".new "shotdata"
 local hs                        = _G.hs
 
 local dialog                    = require "hs.dialog"
+local eventtap                  = require "hs.eventtap"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
 local task                      = require "hs.task"
+local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
@@ -27,6 +29,7 @@ local xml                       = require "hs._asm.xml"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
+local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
@@ -268,6 +271,11 @@ local TEMPLATE = {
     [126]   = { label = "Days",                 ignore = true },
 }
 
+-- cachedStatusMessage -> string
+-- Variable
+-- A cached status message.
+local cachedStatusMessage = ""
+
 --- plugins.finalcutpro.toolbox.shotdata.settings <cp.prop: table>
 --- Field
 --- Snippets
@@ -297,6 +305,11 @@ local filesToCopy = {}
 -- Constant
 -- Path to the users desktop
 local desktopPath = os.getenv("HOME") .. "/Desktop/"
+
+--- plugins.finalcutpro.toolbox.shotdata.enableDroppingFinalCutProProjectToDockIcon <cp.prop: boolean>
+--- Field
+--- Enable Dropping Final Cut Pro Project To Dock Icon
+mod.enableDroppingFinalCutProProjectToDockIcon = config.prop("toolbox.shotdata.enableDroppingFinalCutProProjectToDockIcon", false)
 
 --- plugins.finalcutpro.toolbox.shotdata.lastOpenPath <cp.prop: string>
 --- Field
@@ -611,7 +624,7 @@ end
 local function uploadToNotion(csvPath)
 
     local injectScript = mod._manager.injectScript
-    injectScript("setStatus('orange', 'Preparing to upload to Notion...');")
+    injectScript("setStatus('green', '" .. i18n("preparingToUploadCSVDataToNotion") .. "...');")
 
     --log.df("lets process: %s", csvPath)
 
@@ -625,7 +638,7 @@ local function uploadToNotion(csvPath)
     -- Make sure there's a valid token!
     --------------------------------------------------------------------------------
     if not token or trim(token) == "" then
-        injectScript("setStatus('red', 'A valid token is required.');")
+        injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidTokenIsRequired") .. "');")
         return
     end
 
@@ -693,10 +706,10 @@ local function uploadToNotion(csvPath)
         -- Callback Function:
         --------------------------------------------------------------------------------
         --[[
-        log.df("Callback Function")
-        log.df("exitCode: %s", exitCode)
-        log.df("stdOut: %s", stdOut)
-        log.df("stdErr: %s", stdErr)
+        log.df("Shot Data Completion Callback:")
+        log.df(" - exitCode: %s", exitCode)
+        log.df(" - stdOut: %s", stdOut)
+        log.df(" - stdErr: %s", stdErr)
         --]]
     end, function(_, _, stdErr) -- (obj, stdOut, stdErr)
         --------------------------------------------------------------------------------
@@ -721,18 +734,33 @@ local function uploadToNotion(csvPath)
             -- Remove type prefix:
             --------------------------------------------------------------------------------
             local statusColour = "green"
-
-            if status:sub(1, 6) == "INFO: " then
-                status = status:sub(7)
+            if status:sub(1, 11) == "INFO: Done!" then
+                status = i18n("successfullyUploadedToNotion") .. "!"
+            elseif status:sub(1, 6) == "INFO: " then
+                status = status:sub(7) .. "..."
             elseif status:sub(1, 10) == "CRITICAL: " then
                 status = status:sub(11)
                 statusColour = "red"
+            elseif status:sub(1, 9) == "WARNING: " then
+                status = status:sub(10)
+                statusColour = "orange"
+            elseif status:sub(2, 2) == "%" or status:sub(3, 3) == "%" or status:sub(4, 4) == "%" then
+                --------------------------------------------------------------------------------
+                -- Example:
+                --
+                -- 0%|          | 0/19 [00:00<?, ?it/s]
+                --------------------------------------------------------------------------------
+                status = i18n("uploading") .. "... " .. status
             end
 
             --------------------------------------------------------------------------------
             -- Update the User Interface:
             --------------------------------------------------------------------------------
-            injectScript("setStatus(`" .. statusColour .. "`, `" .. status .. "`);")
+            if status:len() < 160 then
+                injectScript("setStatus(`" .. statusColour .. "`, `" .. status .. "`);")
+            else
+                injectScript("setStatus(`red`, `" .. string.upper(i18n("error")) .. ": " .. i18n("checkTheDebugConsoleForTheFullErrorMessage") .. "...`);")
+            end
 
             --------------------------------------------------------------------------------
             -- Write to Debug Console:
@@ -898,14 +926,14 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Make a sub-folder for the year/month/day/time:
             --------------------------------------------------------------------------------
-            local dateFolderName = os.date("%Y%m%d %H%M")
+            local dateFolderName = originalFilename .. " - " .. os.date("%Y%m%d %H%M")
             local exportPath = destinationPath .. "/" .. dateFolderName
 
             if doesDirectoryExist(exportPath) then
                 --------------------------------------------------------------------------------
                 -- If the folder already exists, add the seconds as well:
                 --------------------------------------------------------------------------------
-                dateFolderName = os.date("%Y%m%d %H%M %S")
+                dateFolderName = originalFilename .. " - " .. os.date("%Y%m%d %H%M %S")
                 exportPath = destinationPath .. "/" .. dateFolderName
             end
 
@@ -1028,17 +1056,37 @@ local function updateUI()
 
     local injectScript = mod._manager.injectScript
     local script = ""
+
+    --------------------------------------------------------------------------------
+    -- Update the status message:
+    --------------------------------------------------------------------------------
+    local statusMessage = i18n("readyForANewCSVFile")
+    if cachedStatusMessage ~= "" then
+        statusMessage = cachedStatusMessage
+        cachedStatusMessage = ""
+    end
     script = script .. [[
-        setStatus("#999999", "Ready!");
+        setStatus("green", "]] .. statusMessage .. [[...");
+    ]]
+
+    --------------------------------------------------------------------------------
+    -- Update the user interface elements:
+    --------------------------------------------------------------------------------
+    script = script .. [[
+        changeCheckedByID("enableDroppingFinalCutProProjectToDockIcon", ]] .. tostring(mod.enableDroppingFinalCutProProjectToDockIcon()) .. [[);
         changeCheckedByID("automaticallyUploadCSV", ]] .. tostring(mod.automaticallyUploadCSV()) .. [[);
         changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
 
         changeValueByID("token", "]] .. mod.token() .. [[");
         changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
         changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
+
         changeInnerHTMLByID("destinationPath", `]] .. mod.destinationPath() .. [[`);
     ]]
 
+    --------------------------------------------------------------------------------
+    -- Update the Ignore Columns List:
+    --------------------------------------------------------------------------------
     local ignoreColumns = mod.ignoreColumns()
     for _, id in pairs(TEMPLATE_ORDER) do
         script = script .. [[
@@ -1084,6 +1132,14 @@ local function callback(id, params)
         -- Make CommandPost active:
         ---------------------------------------------------
         hs.focus()
+
+        ---------------------------------------------------
+        -- Try again after a second incase FCPX has stolen
+        -- back focus:
+        ---------------------------------------------------
+        doAfter(2, function()
+            hs.focus()
+        end)
 
         ---------------------------------------------------
         -- Get value from UI:
@@ -1158,6 +1214,8 @@ local function callback(id, params)
                 mod.automaticallyUploadCSV(value)
             elseif tid == "mergeData" then
                 mod.mergeData(value)
+            elseif tid == "enableDroppingFinalCutProProjectToDockIcon" then
+                mod.enableDroppingFinalCutProProjectToDockIcon(value)
             end
         end
     elseif callbackType == "updateOptions" then
@@ -1261,6 +1319,44 @@ local function callback(id, params)
         -- Update the user interface:
         --------------------------------------------------------------------------------
         updateUI()
+    elseif callbackType == "emojiPicker" then
+        --------------------------------------------------------------------------------
+        -- Emoji Picker Button Pressed:
+        --------------------------------------------------------------------------------
+        mod.defaultEmoji("")
+
+        local injectScript = mod._manager.injectScript
+        local script = [[
+            changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
+            document.getElementById("defaultEmoji").focus();
+            pressButton("openEmojiPicker");
+        ]]
+        injectScript(script)
+    elseif callbackType == "openEmojiPicker" then
+        --------------------------------------------------------------------------------
+        -- Open Emoji Picker (triggered by above JavaScript):
+        --------------------------------------------------------------------------------
+        eventtap.keyStroke({"control", "command"}, "space")
+    elseif callbackType == "clearSelection" then
+        --------------------------------------------------------------------------------
+        -- Clear Selection:
+        --------------------------------------------------------------------------------
+        mod.ignoreColumns({})
+
+        --------------------------------------------------------------------------------
+        -- Update the user interface:
+        --------------------------------------------------------------------------------
+        updateUI()
+    elseif callbackType == "revealExportDestination" then
+        --------------------------------------------------------------------------------
+        -- Open the Export Destination Folder:
+        --------------------------------------------------------------------------------
+        if not doesDirectoryExist(mod.destinationPath()) then
+            mod.destinationPath(desktopPath)
+            updateUI()
+        end
+
+        execute([[open "]] .. mod.destinationPath() .. [["]])
     else
         --------------------------------------------------------------------------------
         -- Unknown Callback:
@@ -1298,7 +1394,7 @@ function plugin.init(deps, env)
         priority        = 3,
         id              = "shotdata",
         label           = i18n("shotData"),
-        image           = imageFromPath(env:pathToAbsolute("/images/XML.icns")),
+        image           = imageFromPath(env:pathToAbsolute("/images/notion-logo.png")),
         tooltip         = i18n("shotData"),
         height          = 1070,
     })
@@ -1308,6 +1404,46 @@ function plugin.init(deps, env)
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
     mod._panel:addHandler("onchange", "shotDataPanelCallback", callback)
+
+    --------------------------------------------------------------------------------
+    -- Dock Icon Callback:
+    --------------------------------------------------------------------------------
+    config.textDroppedToDockIconCallback:new("shotData", function(value)
+        if mod.enableDroppingFinalCutProProjectToDockIcon() then
+            ---------------------------------------------------
+            -- Show the Panel:
+            ---------------------------------------------------
+            mod._manager.show("shotdata")
+
+            ---------------------------------------------------
+            -- Update the status:
+            ---------------------------------------------------
+            if mod.automaticallyUploadCSV() then
+                cachedStatusMessage = i18n("waitingForFCPXMLToBeProcessed")
+            end
+
+            ---------------------------------------------------
+            -- Setup a temporary file path:
+            ---------------------------------------------------
+            local path = os.tmpname() .. ".fcpxml"
+
+            ---------------------------------------------------
+            -- Reset the original filename (as we'll use
+            -- the project name instead):
+            ---------------------------------------------------
+            originalFilename = nil
+
+            ---------------------------------------------------
+            -- Write the FCPXML data to a temporary file:
+            ---------------------------------------------------
+            writeToFile(path, value)
+
+            ---------------------------------------------------
+            -- Process the FCPXML:
+            ---------------------------------------------------
+            processFCPXML(path)
+        end
+    end)
 
     return mod
 end

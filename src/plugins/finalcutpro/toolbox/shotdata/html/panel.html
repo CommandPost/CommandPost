@@ -84,6 +84,10 @@
         font-size: 13px;
         height: 150px;
     }
+
+    #status {
+        font-style: italic;
+    }
 </style>
 <script>
     function saveSettings() {
@@ -247,6 +251,23 @@
 		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('convertFCPXMLtoCSV')">{{ i18n("convertFCPXMLToCSV") }}</a>
 		</th>
+		<th>
+		    <p class="uiItem" style="text-align:left; font-weight:normal;">
+		        <label>
+		            <input type="checkbox" id="enableDroppingFinalCutProProjectToDockIcon" onchange="updateChecked(this)"> {{ i18n("enableDroppingFinalCutProProjectToDockIcon") }}
+		        </label>
+            </p>
+		</th>
+	</tr>
+</table>
+
+<hr />
+
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th style="font-weight:normal;">
+		    <p><strong>{{ i18n("uploadStatus") }}:</strong> <span id="status"></span></p>
+		</th>
 	</tr>
 </table>
 
@@ -262,6 +283,9 @@
 		<th style="width: 10px;"></th>
 		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('changeExportDestination')">{{ i18n("changeExportDestination") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('revealExportDestination')">{{ i18n("revealExportDestination") }}</a>
 		</th>
 	</tr>
 </table>
@@ -294,7 +318,7 @@
            <p class="notionText">{{ i18n("notionDatabaseURL") }} ({{ string.lower(i18n("optional")) }}):</p>
         </th>
         <th>
-            <input class="notionTextBox" id="databaseURL" type="text" onchange="updateText(this)">
+            <input class="notionTextBox" id="databaseURL" type="password" onchange="updateText(this)">
         </th>
         <th width="10px"></th>
 		<th>
@@ -347,13 +371,27 @@
                 <option value="Image Filename">Image Filename</option>
             </select>
         </th>
+        <th width="10px"></th>
+        <th>
+            <a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('clearSelection')">{{ i18n("clearSelection") }}</a>
+        </th>
     </tr>
     <tr>
         <th class="notionLabelRow">
            <p class="notionText">{{ i18n("defaultEmoji") }} ({{ string.lower(i18n("optional")) }}):</p>
         </th>
         <th style="text-align: left;">
-            <input style="width:50px;" class="notionTextBox" id="defaultEmoji" type="text" maxlength="1" onchange="updateText(this)">
+            <table>
+                <tr>
+                    <th>
+                        <input style="width:50px;" class="notionTextBox" id="defaultEmoji" type="text" maxlength="1" onchange="updateText(this)">
+                    </th>
+                    <th width="10px"></th>
+                    <th>
+                        <a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('emojiPicker')">{{ i18n("emojiPicker") }}</a>
+                    </th>
+                </tr>
+            </table>
         </th>
     </tr>
 </table>
@@ -376,13 +414,4 @@
 		</th>
 	</tr>
 </table>
-<hr />
-<table style="margin-left: 20px; text-align:left;">
-	<tr>
-		<th style="font-weight:normal;">
-		    <p><strong>{{ i18n("uploadStatus") }}:</strong> <span id="status"></span></p>
-		</th>
-	</tr>
-</table>
-
 <script>updateUI();</script>
