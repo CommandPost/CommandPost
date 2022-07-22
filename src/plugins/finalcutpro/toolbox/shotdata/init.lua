@@ -1137,7 +1137,7 @@ local function callback(id, params)
         -- Try again after a second incase FCPX has stolen
         -- back focus:
         ---------------------------------------------------
-        timer.doAfter(2, function()
+        doAfter(2, function()
             hs.focus()
         end)
 
