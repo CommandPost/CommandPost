@@ -1416,7 +1416,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Drag & Drop Text to the Dock Icon:
     --------------------------------------------------------------------------------
-    mod._preferences.registerDragAndDropTextAction("shotdata", i18n("shotData"), function(value)
+    mod._preferences.registerDragAndDropTextAction("shotdata", i18n("sendFCPXMLToShotData"), function(value)
         ---------------------------------------------------
         -- Show the Panel:
         ---------------------------------------------------
@@ -1459,7 +1459,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Drag & Drop File to the Dock Icon:
     --------------------------------------------------------------------------------
-    mod._preferences.registerDragAndDropFileAction("shotdata", i18n("shotData"), function(path)
+    mod._preferences.registerDragAndDropFileAction("shotdata", i18n("sendFCPXMLToShotData"), function(path)
         ---------------------------------------------------
         -- Show the Panel:
         ---------------------------------------------------

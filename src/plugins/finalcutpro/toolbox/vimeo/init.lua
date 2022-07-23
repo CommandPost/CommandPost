@@ -4,7 +4,7 @@
 
 local require					= require
 
---local log						  = require "hs.logger".new "vimeo"
+local log						= require "hs.logger".new "vimeo"
 
 local dialog					= require "hs.dialog"
 local image						= require "hs.image"
@@ -56,35 +56,41 @@ mod.includeReplies = config.prop("toolbox.vimeo.includeReplies", true)
 --- Include Date Added
 mod.includeDateAdded = config.prop("toolbox.vimeo.includeDateAdded", true)
 
--- sendVimeoCSVToFinalCutProX() -> none
+-- sendVimeoCSVToFinalCutProX(path) -> none
 -- Function
 -- Send Vimeo CSV File to Final Cut Pro X.
 --
 -- Parameters:
---	* None
+--	* path - An optional path to the CSV file.
 --
 -- Returns:
 --	* None
-local function sendVimeoCSVToFinalCutProX()
+local function sendVimeoCSVToFinalCutProX(path)
 	--------------------------------------------------------------------------------
 	-- Prompt for CSV file:
 	--------------------------------------------------------------------------------
-	if not doesDirectoryExist(mod.lastCSVPath()) then
-		mod.lastCSVPath(desktopPath)
-	end
-	local result = chooseFileOrFolder(i18n("pleaseSelectACSVFile") .. ":", mod.lastCSVPath(), true, false, false, {"csv"}, true)
-	local path = result and result["1"]
 	if not path then
-		return
-	end
-	mod.lastCSVPath(removeFilenameFromPath(path))
+        if not doesDirectoryExist(mod.lastCSVPath()) then
+            mod.lastCSVPath(desktopPath)
+        end
+        local result = chooseFileOrFolder(i18n("pleaseSelectACSVFile") .. ":", mod.lastCSVPath(), true, false, false, {"csv"}, true)
+        path = result and result["1"]
+        if not path then
+            return
+        end
+        mod.lastCSVPath(removeFilenameFromPath(path))
+    end
 
 	--------------------------------------------------------------------------------
 	-- Read the CSV file:
 	--------------------------------------------------------------------------------
 	local data = csv.open(path, {header=true})
 	if not data then
-		webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
+    	if mod._manager.getWebview() then
+		    webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
+		else
+		    log.ef("[Vimeo Toolbox] Failed to process the CSV file. This CSV file does not contain the contents we expect from Vimeo.")
+		end
 		return
 	end
 
@@ -123,8 +129,13 @@ local function sendVimeoCSVToFinalCutProX()
 			break
 		end
 	end
+
 	if not valid then
-		webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
+	    if mod._manager.getWebview() then
+    		webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
+    	else
+    	    log.ef("[Vimeo Toolbox] Failed to process the CSV file. This CSV file does not contain the contents we expect from Vimeo.")
+    	end
 		return
 	end
 
@@ -145,6 +156,18 @@ local function sendVimeoCSVToFinalCutProX()
 		results[counter] = line
 		counter = counter + 1
 	end
+
+	--------------------------------------------------------------------------------
+	-- If there's only one line, then something has broken:
+	--------------------------------------------------------------------------------
+    if counter <= 1 then
+	    if mod._manager.getWebview() then
+    		webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessTheCSVFile"), i18n("badCSVFileForVimeoToolbox"), i18n("ok"), nil, "warning")
+    	else
+    	    log.ef("[Vimeo Toolbox] Failed to process the CSV file. This CSV file does not contain the contents we expect from Vimeo.")
+    	end
+		return
+    end
 
 	--------------------------------------------------------------------------------
 	-- Process the results:
@@ -289,8 +312,9 @@ local plugin = {
 	id				= "finalcutpro.toolbox.vimeo",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.toolbox.manager"]	= "manager",
-		["core.commands.global"]	= "global",
+		["core.toolbox.manager"]	    = "manager",
+		["core.commands.global"]	    = "global",
+		["core.preferences.general"]    = "preferences",
 	}
 }
 
@@ -304,6 +328,7 @@ function plugin.init(deps, env)
 	-- Inter-plugin Connectivity:
 	--------------------------------------------------------------------------------
 	mod._manager				= deps.manager
+	mod._preferences            = deps.preferences
 	mod._env					= env
 
 	--------------------------------------------------------------------------------
@@ -315,7 +340,7 @@ function plugin.init(deps, env)
 		label			= i18n("vimeo"),
 		image			= image.imageFromPath(env:pathToAbsolute("/images/Vimeo.icns")),
 		tooltip			= i18n("vimeo"),
-		height			= 340,
+		height			= 360,
 	})
 	:addHeading(1, i18n("vimeoMarkerConverter"))
 	:addContent(2, [[<p class="uiItem">]] .. i18n("vimeoMarkerConverterDescriptionOne") .. [[</p>]], false)
@@ -343,12 +368,31 @@ function plugin.init(deps, env)
 			checked = mod.includeDateAdded,
 		}
 	)
+	:addCheckbox(8.1,
+		{
+			label = i18n("enableDroppingVimeoCSVToDockIcon"),
+			onchange = function(_, params)
+			    mod.includeDateAdded(params.checked)
+			    if params.checked then
+			        mod._preferences.dragAndDropFileAction("sendVimeoCsvToFinalCutPro")
+			    else
+			        if mod._preferences.dragAndDropFileAction() == "sendVimeoCsvToFinalCutPro" then
+			            mod._preferences.dragAndDropFileAction("")
+			        end
+			    end
+
+			end,
+			checked = function()
+			    return mod._preferences.dragAndDropFileAction() == "sendVimeoCsvToFinalCutPro"
+			end,
+		}
+	)
 	:addContent(9, "<br />", false)
 	:addButton(10,
 		{
 			label		= i18n("sendVimeoCsvToFinalCutPro"),
 			width		= 200,
-			onclick		= sendVimeoCSVToFinalCutProX,
+			onclick		= function() sendVimeoCSVToFinalCutProX() end,
 		}
 	)
 
@@ -357,8 +401,17 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	deps.global
 		:add("sendVimeoCsvToFinalCutPro")
-		:whenActivated(sendVimeoCSVToFinalCutProX)
+		:whenActivated(function()
+		    sendVimeoCSVToFinalCutProX()
+		end)
 		:titled(i18n("sendVimeoCsvToFinalCutPro"))
+
+    --------------------------------------------------------------------------------
+    -- Drag & Drop File to the Dock Icon:
+    --------------------------------------------------------------------------------
+    mod._preferences.registerDragAndDropFileAction("sendVimeoCsvToFinalCutPro", i18n("sendVimeoCsvToFinalCutPro"), function(path)
+        sendVimeoCSVToFinalCutProX(path)
+    end)
 
 	return mod
 end
