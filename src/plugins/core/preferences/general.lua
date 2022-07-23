@@ -201,7 +201,7 @@ function plugin.init(deps)
         ]], false)
         :addSelect(33.2,
             {
-                width       =   237,
+                width       =   300,
                 value       =   mod.dragAndDropTextAction,
                 options     =   function()
                                     local options = {}
@@ -232,7 +232,7 @@ function plugin.init(deps)
         ]], false)
         :addSelect(33.4,
             {
-                width       =   237,
+                width       =   300,
                 value       =   mod.dragAndDropFileAction,
                 options     =   function()
                                     local options = {}
