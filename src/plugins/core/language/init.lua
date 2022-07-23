@@ -31,8 +31,8 @@ function plugin.init(deps)
     -- Setup General Preferences Panel:
     --------------------------------------------------------------------------------
     deps.general
-        :addHeading(40, i18n("languageHeading"))
-        :addSelect(41,
+        :addHeading(30.1, i18n("languageHeading"))
+        :addSelect(30.2,
             {
                 width       =   237,
                 value       =   function()
@@ -65,7 +65,7 @@ function plugin.init(deps)
                                 end,
             }
         )
-        :addButton(41.2,
+        :addButton(30.3,
             {
                 label 		= i18n("helpTranslateCommandPost"),
                 width		= 200,
