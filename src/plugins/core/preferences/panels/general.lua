@@ -4,9 +4,9 @@
 
 local require = require
 
-local image     = require("hs.image")
+local image     = require "hs.image"
 
-local i18n      = require("cp.i18n")
+local i18n      = require "cp.i18n"
 
 
 local plugin = {
@@ -24,7 +24,7 @@ function plugin.init(deps)
         label       = i18n("generalPanelLabel"),
         image       = image.imageFromName("NSPreferencesGeneral"),
         tooltip     = i18n("generalPanelTooltip"),
-        height      = 390,
+        height      = 415,
     })
 end
 

@@ -306,11 +306,6 @@ local filesToCopy = {}
 -- Path to the users desktop
 local desktopPath = os.getenv("HOME") .. "/Desktop/"
 
---- plugins.finalcutpro.toolbox.shotdata.enableDroppingFinalCutProProjectToDockIcon <cp.prop: boolean>
---- Field
---- Enable Dropping Final Cut Pro Project To Dock Icon
-mod.enableDroppingFinalCutProProjectToDockIcon = config.prop("toolbox.shotdata.enableDroppingFinalCutProProjectToDockIcon", false)
-
 --- plugins.finalcutpro.toolbox.shotdata.lastOpenPath <cp.prop: string>
 --- Field
 --- Last open path
@@ -624,7 +619,10 @@ end
 local function uploadToNotion(csvPath)
 
     local injectScript = mod._manager.injectScript
-    injectScript("setStatus('green', '" .. i18n("preparingToUploadCSVDataToNotion") .. "...');")
+
+    injectScript([[
+        setStatus('green', `]] .. i18n("preparingToUploadCSVDataToNotion") .. [[...`);
+    ]])
 
     --log.df("lets process: %s", csvPath)
 
@@ -1066,14 +1064,15 @@ local function updateUI()
         cachedStatusMessage = ""
     end
     script = script .. [[
-        setStatus("green", "]] .. statusMessage .. [[...");
+        setStatus("green", `]] .. statusMessage .. [[...`);
     ]]
 
     --------------------------------------------------------------------------------
     -- Update the user interface elements:
     --------------------------------------------------------------------------------
+    local enableDroppingFinalCutProProjectToDockIcon = tostring(mod._preferences.dragAndDropTextAction() == "shotdata")
     script = script .. [[
-        changeCheckedByID("enableDroppingFinalCutProProjectToDockIcon", ]] .. tostring(mod.enableDroppingFinalCutProProjectToDockIcon()) .. [[);
+        changeCheckedByID("enableDroppingFinalCutProProjectToDockIcon", ]] .. enableDroppingFinalCutProProjectToDockIcon .. [[);
         changeCheckedByID("automaticallyUploadCSV", ]] .. tostring(mod.automaticallyUploadCSV()) .. [[);
         changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
 
@@ -1215,7 +1214,14 @@ local function callback(id, params)
             elseif tid == "mergeData" then
                 mod.mergeData(value)
             elseif tid == "enableDroppingFinalCutProProjectToDockIcon" then
-                mod.enableDroppingFinalCutProProjectToDockIcon(value)
+
+                if value then
+                    mod._preferences.dragAndDropTextAction("shotdata")
+                else
+                    if mod._preferences.dragAndDropTextAction() == "shotdata" then
+                        mod._preferences.dragAndDropTextAction("")
+                    end
+                end
             end
         end
     elseif callbackType == "updateOptions" then
@@ -1371,7 +1377,8 @@ local plugin = {
     id              = "finalcutpro.toolbox.shotdata",
     group           = "finalcutpro",
     dependencies    = {
-        ["core.toolbox.manager"]    = "manager",
+        ["core.toolbox.manager"]        = "manager",
+        ["core.preferences.general"]    = "preferences",
     }
 }
 
@@ -1385,6 +1392,7 @@ function plugin.init(deps, env)
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
     mod._manager                = deps.manager
+    mod._preferences            = deps.preferences
     mod._env                    = env
 
     --------------------------------------------------------------------------------
@@ -1406,15 +1414,18 @@ function plugin.init(deps, env)
     mod._panel:addHandler("onchange", "shotDataPanelCallback", callback)
 
     --------------------------------------------------------------------------------
-    -- Dock Icon Callback:
+    -- Drag & Drop Text to the Dock Icon:
     --------------------------------------------------------------------------------
-    config.textDroppedToDockIconCallback:new("shotData", function(value)
-        if mod.enableDroppingFinalCutProProjectToDockIcon() then
-            ---------------------------------------------------
-            -- Show the Panel:
-            ---------------------------------------------------
-            mod._manager.show("shotdata")
+    mod._preferences.registerDragAndDropTextAction("shotdata", i18n("shotData"), function(value)
+        ---------------------------------------------------
+        -- Show the Panel:
+        ---------------------------------------------------
+        mod._manager.show("shotdata")
 
+        ---------------------------------------------------
+        -- Give it a second to load the user interface:
+        ---------------------------------------------------
+        doAfter(1, function()
             ---------------------------------------------------
             -- Update the status:
             ---------------------------------------------------
@@ -1442,7 +1453,39 @@ function plugin.init(deps, env)
             -- Process the FCPXML:
             ---------------------------------------------------
             processFCPXML(path)
-        end
+        end)
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Drag & Drop File to the Dock Icon:
+    --------------------------------------------------------------------------------
+    mod._preferences.registerDragAndDropFileAction("shotdata", i18n("shotData"), function(path)
+        ---------------------------------------------------
+        -- Show the Panel:
+        ---------------------------------------------------
+        mod._manager.show("shotdata")
+
+        ---------------------------------------------------
+        -- Give it a second to load the user interface:
+        ---------------------------------------------------
+        doAfter(1, function()
+            ---------------------------------------------------
+            -- Update the status:
+            ---------------------------------------------------
+            if mod.automaticallyUploadCSV() then
+                cachedStatusMessage = i18n("waitingForFCPXMLToBeProcessed")
+            end
+
+            ---------------------------------------------------
+            -- Set the Original Filename for later:
+            ---------------------------------------------------
+            originalFilename = getFilenameFromPath(path, true)
+
+            ---------------------------------------------------
+            -- Process the FCPXML:
+            ---------------------------------------------------
+            processFCPXML(path)
+        end)
     end)
 
     return mod
