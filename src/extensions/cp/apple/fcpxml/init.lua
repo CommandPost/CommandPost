@@ -765,6 +765,8 @@ end
 ---  * If a version is not supplied, we will try and read the version
 ---    from the file itself, and if that's not possible, we'll default
 ---    to the latest FCPXML version.
+---  * If a `fcpxmld` bundle path is supplied, this function will return
+---    the path to the `Info.fcpxml` document if valid.
 function mod.valid(path, version)
     --------------------------------------------------------------------------------
     -- Look inside FCPXML Bundles for metadata:
@@ -778,16 +780,17 @@ function mod.valid(path, version)
     -- Make sure the file actually exists:
     --------------------------------------------------------------------------------
     if not path or not tools.doesFileExist(path) then
-        log.ef("[cp.apple.fcpxml] FCPXML path is not valid: %s", path)
+        --log.ef("[cp.apple.fcpxml] FCPXML path is not valid: %s", path)
         return false
     end
 
     --------------------------------------------------------------------------------
     -- Make sure the file is actually an XML file:
     --------------------------------------------------------------------------------
-    local document = xml.open(path)
-    if not document then
-        log.ef("[cp.apple.fcpxml] Failed to open XML: %s", path)
+    local validXML, document = pcall(function() return xml.open(path) end)
+    if not validXML or not document then
+        --log.ef("[cp.apple.fcpxml] Invalid XML document: %s", path)
+        return false
     end
 
     --------------------------------------------------------------------------------
@@ -808,7 +811,7 @@ function mod.valid(path, version)
     --------------------------------------------------------------------------------
     local supportedDTDs = mod.supportedDTDs()
     if version and not fnutils.contains(supportedDTDs, version) then
-        log.ef("[cp.apple.fcpxml] Invalid FCPXML Version: %s", version)
+        --log.ef("[cp.apple.fcpxml] Invalid FCPXML Version: %s", version)
         return false
     end
 
