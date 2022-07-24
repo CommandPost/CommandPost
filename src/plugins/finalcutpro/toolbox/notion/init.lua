@@ -8,9 +8,7 @@ local log                       = require "hs.logger".new "notion"
 
 local hs                        = _G.hs
 
-local dialog                    = require "hs.dialog"
 local eventtap                  = require "hs.eventtap"
-local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
