@@ -21,32 +21,16 @@ local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
-local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
-local xml                       = require "hs._asm.xml"
-
-local chooseFileOrFolder        = dialog.chooseFileOrFolder
-local copy                      = fnutils.copy
 local doAfter                   = timer.doAfter
-local doesDirectoryExist        = tools.doesDirectoryExist
-local doesFileExist             = tools.doesFileExist
-local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
-local getFileExtensionFromPath  = tools.getFileExtensionFromPath
-local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromPath             = image.imageFromPath
 local mkdir                     = fs.mkdir
-local removeFilenameFromPath    = tools.removeFilenameFromPath
-local replace                   = tools.replace
-local spairs                    = tools.spairs
-local split                     = tools.split
-local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local trim                      = tools.trim
-local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
