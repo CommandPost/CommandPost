@@ -1,4 +1,4 @@
-<style>{(css/shotdata.css)}</style>
+<style>{(css/notion.css)}</style>
 <style>
 	#dropbox {
 		width: 90%;
@@ -95,7 +95,7 @@
 		if (label !== null || label !== "") {
 			try {
 				var result = {
-					id: "shotDataPanelCallback",
+					id: "notionPanelCallback",
 					params: {
 						type: "saveSettings",
 						label: label,
@@ -116,7 +116,7 @@
 	function updateUI() {
 		try {
 			var result = {
-				id: "shotDataPanelCallback",
+				id: "notionPanelCallback",
 				params: {
 					type: "updateUI",
 				},
@@ -130,7 +130,7 @@
 	function pressButton(whichButton) {
 		try {
 			var result = {
-				id: "shotDataPanelCallback",
+				id: "notionPanelCallback",
 				params: {
 					type: whichButton,
 				},
@@ -144,7 +144,7 @@
 	function updateText(whichElement) {
 		try {
 			var result = {
-				id: "shotDataPanelCallback",
+				id: "notionPanelCallback",
 				params: {
 					type: "updateText",
 					id: whichElement.id,
@@ -160,7 +160,7 @@
 	function updateChecked(whichElement) {
 		try {
 			var result = {
-				id: "shotDataPanelCallback",
+				id: "notionPanelCallback",
 				params: {
 					type: "updateChecked",
 					id: whichElement.id,
@@ -189,7 +189,7 @@
             var options = whichElement.selectedOptions;
             var values = Array.from(options).map(({ value }) => value);
 			var result = {
-				id: "shotDataPanelCallback",
+				id: "notionPanelCallback",
 				params: {
 					type: "updateOptions",
 					id: whichElement.id,
@@ -206,7 +206,7 @@
 		if (document.getElementById("dropbox") != null) {
 			try {
 				var result = {
-					id: "shotDataPanelCallback",
+					id: "notionPanelCallback",
 					params: {
 						type: "dropbox",
 						value: document.getElementById("dropbox").value,
@@ -220,84 +220,15 @@
 		}
 	}
 </script>
-<h3 class="uiItem">{{ i18n("shotData") }}</h3>
-<p class="uiItem">{{ i18n("shotDataDescriptionOne") }}</p>
-<p class="uiItem">{{ i18n("shotDataDescriptionTwo") }}</p>
-<br />
-<p class="uiItem">{{ i18n("shotDataDescriptionThree") }}</p>
-<p class="uiItem">{{ i18n("shotDataDescriptionFour") }}</p>
-<p class="uiItem">{{ i18n("shotDataDescriptionFive") }}</p>
+<h3 class="uiItem">{{ i18n("notion") }}</h3>
+<p class="uiItem">{{ i18n("notionDescription") }}</p>
 
 <br />
-<p class="uiItem">{{ i18n("shotDataDescriptionSix") }}</p>
-<br />
-
-<table width="100%">
-	<tr>
-		<th style="width: 100%;">
-			<form>
-				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("shotDataDropZone")) }}"></textarea>
-			</form>
-		</th>
-	</tr>
-</table>
-
-<table>
-	<tr>
-		<th style="width: 10px;"></th>
-		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('installMotionTemplate')">{{ i18n("installMotionTemplate") }}</a>
-		</th>
-		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('convertFCPXMLtoCSV')">{{ i18n("convertFCPXMLToCSV") }}</a>
-		</th>
-		<th>
-		    <p class="uiItem" style="text-align:left; font-weight:normal;">
-		        <label>
-		            <input type="checkbox" id="enableDroppingFinalCutProProjectToDockIcon" onchange="updateChecked(this)"> {{ i18n("enableDroppingFinalCutProProjectToDockIcon") }}
-		        </label>
-            </p>
-		</th>
-	</tr>
-</table>
 
 <hr />
 
-<table style="margin-left: 20px; text-align:left;">
-	<tr>
-		<th style="font-weight:normal;">
-		    <p><strong>{{ i18n("uploadStatus") }}:</strong> <span id="status"></span></p>
-		</th>
-	</tr>
-</table>
-
-<hr />
-
-<h3 class="uiItem">{{ i18n("exportDestination") }}</h3>
-
-<p class="uiItem">{{ i18n("shotDataExportDestinationDescription") }}:</p>
-<p class="destinationText" id="destinationPath"></p>
-
-<table>
-	<tr>
-		<th style="width: 10px;"></th>
-		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('changeExportDestination')">{{ i18n("changeExportDestination") }}</a>
-		</th>
-		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('revealExportDestination')">{{ i18n("revealExportDestination") }}</a>
-		</th>
-	</tr>
-</table>
-
-<hr />
-
-<h3 class="uiItem">{{ i18n("uploadToNotion") }}</h3>
-<p class="uiItem">{{ i18n("uploadToNotionDescription") }}</p>
-
 <br />
 
-<p class="uiItem"><label><input type="checkbox" id="automaticallyUploadCSV" onchange="updateChecked(this)"> {{ i18n("automaticallyUploadConvertedFCPXMLs") }}</label></p>
 <p class="uiItem"><label><input type="checkbox" id="mergeData" onchange="updateChecked(this)"> {{ i18n("mergeWithExistingDatabase") }}</label></p>
 
 <table class="notionTable">
@@ -327,57 +258,6 @@
     </tr>
     <tr>
         <th class="notionLabelRow">
-            <p class="notionText">{{ i18n("ignoreSelectedColumns") }} ({{ string.lower(i18n("optional")) }}):</p>
-            <p class="notionHelpText">{{ i18n("ignoreSelectedColumnsDescription") }}</p>
-        </th>
-        <th>
-            <select id="ignoreColumns" class="notionMultiSelect" multiple onchange="updateOptions(this)">
-                <option value="Shot Number">Shot Number</option>
-                <option value="Scene Location">Scene Location</option>
-                <option value="Shot Duration">Shot Duration</option>
-                <option value="Scene Number">Scene Number</option>
-                <option value="Scene Prefix">Scene Prefix</option>
-                <option value="Scene Time">Scene Time</option>
-                <option value="Scene Time Range">Scene Time Range</option>
-                <option value="Scene Set">Scene Set</option>
-                <option value="Script Page No.">Script Page No.</option>
-                <option value="Scene Characters">Scene Characters</option>
-                <option value="Scene Cast">Scene Cast</option>
-                <option value="Scene Description">Scene Description</option>
-                <option value="Shot Size & Type">Shot Size & Type</option>
-                <option value="Camera Movement">Camera Movement</option>
-                <option value="Camera Angle">Camera Angle</option>
-                <option value="Equipment">Equipment</option>
-                <option value="Lens">Lens</option>
-                <option value="Lighting Notes">Lighting Notes</option>
-                <option value="VFX">VFX</option>
-                <option value="VFX Description">VFX Description</option>
-                <option value="SFX">SFX</option>
-                <option value="SFX Description">SFX Description</option>
-                <option value="Music Track">Music Track</option>
-                <option value="Production Design">Production Design</option>
-                <option value="Props">Props</option>
-                <option value="Props Notes">Props Notes</option>
-                <option value="Wardrobe ID">Wardrobe ID</option>
-                <option value="Wardrobe Notes">Wardrobe Notes</option>
-                <option value="Hair">Hair</option>
-                <option value="Make Up">Make Up</option>
-                <option value="Flag">Flag</option>
-                <option value="User Notes 1">User Notes 1</option>
-                <option value="User Notes 2">User Notes 2</option>
-                <option value="Start Date">Start Date</option>
-                <option value="End Date">End Date</option>
-                <option value="Days">Days</option>
-                <option value="Image Filename">Image Filename</option>
-            </select>
-        </th>
-        <th width="10px"></th>
-        <th>
-            <a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('clearSelection')">{{ i18n("clearSelection") }}</a>
-        </th>
-    </tr>
-    <tr>
-        <th class="notionLabelRow">
            <p class="notionText">{{ i18n("defaultEmoji") }} ({{ string.lower(i18n("optional")) }}):</p>
         </th>
         <th style="text-align: left;">
@@ -401,10 +281,10 @@
 <table style="margin-left: 20px; text-align:left;">
 	<tr>
 		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('uploadCSV')">{{ i18n("selectAndUploadCSV") }}</a>
+			<a href="#" class="bottomButton" onclick="pressButton('uploadTimelineIndex')">{{ i18n("uploadTimelineIndex") }}</a>
 		</th>
 		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('openNotionTemplate')">{{ i18n("openNotionTemplate") }}</a>
+			<a href="#" class="bottomButton" onclick="pressButton('uploadBrowserContents')">{{ i18n("uploadBrowserContents") }}</a>
 		</th>
 		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('loadSettings')">{{ i18n("loadSettings") }}</a>
@@ -414,4 +294,17 @@
 		</th>
 	</tr>
 </table>
+
+<br />
+
+<hr />
+
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th style="font-weight:normal;">
+		    <p><strong>{{ i18n("uploadStatus") }}:</strong> <span id="status"></span></p>
+		</th>
+	</tr>
+</table>
+
 <script>updateUI();</script>
