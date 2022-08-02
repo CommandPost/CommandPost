@@ -137,7 +137,7 @@ function plugin.init(deps)
                         id = id,
                         label = format("%s - %s - %s - %s - %s %s", iColorBoard, iAspect, iRange, iAngle, iUp, amount),
                         fn = function()
-                            percentChange = percentChange + amount
+                            angleChange = angleChange + amount
                             updateUI()
                         end
                     }
@@ -147,7 +147,7 @@ function plugin.init(deps)
                         id = id,
                         label = format("%s - %s - %s - %s - %s %s", iColorBoard, iAspect, iRange, iAngle, iDown, amount),
                         fn = function()
-                            percentChange = percentChange - amount
+                            angleChange = angleChange - amount
                             updateUI()
                         end
                     }
