@@ -26,7 +26,6 @@ local doAfter                   = timer.doAfter
 local doEvery                   = timer.doEvery
 local imageFromPath             = image.imageFromPath
 local isColor                   = tools.isColor
-local keyRepeatInterval         = eventtap.keyRepeatInterval
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local tableMatch                = tools.tableMatch
@@ -43,6 +42,16 @@ local DEFAULT_BACKLIGHT_EFFECT_COLOR_A                  = "000000"
 local DEFAULT_BACKLIGHT_EFFECT_COLOR_B                  = "000000"
 local DEFAULT_BACKLIGHT_EFFECT_SPEED                    = "1"
 local DEFAULT_BACKLIGHT_EFFECT_DIRECTION                = "left"
+
+--- plugins.core.razer.manager.keyRepeat <cp.prop: string>
+--- Field
+--- Key Repeat Preference.
+mod.keyRepeat = config.prop("razer.preferences.keyRepeat", "")
+
+--- plugins.core.razer.manager.delayUntilRepeat <cp.prop: string>
+--- Field
+--- Delay Until Repeat Preference.
+mod.delayUntilRepeat = config.prop("razer.preferences.delayUntilRepeat", "")
 
 -- razer -> hs.razer object
 -- Variable
@@ -416,10 +425,25 @@ mod.devices = {}
 -- A table containing all the repeat timers
 local repeatTimers = {}
 
+-- repeatDelayTimers -> table
+-- Variable
+-- A table containing all the repeat delay timers
+local repeatDelayTimers = {}
+
+-- repeatDelayTimerEnabled -> table
+-- Variable
+-- A table containing all the repeat delay timers booleans
+local repeatDelayTimerEnabled = {}
+
 -- cachedPreventExcessiveThumbTaps -> table
 -- Variable
 -- A table containing all the "Prevent Excessive Thumb Taps" caches
 local cachedPreventExcessiveThumbTaps = {}
+
+-- preventExcessiveThumbTapsTimers -> table
+-- Variable
+-- A table containing all the "Prevent Excessive Thumb Taps" timers
+local preventExcessiveThumbTapsTimers = {}
 
 -- cachedBundleID -> string
 -- Variable
@@ -1034,6 +1058,7 @@ local function razerCallback(obj, buttonName, buttonAction)
                 repeatTimers[repeatID]:stop()
                 repeatTimers[repeatID] = nil
             end
+            repeatDelayTimerEnabled[repeatID] = nil
         end
     end
 
@@ -1041,6 +1066,7 @@ local function razerCallback(obj, buttonName, buttonAction)
     -- Trigger the action:
     --------------------------------------------------------------------------------
     if action and action.action then
+
         --------------------------------------------------------------------------------
         -- Check for "Prevent Excessive Thumb Taps" setting:
         --------------------------------------------------------------------------------
@@ -1050,8 +1076,9 @@ local function razerCallback(obj, buttonName, buttonAction)
                 return
             else
                 cachedPreventExcessiveThumbTaps[repeatID] = true
-                doAfter(tonumber(preventExcessiveThumbTaps), function()
-                    cachedPreventExcessiveThumbTaps[repeatID] = false
+                preventExcessiveThumbTapsTimers[repeatID] = doAfter(tonumber(preventExcessiveThumbTaps), function()
+                    cachedPreventExcessiveThumbTaps[repeatID] = nil
+                    preventExcessiveThumbTapsTimers[repeatID] = nil
                 end)
             end
         end
@@ -1065,8 +1092,44 @@ local function razerCallback(obj, buttonName, buttonAction)
         -- Add the action to a repeat timer if enabled:
         --------------------------------------------------------------------------------
         if actionType:sub(1,5) == "press" and theControlID[actionType .. "Repeat"] then
-            repeatTimers[repeatID] = doEvery(keyRepeatInterval(), function()
-                executeAction(action)
+
+            --------------------------------------------------------------------------------
+            -- Get the Key Repeat Delay from CommandPost Preferences or macOS Preferences:
+            --------------------------------------------------------------------------------
+            local keyRepeatDelay
+            if mod.delayUntilRepeat() ~= "" then
+                keyRepeatDelay = tonumber(mod.delayUntilRepeat())
+            else
+                keyRepeatDelay = eventtap.keyRepeatDelay()
+            end
+
+            --------------------------------------------------------------------------------
+            -- Trigger the repeat timer after a delay:
+            --------------------------------------------------------------------------------
+            repeatDelayTimerEnabled[repeatID] = true
+            repeatDelayTimers[repeatID] = doAfter(keyRepeatDelay, function()
+                if repeatDelayTimerEnabled[repeatID] then
+
+                    repeatDelayTimerEnabled[repeatID] = false
+
+                    --------------------------------------------------------------------------------
+                    -- Get the Key Repeat Interval from CommandPost Preferences
+                    -- or macOS Preferences:
+                    --------------------------------------------------------------------------------
+                    local keyRepeatInterval
+                    if mod.keyRepeat() ~= "" then
+                        keyRepeatInterval = tonumber(mod.keyRepeat())
+                    else
+                        keyRepeatInterval = eventtap.keyRepeatInterval()
+                    end
+
+                    repeatTimers[repeatID] = doEvery(keyRepeatInterval, function()
+                        if repeatTimers[repeatID] then
+                            executeAction(action)
+                        end
+                    end)
+                end
+                repeatDelayTimers[repeatID] = nil
             end)
         end
     end
