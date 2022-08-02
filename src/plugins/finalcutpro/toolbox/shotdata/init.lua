@@ -49,6 +49,11 @@ local writeToFile               = tools.writeToFile
 
 local mod = {}
 
+-- SHOT_DATA_MANUAL_URL -> string
+-- Constant
+-- URL to the Shot Data Manual
+local SHOT_DATA_USER_GUIDE_URL = "https://soothsayer.notion.site/Shot-Data-User-Guide-e5e07468db7545948717cb19886e7e6c"
+
 -- NOTION_TEMPLATE_URL -> string
 -- Constant
 -- URL to the Notion Template
@@ -1363,6 +1368,11 @@ local function callback(id, params)
         end
 
         execute([[open "]] .. mod.destinationPath() .. [["]])
+    elseif callbackType == "openUserGuide" then
+        --------------------------------------------------------------------------------
+        -- Read Manual Button:
+        --------------------------------------------------------------------------------
+        execute("open " .. SHOT_DATA_USER_GUIDE_URL)
     else
         --------------------------------------------------------------------------------
         -- Unknown Callback:
@@ -1402,9 +1412,9 @@ function plugin.init(deps, env)
         priority        = 3,
         id              = "shotdata",
         label           = i18n("shotData"),
-        image           = imageFromPath(env:pathToAbsolute("/images/notion-logo.png")),
+        image           = imageFromPath(env:pathToAbsolute("/images/shotdata.png")),
         tooltip         = i18n("shotData"),
-        height          = 1070,
+        height          = 1100,
     })
     :addContent(1, generateContent, false)
 
