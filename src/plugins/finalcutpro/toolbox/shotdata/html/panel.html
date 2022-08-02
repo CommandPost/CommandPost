@@ -232,6 +232,19 @@
 <p class="uiItem">{{ i18n("shotDataDescriptionSix") }}</p>
 <br />
 
+<table>
+	<tr>
+		<th style="width: 10px;"></th>
+	</tr>
+		<th>
+		    <p class="uiItem" style="text-align:left; font-weight:normal;">
+		        <label>
+		            <input type="checkbox" id="enableDroppingFinalCutProProjectToDockIcon" onchange="updateChecked(this)"> {{ i18n("enableDroppingFinalCutProProjectToDockIcon") }}
+		        </label>
+            </p>
+		</th>
+</table>
+
 <table width="100%">
 	<tr>
 		<th style="width: 100%;">
@@ -246,17 +259,13 @@
 	<tr>
 		<th style="width: 10px;"></th>
 		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('openUserGuide')">{{ i18n("openUserGuide") }}</a>
+		</th>
+		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('installMotionTemplate')">{{ i18n("installMotionTemplate") }}</a>
 		</th>
 		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('convertFCPXMLtoCSV')">{{ i18n("convertFCPXMLToCSV") }}</a>
-		</th>
-		<th>
-		    <p class="uiItem" style="text-align:left; font-weight:normal;">
-		        <label>
-		            <input type="checkbox" id="enableDroppingFinalCutProProjectToDockIcon" onchange="updateChecked(this)"> {{ i18n("enableDroppingFinalCutProProjectToDockIcon") }}
-		        </label>
-            </p>
 		</th>
 	</tr>
 </table>
