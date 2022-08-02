@@ -425,11 +425,6 @@ mod.devices = {}
 -- A table containing all the repeat timers
 local repeatTimers = {}
 
--- repeatDelayTimers -> table
--- Variable
--- A table containing all the repeat delay timers
-local repeatDelayTimers = {}
-
 -- repeatDelayTimerEnabled -> table
 -- Variable
 -- A table containing all the repeat delay timers booleans
@@ -440,10 +435,24 @@ local repeatDelayTimerEnabled = {}
 -- A table containing all the "Prevent Excessive Thumb Taps" caches
 local cachedPreventExcessiveThumbTaps = {}
 
+--------------------------------------------------------------------------------
+-- @stickler says:
+--  - (W241) variable 'repeatDelayTimers' is mutated but never accessed
+--  - (W241) variable 'preventExcessiveThumbTapsTimers' is mutated but never accessed
+--
+-- However, we need to "capture" the timers, otherwise they could be taken
+-- down by our regular garbage collection timer.
+--------------------------------------------------------------------------------
+
+-- repeatDelayTimers -> table
+-- Variable
+-- A table containing all the repeat delay timers
+local repeatDelayTimers = {} -- luacheck: ignore
+
 -- preventExcessiveThumbTapsTimers -> table
 -- Variable
 -- A table containing all the "Prevent Excessive Thumb Taps" timers
-local preventExcessiveThumbTapsTimers = {}
+local preventExcessiveThumbTapsTimers = {} -- luacheck: ignore
 
 -- cachedBundleID -> string
 -- Variable
