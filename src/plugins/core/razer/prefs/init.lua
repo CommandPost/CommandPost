@@ -1235,6 +1235,11 @@ local function razerPanelCallback(id, params)
                 if data then
                     items[device][destinationApp] = fnutils.copy(data)
                     mod.items(items)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware (and trash the LED cache):
+                    --------------------------------------------------------------------------------
+                    mod._razerManager.refresh(true)
                 end
             end
 
@@ -1313,9 +1318,9 @@ local function razerPanelCallback(id, params)
             mod.items(items)
 
             --------------------------------------------------------------------------------
-            -- Refresh the hardware:
+            -- Refresh the hardware (and trash the LED cache):
             --------------------------------------------------------------------------------
-            mod._razerManager.refresh()
+            mod._razerManager.refresh(true)
         elseif callbackType == "repeatCheckbox" then
             local device        = params["device"]
             local app           = params["application"]
@@ -1340,6 +1345,11 @@ local function razerPanelCallback(id, params)
                 if data then
                     items[device][app][destinationBank] = fnutils.copy(data)
                     mod.items(items)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware (and trash the LED cache):
+                    --------------------------------------------------------------------------------
+                    mod._razerManager.refresh(true)
                 end
             end
 
@@ -1362,6 +1372,48 @@ local function razerPanelCallback(id, params)
                 table.insert(menu, {
                     title = bankLabels[deviceName][tostring(i)].label,
                     fn = function() copyToBank(tostring(i)) end
+                })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
+        elseif callbackType == "copyDevice" then
+            --------------------------------------------------------------------------------
+            -- Copy Device:
+            --------------------------------------------------------------------------------
+            local device = mod.lastDevice()
+
+            local copyDevice = function(destinationDevice)
+                local items = mod.items()
+                local data = items[device]
+                if data then
+                    items[destinationDevice] = copy(data)
+                    mod.items(items)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware (and trash the LED cache):
+                    --------------------------------------------------------------------------------
+                    mod._razerManager.refresh(true)
+                end
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = string.upper(i18n("copyDeviceTo")) .. ":",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for _, deviceID in pairs(mod._razerManager.supportedDevices) do
+                table.insert(menu, {
+                    title = deviceID,
+                    fn = function() copyDevice(deviceID) end
                 })
             end
 
