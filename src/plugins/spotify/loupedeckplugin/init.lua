@@ -2,11 +2,14 @@
 ---
 --- Spotify Loupedeck Plugin Actions
 
-local require           = require
+local require                   = require
 
---local log               = require "hs.logger".new "ldPlugin"
+--local log                       = require "hs.logger".new "ldPlugin"
 
-local spotify           = require "hs.spotify"
+local application               = require "hs.application"
+local spotify                   = require "hs.spotify"
+
+local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 
 local mod = {}
 
