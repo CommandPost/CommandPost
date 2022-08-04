@@ -59,7 +59,7 @@ function mod.changeElementUnderMouse(increase)
         if shiftPressed() then
             amount = 10
         end
-        for i=1, amount do
+        for _=1, amount do
             if increase then
                 element:performAction("AXIncrement")
             else
@@ -76,7 +76,7 @@ function mod.changeElementUnderMouse(increase)
             if shiftPressed() then
                 amount = 10
             end
-            for i=1, amount do
+            for _=1, amount do
                 if increase then
                     parent:performAction("AXIncrement")
                 else
@@ -139,8 +139,8 @@ function mod.changeElementUnderMouse(increase)
                 event.newMouseEvent(event.types.leftMouseDown, currentPosition):post()
                 if not mod.finishDragging then
                     mod.finishDragging = deferred.new(0.5):action(function()
-                        local currentPosition = mouse.absolutePosition()
-                        event.newMouseEvent(event.types.leftMouseUp, currentPosition):post()
+                        local newCurrentPosition = mouse.absolutePosition()
+                        event.newMouseEvent(event.types.leftMouseUp, newCurrentPosition):post()
                         mod.currentlyDragging = nil
                         mod.finishDragging = nil
                         mod.shiftPressed = nil
