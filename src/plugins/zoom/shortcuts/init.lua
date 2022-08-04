@@ -241,7 +241,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Handler:
     --------------------------------------------------------------------------------
-    local icon = imageFromPath(config.basePath .. "/plugins/skype/console/images/shortcut.png")
+    local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/shortcut.png")
     local actionmanager = deps.actionmanager
     mod._handler = actionmanager.addHandler("zoom_shortcuts", "zoom")
         :onChoices(function(choices)
