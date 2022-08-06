@@ -35,12 +35,15 @@
 		}
 	}
 </script>
-<h3 class="uiItem">Titles To Keywords</h3>
-<p class="uiItem">When you drag a Final Cut Pro <strong>Event</strong> to this Toolbox (which must only contain a <strong>single Project</strong>), we will look through all the Titles connected</p>
-<p class="uiItem">to the clips in the <strong>Primary Storyline</strong>, read the name of those clips (as they appear in the <strong>Timeline Index</strong>), then create new</p>
-<p class="uiItem">Keyword ranges for each of those Titles in the same Event, and send that data back into Final Cut Pro.</p>
+<h3 class="uiItem">{{ i18n("titlesToKeywords") }}</h3>
+<p class="uiItem"></p>
+<p class="uiItem">{* i18n("titlesToKeywordsDescriptionOne") *}</p>
+<p class="uiItem">{* i18n("titlesToKeywordsDescriptionTwo") *}</p>
+<p class="uiItem">{* i18n("titlesToKeywordsDescriptionThree") *}</p>
+<p class="uiItem">{* i18n("titlesToKeywordsDescriptionFour") *}</p>
+<p class="uiItem">{* i18n("titlesToKeywordsDescriptionFive") *}</p>
 <br />
-<p class="uiItem">This utility was commissioned by Knut Hake.</p>
+<p class="uiItem">{* i18n("titlesToKeywordsDescriptionSix") *}</p>
 
 <table width="100%">
 	<tr>
@@ -49,7 +52,7 @@
 	<tr>
 		<th style="width: 100%;">
 			<form>
-				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="DROP YOUR FINAL CUT PRO PROJECT HERE"></textarea>
+				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("dropYourFinalCutProEventHere")) }}"></textarea>
 			</form>
 		</th>
 	</tr>

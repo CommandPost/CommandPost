@@ -9,9 +9,9 @@ local hs                        = _G.hs
 local log                       = require "hs.logger".new "titlestokeywords"
 
 local dialog                    = require "hs.dialog"
+local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
-local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
@@ -19,18 +19,17 @@ local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
 local tools                     = require "cp.tools"
 
-local csv                       = require "csv"
 local xml                       = require "hs._asm.xml"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local dirFiles                  = tools.dirFiles
-local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local tableCount                = tools.tableCount
 local trim                      = tools.trim
+local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
@@ -85,6 +84,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- This is where we'll store the Titles metadata:
     --------------------------------------------------------------------------------
+    local uniqueTitleNames = {}
     local titles = {}
     local titleCount = 1
 
@@ -117,7 +117,7 @@ local function processFCPXML(path)
     if not spineChildren then
         local webview = mod._manager.getWebview()
         if webview then
-            webviewAlert(webview, function() end, "Invalid Data Detected.", "Please make sure you drag in an Event which contains a single Project. Do not drag in a Project or a Library.", i18n("ok"), nil, "warning")
+            webviewAlert(webview, function() end, i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"), i18n("ok"), nil, "warning")
         end
         return
     end
@@ -195,19 +195,15 @@ local function processFCPXML(path)
                     titles[titleCount]["ref"] = currentRef
 
                     --------------------------------------------------------------------------------
-                    -- Iterate the title node's attributes:
+                    -- Get the title node's attributes:
                     --------------------------------------------------------------------------------
-                    local titleRawAttributes = clipNode:rawAttributes()
-                    for _, rawAttributeNode in pairs(titleRawAttributes) do
-                        local rawAttributeNodeName = rawAttributeNode:name()
-                        if rawAttributeNodeName == "offset" then
-                            titles[titleCount]["offset"] = rawAttributeNode:stringValue()
-                        elseif rawAttributeNodeName == "name" then
-                            titles[titleCount]["name"] = rawAttributeNode:stringValue()
-                        elseif rawAttributeNodeName == "duration" then
-                            titles[titleCount]["duration"] = rawAttributeNode:stringValue()
-                        end
-                    end
+                    local titleAttributes = clipNode:attributes()
+                    titles[titleCount]["offset"] = titleAttributes["offset"]
+                    titles[titleCount]["duration"] = titleAttributes["duration"]
+
+                    local clipName = titleAttributes["name"]
+                    titles[titleCount]["name"] = clipName
+                    uniqueTitleNames[clipName] = true
 
                     --------------------------------------------------------------------------------
                     -- Increment the title count:
@@ -224,17 +220,141 @@ local function processFCPXML(path)
     if tableCount(titles) == 0 then
         local webview = mod._manager.getWebview()
         if webview then
-            webviewAlert(webview, function() end, "Invalid Data Detected.", "Please make sure you drag in an Event which contains a single Project, with Titles attached to clips in the Primary Storyline. Do not drag in a Project or a Library.", i18n("ok"), nil, "warning")
+            webviewAlert(webview, function() end, i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"), i18n("ok"), nil, "warning")
         end
         return
     end
 
-    -- TODO: Now we update the FCPXML and send back.
+    --------------------------------------------------------------------------------
+    -- Add the new keywords to the event:
+    --
+    -- EXAMPLE:
+    -- <keyword-collection name="One Second"/>
+    --------------------------------------------------------------------------------
+    local event = document:XPathQuery("/fcpxml[1]/event[1]")[1]
+    for clipName, _ in pairs(uniqueTitleNames) do
+        event:addNode("keyword-collection")
+        local numberOfNodes = event:childCount()
+        local newNode = event:children()[numberOfNodes]
+        newNode:addAttribute("name", clipName)
+    end
 
+    --------------------------------------------------------------------------------
+    -- Add the new keywords to the individual clips:
+    --
+    -- EXAMPLE:
+    -- <asset-clip ref="r1" name="Green 25fps 10sec" duration="10s" format="r2" tcFormat="NDF" modDate="2022-08-05 15:48:48 +1000">
+    --     <keyword start="1s" duration="1s" value="One Second"/>
+    -- </asset-clip>
+    --------------------------------------------------------------------------------
+    local eventChildren = event:children()
+    for _, eventNode in pairs(eventChildren) do
+        local clipType = eventNode:name()
+        if clipType == "asset-clip" or clipType == "mc-clip" then
+            --------------------------------------------------------------------------------
+            -- Add markers for asset-clip and mc-clip's:
+            --------------------------------------------------------------------------------
+            local attributes = eventNode:attributes()
+            for _, v in pairs(titles) do
+                if v.ref == attributes.ref and v.clipType == "asset-clip" then
+                    --------------------------------------------------------------------------------
+                    -- We add keywords to the start of an 'asset-clip' node tree:
+                    --------------------------------------------------------------------------------
+                    eventNode:addNode("keyword", 1)
+                    local newNode = eventNode:children()[1]
+                    newNode:addAttribute("start", v.offset)
+                    newNode:addAttribute("duration", v.duration)
+                    newNode:addAttribute("value", v.name)
+                elseif v.ref == attributes.ref and v.clipType == "mc-clip" then
+                    --------------------------------------------------------------------------------
+                    -- We add keywords to the end of an 'mc-clip' node tree:
+                    --------------------------------------------------------------------------------
+                    eventNode:addNode("keyword")
+                    local newNode = eventNode:children()[eventNode:childCount()]
+                    newNode:addAttribute("start", v.offset)
+                    newNode:addAttribute("duration", v.duration)
+                    newNode:addAttribute("value", v.name)
+                end
+            end
+        elseif clipType == "sync-clip" then
+            --------------------------------------------------------------------------------
+            -- Add markers for sync-clips:
+            --------------------------------------------------------------------------------
+            local syncClipNodes = eventNode:children()
+            for _, syncClipNode in pairs(syncClipNodes) do
+                local syncClipNodeName = syncClipNode:name()
+                if syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
+                    --------------------------------------------------------------------------------
+                    -- Add markers for asset-clip and mc-clip's:
+                    --------------------------------------------------------------------------------
+                    local attributes = syncClipNode:attributes()
+                    for _, v in pairs(titles) do
+                        if v.ref == attributes.ref and v.clipType == "sync-clip" then
+                            eventNode:addNode("keyword")
+                            local numberOfNodes = eventNode:childCount()
+                            local newNode = eventNode:children()[numberOfNodes]
+                            newNode:addAttribute("start", v.offset)
+                            newNode:addAttribute("duration", v.duration)
+                            newNode:addAttribute("value", v.name)
+                        end
+                    end
+                end
+            end
+        end
+    end
 
+    --------------------------------------------------------------------------------
+    -- Remove the project from the FCPXML:
+    --------------------------------------------------------------------------------
+    local projectIndex
+    eventChildren = event:children()
+    for i, eventNode in pairs(eventChildren) do
+        local clipType = eventNode:name()
+        if clipType == "project" then
+            projectIndex = i
+            break
+        end
+    end
+    event:removeNode(projectIndex)
 
-    log.df("titles: %s", hs.inspect(titles))
+    --------------------------------------------------------------------------------
+    -- Rename Event Metadata:
+    --------------------------------------------------------------------------------
+    local originalEventName = event:attributes().name
+    event:addAttribute("name", originalEventName .. " ✅")
+    event:removeAttribute("uid")
 
+    --------------------------------------------------------------------------------
+    -- Work out if there's only one library currently open, and if so, lets
+    -- insert the library path to make import more seamless.
+    --------------------------------------------------------------------------------
+    local activeLibraryPaths = fcp:activeLibraryPaths()
+    if tableCount(activeLibraryPaths) == 1 then
+        local libraryPath = urlFromPath(activeLibraryPaths[1])
+        if libraryPath then
+            local fcpxmlData = document:XPathQuery("/fcpxml[1]")[1]
+            fcpxmlData:addNode("import-options", 1)
+            local importOptions = fcpxmlData:children()[1]
+            importOptions:addNode("option")
+            local importOption = importOptions:children()[1]
+            importOption:addAttribute("key", "library location")
+            importOption:addAttribute("value", libraryPath)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Output the revised FCPXML and send it back to FCPX:
+    --------------------------------------------------------------------------------
+    local xmlOutput = document:xmlString(xml.nodeOptions.prettyPrint | xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes)
+
+    local outputPath = os.tmpname() .. ".fcpxml"
+
+    writeToFile(outputPath, xmlOutput)
+
+    fcp:importXML(outputPath)
+
+    --log.df("outputPath: %s", outputPath)
+    --log.df("\nOUTPUT:\n%s", xmlOutput)
 end
 
 -- callback() -> none
@@ -311,10 +431,10 @@ function plugin.init(deps, env)
     mod._panel          =  deps.manager.addPanel({
         priority        = 10,
         id              = toolboxID,
-        label           = "Titles to Keywords",
+        label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
-        tooltip         = i18n("titles"),
-        height          = 300,
+        tooltip         = i18n("titlesToKeywords"),
+        height          = 330,
     })
     :addContent(1, generateContent, false)
 
