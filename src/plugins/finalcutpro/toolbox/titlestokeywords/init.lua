@@ -13,7 +13,6 @@ local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
-local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
@@ -21,14 +20,7 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
-local chooseFileOrFolder        = dialog.chooseFileOrFolder
-local dirFiles                  = tools.dirFiles
-local doesDirectoryExist        = tools.doesDirectoryExist
-local getFilenameFromPath       = tools.getFilenameFromPath
-local removeFilenameFromPath    = tools.removeFilenameFromPath
-local spairs                    = tools.spairs
 local tableCount                = tools.tableCount
-local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
@@ -201,9 +193,9 @@ local function processFCPXML(path)
                     titles[titleCount]["offset"] = titleAttributes["offset"]
                     titles[titleCount]["duration"] = titleAttributes["duration"]
 
-                    local clipName = titleAttributes["name"]
-                    titles[titleCount]["name"] = clipName
-                    uniqueTitleNames[clipName] = true
+                    local titleNodeName = titleAttributes["name"]
+                    titles[titleCount]["name"] = titleNodeName
+                    uniqueTitleNames[titleNodeName] = true
 
                     --------------------------------------------------------------------------------
                     -- Increment the title count:
