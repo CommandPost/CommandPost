@@ -269,8 +269,8 @@ local function processFCPXML(path)
                     local whereToInsert = eventNode:childCount() + 1
                     local eventNodeChildren = eventNode:children()
                     local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "audio-channel-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
-                    for i, v in pairs(eventNodeChildren) do
-                        local abortName = v:name()
+                    for i, vv in pairs(eventNodeChildren) do
+                        local abortName = vv:name()
                         if tableContains(abortClipNames, abortName) then
                             whereToInsert = i
                             break
@@ -296,8 +296,8 @@ local function processFCPXML(path)
                     local whereToInsert = eventNode:childCount() + 1
                     local eventNodeChildren = eventNode:children()
                     local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "filter-audio", "metadata"}
-                    for i, v in pairs(eventNodeChildren) do
-                        local abortName = v:name()
+                    for i, vv in pairs(eventNodeChildren) do
+                        local abortName = vv:name()
                         if tableContains(abortClipNames, abortName) then
                             whereToInsert = i
                             break
@@ -340,8 +340,8 @@ local function processFCPXML(path)
                             local whereToInsert = eventNode:childCount() + 1
                             local eventNodeChildren = eventNode:children()
                             local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
-                            for i, v in pairs(eventNodeChildren) do
-                                local abortName = v:name()
+                            for i, vv in pairs(eventNodeChildren) do
+                                local abortName = vv:name()
                                 if tableContains(abortClipNames, abortName) then
                                     whereToInsert = i
                                     break
