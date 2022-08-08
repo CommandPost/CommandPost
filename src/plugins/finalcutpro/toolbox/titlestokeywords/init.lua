@@ -514,6 +514,33 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     mod._panel:addHandler("onchange", "titlesToKeywordsPanelCallback", callback)
 
+    --------------------------------------------------------------------------------
+    -- Drag & Drop Text to the Dock Icon:
+    --------------------------------------------------------------------------------
+    mod._preferences.registerDragAndDropTextAction("titlesToKeywords", i18n("sendFCPXMLToTitlesToKeywords"), function(value)
+        ---------------------------------------------------
+        -- Setup a temporary file path:
+        ---------------------------------------------------
+        local path = os.tmpname() .. ".fcpxml"
+
+        ---------------------------------------------------
+        -- Write the FCPXML data to a temporary file:
+        ---------------------------------------------------
+        writeToFile(path, value)
+
+        ---------------------------------------------------
+        -- Process the FCPXML:
+        ---------------------------------------------------
+        processFCPXML(path)
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Drag & Drop File to the Dock Icon:
+    --------------------------------------------------------------------------------
+    mod._preferences.registerDragAndDropFileAction("shotdata", i18n("sendFCPXMLToTitlesToKeywords"), function(path)
+        processFCPXML(path)
+    end)
+
     return mod
 end
 

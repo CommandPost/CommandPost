@@ -2040,6 +2040,7 @@
     "send": "Send",
     "sendCrashData": "Send Crash Data (requires restart)",
     "sendFCPXMLToShotData": "Send FCPXML to Shot Data Toolbox",
+    "sendFCPXMLToTitlesToKeywords": "Send FCPXML to Titles to Keywords Toolbox",
     "sendFCPXMLToTitlesToolbox": "Send FCPXML to Titles Toolbox",
     "sendTestNotification": "Send Test Notification",
     "sendToCompressor": "Send to Compressor",
