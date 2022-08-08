@@ -750,7 +750,7 @@ function mod.latestDTDVersion()
     return supportedDTDs[#supportedDTDs]
 end
 
---- cp.apple.fcpxml:valid(path[, version]) -> string | boolean
+--- cp.apple.fcpxml:valid(path[, version]) -> string|boolean, string
 --- Function
 --- Validates an FCPXML document against a document type definition (DTD).
 ---
@@ -760,6 +760,7 @@ end
 ---
 --- Returns:
 ---  * The FCPXML path or `false` if not valid.
+---  * The output from xmllint as a string.
 ---
 --- Notes:
 ---  * If a version is not supplied, we will try and read the version
@@ -829,8 +830,8 @@ function mod.valid(path, version)
     -- Use `xmllint` to make sure the file is valid:
     --------------------------------------------------------------------------------
     local dtdPath = config.scriptPath .. "/cp/apple/fcpxml/dtd/" .. "FCPXMLv" .. version.major .. "_" .. version.minor .. ".dtd"
-    local _, status = execute([[xmllint --noout --dtdvalid "]] .. dtdPath .. [[" "]] .. path .. [["]])
-    return status and path or false
+    local output, status = execute([[xmllint --noout --noblanks --dtdvalid "]] .. dtdPath .. [[" "]] .. path .. [["]])
+    return status and path or false, output
 end
 
 --------------------------------------------------------------------------------

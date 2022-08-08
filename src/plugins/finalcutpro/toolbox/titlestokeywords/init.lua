@@ -20,6 +20,7 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
+local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
@@ -218,7 +219,7 @@ local function processFCPXML(path)
     end
 
     --------------------------------------------------------------------------------
-    -- Add the new keywords to the event:
+    -- Add the new keywords to the END of the event:
     --
     -- EXAMPLE:
     -- <keyword-collection name="One Second"/>
@@ -250,19 +251,61 @@ local function processFCPXML(path)
             for _, v in pairs(titles) do
                 if v.ref == attributes.ref and v.clipType == "asset-clip" then
                     --------------------------------------------------------------------------------
-                    -- We add keywords to the start of an 'asset-clip' node tree:
+                    -- DTD v1.10:
+                    --
+                    -- <!-- An 'asset-clip' is a clip that references an asset. -->
+                    -- <!-- All available media components in the asset are implicitly included. -->
+                    -- <!-- Clips have a media reference and zero or more anchored items. -->
+                    -- <!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+                    -- <!ELEMENT asset-clip (note?, %timing-params;, %intrinsic-params;, (%anchor_item;)*, (%marker_item;)*, audio-channel-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
+                    --
+                    -- <!ENTITY % video_filter_item "(filter-video | filter-video-mask)">
                     --------------------------------------------------------------------------------
-                    eventNode:addNode("keyword", 1)
-                    local newNode = eventNode:children()[1]
+
+                    --------------------------------------------------------------------------------
+                    -- We need to insert our 'keyword' BEFORE 'audio-channel-source', 'filter-video'
+                    -- 'filter-video-mask', 'filter-audio' and 'metadata':
+                    --------------------------------------------------------------------------------
+                    local whereToInsert = eventNode:childCount() + 1
+                    local eventNodeChildren = eventNode:children()
+                    local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "audio-channel-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                    for i, v in pairs(eventNodeChildren) do
+                        local abortName = v:name()
+                        if tableContains(abortClipNames, abortName) then
+                            whereToInsert = i
+                            break
+                        end
+                    end
+
+                    eventNode:addNode("keyword", whereToInsert)
+                    local newNode = eventNode:children()[whereToInsert]
                     newNode:addAttribute("start", v.offset)
                     newNode:addAttribute("duration", v.duration)
                     newNode:addAttribute("value", v.name)
                 elseif v.ref == attributes.ref and v.clipType == "mc-clip" then
                     --------------------------------------------------------------------------------
-                    -- We add keywords to the end of an 'mc-clip' node tree:
+                    -- DTD v1.10:
+                    --
+                    -- <!-- An 'mc-clip' element defines an edited range of a/v data from a source 'multicam' media. -->
+                    -- <!ELEMENT mc-clip (note?, %timing-params;, %intrinsic-params-audio;, mc-source*, (%anchor_item;)*, (%marker_item;)*, filter-audio*, metadata?)>
                     --------------------------------------------------------------------------------
-                    eventNode:addNode("keyword")
-                    local newNode = eventNode:children()[eventNode:childCount()]
+
+                    --------------------------------------------------------------------------------
+                    -- We need to insert our 'keyword' BEFORE 'filter-audio' and 'metadata':
+                    --------------------------------------------------------------------------------
+                    local whereToInsert = eventNode:childCount() + 1
+                    local eventNodeChildren = eventNode:children()
+                    local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "filter-audio", "metadata"}
+                    for i, v in pairs(eventNodeChildren) do
+                        local abortName = v:name()
+                        if tableContains(abortClipNames, abortName) then
+                            whereToInsert = i
+                            break
+                        end
+                    end
+
+                    eventNode:addNode("keyword", whereToInsert)
+                    local newNode = eventNode:children()[whereToInsert]
                     newNode:addAttribute("start", v.offset)
                     newNode:addAttribute("duration", v.duration)
                     newNode:addAttribute("value", v.name)
@@ -276,15 +319,37 @@ local function processFCPXML(path)
             for _, syncClipNode in pairs(syncClipNodes) do
                 local syncClipNodeName = syncClipNode:name()
                 if syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
-                    --------------------------------------------------------------------------------
-                    -- Add markers for asset-clip and mc-clip's:
-                    --------------------------------------------------------------------------------
                     local attributes = syncClipNode:attributes()
                     for _, v in pairs(titles) do
                         if v.ref == attributes.ref and v.clipType == "sync-clip" then
-                            eventNode:addNode("keyword")
-                            local numberOfNodes = eventNode:childCount()
-                            local newNode = eventNode:children()[numberOfNodes]
+                            --------------------------------------------------------------------------------
+                            -- DTD v1.10:
+                            --
+                            -- <!-- A 'sync-clip' is a container for other story elements that are used as a synchronized clip. -->
+                            -- <!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+                            -- <!ELEMENT sync-clip (note?, %timing-params;, %intrinsic-params;, (spine | (%clip_item;) | caption)*, (%marker_item;)*, sync-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
+                            --
+                            -- <!ENTITY % video_filter_item "(filter-video | filter-video-mask)">
+                            -- <!ENTITY % marker_item "(marker | chapter-marker | rating | keyword | analysis-marker)">
+                            --------------------------------------------------------------------------------
+
+                            --------------------------------------------------------------------------------
+                            -- We need to insert our 'keyword' BEFORE 'sync-source', 'filter-video',
+                            -- 'filter-video-mask', 'filter-audio' and 'metadata'.
+                            --------------------------------------------------------------------------------
+                            local whereToInsert = eventNode:childCount() + 1
+                            local eventNodeChildren = eventNode:children()
+                            local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                            for i, v in pairs(eventNodeChildren) do
+                                local abortName = v:name()
+                                if tableContains(abortClipNames, abortName) then
+                                    whereToInsert = i
+                                    break
+                                end
+                            end
+
+                            eventNode:addNode("keyword", whereToInsert)
+                            local newNode = eventNode:children()[whereToInsert]
                             newNode:addAttribute("start", v.offset)
                             newNode:addAttribute("duration", v.duration)
                             newNode:addAttribute("value", v.name)
@@ -335,18 +400,32 @@ local function processFCPXML(path)
     end
 
     --------------------------------------------------------------------------------
-    -- Output the revised FCPXML and send it back to FCPX:
+    -- Output the revised FCPXML to file:
     --------------------------------------------------------------------------------
-    local xmlOutput = document:xmlString(xml.nodeOptions.prettyPrint | xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes)
+    local nodeOptions = xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes | xml.nodeOptions.prettyPrint
+    local xmlOutput = document:xmlString(nodeOptions)
 
     local outputPath = os.tmpname() .. ".fcpxml"
 
     writeToFile(outputPath, xmlOutput)
 
-    fcp:importXML(outputPath)
+    log.df("The Titles To Keywords FCPXML was temporarily saved to: %s", outputPath)
 
-    --log.df("outputPath: %s", outputPath)
-    --log.df("\nOUTPUT:\n%s", xmlOutput)
+    --------------------------------------------------------------------------------
+    -- Validate the FCPXML before sending to FCPX:
+    --------------------------------------------------------------------------------
+    if not fcpxml.valid(outputPath) then
+        local webview = mod._manager.getWebview()
+        if webview then
+            webviewAlert(webview, function() end, "DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.", i18n("ok"), nil, "warning")
+        end
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Send the FCPXML file to Final Cut Pro:
+    --------------------------------------------------------------------------------
+    fcp:importXML(outputPath)
 end
 
 -- callback() -> none
@@ -426,7 +505,7 @@ function plugin.init(deps, env)
         label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
         tooltip         = i18n("titlesToKeywords"),
-        height          = 330,
+        height          = 315,
     })
     :addContent(1, generateContent, false)
 
