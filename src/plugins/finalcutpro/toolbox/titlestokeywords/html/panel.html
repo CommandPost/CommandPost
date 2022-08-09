@@ -17,6 +17,21 @@
 	}
 </style>
 <script>
+	function doAction(actionType) {
+		try {
+			var result = {
+				id: "titlesToKeywordsPanelCallback",
+				params: {
+					type: actionType,
+					textEditor: document.getElementById("textEditor").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function dropboxAction(){
 		if (document.getElementById("dropbox") != null) {
 			try {
@@ -56,3 +71,28 @@
 		</th>
 	</tr>
 </table>
+
+<hr />
+
+<h3 class="uiItem">Create Titles from Text</h3>
+<p class="uiItem"></p>
+<p class="uiItem">This is a helpful tool that allows you to create a new Final Cut Pro <strong>Project</strong> which contains a new <strong>Title</strong> for every line in the below text box.</p>
+<br />
+<table width="100%">
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="text-align: left;">
+            <textarea id="textEditor" class="textEditor"></textarea>
+		</th>
+	</tr>
+</table>
+<br />
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th>
+			<a href="#" class="bottomButton" onclick="doAction('sendToFinalCutPro')">Send to Final Cut Pro</a>
+		</th>
+	</tr>
+</table>
+
+<script>doAction('updateUI');</script>

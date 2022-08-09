@@ -13,6 +13,7 @@ local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
+local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
@@ -20,6 +21,7 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
+local lines                     = tools.lines
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local urlFromPath               = fs.urlFromPath
@@ -428,6 +430,120 @@ local function processFCPXML(path)
     fcp:importXML(outputPath)
 end
 
+
+
+
+local function createTitlesFromText(text)
+    --------------------------------------------------------------------------------
+    -- Start with a FCPXML Template:
+    --------------------------------------------------------------------------------
+    local templatePath = config.basePath .. "/plugins/finalcutpro/toolbox/titlestokeywords/templates/empty.fcpxml"
+    local document = xml.open(templatePath)
+
+    --------------------------------------------------------------------------------
+    -- Access the "Event > Project > Sequence > Spine":
+    --------------------------------------------------------------------------------
+    local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")[1]
+
+    local textLines = lines(text)
+    for i, v in pairs(textLines) do
+        --------------------------------------------------------------------------------
+        -- EXAMPLE:
+        --
+        -- <title ref="r2" offset="0s" name="AAA" start="3600s" duration="25100/2500s">
+        --     <text>
+        --         <text-style ref="ts1">Title</text-style>
+        --     </text>
+        --     <text-style-def id="ts1">
+        --         <text-style font="Helvetica" fontSize="63" fontFace="Regular" fontColor="1 1 1 1" alignment="center"/>
+        --     </text-style-def>
+        -- </title>
+        --------------------------------------------------------------------------------
+        log.df("Processing Line %s: %s", i, v)
+
+        spine:addNode("title")
+        local titleNode = spine:children()[i]
+
+        titleNode:addAttribute("ref", "r2")
+        titleNode:addAttribute("offset", tostring((i - 1) * 10) .. "s")
+        titleNode:addAttribute("name", v)
+        titleNode:addAttribute("start", "0s")
+        titleNode:addAttribute("duration", "10s")
+
+        titleNode:addNode("text")
+        local textNode = titleNode:children()[1]
+
+        textNode:addNode("text-style")
+        local textStyleNode = textNode:children()[1]
+
+        textStyleNode:addAttribute("ref", "ts" .. i)
+        textStyleNode:setStringValue(v)
+
+
+        titleNode:addNode("text-style-def")
+        local textStyleDefNode = titleNode:children()[2]
+
+        textStyleDefNode:addAttribute("id", "ts" .. i)
+
+        textStyleDefNode:addNode("text-style")
+
+        local textStyleDefTextStyleNode = textStyleDefNode:children()[1]
+
+        textStyleDefTextStyleNode:addAttribute("font", "Helvetica")
+        textStyleDefTextStyleNode:addAttribute("fontSize", "63")
+        textStyleDefTextStyleNode:addAttribute("fontFace", "Regular")
+        textStyleDefTextStyleNode:addAttribute("fontColor", "1 1 1 1")
+        textStyleDefTextStyleNode:addAttribute("alignment", "center")
+    end
+
+    --------------------------------------------------------------------------------
+    -- Work out if there's only one library currently open, and if so, lets
+    -- insert the library path to make import more seamless.
+    --------------------------------------------------------------------------------
+    local activeLibraryPaths = fcp:activeLibraryPaths()
+    if tableCount(activeLibraryPaths) == 1 then
+        local libraryPath = urlFromPath(activeLibraryPaths[1])
+        if libraryPath then
+            local fcpxmlData = document:XPathQuery("/fcpxml[1]")[1]
+            fcpxmlData:addNode("import-options", 1)
+            local importOptions = fcpxmlData:children()[1]
+            importOptions:addNode("option")
+            local importOption = importOptions:children()[1]
+            importOption:addAttribute("key", "library location")
+            importOption:addAttribute("value", libraryPath)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Output the revised FCPXML to file:
+    --------------------------------------------------------------------------------
+    local nodeOptions = xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes | xml.nodeOptions.prettyPrint
+    local xmlOutput = document:xmlString(nodeOptions)
+
+    local outputPath = os.tmpname() .. ".fcpxml"
+
+    writeToFile(outputPath, xmlOutput)
+
+    log.df("The Titles To Keywords FCPXML was temporarily saved to: %s", outputPath)
+
+    --------------------------------------------------------------------------------
+    -- Validate the FCPXML before sending to FCPX:
+    --------------------------------------------------------------------------------
+    if not fcpxml.valid(outputPath) then
+        local webview = mod._manager.getWebview()
+        if webview then
+            webviewAlert(webview, function() end, "DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.", i18n("ok"), nil, "warning")
+        end
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Send the FCPXML file to Final Cut Pro:
+    --------------------------------------------------------------------------------
+    fcp:importXML(outputPath)
+
+end
+
 -- callback() -> none
 -- Function
 -- JavaScript Callback for the Panel
@@ -462,6 +578,9 @@ local function callback(id, params)
             -- Process the FCPXML:
             ---------------------------------------------------
             processFCPXML(path)
+        elseif callbackType == "sendToFinalCutPro" then
+            local textEditor = params["textEditor"]
+            createTitlesFromText(textEditor)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -505,7 +624,7 @@ function plugin.init(deps, env)
         label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
         tooltip         = i18n("titlesToKeywords"),
-        height          = 315,
+        height          = 680,
     })
     :addContent(1, generateContent, false)
 
