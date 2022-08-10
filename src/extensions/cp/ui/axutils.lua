@@ -446,8 +446,9 @@ axutils.compare = {}
 --- Returns:
 ---  * `true` if `a` is left of `b`.
 function axutils.compare.leftToRight(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.x < bFrame.x) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.x < bFrame.x) or false
 end
 
 --- cp.ui.axutils.compare.rightToLeft(a, b) -> boolean
@@ -461,8 +462,9 @@ end
 --- Returns:
 ---  * `true` if `a` is right of `b`.
 function axutils.compare.rightToLeft(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.x + aFrame.w > bFrame.x + bFrame.w) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.x + aFrame.w > bFrame.x + bFrame.w) or false
 end
 
 --- cp.ui.axutils.compare.topToBottom(a, b) -> boolean
@@ -476,8 +478,9 @@ end
 --- Returns:
 ---  * `true` if `a` is above `b`.
 function axutils.compare.topToBottom(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.y < bFrame.y) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.y < bFrame.y) or false
 end
 
 --- cp.ui.axutils.compare.bottomToTop(a, b) -> boolean
@@ -491,8 +494,9 @@ end
 --- Returns:
 ---  * `true` if `a` is below `b`.
 function axutils.compare.bottomToTop(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
 end
 
 --- cp.ui.axutils.childFromLeft(element, index[, matcherFn]) -> axuielement
