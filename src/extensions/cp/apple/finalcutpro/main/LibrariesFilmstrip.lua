@@ -174,7 +174,7 @@ end
 --- Returns:
 ---  * A table of `axuielementObject` objects or `nil` if no clip UI could be found.
 function LibrariesFilmstrip:clipsUI(filterFn)
-    local ui = self:contentsUI()
+    local ui = self.contentsUI()
     if ui then
         local clips = childrenMatching(ui, function(child)
             return child:attributeValue("AXRole") == "AXGroup"
@@ -218,7 +218,7 @@ end
 --- Returns:
 ---  * A table of `axuielementObject` objects or `nil` if no clips are selected.
 function LibrariesFilmstrip:selectedClipsUI()
-    local ui = self:contentsUI()
+    local ui = self.contentsUI()
     if ui then
         local children = ui:attributeValue("AXSelectedChildren")
         local clips = {}
@@ -271,7 +271,7 @@ function LibrariesFilmstrip:showClip(clip)
             --------------------------------------------------------------------------------
             -- We need to scroll:
             --------------------------------------------------------------------------------
-            local oFrame = self:contentsUI():attributeValue("AXFrame")
+            local oFrame = self.contentsUI():attributeValue("AXFrame")
             local scrollHeight = oFrame.h - vFrame.h
 
             local vValue
@@ -395,7 +395,7 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesFilmstrip:selectAll(clips)
     clips = clips or self:clips()
-    local contents = self:contentsUI()
+    local contents = self.contentsUI()
     if clips and contents then
         local clipsUI = _clipsToUI(clips)
         contents:setAttributeValue("AXSelectedChildren", clipsUI)
@@ -414,7 +414,7 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`.
 function LibrariesFilmstrip:deselectAll()
-    local contents = self:contentsUI()
+    local contents = self.contentsUI()
     if contents then
         contents:setAttributeValue("AXSelectedChildren", {})
         return true
