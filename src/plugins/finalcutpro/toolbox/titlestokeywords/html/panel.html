@@ -15,8 +15,54 @@
 		color: transparent;
 	    text-shadow: 0px 0px 0px tomato;
 	}
+
+	th {
+		font-weight: normal;
+		text-align:left !important;
+	}
+
+	.rename {
+		float: left;
+		-webkit-appearance: none;
+		-webkit-box-shadow: none;
+		-webkit-rtl-ordering: logical;
+		-webkit-user-select: text;
+		color: #959595;
+		background-color:#161616;
+		border-style: solid;
+		border-color: #0a0a0a;
+		border-width: 2px;
+		border-radius: 6px;
+		text-align: center;
+		font-size: 13px;
+		height: 20px;
+		margin-top: 5px;
+		margin-bottom: 5px;
+		width: 99%;
+	}
 </style>
 <script>
+	function doAction(actionType) {
+		try {
+			var result = {
+				id: "titlesToKeywordsPanelCallback",
+				params: {
+					type: actionType,
+					textEditor: document.getElementById("textEditor").value,
+                    prefix: document.getElementById("prefix").value,
+                    suffix: document.getElementById("suffix").value,
+                    startOrEnd: document.getElementById("startOrEnd").value,
+                    startWith: document.getElementById("startWith").value,
+                    stepValue: document.getElementById("stepValue").value,
+                    padding: document.getElementById("padding").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function dropboxAction(){
 		if (document.getElementById("dropbox") != null) {
 			try {
@@ -34,6 +80,22 @@
 			document.getElementById("dropbox").value = "";
 		}
 	}
+
+	function updateChecked(whichElement) {
+		try {
+			var result = {
+				id: "titlesToKeywordsPanelCallback",
+				params: {
+					type: "updateChecked",
+					id: whichElement.id,
+					value: whichElement.checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
 </script>
 <h3 class="uiItem">{{ i18n("titlesToKeywords") }}</h3>
 <p class="uiItem"></p>
@@ -43,16 +105,117 @@
 <p class="uiItem">{* i18n("titlesToKeywordsDescriptionFour") *}</p>
 <br />
 <p class="uiItem">{* i18n("titlesToKeywordsDescriptionSix") *}</p>
+<br />
+<p class="uiItem"><label><input type="checkbox" id="removeProjectFromEvent" onchange="updateChecked(this)"> {{ i18n("removeProjectFromEvent") }}</label></p>
+<p class="uiItem"><label><input type="checkbox" id="mergeWithExistingEvent" onchange="updateChecked(this)"> {{ i18n("mergeWithExistingEvent") }}</label></p>
+<p class="uiItem"><label><input type="checkbox" id="useTitleContentsInsteadOfTitleName" onchange="updateChecked(this)"> {{ i18n("useTitleContentsInsteadOfTitleName") }}</label></p>
+
 
 <table width="100%">
 	<tr>
 		<th style="height: 10px;"></th>
 	</tr>
 	<tr>
-		<th style="width: 100%;">
+		<th style="width: 100%; text-align:center !important;">
 			<form>
 				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("dropYourFinalCutProEventHere")) }}"></textarea>
 			</form>
 		</th>
 	</tr>
 </table>
+
+<hr />
+
+<h3 class="uiItem">{{ i18n("createTitlesFromText") }}</h3>
+<p class="uiItem"></p>
+<p class="uiItem">{* i18n("createTitlesFromTextDescription") *}</p>
+<br />
+<table width="100%" style="margin-left: 10px;">
+	<tr>
+		<th style="text-align: left;">
+            <textarea id="textEditor" class="textEditor" onchange="doAction('update');"></textarea>
+		</th>
+	</tr>
+</table>
+
+<table style="margin-left: 10px;">
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("prefix") }}:</span>
+		</th>
+		<th>
+			<input id="prefix" class="rename" type="text" name="prefix" style="width: 460px" onchange="doAction('update');" />
+		</th>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" style="width: 50px" onclick="doAction('addPrefix')">{{ i18n("insert") }}</a>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("suffix") }}:</span>
+		</th>
+		<th>
+			<input id="suffix" class="rename" type="text" name="suffix" style="width: 460px" onchange="doAction('update');" />
+		</th>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" style="width: 50px" onclick="doAction('addSuffix')">{{ i18n("insert") }}</a>
+		</th>
+	</tr>
+</table>
+<table style="margin-left: 10px;">
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("sequence") }}:</span>
+		</th>
+		<th>
+			<select id="startOrEnd" onchange="doAction('update');">
+				<option value="start">{{ i18n("start") }}</option>
+				<option value="end">{{ i18n("end") }}</option>
+			</select>
+		</th>
+	</tr>
+</table>
+<table style="margin-left: 10px;">
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("startWith") }}:</span>
+		</th>
+		<th style="width: 100px">
+			<input id="startWith" class="rename" type="number" name="startWith" style="width: 50px" onchange="doAction('update');" />
+		</th>
+		<th style="width: 95px;">
+			<span class="label">{{ i18n("stepValue") }}:</span>
+		</th>
+		<th style="width: 100px">
+			<input id="stepValue" class="rename" type="number" name="stepValue" style="width: 50px" onchange="doAction('update');" />
+		</th>
+		<th style="width: 95px;">
+			<span class="label">{{ i18n("padding") }}:</span>
+		</th>
+		<th style="width: 50px">
+			<input id="padding" class="rename" type="number" name="padding" style="width: 50px" onchange="doAction('update');" />
+		</th>
+		<th style="width: 13px;"></th>
+		<th>
+			<a href="#" class="bottomButton" style="width: 50px" onclick="doAction('addSequence')">{{ i18n("insert") }}</a>
+		</th>
+	</tr>
+</table>
+<br />
+<table style="margin-left: 20px; text-align:left;">
+	<tr>
+		<th>
+			<a href="#" class="bottomButton" onclick="doAction('sendToFinalCutPro')">{{ i18n("sendToFinalCutPro") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="doAction('clear')">{{ i18n("clear") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="doAction('reset')">{{ i18n("reset") }}</a>
+		</th>
+	</tr>
+</table>
+
+<script>doAction('updateUI');</script>
