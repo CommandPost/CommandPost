@@ -21,14 +21,66 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
+local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
+local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.removeProjectFromEvent <cp.prop: boolean>
+--- Field
+--- Remove Project from Event
+mod.removeProjectFromEvent = config.prop("toolbox.titlestokeywords.removeProjectFromEvent", true)
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.mergeWithExistingEvent <cp.prop: boolean>
+--- Field
+--- Merge With Existing Event?
+mod.mergeWithExistingEvent = config.prop("toolbox.titlestokeywords.mergeWithExistingEvent", false)
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.useTitleContentsInsteadOfTitleName <cp.prop: boolean>
+--- Field
+--- Use Title Contents Instead of Title Name?
+mod.useTitleContentsInsteadOfTitleName = config.prop("toolbox.titlestokeywords.useTitleContentsInsteadOfTitleName", false)
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.textEditor <cp.prop: string>
+--- Field
+--- Last Text Editor Value
+mod.textEditor = config.prop("toolbox.titlestokeywords.textEditor", "")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.prefix <cp.prop: string>
+--- Field
+--- Last Prefix Value
+mod.prefix = config.prop("toolbox.titlestokeywords.prefix", " - ")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.suffix <cp.prop: string>
+--- Field
+--- Last Suffix Value
+mod.suffix = config.prop("toolbox.titlestokeywords.suffix", " - ")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.startOrEnd <cp.prop: string>
+--- Field
+--- Last Start or End Value
+mod.startOrEnd = config.prop("toolbox.titlestokeywords.startOrEnd", "start")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.startWith <cp.prop: string>
+--- Field
+--- Last Start With Value
+mod.startWith = config.prop("toolbox.titlestokeywords.startWith", "1")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.stepValue <cp.prop: string>
+--- Field
+--- Last Step With Value
+mod.stepValue = config.prop("toolbox.titlestokeywords.stepValue", "1")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.padding <cp.prop: string>
+--- Field
+--- Last Padding Value
+mod.padding = config.prop("toolbox.titlestokeywords.padding", "0")
 
 -- renderPanel(context) -> none
 -- Function
@@ -196,9 +248,30 @@ local function processFCPXML(path)
                     titles[titleCount]["offset"] = titleAttributes["offset"]
                     titles[titleCount]["duration"] = titleAttributes["duration"]
 
-                    local titleNodeName = titleAttributes["name"]
-                    titles[titleCount]["name"] = titleNodeName
-                    uniqueTitleNames[titleNodeName] = true
+                    --------------------------------------------------------------------------------
+                    -- Get the Titles Names:
+                    --------------------------------------------------------------------------------
+                    if mod.useTitleContentsInsteadOfTitleName() then
+                        local titleNodeName = ""
+                        local nodeChildren = clipNode:children()
+                        for _, nodeChild in pairs(nodeChildren) do
+                            if nodeChild:name() == "text" then
+                                local textStyles = nodeChild:children() or {}
+                                for _, textStyle in pairs(textStyles) do
+                                    local originalValue = textStyle:stringValue() or ""
+                                    originalValue = trim(originalValue)
+                                    originalValue = string.gsub(originalValue, "\n", "")
+                                    titleNodeName = originalValue
+                                end
+                            end
+                        end
+                        titles[titleCount]["name"] = titleNodeName
+                        uniqueTitleNames[titleNodeName] = true
+                    else
+                        local titleNodeName = titleAttributes["name"]
+                        titles[titleCount]["name"] = titleNodeName
+                        uniqueTitleNames[titleNodeName] = true
+                    end
 
                     --------------------------------------------------------------------------------
                     -- Increment the title count:
@@ -365,23 +438,27 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Remove the project from the FCPXML:
     --------------------------------------------------------------------------------
-    local projectIndex
-    eventChildren = event:children()
-    for i, eventNode in pairs(eventChildren) do
-        local clipType = eventNode:name()
-        if clipType == "project" then
-            projectIndex = i
-            break
+    if mod.removeProjectFromEvent() then
+        local projectIndex
+        eventChildren = event:children()
+        for i, eventNode in pairs(eventChildren) do
+            local clipType = eventNode:name()
+            if clipType == "project" then
+                projectIndex = i
+                break
+            end
         end
+        event:removeNode(projectIndex)
     end
-    event:removeNode(projectIndex)
 
     --------------------------------------------------------------------------------
     -- Rename Event Metadata:
     --------------------------------------------------------------------------------
-    local originalEventName = event:attributes().name
-    event:addAttribute("name", originalEventName .. " ✅")
-    event:removeAttribute("uid")
+    if not mod.mergeWithExistingEvent() then
+        local originalEventName = event:attributes().name
+        event:addAttribute("name", originalEventName .. " ✅")
+        event:removeAttribute("uid")
+    end
 
     --------------------------------------------------------------------------------
     -- Work out if there's only one library currently open, and if so, lets
@@ -430,9 +507,15 @@ local function processFCPXML(path)
     fcp:importXML(outputPath)
 end
 
-
-
-
+-- createTitlesFromText(text) -> none
+-- Function
+-- Create Titles from Text.
+--
+-- Parameters:
+--  * text - The text to process.
+--
+-- Returns:
+--  * None
 local function createTitlesFromText(text)
     --------------------------------------------------------------------------------
     -- Start with a FCPXML Template:
@@ -459,8 +542,6 @@ local function createTitlesFromText(text)
         --     </text-style-def>
         -- </title>
         --------------------------------------------------------------------------------
-        log.df("Processing Line %s: %s", i, v)
-
         spine:addNode("title")
         local titleNode = spine:children()[i]
 
@@ -524,7 +605,7 @@ local function createTitlesFromText(text)
 
     writeToFile(outputPath, xmlOutput)
 
-    log.df("The Titles To Keywords FCPXML was temporarily saved to: %s", outputPath)
+    log.df("The Titles from Text FCPXML was temporarily saved to: %s", outputPath)
 
     --------------------------------------------------------------------------------
     -- Validate the FCPXML before sending to FCPX:
@@ -542,6 +623,33 @@ local function createTitlesFromText(text)
     --------------------------------------------------------------------------------
     fcp:importXML(outputPath)
 
+end
+
+-- updateUI() -> none
+-- Function
+-- Update the user interface.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function updateUI()
+    local injectScript = mod._manager.injectScript
+    local script = [[
+        changeValueByID("textEditor", `]]   .. escapeTilda(mod.textEditor())    .. [[`);
+        changeValueByID("prefix", `]]       .. escapeTilda(mod.prefix())        .. [[`);
+        changeValueByID("suffix", `]]       .. escapeTilda(mod.suffix())        .. [[`);
+        changeValueByID("startOrEnd", `]]   .. escapeTilda(mod.startOrEnd())    .. [[`);
+        changeValueByID("startWith", `]]    .. escapeTilda(mod.startWith())     .. [[`);
+        changeValueByID("stepValue", `]]    .. escapeTilda(mod.stepValue())     .. [[`);
+        changeValueByID("padding", `]]      .. escapeTilda(mod.padding())       .. [[`);
+
+        changeCheckedByID("mergeWithExistingEvent", ]] .. tostring(mod.mergeWithExistingEvent()) .. [[);
+        changeCheckedByID("useTitleContentsInsteadOfTitleName", ]] .. tostring(mod.useTitleContentsInsteadOfTitleName()) .. [[);
+        changeCheckedByID("removeProjectFromEvent", ]] .. tostring(mod.removeProjectFromEvent()) .. [[);
+    ]]
+    injectScript(script)
 end
 
 -- callback() -> none
@@ -579,8 +687,120 @@ local function callback(id, params)
             ---------------------------------------------------
             processFCPXML(path)
         elseif callbackType == "sendToFinalCutPro" then
+            --------------------------------------------------------------------------------
+            -- Send to Final Cut Pro:
+            --------------------------------------------------------------------------------
             local textEditor = params["textEditor"]
             createTitlesFromText(textEditor)
+
+        elseif callbackType == "addSequence" then
+            --------------------------------------------------------------------------------
+            -- Add Sequence:
+            --------------------------------------------------------------------------------
+            local startWith = params["startWith"]
+            local padding = params["padding"]
+            local stepValue = params["stepValue"]
+            local startOrEnd = params["startOrEnd"]
+            local textEditor = params["textEditor"]
+            local textEditorLines = textEditor:split("\n")
+
+            local counter = tonumber(startWith)
+
+            for i, v in pairs(textEditorLines) do
+                local sequenceValue = string.format("%0" .. padding .. "d", counter)
+
+                if startOrEnd == "start" then
+                    textEditorLines[i] = sequenceValue .. v
+                else
+                    textEditorLines[i] = v .. sequenceValue
+                end
+
+                counter = counter + tonumber(stepValue)
+            end
+
+            local result = table.concat(textEditorLines, "\n")
+            mod.textEditor(result)
+
+            updateUI()
+        elseif callbackType == "addSuffix" then
+            --------------------------------------------------------------------------------
+            -- Add Suffix:
+            --------------------------------------------------------------------------------
+            local textEditor = params["textEditor"]
+            local suffix = params["suffix"]
+            local textEditorLines = textEditor:split("\n")
+
+            for i, v in pairs(textEditorLines) do
+                textEditorLines[i] = v .. suffix
+            end
+
+            local result = table.concat(textEditorLines, "\n")
+            mod.textEditor(result)
+
+            updateUI()
+        elseif callbackType == "addPrefix" then
+            --------------------------------------------------------------------------------
+            -- Add Prefix:
+            --------------------------------------------------------------------------------
+            local textEditor = params["textEditor"]
+            local prefix = params["prefix"]
+            local textEditorLines = textEditor:split("\n")
+
+            for i, v in pairs(textEditorLines) do
+                textEditorLines[i] = prefix .. v
+            end
+
+            local result = table.concat(textEditorLines, "\n")
+            mod.textEditor(result)
+
+            updateUI()
+        elseif callbackType == "clear" then
+            --------------------------------------------------------------------------------
+            -- Clear:
+            --------------------------------------------------------------------------------
+            mod.textEditor("")
+            updateUI()
+        elseif callbackType == "reset" then
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            mod.textEditor("")
+            mod.prefix(" - ")
+            mod.suffix(" - ")
+            mod.startOrEnd("start")
+            mod.startWith("1")
+            mod.stepValue("1")
+            mod.padding("0")
+            updateUI()
+        elseif callbackType == "updateChecked" then
+            --------------------------------------------------------------------------------
+            -- Update Checked:
+            --------------------------------------------------------------------------------
+            local id = params["id"]
+            local value = params["value"]
+            if id == "mergeWithExistingEvent" then
+                mod.mergeWithExistingEvent(value)
+            elseif id == "useTitleContentsInsteadOfTitleName" then
+                mod.useTitleContentsInsteadOfTitleName(value)
+            elseif id == "removeProjectFromEvent" then
+                mod.removeProjectFromEvent(value)
+            end
+        elseif callbackType == "update" then
+            --------------------------------------------------------------------------------
+            -- A user interface element has changed value:
+            --------------------------------------------------------------------------------
+            mod.textEditor(params["textEditor"])
+            mod.prefix(params["prefix"])
+            mod.suffix(params["suffix"])
+            mod.startOrEnd(params["startOrEnd"])
+            mod.startWith(params["startWith"])
+            mod.stepValue(params["stepValue"])
+            mod.padding(params["padding"])
+        elseif callbackType == "updateUI" then
+            --------------------------------------------------------------------------------
+            -- Update the User Interface:
+            --------------------------------------------------------------------------------
+            updateUI()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -624,7 +844,7 @@ function plugin.init(deps, env)
         label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
         tooltip         = i18n("titlesToKeywords"),
-        height          = 680,
+        height          = 900,
     })
     :addContent(1, generateContent, false)
 

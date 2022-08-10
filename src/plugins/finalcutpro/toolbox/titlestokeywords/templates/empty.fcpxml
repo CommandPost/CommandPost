@@ -7,8 +7,8 @@
         <effect id="r2" name="Basic Title" uid=".../Titles.localized/Bumper:Opener.localized/Basic Title.localized/Basic Title.moti"/>
     </resources>
     <library>
-        <event name="Titles from CommandPost">
-            <project name="Blank Timeline">
+        <event name="🎛 Generated Titles">
+            <project name="Titles from Text">
                 <sequence format="r1" duration="10s" tcStart="0s" tcFormat="NDF" audioLayout="stereo" audioRate="48k">
                     <spine>
                     </spine>
