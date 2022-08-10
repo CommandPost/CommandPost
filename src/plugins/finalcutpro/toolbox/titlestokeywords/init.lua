@@ -776,13 +776,13 @@ local function callback(id, params)
             --------------------------------------------------------------------------------
             -- Update Checked:
             --------------------------------------------------------------------------------
-            local id = params["id"]
+            local tid = params["id"]
             local value = params["value"]
-            if id == "mergeWithExistingEvent" then
+            if tid == "mergeWithExistingEvent" then
                 mod.mergeWithExistingEvent(value)
-            elseif id == "useTitleContentsInsteadOfTitleName" then
+            elseif tid == "useTitleContentsInsteadOfTitleName" then
                 mod.useTitleContentsInsteadOfTitleName(value)
-            elseif id == "removeProjectFromEvent" then
+            elseif tid == "removeProjectFromEvent" then
                 mod.removeProjectFromEvent(value)
             end
         elseif callbackType == "update" then
