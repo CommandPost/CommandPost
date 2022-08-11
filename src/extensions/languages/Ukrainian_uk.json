@@ -1901,6 +1901,7 @@
     "repeatPressActionUntilReleased": "Повторюйте дію преси до випуску",
     "replace": "Замініть",
     "replaceAll": "Замінити всіх",
+    "replaceCommasWithAlternativeCommas": "Замініть коми альтернативними комами",
     "replaceExistingFiles": "Замінити існуючі файли",
     "replaceSelectedTitleTextwithPasteboardContents": "Замініть вибраний текст заголовка змістом вставки",
     "replaceSpaceWithUnderscore": "Замініть простори підкресленнями",
