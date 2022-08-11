@@ -1901,6 +1901,7 @@
     "repeatPressActionUntilReleased": "Повторять действие нажатия до тех пор, пока не будет отпущено",
     "replace": "замещать",
     "replaceAll": "Заменить все",
+    "replaceCommasWithAlternativeCommas": "Замените запятые альтернативными запятыми",
     "replaceExistingFiles": "Заменить существующие файлы",
     "replaceSelectedTitleTextwithPasteboardContents": "Заменить выбранный текст заголовка содержимым картона",
     "replaceSpaceWithUnderscore": "Замена пространств с помощью символов подчеркивания",
