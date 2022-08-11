@@ -1901,6 +1901,7 @@
     "repeatPressActionUntilReleased": "Powtarzaj czynność prasową aż do wydania",
     "replace": "Zastąpić",
     "replaceAll": "Zamień wszystko",
+    "replaceCommasWithAlternativeCommas": "Zastąp przecinki przecinkami alternatywnymi",
     "replaceExistingFiles": "Zastąp istniejące pliki",
     "replaceSelectedTitleTextwithPasteboardContents": "Zamień zaznaczony tekst tytułu na zawartość tektury",
     "replaceSpaceWithUnderscore": "Zamień spacje na podkreślenia",
