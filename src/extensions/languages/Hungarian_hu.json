@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Ismételje meg a sajtóműveletet a megjelenésig",
     "replace": "Cserélje",
     "replaceAll": "Összes cseréje",
+    "replaceCommasWithAlternativeCommas": "Cserélje ki a vesszőket alternatív vesszőkre",
     "replaceExistingFiles": "Cserélje ki a meglévő fájlokat",
     "replaceSelectedTitleTextwithPasteboardContents": "Cserélje ki a kiválasztott címsort a Pasteboard Contents-re",
     "replaceSpaceWithUnderscore": "Szünetek helyettesítése alsóvonással",
