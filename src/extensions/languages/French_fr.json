@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Répéter l'action de presse jusqu'à sa libération",
     "replace": "Remplacer",
     "replaceAll": "Tout remplacer",
+    "replaceCommasWithAlternativeCommas": "Remplacer les virgules par des virgules alternatives",
     "replaceExistingFiles": "Remplacer les fichiers existants",
     "replaceSelectedTitleTextwithPasteboardContents": "Remplacer le texte du Titre sélectionné par le contenu du presse-papiers",
     "replaceSpaceWithUnderscore": "Remplacer les espaces par des traits de soulignement",
