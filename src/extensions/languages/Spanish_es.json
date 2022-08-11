@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Repetir la acción de prensa hasta su lanzamiento",
     "replace": "Reemplazar",
     "replaceAll": "Reemplaza todo",
+    "replaceCommasWithAlternativeCommas": "Reemplazar comas con comas alternativas",
     "replaceExistingFiles": "Reemplazar archivos existentes",
     "replaceSelectedTitleTextwithPasteboardContents": "Reemplazar texto de título seleccionado con contenido de cartón",
     "replaceSpaceWithUnderscore": "Reemplazar espacios con guiones bajos",
