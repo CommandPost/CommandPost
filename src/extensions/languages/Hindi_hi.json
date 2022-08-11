@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "प्रेस कार्रवाई को तब तक जारी रखें जब तक जारी न हो जाए",
     "replace": "बदलने के",
     "replaceAll": "सबको बदली करें",
+    "replaceCommasWithAlternativeCommas": "अल्पविराम को वैकल्पिक अल्पविराम से बदलें",
     "replaceExistingFiles": "मौजूदा फ़ाइलें बदलें",
     "replaceSelectedTitleTextwithPasteboardContents": "पेस्टबोर्ड सामग्री के साथ चयनित शीर्षक पाठ को बदलें",
     "replaceSpaceWithUnderscore": "अंडरस्कोर के साथ रिक्त स्थान बदलें",
