@@ -1913,6 +1913,7 @@
     "repeatPressActionUntilReleased": "كرر الإجراء الصحفي حتى إصدارها",
     "replace": "يحل محل",
     "replaceAll": "استبدال الكل",
+    "replaceCommasWithAlternativeCommas": "استبدل الفواصل بفواصل بديلة",
     "replaceExistingFiles": "استبدال الملفات الموجودة",
     "replaceSelectedTitleTextwithPasteboardContents": "استبدال نص العنوان المحدد بمحتويات لوح اللصق",
     "replaceSpaceWithUnderscore": "استبدال المسافات مع شرطات سفلية",
