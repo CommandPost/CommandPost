@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Ripeti Azione pressione finché non viene rilasciato",
     "replace": "Sostituisci",
     "replaceAll": "Sostituisci tutto",
+    "replaceCommasWithAlternativeCommas": "Sostituisci le virgole con le virgole alternative",
     "replaceExistingFiles": "Sostituisci file esistenti",
     "replaceSelectedTitleTextwithPasteboardContents": "Sostituisci il testo selezionato con il contenuto degli appunti",
     "replaceSpaceWithUnderscore": "Sostituisci spazi con trattino basso",
