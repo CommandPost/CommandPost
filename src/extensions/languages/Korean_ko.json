@@ -1883,6 +1883,7 @@
     "repeatPressActionUntilReleased": "출시 될 때까지 보도 조치 반복",
     "replace": "바꾸다",
     "replaceAll": "전부 교체",
+    "replaceCommasWithAlternativeCommas": "쉼표를 대체 쉼표로 바꾸기",
     "replaceExistingFiles": "기존 파일 교체",
     "replaceSelectedTitleTextwithPasteboardContents": "선택한 제목 텍스트를 페이스트 보드 내용으로 교체",
     "replaceSpaceWithUnderscore": "공백을 밑줄로 바꾸기",
