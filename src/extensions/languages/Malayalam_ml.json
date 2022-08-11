@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "റിലീസ് ചെയ്യുന്നതുവരെ പ്രസ്സ് പ്രവർത്തനം ആവർത്തിക്കുക",
     "replace": "മാറ്റിസ്ഥാപിക്കുക",
     "replaceAll": "എല്ലാം മാറ്റിസ്ഥാപിക്കുക",
+    "replaceCommasWithAlternativeCommas": "കോമകളെ ഇതര കോമകൾ ഉപയോഗിച്ച് മാറ്റിസ്ഥാപിക്കുക",
     "replaceExistingFiles": "നിലവിലുള്ള ഫയലുകൾ മാറ്റിസ്ഥാപിക്കുക",
     "replaceSelectedTitleTextwithPasteboardContents": "തിരഞ്ഞെടുത്ത ശീർഷക വാചകം പേസ്റ്റ്ബോർഡ് ഉള്ളടക്കങ്ങൾ ഉപയോഗിച്ച് മാറ്റിസ്ഥാപിക്കുക",
     "replaceSpaceWithUnderscore": "സ്‌പെയ്‌സുകൾ അണ്ടർസ്‌കോർ ഉപയോഗിച്ച് മാറ്റിസ്ഥാപിക്കുക",
