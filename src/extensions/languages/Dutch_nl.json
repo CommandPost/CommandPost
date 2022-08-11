@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Herhaal de drukactie tot het wordt vrijgegeven",
     "replace": "Vervangen",
     "replaceAll": "Vervang alles",
+    "replaceCommasWithAlternativeCommas": "Vervang komma's door alternatieve komma's",
     "replaceExistingFiles": "Bestaande bestanden vervangen",
     "replaceSelectedTitleTextwithPasteboardContents": "Vervang geselecteerde titeltekst door plakbordinhoud",
     "replaceSpaceWithUnderscore": "Spaties vervangen door underscores",
