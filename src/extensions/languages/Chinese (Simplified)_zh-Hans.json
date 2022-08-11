@@ -1883,6 +1883,7 @@
     "repeatPressActionUntilReleased": "重复按动作直到释放",
     "replace": "更换",
     "replaceAll": "全部替换",
+    "replaceCommasWithAlternativeCommas": "用替代逗号替换逗号",
     "replaceExistingFiles": "替换现有文件",
     "replaceSelectedTitleTextwithPasteboardContents": "用粘贴板内容替换选定的标题文本",
     "replaceSpaceWithUnderscore": "用下划线替换空格",
