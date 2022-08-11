@@ -1883,6 +1883,7 @@
     "repeatPressActionUntilReleased": "Lặp lại hành động báo chí cho đến khi phát hành",
     "replace": "Thay thế",
     "replaceAll": "Thay thế tất cả",
+    "replaceCommasWithAlternativeCommas": "Thay thế Dấu phẩy bằng Dấu phẩy thay thế",
     "replaceExistingFiles": "Thay thế các tệp hiện có",
     "replaceSelectedTitleTextwithPasteboardContents": "Thay thế văn bản tiêu đề được chọn bằng nội dung Pasteboard",
     "replaceSpaceWithUnderscore": "Thay thế Dấu cách bằng dấu gạch dưới",
