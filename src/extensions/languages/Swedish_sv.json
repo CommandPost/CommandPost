@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Upprepa pressåtgärd tills den släpps",
     "replace": "Byta ut",
     "replaceAll": "Ersätt alla",
+    "replaceCommasWithAlternativeCommas": "Ersätt kommatecken med alternativa kommatecken",
     "replaceExistingFiles": "Byt ut befintliga filer",
     "replaceSelectedTitleTextwithPasteboardContents": "Ersätt vald vald titeltext med innehåll på tavlan",
     "replaceSpaceWithUnderscore": "Ersätt mellanslag till understreck",
