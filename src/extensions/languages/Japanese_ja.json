@@ -1883,6 +1883,7 @@
     "repeatPressActionUntilReleased": "リリースされるまでプレスアクションを繰り返す",
     "replace": "交換",
     "replaceAll": "すべて置換",
+    "replaceCommasWithAlternativeCommas": "カンマを別のカンマに置き換える",
     "replaceExistingFiles": "既存のファイルを置き換える",
     "replaceSelectedTitleTextwithPasteboardContents": "選択したタイトルテキストをペーストボードの内容に置き換える",
     "replaceSpaceWithUnderscore": "スペースをアンダースコアに置き換える",
