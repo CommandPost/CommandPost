@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Repetiu l'acció de premsa fins que s'alliberi",
     "replace": "Substitueix",
     "replaceAll": "Substituïu-ho tot",
+    "replaceCommasWithAlternativeCommas": "Substituïu les comes per comes alternatives",
     "replaceExistingFiles": "Substitueix els fitxers existents",
     "replaceSelectedTitleTextwithPasteboardContents": "Substituïu el text del títol seleccionat amb el contingut de la taula",
     "replaceSpaceWithUnderscore": "Substitueix els espais per guions baixos",
