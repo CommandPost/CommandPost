@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Επανάληψη δράσης Μέχρι να κυκλοφορήσει",
     "replace": "Αντικαθιστώ",
     "replaceAll": "Αντικατάσταση όλων",
+    "replaceCommasWithAlternativeCommas": "Αντικαταστήστε τα κόμματα με εναλλακτικά κόμματα",
     "replaceExistingFiles": "Αντικαταστήστε τα υπάρχοντα αρχεία",
     "replaceSelectedTitleTextwithPasteboardContents": "Αντικαταστήστε το επιλεγμένο κείμενο τίτλου με περιεχόμενα χαρτονιού",
     "replaceSpaceWithUnderscore": "Αντικαταστήστε τα διαστήματα με Underscores",
