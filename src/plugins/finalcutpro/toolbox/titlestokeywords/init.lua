@@ -23,6 +23,7 @@ local xml                       = require "hs._asm.xml"
 
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
+local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local trim                      = tools.trim
@@ -31,6 +32,16 @@ local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
+
+-- ALTERNATIVE_COMMA -> string
+-- Constant
+-- An alternative comma to use to avoid a FCPXML bug.
+local ALTERNATIVE_COMMA = "‚"
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.replaceCommasWithAlternativeCommas <cp.prop: boolean>
+--- Field
+--- Remove Project from Event
+mod.replaceCommasWithAlternativeCommas = config.prop("toolbox.titlestokeywords.replaceCommasWithAlternativeCommas", true)
 
 --- plugins.finalcutpro.toolbox.titlestokeywords.removeProjectFromEvent <cp.prop: boolean>
 --- Field
@@ -304,7 +315,15 @@ local function processFCPXML(path)
         event:addNode("keyword-collection")
         local numberOfNodes = event:childCount()
         local newNode = event:children()[numberOfNodes]
-        newNode:addAttribute("name", clipName)
+
+        --------------------------------------------------------------------------------
+        -- Replace Commas if we need to:
+        --------------------------------------------------------------------------------
+        local newClipName = clipName
+        if mod.replaceCommasWithAlternativeCommas() then
+            newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+        end
+        newNode:addAttribute("name", newClipName)
     end
 
     --------------------------------------------------------------------------------
@@ -356,7 +375,15 @@ local function processFCPXML(path)
                     local newNode = eventNode:children()[whereToInsert]
                     newNode:addAttribute("start", v.offset)
                     newNode:addAttribute("duration", v.duration)
-                    newNode:addAttribute("value", v.name)
+
+                    --------------------------------------------------------------------------------
+                    -- Replace Commas if we need to:
+                    --------------------------------------------------------------------------------
+                    local newClipName = v.name
+                    if mod.replaceCommasWithAlternativeCommas() then
+                        newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                    end
+                    newNode:addAttribute("value", newClipName)
                 elseif v.ref == attributes.ref and v.clipType == "mc-clip" then
                     --------------------------------------------------------------------------------
                     -- DTD v1.10:
@@ -383,7 +410,15 @@ local function processFCPXML(path)
                     local newNode = eventNode:children()[whereToInsert]
                     newNode:addAttribute("start", v.offset)
                     newNode:addAttribute("duration", v.duration)
-                    newNode:addAttribute("value", v.name)
+
+                    --------------------------------------------------------------------------------
+                    -- Replace Commas if we need to:
+                    --------------------------------------------------------------------------------
+                    local newClipName = v.name
+                    if mod.replaceCommasWithAlternativeCommas() then
+                        newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                    end
+                    newNode:addAttribute("value", newClipName)
                 end
             end
         elseif clipType == "sync-clip" then
@@ -427,7 +462,15 @@ local function processFCPXML(path)
                             local newNode = eventNode:children()[whereToInsert]
                             newNode:addAttribute("start", v.offset)
                             newNode:addAttribute("duration", v.duration)
-                            newNode:addAttribute("value", v.name)
+
+                            --------------------------------------------------------------------------------
+                            -- Replace Commas if we need to:
+                            --------------------------------------------------------------------------------
+                            local newClipName = v.name
+                            if mod.replaceCommasWithAlternativeCommas() then
+                                newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                            end
+                            newNode:addAttribute("value", newClipName)
                         end
                     end
                 end
@@ -648,6 +691,7 @@ local function updateUI()
         changeCheckedByID("mergeWithExistingEvent", ]] .. tostring(mod.mergeWithExistingEvent()) .. [[);
         changeCheckedByID("useTitleContentsInsteadOfTitleName", ]] .. tostring(mod.useTitleContentsInsteadOfTitleName()) .. [[);
         changeCheckedByID("removeProjectFromEvent", ]] .. tostring(mod.removeProjectFromEvent()) .. [[);
+        changeCheckedByID("replaceCommasWithAlternativeCommas", ]] .. tostring(mod.replaceCommasWithAlternativeCommas()) .. [[);
     ]]
     injectScript(script)
 end
@@ -784,6 +828,8 @@ local function callback(id, params)
                 mod.useTitleContentsInsteadOfTitleName(value)
             elseif tid == "removeProjectFromEvent" then
                 mod.removeProjectFromEvent(value)
+            elseif tid == "replaceCommasWithAlternativeCommas" then
+                mod.replaceCommasWithAlternativeCommas(value)
             end
         elseif callbackType == "update" then
             --------------------------------------------------------------------------------
@@ -844,7 +890,7 @@ function plugin.init(deps, env)
         label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
         tooltip         = i18n("titlesToKeywords"),
-        height          = 900,
+        height          = 930,
     })
     :addContent(1, generateContent, false)
 

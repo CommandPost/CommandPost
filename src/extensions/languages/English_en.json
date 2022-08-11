@@ -1888,6 +1888,7 @@
     "repeatPressActionUntilReleased": "Repeat Press Action Until Released",
     "replace": "Replace",
     "replaceAll": "Replace All",
+    "replaceCommasWithAlternativeCommas": "Replace Commas with Alternative Commas",
     "replaceExistingFiles": "Replace Existing Files",
     "replaceSelectedTitleTextwithPasteboardContents": "Replace Selected Title Text with Pasteboard Contents",
     "replaceSpaceWithUnderscore": "Replace Spaces with Underscores",
