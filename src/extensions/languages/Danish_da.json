@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Gentag trykhandling indtil frigivet",
     "replace": "Erstatte",
     "replaceAll": "Udskift alle",
+    "replaceCommasWithAlternativeCommas": "Erstat kommaer med alternative kommaer",
     "replaceExistingFiles": "Erstat eksisterende filer",
     "replaceSelectedTitleTextwithPasteboardContents": "Erstat den valgte titeltekst med indholdet af tavle",
     "replaceSpaceWithUnderscore": "Udskift mellemrum med underskærm",
