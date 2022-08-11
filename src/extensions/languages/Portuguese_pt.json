@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Repita a ação de imprensa até o lançamento",
     "replace": "Substituir",
     "replaceAll": "Substitua tudo",
+    "replaceCommasWithAlternativeCommas": "Substituir Vírgulas por Vírgulas Alternativas",
     "replaceExistingFiles": "Substituir arquivos existentes",
     "replaceSelectedTitleTextwithPasteboardContents": "Substituir texto do título selecionado pelo conteúdo da área de transferência",
     "replaceSpaceWithUnderscore": "Substitua espaços com sublinhados",
