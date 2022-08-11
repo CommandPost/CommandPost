@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "মুক্তি না হওয়া পর্যন্ত পুনরাবৃত্তি প্রেস অ্যাকশন",
     "replace": "প্রতিস্থাপন করা",
     "replaceAll": "সমস্ত প্রতিস্থাপন",
+    "replaceCommasWithAlternativeCommas": "কমাকে বিকল্প কমা দিয়ে প্রতিস্থাপন করুন",
     "replaceExistingFiles": "বিদ্যমান ফাইলগুলি প্রতিস্থাপন করুন",
     "replaceSelectedTitleTextwithPasteboardContents": "পেস্টবোর্ড সামগ্রী অনুসারে নির্বাচিত শিরোনাম পাঠ্য প্রতিস্থাপন করুন",
     "replaceSpaceWithUnderscore": "Underscores দিয়ে স্পেসগুলি প্রতিস্থাপন করুন",
