@@ -10,6 +10,7 @@
 				    // ...except on text boxes and the Snippets Scripting Textbox:
 					if (e.target.type != "text"
 					&& e.target.role != "textbox"
+					&& e.target.className != "textEditor"
 					&& e.target.className != "CodeMirror-scroll"
 					&& e.target.className != "cm-string"
 					&& e.target.className != "cm-comment"
