@@ -1889,6 +1889,7 @@
     "repeatPressActionUntilReleased": "Wiederholen Sie die Druckaktion bis zur Freigabe",
     "replace": "Ersetzen",
     "replaceAll": "Alles ersetzen",
+    "replaceCommasWithAlternativeCommas": "Ersetzen Sie Kommas durch alternative Kommas",
     "replaceExistingFiles": "Ersetze vorhandene Dateien",
     "replaceSelectedTitleTextwithPasteboardContents": "Ersetzen Sie den ausgewählten Titeltext durch den Inhalt des Pasteboards",
     "replaceSpaceWithUnderscore": "Ersetzen Sie Leerzeichen durch Unterstriche",
