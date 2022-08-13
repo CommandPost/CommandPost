@@ -61,7 +61,7 @@ local subclassNumber = 1
 
 -- TODO: @randomeizer to review the below code:
 
-function ElementChoice.static:of(uiHandlers)
+function ElementChoice.static:of(uiHandlers) -- luacheck:ignore
     local choiceClass = self:subclass(format("%s_%d", self.name, subclassNumber))
     subclassNumber = subclassNumber + 1
 

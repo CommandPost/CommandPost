@@ -70,7 +70,7 @@ local subclassNumber = 1
 
 -- TODO: @randomeizer to review the below code:
 
-function ElementList.static:ofExactly(uiHandlers)
+function ElementList.static:ofExactly(uiHandlers) -- luacheck:ignore
     local listClass = self:subclass(format("%s_%d", self.name, subclassNumber))
     subclassNumber = subclassNumber + 1
 

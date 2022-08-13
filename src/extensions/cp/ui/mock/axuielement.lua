@@ -12,7 +12,7 @@ function axuielementMock:setAttributeValue(attribute, value)
     self[attribute] = value
 end
 
-function axuielementMock:performAction(action)
+function axuielementMock:performAction(action) -- luacheck:ignore
     -- do nothing
 end
 
