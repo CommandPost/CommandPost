@@ -81,8 +81,8 @@ function ElementList.static:ofExactly(uiHandlers) -- luacheck:ignore
     -- map aliases to the appropriate index.
     for i, handler in ipairs(uiHandlers) do
         if handler.alias then
-            listClass.lazy.value[handler.alias] = function(self)
-                return self[i]
+            listClass.lazy.value[handler.alias] = function(s)
+                return s[i]
             end
         end
     end

@@ -73,8 +73,8 @@ function ElementChoice.static:of(uiHandlers) -- luacheck:ignore
     -- map aliases to the appropriate index.
     for i, handler in ipairs(uiHandlers) do
         if handler.alias then
-            choiceClass.lazy.value[handler.alias] = function(self)
-                return self[i]
+            choiceClass.lazy.value[handler.alias] = function(s)
+                return s[i]
             end
         end
     end
