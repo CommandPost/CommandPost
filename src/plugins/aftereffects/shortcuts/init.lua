@@ -34,7 +34,7 @@ function plugin.init(deps)
     -- Setup Handler:
     --------------------------------------------------------------------------------
     local bundleID = ae:bundleID()
-    local icon = imageFromPath(config.basePath .. "/plugins/aftereffects/console/images/shortcut.png")
+    local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/shortcut.png")
     local description = i18n("afterEffectsShortcutDescription")
     local actionmanager = deps.actionmanager
     mod._handler = actionmanager.addHandler("aftereffects_shortcuts", "aftereffects")

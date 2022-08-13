@@ -2,13 +2,17 @@
 ---
 --- Playback Plugin.
 
-local require           = require
+local require                       = require
 
-local fcp               = require "cp.apple.finalcutpro"
-local i18n              = require "cp.i18n"
-local tools             = require "cp.tools"
+local eventtap                      = require "hs.eventtap"
 
-local playErrorSound    = tools.playErrorSound
+local fcp                           = require "cp.apple.finalcutpro"
+local i18n                          = require "cp.i18n"
+local tools                         = require "cp.tools"
+
+local playErrorSound                = tools.playErrorSound
+
+local checkKeyboardModifiers        = eventtap.checkKeyboardModifiers
 
 local mod = {}
 
@@ -61,15 +65,54 @@ function plugin.init(deps)
     if not fcp:isSupported() then return end
 
     local cmds = deps.fcpxCmds
+
+    --------------------------------------------------------------------------------
+    -- Play:
+    --------------------------------------------------------------------------------
     cmds
         :add("cpPlay")
         :subtitled(i18n("thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped"))
         :whenActivated(mod.play)
 
+    --------------------------------------------------------------------------------
+    -- Pause:
+    --------------------------------------------------------------------------------
     cmds
         :add("cpPause")
         :subtitled(i18n("thisWillOnlyTriggerThePauseShortcutKeyIfAlreadyPlaying"))
         :whenActivated(mod.pause)
+
+    --------------------------------------------------------------------------------
+    -- Jump to Next Frame:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("jumpToNextFrame")
+        :whenActivated(function()
+            if checkKeyboardModifiers()["shift"] then
+               fcp:doShortcut("JumpForward10Frames"):Now()
+            else
+                fcp:doShortcut("JumpToNextFrame"):Now()
+            end
+        end)
+        :titled(i18n("jumpToNextFrame"))
+        :subtitled(i18n("jumpToFrameShiftExplanation"))
+
+    --------------------------------------------------------------------------------
+    -- Jump to Previous Frame:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("jumpToPreviousFrame")
+        :whenActivated(function()
+            if checkKeyboardModifiers()["shift"] then
+               fcp:doShortcut("JumpBackward10Frames"):Now()
+            else
+                fcp:doShortcut("JumpToPreviousFrame"):Now()
+            end
+        end)
+        :titled(i18n("jumpToPreviousFrame"))
+        :subtitled(i18n("jumpToFrameShiftExplanation"))
+
+
 end
 
 return plugin

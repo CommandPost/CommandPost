@@ -650,7 +650,7 @@ Set.mt = {
     end,
 
     __newindex = function()
-        error "Sets are immutible."
+        error("Sets are immutible.", 2)
     end,
 
     __pairs = function(self)

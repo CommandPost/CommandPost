@@ -4,37 +4,34 @@
 
 local require                       = require
 
-local log                           = require("hs.logger").new("PrefsDlg")
+local log                           = require "hs.logger" .new "CmdEditor"
 
-local axutils                       = require("cp.ui.axutils")
-local Button                        = require("cp.ui.Button")
-local Dialog                        = require("cp.ui.Dialog")
-local just                          = require("cp.just")
+local just                          = require "cp.just"
 
-local strings                       = require("cp.apple.finalcutpro.strings")
+local Button                        = require "cp.ui.Button"
+local CheckBox                      = require "cp.ui.CheckBox"
+local Dialog                        = require "cp.ui.Dialog"
+local Group                         = require "cp.ui.Group"
+local PopUpButton                   = require "cp.ui.PopUpButton"
+local TextField                     = require "cp.ui.TextField"
 
-local If                            = require("cp.rx.go.If")
-local Throw                         = require("cp.rx.go.Throw")
-local WaitUntil                     = require("cp.rx.go.WaitUntil")
+local CommandDetail                 = require "cp.apple.finalcutpro.cmd.CommandDetail"
+local CommandList                   = require "cp.apple.finalcutpro.cmd.CommandList"
+local KeyDetail                     = require "cp.apple.finalcutpro.cmd.KeyDetail"
 
+local strings                       = require "cp.apple.finalcutpro.strings"
+
+local Do                            = require "cp.rx.go.Do"
+local If                            = require "cp.rx.go.If"
+local Throw                         = require "cp.rx.go.Throw"
+local WaitUntil                     = require "cp.rx.go.WaitUntil"
+
+local fn                            = require "cp.fn"
+local ax                            = require "cp.fn.ax"
+local chain                         = fn.chain
+local get, sort                     = fn.table.get, fn.table.sort
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
-
--- _findWindowUI(windows) -> window | nil
--- Function
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-local function _findWindowUI(windows)
-    for _,window in ipairs(windows) do
-        if CommandEditor.matches(window) then return window end
-    end
-    return nil
-end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.matches(element) -> boolean
 --- Function
@@ -45,14 +42,21 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function CommandEditor.static.matches(element)
-    if Dialog.matches(element) then
-        return element:attributeValue("AXModal")
-           and axutils.childWithRole(element, "AXPopUpButton") ~= nil
-           and #axutils.childrenWithRole(element, "AXGroup") == 4
-    end
-    return false
-end
+CommandEditor.static.matches = ax.matchesIf(
+    -- It's a Dialog
+    Dialog.matches,
+    -- It's modal
+    get "AXModal",
+    -- It has the required children:
+    chain // ax.children >> sort(ax.topDown) >> fn.all(
+        -- The `commandSet` PopUpButton ...
+        chain // get(5) >> PopUpButton.matches,
+        -- The `keyboard` Group...
+        chain // get(9) >> Group.matches,
+        -- The `commandList`...
+        chain // get(10) >> CommandList.matches
+    )
+)
 
 --- cp.apple.finalcutpro.cmd.CommandEditor(app) -> CommandEditor
 --- Constructor
@@ -64,38 +68,17 @@ end
 --- Returns:
 ---  * A new `CommandEditor` object.
 function CommandEditor:initialize(app)
-    self._app = app
-
 --- cp.apple.finalcutpro.cmd.CommandEditor.UI <cp.prop: axuielement; read-only>
 --- Field
 --- The `axuielement` for the window.
-    local UI = app.windowsUI:mutate(function(original)
-        return axutils.cache(self, "_ui", function()
-            local windowsUI = original()
-            return windowsUI and _findWindowUI(windowsUI)
-        end,
-        CommandEditor.matches)
-    end)
+    local UI = app.windowsUI:mutate(
+        ax.cache(self, "_ui", CommandEditor.matches)(
+            chain // ax.children >> fn.table.firstMatching(CommandEditor.matches)
+        )
+    )
 
     Dialog.initialize(self, app.app, UI)
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
---- Field
---- The "Save" [Button](cp.ui.Button.md).
-function CommandEditor.lazy.value:save()
-    return Button(self, self.UI:mutate(function(original)
-        return axutils.childFromRight(original(), 1, Button.matches)
-    end))
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor.close <cp.ui.Button>
---- Field
---- The "Close" [Button](cp.ui.Button.md).
-function CommandEditor.lazy.value:close()
-    return Button(self, self.UI:mutate(function(original)
-        return axutils.childFromRight(original(), 2, Button.matches)
-    end))
+    self.__app = app
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:app() -> App
@@ -108,7 +91,7 @@ end
 --- Returns:
 ---  * App
 function CommandEditor:app()
-    return self._app
+    return self.__app
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:show() -> cp.apple.finalcutpro.cmd.CommandEditor
@@ -141,9 +124,11 @@ end
 --- Returns:
 --- * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
 function CommandEditor.lazy.method:doShow()
-    return If(self:app().isRunning):Then(
+    return If(self:app().isRunning)
+    :Then(self:app():doShow())
+    :Then(
         If(self.isShowing):Is(false):Then(
-            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+            self:app().menu:doSelectMenu({"Final Cut Pro", "Commands", "Customize…"})
         ):Then(
             WaitUntil(self.isShowing)
         ):Otherwise(true)
@@ -163,13 +148,7 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.cmd.CommandEditor` object for method chaining.
 function CommandEditor:hide()
-    local ui = self:UI()
-    if ui then
-        local closeBtn = axutils.childWith(ui, "AXSubrole", "AXCloseButton")
-        if closeBtn then
-            closeBtn:doAXPress()
-        end
-    end
+    self.close:press()
     return self
 end
 
@@ -195,7 +174,7 @@ function CommandEditor.lazy.method:doHide()
             local msg = strings:find("ConfirmSaveAlertTitle")
             if msg then
                 msg = msg:gsub("%?", "%%?"):gsub("%%@", ".*")
-                log.df("msg: %s", msg)
+                -- log.df("msg: %s", msg)
                 if alert:containsText(msg) then
                     -- Button 1 should be "Don't Save" or equivalent in current locale.
                     return alert:doPress(1)
@@ -219,7 +198,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
 function CommandEditor.lazy.method:doSave()
-    return self.save:doAXPress()
+    return self.save:doPress()
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doClose() -> cp.rx.go.Statement <boolean>
@@ -232,7 +211,209 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
 function CommandEditor.lazy.method:doClose()
-    return self.close:doAXPress()
+    return self.closeButton:doPress()
 end
+
+-- ==== Command Editor UI ====
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
+--- Field
+--- The "Save" [Button](cp.ui.Button.md).
+function CommandEditor.lazy.value:save()
+    return Button(self, self.UI:mutate(
+        ax.childMatching(Button.matches, 1, ax.bottomUp)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.closeButton <cp.ui.Button>
+--- Field
+--- The "Close" [Button](cp.ui.Button.md).
+function CommandEditor.lazy.value:closeButton()
+    return Button(self, self.UI:mutate(
+        ax.childMatching(Button.matches, 2, ax.bottomUp)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandSet <cp.ui.PopUpButton>
+--- Field
+--- The "Command Set" [PopUpButton](cp.ui.PopUpButton.md).
+function CommandEditor.lazy.value:commandSet()
+    return PopUpButton(self, self.UI:mutate(
+        ax.childMatching(PopUpButton.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.modifiers <cp.ui.Group>
+--- Field
+--- The [Group](cp.ui.Group.md) containing 'modifier' checkboxes (Cmd, Shift, etc).
+function CommandEditor.lazy.value:modifiers()
+    return Group(self, self.UI:mutate(
+        ax.childMatching(Group.matches, 1)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.command <cp.ui.CheckBox>
+--- Field
+--- The "Command" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:command()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 1)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.shift <cp.ui.CheckBox>
+--- Field
+--- The "Shift" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:shift()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 2)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.option <cp.ui.CheckBox>
+--- Field
+--- The "Option" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:option()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 3)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.control <cp.ui.CheckBox>
+--- Field
+--- The "Control" [CheckBox](cp.ui.CheckBox.md).
+function CommandEditor.lazy.value:control()
+    return CheckBox(self, self.modifiers.UI:mutate(
+        ax.childMatching(CheckBox.matches, 4)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.keyboardToggle <cp.ui.CheckBox>
+--- Field
+--- The "Keyboard Toggle" [CheckBox](cp.ui.CheckBox.md) (next to the Search field).
+function CommandEditor.lazy.value:keyboardToggle()
+    return CheckBox(self, self.UI:mutate(
+        ax.childMatching(CheckBox.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.search <cp.ui.TextField>
+--- Field
+--- The "Search" [TextField](cp.ui.TextField.md).
+function CommandEditor.lazy.value:search()
+    return TextField(self, self.UI:mutate(
+        ax.childMatching(TextField.matches)
+    )):forceFocus()
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.keyboard <cp.ui.Group>
+--- Field
+--- The [Group](cp.ui.Group.md) containing the keyboard shortcuts. Does not seem to expose the actual key buttons.
+function CommandEditor.lazy.value:keyboard()
+    return Group(self, self.UI:mutate(
+        ax.childMatching(Group.matches, 2)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandList <cp.apple.finalcutpro.cmd.CommandList>
+--- Field
+--- The [CommandList](cp.apple.finalcutpro.cmd.CommandList.md).
+function CommandEditor.lazy.value:commandList()
+    return CommandList(self, self.UI:mutate(
+        ax.childMatching(CommandList.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commands <cp.apple.finalcutpro.cmd.Commands>
+--- Field
+--- The [Commands](cp.apple.finalcutpro.cmd.Commands.md).
+function CommandEditor.lazy.value:commands()
+    return self.commandList.commands
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandGroups <cp.apple.finalcutpro.cmd.CommandGroups>
+--- Field
+--- The [CommandGroups](cp.apple.finalcutpro.cmd.CommandGroups.md).
+function CommandEditor.lazy.value:commandGroups()
+    return self.commandList.groups
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.keyDetail <cp.appple.finalcutpro.cmd.KeyDetail>
+--- Field
+--- The [KeyDetail](cp.apple.finalcutpro.cmd.KeyDetail.md) section.
+--- Either this or [commandDetail](#commandDetail) will be visible at any given time.
+function CommandEditor.lazy.value:keyDetail()
+    return KeyDetail(self, self.UI:mutate(
+        ax.childMatching(KeyDetail.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.commandDetail <cp.apple.finalcutpro.cmd.CommandDetail>
+--- Field
+--- The [CommandDetail](cp.apple.finalcutpro.cmd.CommandDetail.md) section.
+--- Either this or [keyDetail](#keyDetail) will be visible at any given time.
+function CommandEditor.lazy.value:commandDetail()
+    return CommandDetail(self, self.UI:mutate(
+        ax.childMatching(CommandDetail.matches)
+    ))
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID, [highlight]) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
+--- revealing it at the top of the [commands](#commands) list.
+---
+--- Parameters:
+---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)
+---  * highlight - (optional) If true, the command will be highlighted in the list.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md).
+function CommandEditor:doFindCommandID(commandID, highlight)
+    return Do(function()
+        local commandName = self:app().commandNames:find(commandID)
+        if commandName == nil then
+            log.wf("Unable to find command with ID: %s", commandID)
+            return false
+        end
+        return self:doFindCommandName(commandName, highlight)
+    end)
+    :Label("CommandEditor:doFindCommandID")
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID, [highlight]) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
+--- revealing it at the top of the [commands](#commands) list.
+---
+--- Parameters:
+---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)
+---  * highlight - (optional) If `true`, the command will be highlighted in the list.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md).
+function CommandEditor:doFindCommandName(commandName, highlight)
+    return If(self:doShow()):Then(function()
+        self.search.value:set(commandName)
+        local rowNumber = 1
+        local row = self.commands:row(rowNumber)
+        while row:isShowing() do
+            if row:command() == commandName then
+                row:selected(true)
+                if highlight then
+                    row:doHighlight():Now()
+                end
+                return true
+            end
+            rowNumber = rowNumber + 1
+            row = self.commands:row(rowNumber)
+        end
+        return false
+    end)
+    :Otherwise(false)
+    :Label("CommandEditor:doFindCommandName")
+end
+
+
 
 return CommandEditor

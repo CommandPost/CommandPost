@@ -95,13 +95,6 @@ function ColorWheel:initialize(parent, type)
     self._type = type
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.focused <cp.pref: boolean>
---- Field
---- Gets and sets whether the Color Well has focus.
-function ColorWheel.lazy.prop:focused()
-    return axutils.prop(self.UI, "AXFocused", true)
-end
-
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorValue <cp.prop: hs.drawing.color>
 --- Field
 --- The current color value, as a `hs.drawing.color` table.
@@ -195,7 +188,7 @@ end
 --- Returns:
 ---  * The `ColorWheel` instance.
 function ColorWheel:select()
-    self:show():focused(true)
+    self:show():isFocused(true)
     return self
 end
 
@@ -211,7 +204,7 @@ end
 function ColorWheel.lazy.method:doSelect()
     return Do(self:doShow())
     :Then(function()
-        self:focused(true)
+        self:isFocused(true)
     end)
     :ThenYield()
 end

@@ -81,7 +81,8 @@
 ---
 --- The easy way to remember is to read them together - "lazy delegator" sounds better than "delegator lazy".
 
--- local log           = require "hs.logger" .new("delegator")
+local require       = require
+-- local log           = require "hs.logger" .new "delegator"
 
 local prop          = require "cp.prop"
 local insert        = table.insert
@@ -144,58 +145,58 @@ end
 -- * The value or `function`, depending on the factory type.
 local function _getDelegatedResult(instance, name, klass)
 
+    local value = rawget(instance, name)
+    if value ~= nil then return value end
+
     klass = klass or instance.class
     local delegates = klass.static[DELEGATES]
+    if not delegates then return nil end
 
-    local value = rawget(instance, name)
+    for _,key in ipairs(delegates) do
+        if key ~= name then
+            local delegate = _getDelegate(instance, key)
 
-    if not value then
-        for _,key in ipairs(delegates) do
-            if key ~= name then
-                local delegate = _getDelegate(instance, key)
+            if delegate then
+                value = delegate[name]
 
-                if delegate then
-                    value = delegate[name]
-
-                    if type(value) == "function" then
-                        -- we wrap the function so that we can redirect to the delegate when appropriate.
-                        local fn = value
-                        value = function(first, ...)
-                            if first == instance then
-                                -- it's getting called as a method with the instance as `self` so redirect it to the delegate.
-                                local result = fn(delegate, ...)
-                                if result == delegate then
-                                    -- it is returning itself, so lets return the instance since most functions that do that are intended to be chained.
-                                    result = instance
-                                end
-                                return result
-                            else
-                                -- it's probably a direct function call
-                                return fn(first, ...)
+                if type(value) == "function" then
+                    -- we wrap the function so that we can redirect to the delegate when appropriate.
+                    local fn = value
+                    value = function(first, ...)
+                        if first == instance then
+                            -- it's getting called as a method with the instance as `self` so redirect it to the delegate.
+                            local result = fn(delegate, ...)
+                            if result == delegate then
+                                -- it is returning itself, so lets return the instance since most functions that do that are intended to be chained.
+                                result = instance
                             end
+                            return result
+                        else
+                            -- it's probably a direct function call
+                            return fn(first, ...)
                         end
-                        -- cache it for future access.
-                        rawset(instance, name, value)
                     end
+                    -- cache it for future access.
+                    rawset(instance, name, value)
+                end
 
-                    if prop.is(value) then
-                        -- wrap it so it can get called directly.
-                        value = value:wrap(instance):label(name)
-                        -- cache it for future access.
-                        rawset(instance, name, value)
-                    end
+                if prop.is(value) then
+                    -- wrap it so it can get called directly.
+                    value = value:wrap(instance):label(name)
+                    -- cache it for future access.
+                    rawset(instance, name, value)
+                end
 
-                    if value then
-                        return value
-                    end
+                if value then
+                    return value
                 end
             end
         end
+    end
 
-        if klass.super then
-            -- check the super-class hierarchy.
-            value = _getDelegatedResult(instance, name, klass.super)
-        end
+    if klass.super then
+        -- check the super-class hierarchy.
+        value = _getDelegatedResult(instance, name, klass.super)
     end
 
     return value
@@ -240,7 +241,7 @@ end
 local function _getNewSubclassMethod(prevSubclass)
     return function(klass, name)
         local subclass = prevSubclass(klass, name)
-        _initDelegated(subclass, klass.static[DELEGATES])
+        _initDelegated(subclass)
         _modifyInstanceIndex(subclass)
         return subclass
     end

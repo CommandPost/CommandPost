@@ -24,17 +24,17 @@ local pathToAbsolute    = fs.pathToAbsolute
 
 local mod = {}
 
-local function _inspectElement(e)
+local function _inspectElement(e, options)
     mod.highlight(e)
 
-    local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
+    local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"), options)
 
     local id = e:attributeValue("AXIdentifier")
     if id then
-        out = out.. "\n      Identifier = " .. inspect(id)
+        out = out.. "\n      Identifier = " .. inspect(id, options)
     end
 
-    out = out.. "\n      Children   = " .. inspect(#e)
+    out = out.. "\n      Children   = " .. inspect(#e, options)
 
     out = out.. "\n==============================================" ..
                 "\n"
@@ -45,7 +45,7 @@ local function _inspectElement(e)
         result[name] = e:attributeValue(name)
     end
 
-    out = out .. inspect(result)
+    out = out .. inspect(result, options)
 
     return out
 end
@@ -187,7 +187,7 @@ function mod.inspectAtMouse(options)
             return result
         else
             element:buildTree(function(msg, results)
-                log.df("msg: %s\n\n results: %s", msg, inspect(results))
+                log.df("msg: %s\n\n results: %s", msg, inspect(results, options))
             end, options.depth)
         end
     else
@@ -254,25 +254,25 @@ function mod.inspectElement(e, options)
     local write = options and options.write or log.d
 
     if not e or e.attributeValue == nil then
-        write(inspect(e))
+        write(inspect(e, options))
         return
     end
 
     mod.highlight(e)
-    local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
+    local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"), options)
 
     local id = e:attributeValue("AXIdentifier")
     if id then
-        out = out.. "\n      Identifier = " .. inspect(id)
+        out = out.. "\n      Identifier = " .. inspect(id, options)
     end
 
-    out = out.. "\n      Children   = " .. inspect(#e)
+    out = out.. "\n      Children   = " .. inspect(#e, options)
 
     out = out.. "\n==============================================" ..
                 "\n"
 
     e:buildTree(function(_, results)
-        out = out .. inspect(results)
+        out = out .. inspect(results, options)
         write(out)
     end, depth)
 end
@@ -393,17 +393,17 @@ function mod.highlightPoint(point)
     end)
 end
 
---- cp.dev.inspectElementAtMousePath() -> none
+--- cp.dev.inspectElementAtMousePath(options) -> none
 --- Function
 --- Inspects an AX element at the mouse path.
 ---
 --- Parameters:
----  * None
+---  * options - A table containing any optional values.
 ---
 --- Returns:
 ---  * None
-function mod.inspectElementAtMousePath()
-    return inspect(mod.elementAtMouse():path())
+function mod.inspectElementAtMousePath(options)
+    return inspect(mod.elementAtMouse():path(), options)
 end
 
 --- cp.dev.test(id) -> cp.test

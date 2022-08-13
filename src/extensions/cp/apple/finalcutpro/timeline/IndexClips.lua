@@ -9,7 +9,7 @@ local go                    = require "cp.rx.go"
 local axutils               = require "cp.ui.axutils"
 local RadioButton           = require "cp.ui.RadioButton"
 local RadioGroup            = require "cp.ui.RadioGroup"
-local Table                 = require "cp.ui.Table"
+local Table                 = require "cp.ui.OldTable"
 
 local strings               = require "cp.apple.finalcutpro.strings"
 local IndexSection          = require "cp.apple.finalcutpro.timeline.IndexSection"
@@ -38,9 +38,9 @@ function IndexClips.lazy.value:activate()
     return self.index.mode.clips
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips.list <cp.ui.Table>
+--- cp.apple.finalcutpro.timeline.IndexClips.list <cp.ui.OldTable>
 --- Field
---- The list of clips as a [Table](cp.ui.Table.md).
+--- The list of clips as a [Table](cp.ui.OldTable.md).
 function IndexClips.lazy.value:list()
     return Table(self, self.UI:mutate(function(original)
         if self.activate:checked() then

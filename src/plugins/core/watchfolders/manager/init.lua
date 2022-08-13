@@ -9,6 +9,7 @@ local hs            = _G.hs
 local log           = require "hs.logger".new "watchMan"
 
 local inspect       = require "hs.inspect"
+local mouse         = require "hs.mouse"
 local screen        = require "hs.screen"
 local timer         = require "hs.timer"
 local toolbar       = require "hs.webview.toolbar"
@@ -302,6 +303,7 @@ function mod.new()
     --------------------------------------------------------------------------------
     if not mod._toolbar then
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+            :toolbarStyle("preference")
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
@@ -338,16 +340,20 @@ function mod.new()
 
 end
 
---- plugins.core.watchfolders.manager.show() -> boolean
+--- plugins.core.watchfolders.manager.show([panelID]) -> boolean
 --- Function
 --- Shows the Watch Folders Window
 ---
 --- Parameters:
----  * None
+---  * [panelID] - An optional panel ID
 ---
 --- Returns:
 ---  * True if successful or nil if an error occurred
-function mod.show()
+function mod.show(panelID)
+    if panelID then
+        mod.lastTab(panelID)
+    end
+
     if not mod._webview or not mod._toolbar then
         mod.new()
     end
@@ -443,7 +449,20 @@ function mod.selectPanel(id)
         -- Resize Panel:
         --------------------------------------------------------------------------------
         if v.id == id and v.height and type(v.height) == "number" and mod._webview:hswindow() and mod._webview:hswindow():isVisible() then
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = v.height })
+            --------------------------------------------------------------------------------
+            -- Make sure the panel isn't bigger than the screen:
+            --------------------------------------------------------------------------------
+            local heightWithOffset = v.height
+
+            local currentScreen = mouse.getCurrentScreen()
+            local currentFrame = currentScreen and currentScreen:frame()
+            local currentHeight = currentFrame and currentFrame.h
+
+            if heightWithOffset > currentHeight then
+                heightWithOffset = currentHeight - 10
+            end
+
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = heightWithOffset})
         end
 
         local style = v.id == id and "block" or "none"
@@ -536,7 +555,6 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
@@ -545,8 +563,26 @@ function plugin.init(deps, env)
         :whenActivated(mod.show)
         :groupedBy("commandPost")
 
-
     return mod.init(env)
+end
+
+function plugin.postInit(deps)
+    --------------------------------------------------------------------------------
+    -- Add Commands to open individual panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(mod._panels) do
+        local id = v.id
+        local label = v.label
+        local img = v.image
+        deps.global
+            :add("watchFolders" .. id)
+            :whenActivated(function()
+                mod.show(id)
+            end)
+            :titled(label)
+            :subtitled(i18n("watchFolders"))
+            :image(img)
+    end
 end
 
 return plugin

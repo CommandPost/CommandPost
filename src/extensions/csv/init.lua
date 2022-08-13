@@ -44,7 +44,7 @@ end
 --- Parse a list of columns.
 --  The main job here is normalising column names and dealing with columns
 --  for which we have more than one possible name in the header.
-function column_map.new(columns)
+function column_map:new(columns)
   local name_map = {}
   for n, v in pairs(columns) do
     local names
@@ -55,7 +55,7 @@ function column_map.new(columns)
         names = { normalise_string(v.name) }
       elseif v.names then
         names = v.names
-        for i, name in ipairs(names) do names[i] = normalise_string(name) end
+        for i, n in ipairs(names) do names[i] = normalise_string(n) end
       end
     else
       if type(v) == "function" then
@@ -73,8 +73,8 @@ function column_map.new(columns)
     end
 
     t.name = n
-    for _, name in ipairs(names) do
-      name_map[name:lower()] = t
+    for _, n in ipairs(names) do
+      name_map[n:lower()] = t
     end
   end
 
@@ -119,7 +119,7 @@ function column_map:read_header(header)
   -- If any columns are missing, assemble an error message
   if next(not_found) then
     local problems = {}
-    for _, v in pairs(not_found) do
+    for k, v in pairs(not_found) do
       local missing
       if #v == 1 then
         missing = "'"..v[1].."'"
@@ -160,7 +160,7 @@ end
 local file_buffer = {}
 file_buffer.__index = file_buffer
 
-function file_buffer.new(file, buffer_block_size)
+function file_buffer:new(file, buffer_block_size)
   return setmetatable({
       file              = file,
       buffer_block_size = buffer_block_size or DEFAULT_BUFFER_BLOCK_SIZE,
@@ -261,7 +261,7 @@ end
 
 
 --- If the user hasn't specified a separator, try to work out what it is.
-local function guess_separator(buffer, f)
+function guess_separator(buffer, f)
   local best_separator, lowest_diff = "", math.huge
   for _, s in ipairs(separator_candidates) do
     local ok, diff = pcall(function() return try_separator(buffer, s, f) end)
@@ -350,7 +350,7 @@ local function separated_values_iterator(buffer, parameters)
                      guess_separator(buffer, separated_values_iterator)).."\n\r])"
   local line_start = 1
   local line = 1
-  local field_count, fields, starts, nonblanks = 0, {}, {}, nil
+  local field_count, fields, starts, nonblanks = 0, {}, {}
   local header, header_read
   local field_start_line, field_start_column
   local record_count = 0
@@ -374,7 +374,7 @@ local function separated_values_iterator(buffer, parameters)
       advance(1)
       local current_pos = 0
       repeat
-        local _, b, c = field_find('"("?)', current_pos + 1)
+        local a, b, c = field_find('"("?)', current_pos + 1)
         current_pos = b
       until c ~= '"'
       if not current_pos then problem("unmatched quote") end
@@ -438,7 +438,7 @@ local function separated_values_iterator(buffer, parameters)
           end
         end
       end
-      field_count, fields, starts, nonblanks = 0, {}, {}, nil
+      field_count, fields, starts, nonblanks = 0, {}, {}
     end
 
     -- If we *really* didn't find a separator then we're done.
@@ -492,12 +492,12 @@ local function use(
   parameters = parameters or {}
   parameters.filename = parameters.filename or "<unknown>"
   parameters.column_map = parameters.columns and
-    column_map.new(parameters.columns)
+    column_map:new(parameters.columns)
 
   if not buffer then
-    buffer = file_buffer.new(io.stdin)
+    buffer = file_buffer:new(io.stdin)
   elseif io.type(buffer) == "file" then
-    buffer = file_buffer.new(buffer)
+    buffer = file_buffer:new(buffer)
   end
 
   local f = { buffer = buffer, parameters = parameters }

@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.Role ===
 ---
---- *Extends [Row](cp.ui.Row.md)*
+--- *Extends [Row](cp.ui.OldRow.md)*
 ---
 --- Represents a Role in the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md).
 
@@ -8,7 +8,7 @@
 
 local localeID	            = require "cp.i18n.localeID"
 local axutils	            = require "cp.ui.axutils"
-local Row	                = require "cp.ui.Row"
+local Row	                = require "cp.ui.OldRow"
 local CheckBox	            = require "cp.ui.CheckBox"
 local StaticText	        = require "cp.ui.StaticText"
 
@@ -153,7 +153,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Role.subroleRow <cp.prop: boolean; read-only>
 --- Field
---- This is `true` if the `Role` is an Subrole [Row](cp.ui.Row.md).
+--- This is `true` if the `Role` is an Subrole [Row](cp.ui.OldRow.md).
 function Role.lazy.prop:subroleRow()
     return self.disclosureLevel:mutate(function(original)
         return original() == 1

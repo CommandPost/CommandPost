@@ -28,10 +28,10 @@ function plugin.init(deps)
     deps.fcpxCmds
         :add("playFullScreenAndStop")
         :whenActivated(function()
-            if not fcp.fullScreenWindow:isShowing() then
+            if not fcp.fullScreenPlayer:isShowing() then
                 fcp:selectMenu({"View", "Playback", "Play Full Screen"})
                 if doUntil(function()
-                    return fcp.fullScreenWindow:isShowing()
+                    return fcp.fullScreenPlayer:isShowing()
                 end, 5, 0.1) then
                     fcp:keyStroke({}, "space")
                     return

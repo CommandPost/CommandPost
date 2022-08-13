@@ -73,6 +73,7 @@ local log										= require "hs.logger".new "fcp"
 local fs 										= require "hs.fs"
 local plist                                     = require "hs.plist"
 local inspect									= require "hs.inspect"
+local notify                                    = require "hs.notify"
 local osascript 								= require "hs.osascript"
 local pathwatcher                               = require "hs.pathwatcher"
 
@@ -84,17 +85,17 @@ local just										= require "cp.just"
 local localeID                                  = require "cp.i18n.localeID"
 local prop										= require "cp.prop"
 local Set                                       = require "cp.collect.Set"
+local strings                                   = require "cp.strings"
 local tools                                     = require "cp.tools"
 
 local commandeditor								= require "cp.apple.commandeditor"
 
 local app                                       = require "cp.apple.finalcutpro.app"
 local plugins									= require "cp.apple.finalcutpro.plugins"
-local strings                                   = require "cp.apple.finalcutpro.strings"
 
 local BackgroundTasksDialog                     = require "cp.apple.finalcutpro.main.BackgroundTasksDialog"
 local Browser									= require "cp.apple.finalcutpro.main.Browser"
-local FullScreenWindow							= require "cp.apple.finalcutpro.main.FullScreenWindow"
+local FullScreenPlayer							= require "cp.apple.finalcutpro.main.FullScreenPlayer"
 local KeywordEditor								= require "cp.apple.finalcutpro.main.KeywordEditor"
 local PrimaryWindow								= require "cp.apple.finalcutpro.main.PrimaryWindow"
 local SecondaryWindow							= require "cp.apple.finalcutpro.main.SecondaryWindow"
@@ -109,6 +110,8 @@ local ExportDialog								= require "cp.apple.finalcutpro.export.ExportDialog"
 local MediaImport								= require "cp.apple.finalcutpro.import.MediaImport"
 local PreferencesWindow							= require "cp.apple.finalcutpro.prefs.PreferencesWindow"
 local FindAndReplaceTitleText	                = require "cp.apple.finalcutpro.main.FindAndReplaceTitleText"
+
+local CommandPostWorkflowExtension              = require "cp.apple.finalcutpro.workflowextensions.CommandPostWindow"
 
 local v											= require "semver"
 local class                                     = require "middleclass"
@@ -129,9 +132,10 @@ local pathToBookmark                            = fs.pathToBookmark
 local dirFiles                                  = tools.dirFiles
 local doesDirectoryExist                        = tools.doesDirectoryExist
 local stringToHexString                         = tools.stringToHexString
+local tableContains                             = tools.tableContains
 
 local childMatching                             = axutils.childMatching
-local execute                                   = _G.hs.execute
+local execute                                   = _G["hs"].execute
 local insert                                    = table.insert
 
 -- Load the menu helpers:
@@ -162,7 +166,7 @@ function fcp:initialize()
 --- cp.apple.finalcutpro.strings <cp.strings>
 --- Constant
 --- The `cp.strings` providing access to common FCPX text values.
-    self.strings = strings
+    self.strings = require "cp.apple.finalcutpro.strings"
 
     app:update()
 
@@ -222,7 +226,7 @@ fcp.EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Re
 --- cp.apple.finalcutpro.FLEXO_LANGUAGES -> table
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
-fcp.FLEXO_LANGUAGES	= Set("de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN")
+fcp.FLEXO_LANGUAGES	= Set("de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN", "ko")
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS -> table
 --- Constant
@@ -639,7 +643,7 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.workflowExtensions() -> table
+--- cp.apple.finalcutpro.workflowExtensionNames() -> table
 --- Function
 --- Gets the names of all the installed Workflow Extensions.
 ---
@@ -648,8 +652,12 @@ end
 ---
 --- Returns:
 ---  * A table of Workflow Extension names
-function fcp.workflowExtensions()
+function fcp.workflowExtensionNames()
     local result = {}
+
+    ----------------------------------------------------------------------------------------
+    -- The original Workflow Extension format (.pluginkit)
+    ----------------------------------------------------------------------------------------
     local output, status = execute("pluginkit -m -v -p FxPlug")
     if status then
         local p = tools.lines(output)
@@ -672,7 +680,43 @@ function fcp.workflowExtensions()
             end
         end
     end
+
+    ----------------------------------------------------------------------------------------
+    -- Modern Workflow Extensions (.appex):
+    ----------------------------------------------------------------------------------------
+    output, status = execute("pluginkit -m -v -p com.apple.FinalCut.WorkflowExtension")
+    if status then
+        local p = tools.lines(output)
+        if p then
+            for _, plugin in pairs(p) do
+                local params = tools.split(plugin, "\t")
+                local path = params[4]
+                if path then
+                    if tools.doesDirectoryExist(path) then
+                        local plistPath = path .. "/Contents/Info.plist"
+                        local plistData = plist.read(plistPath)
+                        if plistData then
+                            local pluginName = plistData.CFBundleName or plistData.CFBundleDisplayName
+                            if pluginName then
+                                if not tableContains(pluginName) then
+                                    table.insert(result, pluginName)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     return result
+end
+
+--- cp.apple.finalcutpro.commandPostWorkflowExtension <CommandPostWindow>
+--- Field
+--- The CommandPost Workflow Extension window.
+function fcp.lazy.value:commandPostWorkflowExtension()
+    return CommandPostWorkflowExtension(self)
 end
 
 ----------------------------------------------------------------------------------------
@@ -702,11 +746,11 @@ function fcp.lazy.value:secondaryWindow()
     return SecondaryWindow(self)
 end
 
---- cp.apple.finalcutpro.fullScreenWindow <FullScreenWindow>
+--- cp.apple.finalcutpro.fullScreenPlayer <FullScreenPlayer>
 --- Field
 --- Returns the Final Cut Pro Full Screen Window (usually triggered by Cmd+Shift+F)
-function fcp.lazy.value:fullScreenWindow()
-    return FullScreenWindow(self)
+function fcp.lazy.value:fullScreenPlayer()
+    return FullScreenPlayer(self)
 end
 
 --- cp.apple.finalcutpro.commandEditor <CommandEditor>
@@ -884,7 +928,7 @@ end
 --- Returns:
 ---  * A boolean value indicating whether the AppleScript succeeded or not
 function fcp:importXML(path)
-    if self:isRunning() then
+    --if self:isRunning() then
         local appleScript = [[
             set whichSharedXMLPath to "]] .. path .. [["
             tell application "Final Cut Pro"
@@ -894,7 +938,7 @@ function fcp:importXML(path)
         ]]
         local bool, _, _ = osascript.applescript(appleScript)
         return bool
-    end
+    --end
 end
 
 --- cp.apple.finalcutpro:openAndSavePanelDefaultPath <cp.prop: string>
@@ -1031,6 +1075,17 @@ function fcp.lazy.prop:activeCommandSet()
     :monitor(self.activeCommandSetPath)
 end
 
+-- cp.apple.finalcutpro._commandShortcuts <table>
+-- Field
+-- Contains the cache of shortcuts that have been retrieved.
+function fcp.lazy.value:_commandShortcuts()
+    -- watch the activeCommandSet and reset the cache when it changes:
+    self.activeCommandSet:watch(function()
+        self._commandShortcuts = {}
+    end)
+    return {}
+end
+
 --- cp.apple.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
 --- Method
 --- Finds a shortcut from the Active Command Set with the specified ID and returns a table
@@ -1046,43 +1101,133 @@ function fcp:getCommandShortcuts(id)
         log.ef("ID is required for cp.apple.finalcutpro.getCommandShortcuts.")
         return nil
     end
-    local activeCommands = self._activeCommands or {}
-    local shortcuts = activeCommands[id]
+    local shortcuts = self._commandShortcuts[id]
     if not shortcuts then
         local commandSet = self:activeCommandSet()
         shortcuts = commandeditor.shortcutsFromCommandSet(id, commandSet)
         if not shortcuts then
             return nil
         end
-        ----------------------------------------------------------------------------------------
-        -- Cache the value for faster access next time:
-        ----------------------------------------------------------------------------------------
-        if not self._activeCommands then
-            self._activeCommands = {}
-        end
-        self._activeCommands[id] = shortcuts
+        self._commandShortcuts[id] = shortcuts
     end
     return shortcuts
 end
 
---- cp.apple.finalcutpro:doShortcut(whichShortcut) -> Statement
+--- cp.apple.finalcutpro.commandNames <cp.strings>
+--- Field
+--- The `table` of all available command names, with keys mapped to human-readable names in the current locale.
+function fcp.lazy.value:commandNames()
+    local commandNames = strings.new()
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandNames.strings")
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandNamesAdditional.strings")
+
+    local reset = function()
+        commandNames:context({
+            appPath = self:getPath(),
+            locale = self:currentLocale().code,
+        })
+    end
+
+    self.isRunning:watch(reset)
+    self.currentLocale:watch(reset, true)
+
+    return commandNames
+end
+
+--- cp.apple.finalcutpro.commandDescriptions <cp.strings>
+--- Field
+--- The `table` of all available command descriptions, with keys mapped to human-readable descriptions in the current locale.
+function fcp.lazy.value:commandDescriptions()
+    local commandDescriptions = strings.new()
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandDescriptions.strings")
+        :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/NSProCommandDescriptionsAdditional.strings")
+
+    local reset = function()
+        commandDescriptions:context({
+            appPath = self:getPath(),
+            locale = self:currentLocale().code,
+        })
+    end
+
+    self.isRunning:watch(reset)
+    self.currentLocale:watch(reset, true)
+
+    return commandDescriptions
+end
+
+--- cp.apple.finalcutpro.isSkimmingEnabled <bool; live>
+--- Field
+--- Returns `true` if the skimming playhead is enabled for the application.
+function fcp.lazy.prop:isSkimmingEnabled()
+    return self.preferences:prop("FFDisableSkimming", false):NOT()
+end
+
+--- cp.apple.finalcutpro.isAudioScrubbingEnabled <bool; live>
+--- Field
+--- Returns `true` if the audio scrubbing is enabled for the application.
+function fcp.lazy.prop:isAudioScrubbingEnabled()
+    return self.preferences:prop("FFDisableAudioScrubbing", false):NOT()
+end
+
+-- tracks if we are currently prompting the user about assigning a shortcut
+local promptingForShortcut = {}
+
+--- cp.apple.finalcutpro:doShortcut(whichShortcut[, suppressPrompt]) -> Statement
 --- Method
 --- Perform a Final Cut Pro Keyboard Shortcut
 ---
 --- Parameters:
 ---  * whichShortcut - As per the Command Set name
+---  * suppressPrompt - If `true`, and no shortcut is found for the specified command, then no prompt will be shown and an error is thrown Defaults to `false`.
 ---
 --- Returns:
 ---  * A `Statement` that will perform the shortcut when executed.
-function fcp:doShortcut(whichShortcut)
+function fcp:doShortcut(whichShortcut, suppressPrompt)
     return Do(self:doLaunch())
     :Then(function()
+        local commandName = self.commandNames:find(whichShortcut) or whichShortcut
         local shortcuts = self:getCommandShortcuts(whichShortcut)
         if shortcuts and #shortcuts > 0 then
             shortcuts[1]:trigger(self:application())
             return true
+        elseif not suppressPrompt then
+            -- check we're not already prompting for this shortcut
+            if promptingForShortcut[whichShortcut] then
+                return false
+            end
+            -- handle the results
+            local handler = function(notification)
+                promptingForShortcut[whichShortcut] = nil
+                local result = notification:activationType()
+                if result == notify.activationTypes.actionButtonClicked or result == notify.activationTypes.contentsClicked then
+                    Do(self.commandEditor:doFindCommandID(whichShortcut, true))
+                    :Then(function()
+                        notify.new(nil)
+                            :title(i18n("finalcutpro_commands_unassigned_title"))
+                            :informativeText(i18n("finalcutpro_commands_unassigned_click_and_assign_text", {["commandName"] = commandName}))
+                            :withdrawAfter(5)
+                            :send()
+                    end)
+                    :Now()
+                end
+            end
+
+            -- write a debug message just incase the user has notifications disabled:
+            log.wf(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
+
+            -- show a notification
+            promptingForShortcut[whichShortcut] = true
+            notify.new(handler)
+                :title(i18n("finalcutpro_commands_unassigned_title"))
+                :informativeText(i18n("finalcutpro_commands_unassigned_text", {["commandName"] = commandName}))
+                :hasActionButton(true)
+                :actionButtonTitle(i18n("finalcutpro_commands_unassigned_action"))
+                :withdrawAfter(0)
+                :send()
+
+            return false
         else
-            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))
+            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {["commandName"] = commandName}))
         end
     end)
     :ThenYield()

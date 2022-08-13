@@ -9,6 +9,7 @@ local log                       = require "hs.logger".new "monogram"
 local application               = require "hs.application"
 local inspect                   = require "hs.inspect"
 local socket                    = require "hs.socket"
+local task                      = require "hs.task"
 local udp                       = require "hs.socket.udp"
 
 local config                    = require "cp.config"
@@ -183,7 +184,7 @@ function mod.openDownloadMonogramCreatorURL()
     execute("open " .. MONOGRAM_CREATOR_DOWNLOAD_URL)
 end
 
--- setupPlugin()
+-- setupPlugin() -> none
 -- Function
 -- Copies Monogram Plugins from CommandPost application bundle to
 -- the Application Support folder, then adds the paths to Monogram
@@ -198,24 +199,23 @@ local function setupPlugins()
     for pluginName, sourcePath in pairs(mod.plugins) do
         local destination = MONOGRAM_CREATOR_INTEGRATIONS_PATH .."/" .. pluginName .. ".palette/signature.txt"
         local source = sourcePath .. pluginName .. ".palette/signature.txt"
-        local diffCmd = [[diff "]] .. source .. [[" "]] .. destination .. [["]]
-        local o, s = execute(diffCmd)
-        if type(s) == "nil" or o ~= "" then
-            --------------------------------------------------------------------------------
-            -- Need to copy the files across:
-            --------------------------------------------------------------------------------
-            local cmd = [[cp -R "]] ..  sourcePath .. pluginName .. [[.palette/" "]] .. MONOGRAM_CREATOR_INTEGRATIONS_PATH .. "/" .. pluginName .. [[.palette/"]]
-            local output, status = execute(cmd)
-            if not status then
-                log.ef("Failed to copy %s Monogram Integration: %s", pluginName, output)
-                return false
+        task.new("/usr/bin/diff", function(exitCode, _, _)
+            if exitCode ~= 0 then
+                log.df("Updating Monogram Creator Intergration: %s", pluginName)
+                task.new("/bin/cp", function(copyExitCode, stdOut, stdErr)
+                    if copyExitCode ~= 0 then
+                        log.ef("Failed to update Monogram Integration: %s", pluginName)
+                        log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
+                        log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
+                        log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
+                    end
+                end, {"-R", sourcePath .. pluginName .. ".palette/", MONOGRAM_CREATOR_INTEGRATIONS_PATH .. "/" .. pluginName .. ".palette/"}):start()
             end
-        end
+        end, {source, destination}):start()
     end
-    return true
 end
 
--- removePlugins()
+-- removePlugins() -> none
 -- Function
 -- Deletes Monogram Plugins.
 --
@@ -228,15 +228,16 @@ local function removePlugins()
     for pluginName, _ in pairs(mod.plugins) do
         local path = MONOGRAM_CREATOR_INTEGRATIONS_PATH .."/" .. pluginName .. ".palette/"
         if doesDirectoryExist(path) then
-            local cmd = [[rm -rf "]] .. path .. [["]]
-            local output, status = execute(cmd)
-            if not status then
-                log.ef("Failed to delete %s Monogram Integration: %s", pluginName, output)
-                return false
-            end
+            task.new("/bin/rm", function(exitCode, stdOut, stdErr)
+                if exitCode ~= 0 then
+                    log.ef("Failed to delete Monogram Integration: %s", pluginName)
+                    log.df(" - exitCode: '%s', %s", exitCode, type(exitCode))
+                    log.df(" - stdOut: '%s', %s", stdOut, type(stdOut))
+                    log.df(" - stdErr: '%s', %s", stdErr, type(stdErr))
+                end
+            end, {"-rf", path}):start()
         end
     end
-    return true
 end
 
 --- plugins.core.monogram.manager.enabled <cp.prop: boolean>
@@ -269,17 +270,11 @@ mod.automaticProfileSwitching = config.prop("monogram.automaticProfileSwitching"
 ---  * `true` if Monogram support is enabled, otherwise `false`
 function mod.setEnabled(enabled)
     if enabled then
-        if setupPlugins() then
-            mod.enabled(true)
-        else
-            log.ef("Failed to install Monogram Plugins.")
-        end
+        setupPlugins()
+        mod.enabled(true)
     else
-        if removePlugins() then
-            mod.enabled(false)
-        else
-            log.ef("Failed to remove Monogram Plugins.")
-        end
+        removePlugins()
+        mod.enabled(false)
     end
     return mod.enabled()
 end
@@ -304,6 +299,32 @@ function mod.changeContext(context)
         local message = json.encode(m)
         mod.server:send(message, "127.0.0.1", mod.lastPort)
     end
+end
+
+--- plugins.core.monogram.manager.sign() -> none
+--- Function
+--- Signs all the Monogram Integrations.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.sign()
+    local basePath = config.basePath
+    local appPath = basePath .. "/../../monogramsign"
+    local secretPath = basePath .. "/../../command_post.key"
+    for pluginName, sourcePath in pairs(mod.plugins) do
+        local pluginPath = sourcePath .. pluginName .. ".palette"
+        local cmd = appPath .. [[ "]] .. pluginPath .. [[" -k "]] .. secretPath .. [["]]
+        local _, status = execute(cmd)
+        if not status then
+            log.ef("Failed to sign: %s", pluginName)
+        else
+            log.df("Successfully signed: %s", pluginName)
+        end
+    end
+    setupPlugins()
 end
 
 local plugin = {

@@ -4,7 +4,7 @@
 
 local require       = require
 
-local log           = require "hs.logger".new "fcpPlayhead"
+-- local log           = require "hs.logger".new "fcpPlayhead"
 
 local geometry      = require "hs.geometry"
 

@@ -150,18 +150,23 @@ local plugin = {
     id              = "core.menu.menuaction",
     group           = "core",
     dependencies    = {
-        ["core.action.manager"]                 = "actionmanager",
-        ["core.application.manager"]            = "applicationmanager",
-        ["core.loupedeckctandlive.manager"]     = "loupedeckctmanager",
-        ["core.midi.manager"]                   = "midimanager",
-        ["core.streamdeck.manager"]             = "streamdeckmanager",
-        ["core.tourbox.manager"]                = "tourboxmanager",
+        ["core.action.manager"]                     = "actionmanager",
+        ["core.application.manager"]                = "applicationmanager",
+        ["core.loupedeckctandlive.manager"]         = "loupedeckctmanager",
+        ["core.midi.manager"]                       = "midimanager",
+        ["core.streamdeck.manager"]                 = "streamdeckmanager",
+        ["core.tourbox.manager"]                    = "tourboxmanager",
+        ["core.razer.manager"]                      = "razermanager",
+        ["core.controlsurfaces.resolve.manager"]    = "resolvemanager",
+        ["core.console.preferences"]                = "consolePreferences",
     }
 }
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Watch for application changes:
+    -- Watch for application changes (if enabled in preferences):
+    --
+    -- NOTE: This is off be default for performance reasons.
     --------------------------------------------------------------------------------
     mod._appWatcher = watcher.new(function(_, event, app)
         if app and event == watcher.activated and app:bundleID() then
@@ -186,7 +191,17 @@ function plugin.init(deps)
                 end)
             end
         end
-    end):start()
+    end)
+
+    mod.scanTheMenubarsOfTheActiveApplication = deps.consolePreferences.scanTheMenubarsOfTheActiveApplication:watch(function(enabled)
+        if enabled then
+            mod._appWatcher:start()
+        else
+            mod._appWatcher:stop()
+        end
+    end)
+
+    mod.scanTheMenubarsOfTheActiveApplication:update()
 
     --------------------------------------------------------------------------------
     -- Setup the Global Menu Actions Handler:
@@ -242,6 +257,8 @@ function plugin.postInit(deps)
     local midiItems             = deps.midimanager.items
     local streamDeckItems       = deps.streamdeckmanager.items
     local tourBoxItems          = deps.tourboxmanager.items
+    local razerItems            = deps.razermanager.items
+    local resolveItems          = deps.resolvemanager.items
 
     local registeredApps        = appManager.getApplications()
 
@@ -300,8 +317,13 @@ function plugin.postInit(deps)
             midiItems,
             streamDeckItems,
             tourBoxItems,
+            razerItems,
+            resolveItems,
         }
         for _, item in pairs(items) do
+            --------------------------------------------------------------------------------
+            -- One layer (i.e. MIDI):
+            --------------------------------------------------------------------------------
             for bundleID, v in pairs(item()) do
                 if v.displayName then
                     if not bundleIDsHash[bundleID] then
@@ -310,18 +332,34 @@ function plugin.postInit(deps)
                     end
                 end
             end
-        end
 
-        --------------------------------------------------------------------------------
-        -- Get a list of custom applications used in Stream Deck:
-        --------------------------------------------------------------------------------
-        for _, device in pairs(streamDeckItems()) do
-            for _, unit in pairs(device) do
+            --------------------------------------------------------------------------------
+            -- Two layers (i.e. Razer):
+            --------------------------------------------------------------------------------
+            for _, unit in pairs(item()) do
                 for bundleID, v in pairs(unit) do
-                    if v.displayName then
+                    if type(v) == "table" and v.displayName then
                         if not bundleIDsHash[bundleID] then
                             bundleIDsHash[bundleID] = true
                             insert(bundleIDs, bundleID)
+                        end
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Three layers (i.e. Stream Deck):
+            --------------------------------------------------------------------------------
+            for _, device in pairs(item()) do
+                for _, unit in pairs(device) do
+                    if type(unit) == "table" then
+                        for bundleID, v in pairs(unit) do
+                            if type(v) == "table" and v.displayName then
+                                if not bundleIDsHash[bundleID] then
+                                    bundleIDsHash[bundleID] = true
+                                    insert(bundleIDs, bundleID)
+                                end
+                            end
                         end
                     end
                 end
@@ -346,6 +384,8 @@ function plugin.postInit(deps)
     midiItems:watch(function() scanPreferences() end)
     streamDeckItems:watch(function() scanPreferences() end)
     tourBoxItems:watch(function() scanPreferences() end)
+    razerItems:watch(function() scanPreferences() end)
+    resolveItems:watch(function() scanPreferences() end)
 
     --------------------------------------------------------------------------------
     -- Scan preferences:
@@ -353,23 +393,33 @@ function plugin.postInit(deps)
     scanPreferences()
 
     --------------------------------------------------------------------------------
-    -- Scan open applications to give ourselves a head start:
+    -- Scan open applications to give ourselves a head start.
+    --
+    -- NOTE: This is off by default, as it's fairly slow.
     --------------------------------------------------------------------------------
-    local apps = runningApplications()
-    for _, app in pairs(apps) do
-        local bundleID = app:bundleID()
-        if not mod._cache[bundleID] then
-            local visibleWindows = app:visibleWindows()
-            if next(visibleWindows) and accessibilityState() then
-                getMenuItems(app, function(result)
-                    if not mod._cache[bundleID] then
-                        mod._cache[bundleID] = result
-                        mod._handler:reset()
-                        if mod._handlers[bundleID] then
-                            mod._handlers[bundleID]:reset()
-                        end
+    if deps.consolePreferences.scanRunningApplicationMenubarsOnStartup() then
+        --log.df("Scanning running application menubars for the Search Console")
+        local apps = runningApplications()
+        for _, app in pairs(apps) do
+            local bundleID = app:bundleID()
+            --------------------------------------------------------------------------------
+            -- For some reason, some apps don't have a bundle ID:
+            --------------------------------------------------------------------------------
+            if bundleID and bundleID ~= "" then
+                if not mod._cache[bundleID] then
+                    local visibleWindows = app:visibleWindows()
+                    if next(visibleWindows) and accessibilityState() then
+                        getMenuItems(app, function(result)
+                            if not mod._cache[bundleID] then
+                                mod._cache[bundleID] = result
+                                mod._handler:reset()
+                                if mod._handlers[bundleID] then
+                                    mod._handlers[bundleID]:reset()
+                                end
+                            end
+                        end)
                     end
-                end)
+                end
             end
         end
     end

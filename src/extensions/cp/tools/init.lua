@@ -18,6 +18,7 @@ local mouse                 = require "hs.mouse"
 local osascript             = require "hs.osascript"
 local screen                = require "hs.screen"
 local sound                 = require "hs.sound"
+local task                  = require "hs.task"
 local text                  = require "hs.text"
 local timer                 = require "hs.timer"
 local window                = require "hs.window"
@@ -40,9 +41,10 @@ local map                   = keycodes.map
 local usleep                = timer.usleep
 local utf16                 = text.utf16
 
-local execute               = _G.hs.execute
-local processInfo           = _G.hs.processInfo
-local getObjectMetatable    = _G.hs.getObjectMetatable
+local hs                    = _G["hs"]
+local execute               = hs.execute
+local processInfo           = hs.processInfo
+local getObjectMetatable    = hs.getObjectMetatable
 
 local newKeyEvent           = event.newKeyEvent
 local newSystemKeyEvent     = event.newSystemKeyEvent
@@ -107,21 +109,73 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
---- cp.tools.escapeTilda(input) -> none
---- Method
+--- cp.tools.appleScriptViaTask() -> none
+--- Function
+--- Triggers an AppleScript command via `hs.task` to avoid potential memory leaks in `hs.osascript.applescript`.
+---
+--- Parameters:
+---  * script - A single line AppleScript.
+---
+--- Returns:
+---  * None
+function tools.appleScriptViaTask(script)
+    task.new("/usr/bin/osascript", function(exitCode, stdOut, stdError)
+        if exitCode ~= 0 then
+                log.df("[cp.tools.appleScriptViaTask] An error occured. Exit Code: '%s'. Standard Out: '%s'. Standard Error: '%s'.", exitCode, stdOut, stdError)
+
+        end
+    end, {"-e", script}):start()
+end
+
+--- cp.tools.secureInputApplicationTitle() -> string
+--- Function
+--- Gets the title of the first application that has 'Secure Input' enabled.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The application title or `nil` if secure input is not enabled or failed to get a title.
+function tools.secureInputApplicationTitle()
+    if eventtap.isSecureInputEnabled() then
+        local output, status = execute([[ioreg -l -w 0 | grep SecureInput | awk 'BEGIN {FS="[^a-zA-Z0-9]+"} {print $8}' | uniq | xargs -n 1 ps aux]])
+        --
+        -- Example Output:
+        --
+        -- USER           PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+        -- chrishocking  9033   0.0  0.2 410017056 117632   ??  S    11:48AM   0:01.16 /System/Applications/System Preferences.app/Contents/MacOS/System Preferences
+        --
+        if output and status then
+            local lines = tools.lines(output)
+            for id, line in ipairs(lines) do
+                if id == 1 and line:sub(1, 4) ~= "USER" then
+                    return
+                elseif id ~= 1 then
+                    local components = line:split(" ")
+                    local pid = components and components[3] and tonumber(components[3])
+                    local app = pid and application.applicationForPID(pid)
+                    return app and app:title()
+                end
+            end
+        end
+    end
+end
+
+--- cp.tools.escapeTilda(input) -> string
+--- Function
 --- Escapes a tilda.
 ---
 --- Parameters:
 ---  * input - The string you want to escape.
 ---
 --- Returns:
----  * A new string
+---  * A new string or "" if no input is supplied.
 function tools.escapeTilda(i)
-    return string.gsub(i, "`", [[\`]])
+    return i and string.gsub(i, "`", [[\`]]) or ""
 end
 
 --- cp.tools.keyStroke(modifiers, character, app) -> none
---- Method
+--- Function
 --- Generates and emits a single keystroke event pair for the supplied keyboard
 --- modifiers and character to the application.
 ---
@@ -129,34 +183,67 @@ end
 ---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
 ---  * character - A string containing a character to be emitted
 ---  * app - The optional `hs.application` you want to target
+---  * proper - Use the "proper" method as per Apple's documentation (defaults to `false`)
 ---
 --- Returns:
 ---  * None
-function tools.keyStroke(modifiers, character, app)
+function tools.keyStroke(modifiers, character, app, proper)
     modifiers = modifiers or {}
 
-    for _, m in pairs(modifiers) do
-        if m == "command" then m = "cmd" end
-        if m == "option" then m = "alt" end
-        if m == "control" then m = "ctrl" end
-        if m == "function" then m = "fn" end
-        newKeyEvent(map[m], true):post(app)
-    end
+    if not proper then
+        local cleanedModifiers = {}
+        for _, modifier in pairs(modifiers) do
+            if modifier == "command" then modifier = "cmd" end
+            if modifier == "option" then modifier = "alt" end
+            if modifier == "control" then modifier = "ctrl" end
+            if modifier == "function" then modifier = "fn" end
+            if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+                table.insert(cleanedModifiers, modifier)
+            end
+        end
 
-    newKeyEvent(character, true):post(app)
-    newKeyEvent(character, false):post(app)
+        newKeyEvent(cleanedModifiers, character, true):post(app)
+        newKeyEvent(cleanedModifiers, character, false):post(app)
+    else
+        --------------------------------------------------------------------------------
+        -- NOTE TO FUTURE CHRIS:
+        -- According to the Hammerspoon documentation, "the proper way to perform a
+        -- keypress with modifiers is through multiple key events", which we were doing
+        -- below. However this causes weird issues, where keypresses weren't doing
+        -- what they were supposed to, etc. I ASSUME it was just a timing issue.
+        -- As of 5th April 2022, the above seems to work as intended on macOS 12.3
+        -- and Final Cut Pro 10.6.1.
+        --
+        -- On 23rd May 2022, Chris realised that some shortcuts (i.e. CONTROL+LEFT)
+        -- weren't properly triggering macOS shortcuts (i.e. "Move Left a Space"), so
+        -- I've brought this back as an optional feature.
+        --------------------------------------------------------------------------------
+        local cleanedModifiers = {}
+        for _, modifier in pairs(modifiers) do
+            if modifier == "command" then modifier = "cmd" end
+            if modifier == "option" then modifier = "alt" end
+            if modifier == "control" then modifier = "ctrl" end
+            if modifier == "function" then modifier = "fn" end
+            if modifier == "cmd" or modifier == "alt" or modifier == "shift" or modifier == "ctrl" or modifier == "fn" then
+                table.insert(cleanedModifiers, map[modifier])
+            end
+        end
 
-    for _, m in pairs(modifiers) do
-        if m == "command" then m = "cmd" end
-        if m == "option" then m = "alt" end
-        if m == "control" then m = "ctrl" end
-        if m == "function" then m = "fn" end
-        newKeyEvent(map[m], false):post(app)
+        for _, modifier in pairs(cleanedModifiers) do
+            newKeyEvent(modifier, true):post(app)
+        end
+
+        newKeyEvent(character, true):post(app)
+        newKeyEvent(character, false):post(app)
+
+        for _, modifier in pairs(cleanedModifiers) do
+            newKeyEvent(modifier, false):post(app)
+        end
     end
 end
 
 --- cp.tools.pressSystemKey(key) -> none
---- Method
+--- Function
 --- Virtually presses a system key.
 ---
 --- Parameters:
@@ -357,6 +444,12 @@ end
 ---
 --- Notes:
 ---  * Author: [Michal Kottman](https://stackoverflow.com/a/15706820)
+---  * Example Usage:
+---    ```lua
+---    for k,v in cp.tools.spairs(theTableToSort, function(t,a,b) return t[b] < t[a] end) do
+---       print(k,v)
+---    end
+---    ```
 function tools.spairs(t, order)
     --------------------------------------------------------------------------------
     -- Collect the keys:
@@ -552,6 +645,8 @@ function tools.getRAMSize()
         return "64GB"
     elseif rounded == 128 then
         return "128GB"
+    elseif rounded > 128 then
+        return "Greater than 128GB"
     else
         return ""
     end
@@ -576,70 +671,118 @@ function tools.getModelName()
             if modelName == "MacBook Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
                 local minorVersion = tonumber(string.sub(modelIdentifier, 14, 15))
-                if majorVersion == 15 and minorVersion == 1 then
-                    return "15-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 14 and minorVersion == 3 then
-                    return "15-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 13 and minorVersion == 3 then
-                    return "15-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 15 and minorVersion == 2 then
-                    return "13-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 14 and minorVersion == 2 then
-                    return "13-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 14 and minorVersion == 1 then
-                    return "13-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 13 and minorVersion == 2 then
-                    return "13-inch MacBook Pro (Touch Bar)"
-                elseif majorVersion == 13 and minorVersion == 1 then
-                    return "13-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 4 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 5 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 12 and minorVersion == 1 then
-                    return "13-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 2 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 3 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 1 then
-                    return "13-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 2 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 11 and minorVersion == 3 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 10 and minorVersion == 1 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 10 and minorVersion == 2 then
-                    return "13-inch MacBook Pro"
-                elseif majorVersion == 9 and minorVersion == 1 then
-                    return "15-inch MacBook Pro"
-                elseif majorVersion == 9 and minorVersion == 2 then
-                    return "13-inch MacBook Pro"
-                else
-                    return ""
+
+                --------------------------------------------------------------------------------
+                -- 16-inch MacBook Pro (M1 Pro or M1 Max):
+                --------------------------------------------------------------------------------
+                if majorVersion >= 18 then
+                    return "16-inch MacBook Pro (M1 Pro or M1 Max)"
                 end
+
+                --------------------------------------------------------------------------------
+                -- 16-inch MacBook Pro (Intel):
+                --------------------------------------------------------------------------------
+                if (majorVersion == 16 and minorVersion == 4)
+                or (majorVersion == 16 and minorVersion == 1) then
+                    return "16-inch MacBook Pro (Intel)"
+                end
+
+                --------------------------------------------------------------------------------
+                -- 15-inch MacBook Pro (Intel):
+                --------------------------------------------------------------------------------
+                if (majorVersion == 11 and minorVersion == 5)
+                or (majorVersion == 11 and minorVersion == 4)
+                or (majorVersion == 11 and minorVersion == 3)
+                or (majorVersion == 11 and minorVersion == 2)
+                or (majorVersion == 10 and minorVersion == 1)
+                or (majorVersion == 9 and minorVersion == 1) then
+                    return "15-inch MacBook Pro"
+                end
+
+                --------------------------------------------------------------------------------
+                -- 15-inch MacBook Pro (Touch Bar):
+                --------------------------------------------------------------------------------
+                if (majorVersion == 15 and minorVersion == 1)
+                or (majorVersion == 14 and minorVersion == 3)
+                or (majorVersion == 13 and minorVersion == 3) then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                end
+
+                --------------------------------------------------------------------------------
+                -- 14-inch MacBook Pro:
+                --------------------------------------------------------------------------------
+                if (majorVersion == 18 and minorVersion == 4)
+                or (majorVersion == 18 and minorVersion == 3) then
+                    return "14-inch MacBook Pro"
+                end
+
+                --------------------------------------------------------------------------------
+                -- 13-inch MacBook Pro (M1):
+                --------------------------------------------------------------------------------
+                if (majorVersion == 17 and minorVersion == 1) then
+                    return "13-inch MacBook Pro (M1)"
+                end
+
+                --------------------------------------------------------------------------------
+                -- 13-inch MacBook Pro (Touch Bar):
+                --------------------------------------------------------------------------------
+                if (majorVersion == 16 and minorVersion == 2)
+                or (majorVersion == 16 and minorVersion == 3)
+                or (majorVersion == 15 and minorVersion == 2)
+                or (majorVersion == 15 and minorVersion == 4)
+                or (majorVersion == 15 and minorVersion == 3)
+                or (majorVersion == 14 and minorVersion == 2)
+                or (majorVersion == 14 and minorVersion == 1)
+                or (majorVersion == 13 and minorVersion == 2) then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                end
+
+                --------------------------------------------------------------------------------
+                -- 13-inch MacBook Pro (Intel):
+                --------------------------------------------------------------------------------
+                if (majorVersion == 13 and minorVersion == 1)
+                or (majorVersion == 12 and minorVersion == 1)
+                or (majorVersion == 11 and minorVersion == 1)
+                or (majorVersion == 10 and minorVersion == 2)
+                or (majorVersion == 9 and minorVersion == 2) then
+                    return "13-inch MacBook Pro (Intel)"
+                end
+
             elseif modelName == "Mac Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 7, 7))
-                if majorVersion >=6 then
+                if majorVersion == 7 then
+                    return "Mac Pro (2019)"
+                elseif majorVersion >=6 then
                     return "Mac Pro (Late 2013)"
                 else
                     return "Mac Pro (Previous generations)"
                 end
             elseif modelName == "MacBook Air" then
-                return "MacBook Air"
+                local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
+                if majorVersion >= 10 then
+                    return "MacBook Air (M1)"
+                else
+                    return "MacBook Air (Intel)"
+                end
             elseif modelName == "MacBook" then
                 return "MacBook"
             elseif modelName == "iMac" then
-                return "iMac"
+                local majorVersion = tonumber(string.sub(modelIdentifier, 5, 6))
+                if majorVersion >= 21 then
+                    return "iMac (M1)"
+                else
+                    return "iMac (Intel)"
+                end
             elseif modelName == "iMac Pro" then
                 return "iMac Pro"
             elseif modelName == "Mac mini" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 8, 8))
-                if majorVersion >=8 then
-                    return "Mac mini"
+                if majorVersion >=9 then
+                    return "Mac mini (M1)"
+                elseif majorVersion >=8 then
+                    return "Mac mini (Intel)"
                 else
-                    return "Mac mini (previous generations)"
+                    return "Mac mini (Previous generations)"
                 end
             end
         end
@@ -657,32 +800,62 @@ end
 --- Returns:
 ---  * String
 function tools.getVRAMSize()
-    local vram = host.gpuVRAM()
-    if vram then
-        local result
-        for _, value in pairs(vram) do
-            if result then
-                if value > result then
+    if hs.processInfo.arch == "arm64" then
+        --------------------------------------------------------------------------------
+        -- Apple Silicon (just use RAM value):
+        --------------------------------------------------------------------------------
+        local memSize = host.vmStat()["memSize"]
+        local rounded = tools.round(memSize/1073741824, 0)
+        if rounded < 1 then
+            return "Less than 1GB"
+        elseif rounded == 1 then
+            return "1GB"
+        elseif rounded == 2 then
+            return "2GB"
+        elseif rounded == 4 then
+            return "4GB"
+        elseif rounded == 8 then
+            return "8GB"
+        elseif rounded == 16 then
+            return "16GB"
+        elseif rounded > 16 then
+            return "Greater than 16GB"
+        end
+    else
+        --------------------------------------------------------------------------------
+        -- Intel:
+        --------------------------------------------------------------------------------
+        local vram = host.gpuVRAM()
+        if vram then
+            local result
+            for _, value in pairs(vram) do
+                if result then
+                    if value > result then
+                        result = value
+                    end
+                else
                     result = value
                 end
-            else
-                result = value
+            end
+            if result < 1024 then
+                return "Less than 1GB"
+            elseif result == 1024 then
+                return "1GB"
+            elseif result == 2048 then
+                return "2GB"
+            elseif result == 4096 then
+                return "4GB"
+            elseif result == 8192 then
+                return "8GB"
+            elseif result == 16384 then
+                return "16GB"
+            elseif result > 16384 then
+                return "Greater than 16GB"
             end
         end
-        if result < 1024 then
-            return "Less than 1GB"
-        elseif result == 1024 then
-            return "1GB"
-        elseif result == 2048 then
-            return "2GB"
-        elseif result == 4096 then
-            return "4GB"
-        elseif result == 8192 then
-            return "8GB"
-        elseif result == 16384 then
-            return "16GB"
-        end
     end
+
+    -- Failing that, return an empty string:
     return ""
 end
 
@@ -698,29 +871,246 @@ end
 function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
-        local result = ""
-        if v(macOSVersion) >= v("10.16") then
-            result = "macOS Big Sur 11"
-        elseif v(macOSVersion) >= v("10.15") then
-            result = "macOS Catalina" .. " " .. tostring(macOSVersion)
-        elseif v(macOSVersion) >= v("10.14") then
-            result = "macOS Mojave" .. " " .. tostring(macOSVersion)
+        --------------------------------------------------------------------------------
+        -- NOTE: As of 16th March 2022 the FCPX Feedback Form only goes up to
+        --       12.2.1.
+        --------------------------------------------------------------------------------
+        if v(macOSVersion) > v("12.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey:
+            --------------------------------------------------------------------------------
+            return ""
+        elseif v(macOSVersion) == v("12.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey 12.3:
+            --------------------------------------------------------------------------------
+            return "macOS Monterey 12.3"
+        elseif v(macOSVersion) == v("12.2.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey 12.2.1:
+            --------------------------------------------------------------------------------
+            return "macOS Monterey 12.2.1"
+        elseif v(macOSVersion) == v("12.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey 12.2:
+            --------------------------------------------------------------------------------
+            return "macOS Monterey 12.2"
+        elseif v(macOSVersion) == v("12.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey 12.1:
+            --------------------------------------------------------------------------------
+            return "macOS Monterey 12.1"
+        elseif v(macOSVersion) == v("12.0.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey 12.0.1:
+            --------------------------------------------------------------------------------
+            return "macOS Monterey 12.0.1"
+        elseif v(macOSVersion) == v("12") then
+            --------------------------------------------------------------------------------
+            -- macOS Monterey 12:
+            --------------------------------------------------------------------------------
+            return "macOS Monterey 12"
+        elseif v(macOSVersion) == v("11.6.4") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.6.4:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.6.4"
+        elseif v(macOSVersion) == v("11.6.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.6.3:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.6.3"
+        elseif v(macOSVersion) == v("11.6.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.6.2:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.6.2"
+        elseif v(macOSVersion) == v("11.6.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.6.1:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.6.1"
+        elseif v(macOSVersion) == v("11.6") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.6:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.6"
+        elseif v(macOSVersion) == v("11.5.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.5.2:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.5.2"
+        elseif v(macOSVersion) == v("11.5.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.5.1:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.5.1"
+        elseif v(macOSVersion) == v("11.5") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.5:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.5"
+        elseif v(macOSVersion) == v("11.4") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.4:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.4"
+        elseif v(macOSVersion) == v("11.3.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.3.1:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.3.1"
+        elseif v(macOSVersion) == v("11.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.3:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.3"
+        elseif v(macOSVersion) == v("11.2.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.2.3:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.2.3"
+        elseif v(macOSVersion) == v("11.2.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.2.2:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.2.2"
+        elseif v(macOSVersion) == v("11.2.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.2.1:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.2.1"
+        elseif v(macOSVersion) == v("11.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.2:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.2"
+        elseif v(macOSVersion) == v("11.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.1:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.1"
+        elseif v(macOSVersion) == v("11.0.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11.0.1:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11.0.1"
+        elseif v(macOSVersion) == v("11") then
+            --------------------------------------------------------------------------------
+            -- macOS Big Sur 11:
+            --------------------------------------------------------------------------------
+            return "macOS Big Sur 11"
+        elseif v(macOSVersion) == v("10.15.7") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.7:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.7"
+        elseif v(macOSVersion) == v("10.15.6") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.6:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.6"
+        elseif v(macOSVersion) == v("10.15.5") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.5:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.5"
+        elseif v(macOSVersion) == v("10.15.4") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.4:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.4"
+        elseif v(macOSVersion) == v("10.15.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.3:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.3"
+        elseif v(macOSVersion) == v("10.15.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.2:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.2"
+        elseif v(macOSVersion) == v("10.15.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15.1:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15.1"
+        elseif v(macOSVersion) == v("10.15") then
+            --------------------------------------------------------------------------------
+            -- macOS Catalina 10.15:
+            --------------------------------------------------------------------------------
+            return "macOS Catalina 10.15"
+        elseif v(macOSVersion) == v("10.14.6") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14.6:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14.6"
+        elseif v(macOSVersion) == v("10.14.5") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14.5:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14.5"
+        elseif v(macOSVersion) == v("10.14.4") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14.4:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14.4"
+        elseif v(macOSVersion) == v("10.14.3") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14.2:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14.3"
+        elseif v(macOSVersion) == v("10.14.2") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14.2:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14.2"
+        elseif v(macOSVersion) == v("10.14.1") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14.1:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14.1"
+        elseif v(macOSVersion) == v("10.14") then
+            --------------------------------------------------------------------------------
+            -- macOS Mojave 10.14:
+            --------------------------------------------------------------------------------
+            return "macOS Mojave 10.14"
         elseif v(macOSVersion) >= v("10.13") then
-            result = "macOS High Sierra" .. " " .. tostring(macOSVersion)
+            --------------------------------------------------------------------------------
+            -- macOS High Sierra 10.13.x:
+            --------------------------------------------------------------------------------
+            return "macOS High Sierra 10.13.x"
         elseif v(macOSVersion) >= v("10.12") then
-            result = "macOS Sierra 10.12.x"
+            --------------------------------------------------------------------------------
+            -- macOS Sierra 10.12.x:
+            --------------------------------------------------------------------------------
+            return "macOS Sierra 10.12.x"
         elseif v(macOSVersion) >= v("10.11") then
-            result = "OS X El Capitan 10.11.x"
+            --------------------------------------------------------------------------------
+            -- OS X El Capitan 10.11.x:
+            --------------------------------------------------------------------------------
+            return "OS X El Capitan 10.11.x"
         elseif v(macOSVersion) >= v("10.10") then
-            result = "OS X El Capitan 10.10.x"
+            --------------------------------------------------------------------------------
+            -- OS X Yosemite 10.10.x:
+            --------------------------------------------------------------------------------
+            return "OS X Yosemite 10.10.x"
         elseif v(macOSVersion) >= v("10.9") then
-            result = "OS X Mavericks 10.9.x"
+            --------------------------------------------------------------------------------
+            -- OS X Mavericks 10.9.x:
+            --------------------------------------------------------------------------------
+            return "OS X Mavericks 10.9.x"
         elseif v(macOSVersion) >= v("10.8") then
-            result = "OS X Mountain Lion 10.8.x"
+            --------------------------------------------------------------------------------
+            -- OS X Mountain Lion 10.8.x:
+            --------------------------------------------------------------------------------
+            return "OS X Mountain Lion 10.8.x"
         elseif v(macOSVersion) <= v("10.7") then
-            result = "OS X Lion 10.7.x or earlier"
+            --------------------------------------------------------------------------------
+            -- OS X Lion 10.7.x or earlier:
+            --------------------------------------------------------------------------------
+            return "OS X Lion 10.7.x or earlier"
         end
-        return result
     end
     return ""
 end
@@ -1989,6 +2379,19 @@ end
 --- Returns:
 ---  * A new string
 function tools.replace(textValue, old, new)
+
+    --[[
+    NOTE TO FUTURE CHRIS:
+
+    This is a potential replacement, if this method ever proves to be a performance issue:
+
+    local function replace(str, what, with)
+        what = string.gsub(what, "[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1") -- escape pattern
+        with = string.gsub(with, "[%%]", "%%%%") -- escape replacement
+        return string.gsub(str, what, with)
+    end
+    --]]
+
     local b,e = textValue:find(old, 1, true)
     if b == nil then
         return textValue
@@ -2022,6 +2425,51 @@ end
 ---  * A boolean
 function tools.isColor(object)
     return object and getmetatable(object) == getObjectMetatable("hs.drawing.color") or false
+end
+
+--- cp.tools.characterToPercentEncodedString(input) -> string
+--- Function
+--- Encodes a character as a percent encoded string.
+---
+--- Parameters:
+---  * input - The string to process
+---
+--- Returns:
+---  * A string
+function tools.characterToPercentEncodedString(c)
+	return string.format("%%%02X", c:byte(1,1))
+end
+
+--- cp.tools.encodeURI(input) -> string
+--- Function
+--- Replaces all characters (except for those listed in the notes) with the appropriate UTF-8 escape sequences.
+---
+--- Parameters:
+---  * input - The string to process
+---
+--- Returns:
+---  * A string
+---
+--- Notes:
+---  * Except these characters: ; , / ? : @ & = + $ # alphabetic, decimal digits, - _ . ! ~ * ' ( )
+function tools.encodeURI(str)
+	return (str:gsub("[^%;%,%/%?%:%@%&%=%+%$%w%-%_%.%!%~%*%'%(%)%#]", tools.characterToPercentEncodedString))
+end
+
+--- cp.tools.encodeURIComponent(input) -> string
+--- Function
+--- Escapes all characters (except for those listed in the notes) with the appropriate UTF-8 escape sequences.
+---
+--- Parameters:
+---  * input - The string to process
+---
+--- Returns:
+---  * A string
+---
+--- Notes:
+---  * Except these characters: alphabetic, decimal digits, - _ . ! ~ * ' ( )
+function tools.encodeURIComponent(str)
+	return (str:gsub("[^%w%-_%.%!%~%*%'%(%)]", tools.characterToPercentEncodedString))
 end
 
 return tools

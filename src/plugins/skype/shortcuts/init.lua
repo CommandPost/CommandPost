@@ -14,6 +14,7 @@ local i18n                      = require "cp.i18n"
 local tools                     = require "cp.tools"
 
 local imageFromPath             = image.imageFromPath
+local infoForBundleID           = application.infoForBundleID
 local keyStroke                 = tools.keyStroke
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local playErrorSound            = tools.playErrorSound
@@ -29,6 +30,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load if Skype is installed:
+    --------------------------------------------------------------------------------
+    if not infoForBundleID("com.skype.skype") then return end
+
     --------------------------------------------------------------------------------
     -- Shortcuts:
     --
@@ -230,7 +236,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Handler:
     --------------------------------------------------------------------------------
-    local icon = imageFromPath(config.basePath .. "/plugins/skype/console/images/shortcut.png")
+    local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/shortcut.png")
     local actionmanager = deps.actionmanager
     local description = i18n("skypeShortcutDescription")
     mod._handler = actionmanager.addHandler("skype_shortcuts", "skype")

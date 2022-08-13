@@ -147,13 +147,13 @@ local function updateUI()
     --------------------------------------------------------------------------------
     -- Update the enabled button checkbox:
     --------------------------------------------------------------------------------
-    local enabled = connection.enabled()
+    local enabled = connection and connection.enabled() or false
     script = script .. [[changeCheckedByID('enabled', ]] .. tostring(enabled) .. [[);]]
 
     --------------------------------------------------------------------------------
     -- Update the Favourites titles:
     --------------------------------------------------------------------------------
-    local faves = connection.favourites()
+    local faves = connection and connection.favourites() or {}
     local max = mod._tangentManager.NUMBER_OF_FAVOURITES
     for i = 1, max do
         local fave = faves[tostring(i)]

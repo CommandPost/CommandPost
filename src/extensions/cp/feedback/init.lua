@@ -11,6 +11,7 @@ local inspect           = require "hs.inspect"
 local application       = require "hs.application"
 local base64            = require "hs.base64"
 local console           = require "hs.console"
+local drawing           = require "hs.drawing"
 local screen            = require "hs.screen"
 local timer             = require "hs.timer"
 local urlevent          = require "hs.urlevent"
@@ -232,6 +233,7 @@ function mod.showFeedback(quitOnComplete)
             :html(generateHTML())
             :windowCallback(windowCallback)
             :darkMode(true)
+            :level(drawing.windowLevels._MaximumWindowLevelKey) -- Always on top
             :policyCallback(function(action, _, details1, _)
                 if action == "navigationResponse" then
                     local statusCode = details1.response.statusCode

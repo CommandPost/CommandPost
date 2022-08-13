@@ -30,12 +30,13 @@ local displayMessage        = dialog.displayMessage
 --  * None
 local function doSpatialConformType(value)
     local timeline = fcp.timeline
+    local browser = fcp.browser
     local timelineContents = timeline.contents
-    local libraries = fcp.browser.libraries
+    local libraries = browser.libraries
     local spatialConformType = fcp.inspector.video:spatialConform():type()
 
     return Do(function()
-        if timeline:isFocused() then
+        if timeline:isFocused() or (timeline:isFocused() == false and browser:isFocused() == false) then
             --------------------------------------------------------------------------------
             -- Make sure at least one clip is selected in the timeline:
             --------------------------------------------------------------------------------
@@ -897,7 +898,7 @@ function plugin.init(deps)
 
     local distortBottomLeftYValue = 0
     local updateDistortBottomLeftY = deferred.new(0.01):action(function()
-        local d = fcp.inspector.video:distort():bottomLeft().x
+        local d = fcp.inspector.video:distort():bottomLeft().y
         d:show()
         local original = d:value()
         d:value(original + distortBottomLeftYValue)
@@ -915,7 +916,7 @@ function plugin.init(deps)
 
     local distortBottomRightYValue = 0
     local updateDistortBottomRightY = deferred.new(0.01):action(function()
-        local d = fcp.inspector.video:distort():bottomRight().x
+        local d = fcp.inspector.video:distort():bottomRight().y
         d:show()
         local original = d:value()
         d:value(original + distortBottomRightYValue)
@@ -934,7 +935,7 @@ function plugin.init(deps)
 
     local distortTopLeftYValue = 0
     local updateDistortTopLeftY = deferred.new(0.01):action(function()
-        local d = fcp.inspector.video:distort():topLeft().x
+        local d = fcp.inspector.video:distort():topLeft().y
         d:show()
         local original = d:value()
         d:value(original + distortTopLeftYValue)
@@ -952,7 +953,7 @@ function plugin.init(deps)
 
     local distortTopRightYValue = 0
     local updateDistortTopRightY = deferred.new(0.01):action(function()
-        local d = fcp.inspector.video:distort():topRight().x
+        local d = fcp.inspector.video:distort():topRight().y
         d:show()
         local original = d:value()
         d:value(original + distortTopRightYValue)

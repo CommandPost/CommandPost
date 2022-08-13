@@ -9,6 +9,7 @@ local hs          = _G.hs
 local log         = require "hs.logger".new "utils"
 
 local inspect     = require "hs.inspect"
+local mouse       = require "hs.mouse"
 local screen      = require "hs.screen"
 local timer       = require "hs.timer"
 local toolbar     = require "hs.webview.toolbar"
@@ -331,6 +332,7 @@ function mod.new()
     --------------------------------------------------------------------------------
     if not mod._toolbar then
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+            :toolbarStyle("preference")
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
@@ -369,16 +371,20 @@ function mod.new()
     return mod
 end
 
---- plugins.core.toolbox.manager.show() -> boolean
+--- plugins.core.toolbox.manager.show([panelID]) -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
 --- Parameters:
----  * None
+---  * [panelID] - An optional panel ID
 ---
 --- Returns:
 ---  * True if successful or nil if an error occurred
-function mod.show()
+function mod.show(panelID)
+    if panelID then
+        mod.lastTab(panelID)
+    end
+
     if mod._webview == nil then
         mod.new()
     end
@@ -469,6 +475,9 @@ function mod.injectScript(script)
             function(_, theerror)
                 if theerror and theerror.code ~= 0 then
                     log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+                    --log.df("mod._webview: %s", mod._webview)
+                    --log.df("mod._webview:frame(): %s", mod._webview:frame() and inspect(mod._webview:frame()))
+                    --log.df("mod._webview:loading(): %s", mod._webview and mod._webview:loading())
                 end
             end
         )
@@ -503,15 +512,17 @@ function mod.selectPanel(id)
             end
 
             --------------------------------------------------------------------------------
-            -- Offset macOS Big Sur:
+            -- Make sure the panel isn't bigger than the screen:
             --------------------------------------------------------------------------------
-            local offset = 0
-            local macOSVersion = tools.macOSVersion()
-            if semver(macOSVersion) >= semver("10.16") then
-                offset = -20
+            local currentScreen = mouse.getCurrentScreen()
+            local currentFrame = currentScreen and currentScreen:frame()
+            local currentHeight = currentFrame and currentFrame.h
+
+            if height > currentHeight then
+                height = currentHeight - 10
             end
 
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height + offset})
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height})
         end
 
     end
@@ -589,6 +600,25 @@ function plugin.init(deps, env)
     -- Initalise Module:
     --------------------------------------------------------------------------------
     return mod.init(env)
+end
+
+function plugin.postInit(deps)
+    --------------------------------------------------------------------------------
+    -- Add Commands to open individual panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(mod._panels) do
+        local id = v.id
+        local label = v.label
+        local img = v.image
+        deps.global
+            :add("toolbox" .. id)
+            :whenActivated(function()
+                mod.show(id)
+            end)
+            :titled(label)
+            :subtitled(i18n("toolbox"))
+            :image(img)
+    end
 end
 
 return plugin

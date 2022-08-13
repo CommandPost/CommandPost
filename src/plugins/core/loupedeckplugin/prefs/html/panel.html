@@ -1,0 +1,101 @@
+<style>{(css/loupedeckplugin.css)}</style>
+<script>
+	function updateUI(){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "updateUI",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressAction(buttonID){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "updateAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressClear(buttonID){
+		try {
+			var result = {
+				id: "loupedeckPluginPanelCallback",
+				params: {
+					type: "clearAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<div id="loupedeckpluginControls" class="uiItem">
+	<div id="loupedeckpluginGroup" class="loupedeckpluginGroup">
+		<table class="loupedeckplugin">
+			<thead>
+				<tr>
+					<th width="100px"></th>
+					<th width="150px">{{ i18n("pressAction") }}</th>
+					<th width="120px"></th>
+					<th width="150px">{{ i18n("turnLeftAction") }}</th>
+					<th width="120px"></th>
+					<th width="150px">{{ i18n("turnRightAction") }}</th>
+					<th width="120px"></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+			{%
+				for i=1,maxItems,1 do
+			%}
+				<tr>
+					<td width="100px">
+						{{ i18n("favourite") }} {{ string.format("%02d", i) }}
+					</td>
+					<td width="150px">
+						<input type="text" id="press_{{ i }}" class="loupedeckpluginActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td width="120px">
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressAction('press_{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressClear('press_{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+					<td width="150px">
+						<input type="text" id="left_{{ i }}" class="loupedeckpluginActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td width="120px">
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressAction('left_{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressClear('left_{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+					<td width="150px">
+						<input type="text" id="right_{{ i }}" class="loupedeckpluginActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td width="120px">
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressAction('right_{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button loupedeckpluginActionButton" onclick="pressClear('right_{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+				</tr>
+			{%
+				end
+			%}
+			</tbody>
+		</table>
+	</div>
+</div>
+<script>
+	updateUI();
+</script>

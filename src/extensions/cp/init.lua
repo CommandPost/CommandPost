@@ -154,6 +154,7 @@ function mod.init()
         })
         :canCustomize(true)
         :autosaves(true)
+        :toolbarStyle("expanded")
     )
 
     --------------------------------------------------------------------------------
@@ -261,11 +262,11 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Check Versions & Language:
     --------------------------------------------------------------------------------
-    local fcpVersion            = fcp:version() or "Unknown"
-    local fcpPath               = fcp:getPath() or "Unknown"
+    local fcpVersion            = fcp:version() or "Not Installed"
+    local fcpPath               = fcp:getPath() or "Not Installed"
     local osVersion             = tools.macOSVersion() or "Unknown"
     local fcpLocale             = fcp:currentLocale()
-    local fcpLanguage           = fcpLocale and fcpLocale.code or "Unknown"
+    local fcpLanguage           = fcp:version() and fcpLocale and fcpLocale.code or "Not Installed"
     local debugMode             = config.developerMode()
 
     --------------------------------------------------------------------------------

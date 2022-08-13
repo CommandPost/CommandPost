@@ -6,22 +6,100 @@
 ---  * [Button](cp.ui.Button.md)
 ---  * [CheckBox](cp.rx.CheckBox.md)
 ---  * [MenuButton](cp.rx.MenuButton.md)
+
 local require           = require
 
--- local log               = require "hs.logger".new("Element")
+--local log               = require "hs.logger".new("Element")
+
+local drawing           = require "hs.drawing"
 
 local axutils           = require "cp.ui.axutils"
+local Builder           = require "cp.ui.Builder"
 local go	            = require "cp.rx.go"
-local If                = require "cp.rx.go.If"
+local is                = require "cp.is"
 local lazy              = require "cp.lazy"
 local prop              = require "cp.prop"
 
 local class             = require "middleclass"
 
 local cache             = axutils.cache
-local Do, Given         = go.Do, go.Given
+local Do, Given, If     = go.Do, go.Given, go.If
+local isFunction        = is.fn
+local isCallable        = is.callable
+local pack, unpack      = table.pack, table.unpack
 
 local Element = class("cp.ui.Element"):include(lazy)
+
+--- cp.ui.Element:defineBuilder(...) -> cp.ui.Element
+--- Method
+--- Defines a new [Builder](cp.ui.Builder.md) class on this `Element` with the specified additional argument names.
+---
+--- Parameters:
+---  * ... - The names for the methods which will collect extra arguments to pass to the `Element` constructor.
+---
+--- Returns:
+---  * The same `Element` class instance.
+---
+--- Notes:
+---  * The order of the argument names here is the order in which they will be passed to the `Element` constructor, no matter what
+---    order they are called on the `Builder` itself.
+---  * Once defined, the class can be accessed via the static `<Element Name>.Builder` of the `Element` subclass.
+---  * For example, if you have a `cp.ui.Element` subclass named `MyElement`, with an extra `alpha` and `beta` constructor argument, you can do this:
+---    ```lua
+---    -- The class definition
+---    local MyElement = Element:subclass("cp.ui.MyElement"):defineBuilder("withAlpha", "withBeta")
+---    -- The constructor
+---    function MyElement.Builder:initialize(parent, uiFinder, alpha, beta)
+---        Element.initialize(self, parent, uiFinder)
+---        self.alpha = alpha
+---        self.beta = beta
+---    end
+---    -- Create a callable `MyClass.Builder` instance
+---    local myElementBuilder = MyElement:withAlpha(1):withBeta(2)
+---    -- alternately, same result:
+---    local myElementBuilder = MyElement:withBeta(2):withAlpha(1)
+---    -- Alternately, same result:
+---    local myElementBuilder = MyElement.Builder():withAlpha(1):withBeta(2)
+---    -- Create an instance of `MyClass`:
+---    local myElement = myElementBuilder(parent, uiFinder)
+---    ```
+function Element.static:defineBuilder(...)
+    local args = pack(...)
+    local thisType = self
+    local builderClass = Builder:subclass(self.name .. ".Builder")
+    self.Builder = builderClass
+
+    function builderClass.initialize(builderType, elementType)
+        elementType = elementType or thisType
+        Builder.initialize(builderType, elementType, unpack(args))
+    end
+
+    for _, arg in ipairs(args) do
+        self[arg] = function(elementType, ...)
+            local instance = builderClass(elementType)
+            return instance[arg](instance, ...)
+        end
+    end
+    return self
+end
+
+--- cp.ui.Element:isTypeOf(thing) -> boolean
+--- Function
+--- Checks if the `thing` is an `Element`. If called on subclasses, it will check
+--- if the `thing` is an instance of the subclass.
+---
+--- Parameters:
+---  * `thing`		- The thing to check
+---
+--- Returns:
+---  * `true` if the thing is a `Element` instance.
+---
+--- Notes:
+---  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
+---    not an instance. For example `Element:isTypeOf(value)`
+function Element.static:isTypeOf(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(self)
+end
 
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
@@ -33,7 +111,7 @@ local Element = class("cp.ui.Element"):include(lazy)
 --- Returns:
 ---  * `true` if the element is a valid instance of an `hs.axuielement`.
 function Element.static.matches(element)
-    return element ~= nil and type(element.isValid) == "function" and element:isValid()
+    return element ~= nil and isFunction(element.isValid) and element:isValid()
 end
 
 -- Defaults to describing the class by it's class name
@@ -58,7 +136,7 @@ function Element:initialize(parent, uiFinder)
     local UI
     if prop.is(uiFinder) then
         UI = uiFinder
-    elseif type(uiFinder) == "function" then
+    elseif isCallable(uiFinder) then
         UI = prop(function()
             return cache(self, "_ui", function()
                 local ui = uiFinder()
@@ -67,12 +145,11 @@ function Element:initialize(parent, uiFinder)
             self.class.matches)
         end)
     else
-        error "Expected either a cp.prop or function for uiFinder."
+        error "Expected either a cp.prop, function, or callable table for uiFinder."
     end
 
-    prop.bind(self) {
-        UI = UI
-    }
+    self.UI = UI
+    UI:bind(self, "UI")
 
     if prop.is(parent.UI) then
         UI:monitor(parent.UI)
@@ -161,7 +238,7 @@ function Element:show()
     return self
 end
 
---- cp.ui.Element:focus() -> self
+--- cp.ui.Element:focus() -> self, boolean
 --- Method
 --- Attempt to set the focus on the element.
 ---
@@ -169,7 +246,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * self
+---  * self, boolean - the boolean indicates if the focus was set.
 function Element:focus()
     return self:setAttributeValue("AXFocused", true)
 end
@@ -185,6 +262,7 @@ end
 ---  * The `Statement`.
 function Element.lazy.method:doFocus()
     return self:doSetAttributeValue("AXFocused", true)
+    :Label("cp.ui.Element:doFocus()")
 end
 
 --- cp.ui.Element:attributeValue(id) -> anything, true | nil, false
@@ -319,7 +397,7 @@ end
 --- Field
 --- Returns `true` if the `AXFocused` attribute is `true`. Not always a reliable way to determine focus however.
 function Element.lazy.prop:isFocused()
-    return axutils.prop(self.UI, "AXFocused")
+    return axutils.prop(self.UI, "AXFocused", true)
 end
 
 --- cp.ui.Element.position <cp.prop: table; read-only; live?>
@@ -383,6 +461,69 @@ function Element:snapshot(path)
     return nil
 end
 
+local RED_COLOR = { red = 1, green = 0, blue = 0, alpha = 0.75 }
+
+--- cp.ui.Element:doHighlight([color], [duration]) -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will attempt to highlight the `Element` with the specified `color` and `duration`.
+---
+--- Parameters:
+---  * color	- The `hs.drawing` color to use. (defaults to red)
+---  * duration	- The `number` of seconds to highlight for. (defaults to `3` seconds)
+---
+--- Returns:
+---  * The `Statement` which will perform the action.
+function Element:doHighlight(color, duration)
+    if type(color) == "number" then
+        duration = color
+        color = nil
+    end
+    color = color or RED_COLOR
+    duration = duration or 3
+    --log.df("doHighlight: color=%s, duration=%d", hs.inspect(color), duration)
+    local highlight
+
+    return If(self.frame)
+    :Then(function(frame)
+        return Do(function()
+            --log.df("doHighlight: frame: %s", hs.inspect(frame))
+            highlight = drawing.rectangle(frame)
+            highlight:setStrokeColor(color)
+            highlight:setFill(false)
+            highlight:setStrokeWidth(3)
+            highlight:show()
+            return true
+        end)
+        :ThenDelay(duration * 1000)
+    end)
+    :Otherwise(false)
+    :Finally(function()
+        --log.df("doHighlight: Finally...")
+        if highlight then
+            --log.df("doHighlight: Finally: removing highlight...")
+            highlight:delete()
+            highlight = nil
+        end
+    end)
+    :Label("cp.ui.Element:doHighlight(color, duration)")
+end
+
+--- cp.ui.Element:highlight([color], [duration]) -> cp.ui.Element
+--- Method
+--- Highlights the `Element` with the specified `color` and `duration`.
+---
+--- Parameters:
+---  * color	- The `hs.drawing` color to use. (defaults to red)
+---  * duration	- The `number` of seconds to highlight for. (defaults to `3` seconds)
+---
+--- Returns:
+---  * the same `Element` instance.
+function Element:highlight(color, duration)
+    self:doHighlight(color, duration):Now()
+    return self
+end
+
+
 --- cp.ui.Element:saveLayout() -> table
 --- Method
 --- Returns a `table` containing the current configuration details for this Element (or subclass).
@@ -403,7 +544,7 @@ end
 ---        return layout
 ---    end
 ---    ```
-function Element.saveLayout()
+function Element.saveLayout(_)
     return {}
 end
 
@@ -427,11 +568,12 @@ end
 ---        self.myConfig = layout.myConfig
 ---    end
 ---    ```
-function Element.loadLayout(_)
+function Element.loadLayout(_, _)
 end
 
 function Element.lazy.method:doSaveLayout()
     return Do(function() return self:saveLayout() end)
+    :Label("cp.ui.Element:doSaveLayout()")
 end
 
 --- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement

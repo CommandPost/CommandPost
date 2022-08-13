@@ -95,7 +95,9 @@ end
 ---  * Self
 function Slider:shiftValue(value)
     local currentValue = self:value()
-    self.value:set(currentValue - value)
+    if currentValue then
+        self.value:set(currentValue - value)
+    end
     return self
 end
 

@@ -515,20 +515,23 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         ["fr"]      = "bengali",
         ["ja"]      = "ベンガル語",
         ["zh_CN"]   = "孟加拉文",
+        ["ko"]      = "뱅글라",
     }
     do
         local title = banglaTranslation[actualFCPLocaleCode]
-        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
-        local params = {}
-        params.path = fnutils.concat(fnutils.copy(path), { title })
-        params.locale = en
-        params.plain = true
-        table.insert(choices, {
-            text = title,
-            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-            params = params,
-            id = mod.actionId(params),
-        })
+        if title then
+            local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -546,20 +549,23 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         ["fr"]      = "tagalog",
         ["ja"]      = "タガログ語",
         ["zh_CN"]   = "他加禄文",
+        ["ko"]      = "타갈로그어",
     }
     do
         local title = tagalogTranslation[actualFCPLocaleCode]
-        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
-        local params = {}
-        params.path = fnutils.concat(fnutils.copy(path), { title })
-        params.locale = en
-        params.plain = true
-        table.insert(choices, {
-            text = title,
-            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-            params = params,
-            id = mod.actionId(params),
-        })
+        if title then
+            local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -777,7 +783,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     -- Shutterstock (Window > Extensions)
     -- Simon Says Transcription (Window > Extensions)
     --------------------------------------------------------------------------------
-    local workflowExtensions = fcp.workflowExtensions()
+    local workflowExtensions = fcp.workflowExtensionNames()
     for _, title in pairs(workflowExtensions) do
         local path = {"Window", "Extensions"}
         local params = {}

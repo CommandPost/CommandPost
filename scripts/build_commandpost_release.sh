@@ -1,84 +1,171 @@
 #!/bin/bash
 
-if [ "$1" == "" ]; then
-    echo "Usage: $0 VERSION"
-    exit 1
-fi
-
-echo "******** PREPPING:"
-
-# Quit CommandPost:
-echo "Quitting CommandPost..."
-osascript -e "tell application \"CommandPost\" to quit"
-
-# Remove Old Files:
-echo "Removing Outdated Release, Archive & Build Files..."
-cd ../
-cd archive/
-rm -rf "$1"
-cd ../
-cd CommandPost-Releases/
-rm -rf "$1"
-cd ../
-
-# Go to CommandPost-App Directory:
-cd CommandPost-App/
-
-# Trash the Build folder:
-rm -rf build
-mkdir build
+#
+# COMMANDPOST BUILD RELEASE SCRIPT:
+#
 
 set -eu
 set -o pipefail
 
-# Early sanity check that we have everything we need
-if [ "$(which greadlink)" == "" ]; then
-    echo "ERROR: Unable to find greadlink. Maybe 'brew install coreutils'?"
-    exit 1
-fi
+#
+# Define Variables:
+#
 
-# Store some variables for later
-export VERSION="$1"
-export CWD=$PWD
-export SCRIPT_NAME
-export SCRIPT_HOME
-export HAMMERSPOON_HOME
-export XCODE_BUILT_PRODUCTS_DIR
+export SENTRY_ORG=commandpost
+export SENTRY_PROJECT=commandpost
+export SENTRY_LOG_LEVEL=debug
 
-SCRIPT_NAME="$(basename "$0")"
-SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")"
-HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")"
-XCODE_BUILT_PRODUCTS_DIR="$(xcodebuild -workspace Hammerspoon.xcworkspace -scheme 'Release' -configuration 'Release' -showBuildSettings | sort | uniq | grep ' BUILT_PRODUCTS_DIR =' | awk '{ print $3 }')"
+export SCRIPT_HOME ; SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")"
+export COMMANDPOST_HOME ; COMMANDPOST_HOME="$(greadlink -f "${SCRIPT_HOME}/../")"
+export VERSION ; VERSION=$(cd "${COMMANDPOST_HOME}/../CommandPost-App/" || fail "Unable to enter ${COMMANDPOST_HOME}/../CommandPost-App/" ; git describe --abbrev=0)
 
+#
+# Build Uninstall Script:
+#
 
-export TOKENPATH
-TOKENPATH="${HAMMERSPOON_HOME}/.."
+function build_uninstall() {
+	rm -rf "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.app"
+	osacompile -x -o "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.app" "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.scpt"
+	cp "${COMMANDPOST_HOME}/scripts/inc/uninstall/applet.icns" "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.app/Contents/Resources/applet.icns"
+	xattr -cr "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.app"
+	codesign --verbose --force --deep --options=runtime --timestamp --entitlements "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.entitlements" --sign "Developer ID Application: LateNite Films Pty Ltd" "${COMMANDPOST_HOME}/scripts/inc/uninstall/Uninstall CommandPost.app"
+	codesign -dv --verbose=4 "${COMMANDPOST_HOME}/../CommandPost/scripts/inc/uninstall/Uninstall CommandPost.app"
+}
 
-export CODESIGN_AUTHORITY_TOKEN_FILE="${TOKENPATH}/token-codesign-authority"
-#export GITHUB_TOKEN_FILE="${TOKENPATH}/token-github-release"
-#export GITHUB_USER="hammerspoon"
-#export GITHUB_REPO="hammerspoon"
-export SENTRY_TOKEN_FILE="${TOKENPATH}/token-sentry"
-export NOTARIZATION_TOKEN_FILE="${TOKENPATH}/token-notarization"
+#
+# Build DMG using DMG Canvas:
+#
 
-# Import our function library
-# shellcheck source=scripts/librelease.sh disable=SC1091
-source "../CommandPost/scripts/inc/librelease.sh"
+function build_dmgcanvas() {
+	echo "  * Removing Old DMG..."
+	rm -f "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
 
-assert
-build
-validate
-#localtest
-#prepare_upload
-archive
-upload
-#announce
+	echo "  * Building New DMG..."
+	mkdir -p "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}"
+	/Applications/DMG\ Canvas.app/Contents/Resources/dmgcanvas "${COMMANDPOST_HOME}/../CommandPost/scripts/inc/dmgcanvas/CommandPost.dmgCanvas" "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" -setFilePath CommandPost.app "${COMMANDPOST_HOME}/../CommandPost-App/build/CommandPost.app" -setFilePath "Uninstall CommandPost.app" "${COMMANDPOST_HOME}/../CommandPost/scripts/inc/uninstall/Uninstall CommandPost.app" -setFilePath "Applications" "/Applications/"
 
+	if [ ! -f "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" ]; then
+	fail "  * DMG Creation Failed!"
+	else
+	echo "  * DMG Creation Successful!"
+	fi
+}
+
+#
+# Generate Appcast:
+#
+
+function generate_appcast() {
+
+  echo "  * Remove Old AppCast..."
+  rm -f "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
+
+  echo "  * Generating New AppCast..."
+
+  #
+  # Generate DSA Signature (legacy for Sparkle 1.0):
+  #
+
+  export SPARKLE_DSA_SIGNATURE
+  SPARKLE_DSA_SIGNATURE="$(${COMMANDPOST_HOME}/../CommandPost/scripts/inc/sparkle1/sign_update "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "${COMMANDPOST_HOME}/../dsa_priv.pem")"
+
+  #
+  # Generate EdDSA Signature (for Sparkle 2.0):
+  #
+
+  export SPARKLE_ED_SIGNATURE
+  SPARKLE_ED_SIGNATURE="$(${COMMANDPOST_HOME}/../CommandPost/scripts/inc/sparkle2/sign_update "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg")"
+
+  #
+  # Get Build Number from plist:
+  #
+
+  local BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "${COMMANDPOST_HOME}/../CommandPost-App/build/CommandPost.app/Contents/Info.plist")
+
+  touch "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
+  echo "
+		<item>
+			<title>Version ${VERSION}</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
+			<enclosure url=\"https://github.com/CommandPost/CommandPost/releases/download/${VERSION}/CommandPost_${VERSION}.dmg\"
+				sparkle:version=\"${BUILD_NUMBER}\"
+                sparkle:shortVersionString=\"${VERSION}\"
+				sparkle:dsaSignature=\"${SPARKLE_DSA_SIGNATURE}\"
+				${SPARKLE_ED_SIGNATURE}
+				type=\"application/octet-stream\"
+			/>
+			<sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+		</item>" >> "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
+}
+
+#
+# Finalise Sentry:
+#
+
+function finalise_sentry() {
+
+    echo "  * Updating Sentry release..."
+
+    export TOKENPATH ; TOKENPATH="$(greadlink -f "${COMMANDPOST_HOME}/..")"
+    export SENTRY_TOKEN_AUTH_FILE="${TOKENPATH}/token-sentry-auth"
+
+	echo "  * Importing Sentry token from: ${TOKENPATH}/token-sentry-auth"
+	# shellcheck disable=SC1090
+	source "${SENTRY_TOKEN_AUTH_FILE}"
+
+    export SENTRY_AUTH_TOKEN
+    "${COMMANDPOST_HOME}/../CommandPost-App/scripts/sentry-cli" releases set-commits --auto "${VERSION}" 2>&1 | tee "${COMMANDPOST_HOME}/../CommandPost-App/build/sentry-release.log"
+    "${COMMANDPOST_HOME}/../CommandPost-App/scripts/sentry-cli" releases finalize "${VERSION}" 2>&1 | tee -a "${COMMANDPOST_HOME}/../CommandPost-App/build/sentry-release.log"
+
+}
+
+#
+# Build CommandPost-App:
+#
+
+echo " * Quitting any active CommandPost instances..."
+killall CommandPost || true
+
+echo " * Removing old release..."
+rm -rf "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}"
+
+echo " * Removing old archive..."
+rm -rf "${COMMANDPOST_HOME}/../archive/${VERSION}"
+
+echo " * Moving to CommandPost-App Directory..."
+cd "${COMMANDPOST_HOME}/../CommandPost-App/"
+
+echo " * Cleaning up prior to build..."
+./scripts/build.sh clean
+
+echo " * Building CommandPost-App Docs..."
+./scripts/build.sh docs
+
+echo " * Signing csv2notion..."
+xattr -cr "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+codesign --verbose --force --deep --options=runtime --timestamp --entitlements "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/entitlements.plist" --sign "Developer ID Application: LateNite Films Pty Ltd" "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+codesign -dv --verbose=4 "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+
+echo " * Building CommandPost-App..."
+./scripts/build.sh build -s Release -c Release -d -u
+
+echo " * Validating CommandPost-App..."
+./scripts/build.sh validate
+
+echo " * Building Uninstall App..."
 build_uninstall
+
+echo " * Building DMG for distribution..."
 build_dmgcanvas
-notarize
+
+echo " * Notorizing DMG..."
+./scripts/build.sh notarize -z "${COMMANDPOST_HOME}/../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg"
+
+echo " * Generating new AppCast..."
 generate_appcast
 
-#echo "Appcast zip length is: ${ZIPLEN}"
+echo " * Finalise Sentry..."
+finalise_sentry
 
-echo "Finished."
+echo " * CommandPost has been successfully built!"

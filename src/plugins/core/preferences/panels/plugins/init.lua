@@ -268,7 +268,7 @@ function mod.init(deps, env)
         label       = i18n("pluginsPanelLabel"),
         image       = imageFromPath(iconFallback(config.basePath .. "/plugins/core/preferences/panels/images/Extensions.icns")),
         tooltip     = i18n("pluginsPanelTooltip"),
-        height      = 590,
+        height      = 615,
     })
 
     mod.panel:addContent(10, generateContent, false)

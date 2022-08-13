@@ -4,7 +4,6 @@
 
 local require = require
 
-local axutils   = require "cp.ui.axutils"
 local Element   = require "cp.ui.Element"
 
 --- cp.ui.TextArea(parent, uiFinder) -> TextArea
@@ -51,13 +50,6 @@ function TextArea.lazy.prop:value()
             end
         end
     )
-end
-
---- cp.ui.TextArea.focused <cp.prop: boolean>
---- Field
---- Whether or not the Text Area if focused.
-function TextArea.lazy.prop:focused()
-    return axutils.prop(self.UI, "AXFocused", true)
 end
 
 --- cp.ui.TextArea:append(moreText) -> string

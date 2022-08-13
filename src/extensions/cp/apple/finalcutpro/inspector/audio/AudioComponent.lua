@@ -50,7 +50,7 @@ end
 -- Returns:
 --  * A string with "multicam", "compound", "standard" or `nil` if no clip type detected.
 local function clipType(element)
-    local children = element and element:children()
+    local children = element and element:attributeValue("AXChildren")
     if children then
         local topButton = childFromTop(children, 1, Button.matches)
         local topImage = childFromTop(children, 1, Image.matches)

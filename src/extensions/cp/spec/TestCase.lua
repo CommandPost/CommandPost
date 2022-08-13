@@ -6,6 +6,8 @@ local require           = require
 local expect            = require "cp.spec.expect"
 local Scenario          = require "cp.spec.Scenario"
 
+local unpack            = table.unpack
+
 local TestCase = Scenario:subclass("cp.spec.TestCase")
 
 local HANDLED = {}

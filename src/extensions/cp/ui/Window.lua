@@ -226,6 +226,50 @@ function Window.lazy.prop:frame()
     )
 end
 
+--- cp.ui.Window.size <cp.prop: table>
+--- Field
+--- Gets or sets the window size
+function Window.lazy.prop:size()
+    return notifyWatch(
+        self.UI:mutate(
+            function(original)
+                local window = original()
+                return window ~= nil and window:attributeValue("AXSize")
+            end,
+            function(newSize, original)
+                local window = original()
+                if window and newSize then
+                    window:setAttributeValue("AXSize", newSize)
+                end
+            end
+        )
+        :monitor(self.visible),
+        {"AXWindowResized", "AXWindowMoved"}
+    )
+end
+
+--- cp.ui.Window.position <cp.prop: table>
+--- Field
+--- Gets or sets the window position
+function Window.lazy.prop:position()
+    return notifyWatch(
+        self.UI:mutate(
+            function(original)
+                local window = original()
+                return window ~= nil and window:attributeValue("AXPosition")
+            end,
+            function(newPosition, original)
+                local window = original()
+                if window and newPosition then
+                    window:setAttributeValue("AXPosition", newPosition)
+                end
+            end
+        )
+        :monitor(self.visible),
+        {"AXWindowResized", "AXWindowMoved"}
+    )
+end
+
 --- cp.ui.Window.isFullScreen <cp.prop: boolean>
 --- Field
 --- Returns `true` if the window is full-screen.

@@ -2,13 +2,14 @@
 ---
 --- Controls Final Cut Pro's Transitions.
 
-local require = require
+local require           = require
+--local log               = require "hs.logger".new "transitions"
 
-local timer             = require("hs.timer")
+local timer             = require "hs.timer"
 
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
 local doAfter           = timer.doAfter
 
@@ -105,7 +106,7 @@ function mod.apply(action)
     transitions.search:setValue(name)
 
     --------------------------------------------------------------------------------
-    -- Get the list of matching transitions
+    -- Get the list of matching transitions:
     --------------------------------------------------------------------------------
     local matches = transitions:currentItemsUI()
     if not matches or #matches == 0 then
@@ -113,7 +114,22 @@ function mod.apply(action)
         return false
     end
 
+    --------------------------------------------------------------------------------
+    -- Take into account the Theme if needed:
+    --------------------------------------------------------------------------------
     local transition = matches[1]
+    if action.theme and action.theme ~= "" then
+        local requestedTitle = action.theme .. " - " .. action.name
+        if #matches > 1 then
+            for _, ui in pairs(matches) do
+                local title = ui:attributeValue("AXTitle")
+                if title == requestedTitle then
+                    transition = ui
+                    break
+                end
+            end
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Apply the selected Transition:

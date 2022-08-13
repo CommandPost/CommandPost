@@ -1113,7 +1113,7 @@ function plugin.init(deps, env)
             if result and result.id then
 
                 local frontmostApplication = application.frontmostApplication()
-                local bundleID = frontmostApplication:bundleID()
+                local bundleID = frontmostApplication:bundleID() or "All Applications"
 
                 --------------------------------------------------------------------------------
                 -- Don't ever use AudioSwift as the frontmost app:
@@ -1134,7 +1134,7 @@ function plugin.init(deps, env)
                 --------------------------------------------------------------------------------
                 -- Ignore if ignored:
                 --------------------------------------------------------------------------------
-                if items[bundleID].ignore and items[bundleID].ignore == true then
+                if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
                     bundleID = "All Applications"
                 end
 
@@ -1212,7 +1212,7 @@ function plugin.init(deps, env)
             if result and result.id then
 
                 local frontmostApplication = application.frontmostApplication()
-                local bundleID = frontmostApplication:bundleID()
+                local bundleID = frontmostApplication:bundleID() or "All Applications"
 
                 local items = mod.loupedeckItems()
 
@@ -1226,7 +1226,7 @@ function plugin.init(deps, env)
                 --------------------------------------------------------------------------------
                 -- Ignore if ignored:
                 --------------------------------------------------------------------------------
-                if items[bundleID].ignore and items[bundleID].ignore == true then
+                if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
                     bundleID = "All Applications"
                 end
 
@@ -1293,7 +1293,7 @@ function plugin.init(deps, env)
             if result and result.id then
 
                 local frontmostApplication = application.frontmostApplication()
-                local bundleID = frontmostApplication:bundleID()
+                local bundleID = frontmostApplication:bundleID() or "All Applications"
 
                 local items = mod.loupedeckPlusItems()
 
@@ -1307,7 +1307,7 @@ function plugin.init(deps, env)
                 --------------------------------------------------------------------------------
                 -- Ignore if ignored:
                 --------------------------------------------------------------------------------
-                if items[bundleID].ignore and items[bundleID].ignore == true then
+                if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
                     bundleID = "All Applications"
                 end
 

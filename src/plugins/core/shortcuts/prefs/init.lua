@@ -310,7 +310,6 @@ local function shortcutsPanelCallback(_, params)
         -- Setup New Shortcut:
         --------------------------------------------------------------------------------
         if params.keyCode and params.keyCode ~= "" and params.keyCode ~= "none" and params.modifiers and params.modifiers ~= "none" then
-
             --------------------------------------------------------------------------------
             -- Check to see that the shortcut isn't already being used already by macOS:
             --------------------------------------------------------------------------------
@@ -461,6 +460,16 @@ local allModifiers = iterateModifiers(baseModifiers)
 --  * HTML as string
 local function modifierOptions(shortcut)
     local out = ""
+
+    --------------------------------------------------------------------------------
+    -- No Modifiers:
+    --------------------------------------------------------------------------------
+    local selected = shortcut and same(shortcut:getModifiers(), {"no"}) and " selected" or ""
+    out = out .. ([[<option value="%s"%s>%s</option>]]):format("no", selected, i18n("noModifiers"))
+
+    --------------------------------------------------------------------------------
+    -- All the other modifiers:
+    --------------------------------------------------------------------------------
     for _, modifiers in ipairs(allModifiers) do
         local selected = shortcut and same(shortcut:getModifiers(), tools.split(modifiers.value, ":")) and " selected" or ""
         out = out .. ([[<option value="%s"%s>%s</option>]]):format(modifiers.value, selected, modifiers.label)
@@ -585,7 +594,7 @@ function mod.init(deps, env)
         label           = i18n("keyboard"),
         image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
         tooltip         = i18n("keyboard"),
-        height          = 750,
+        height          = 755,
     })
     mod._panel
         :addContent(10, generateContent, false)

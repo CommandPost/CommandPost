@@ -50,6 +50,21 @@ local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
 
+--- plugins.core.loupedeckctandlive.manager.previewSelectedApplicationAndBankOnHardware <cp.prop: boolean>
+--- Field
+--- Should we preview the selected application and bank on hardware?
+mod.previewSelectedApplicationAndBankOnHardware = config.prop("loupedeck.preferences.previewSelectedApplicationAndBankOnHardware", false)
+
+--- plugins.core.loupedeckctandlive.manager.lastApplication <cp.prop: boolean>
+--- Field
+--- The last application
+mod.lastApplication = config.prop("loupedeck.preferences.previewSelectedApplicationAndBankOnHardware.lastApplication", "All Applications")
+
+--- plugins.core.loupedeckctandlive.manager.lastBank <cp.prop: boolean>
+--- Field
+--- The last bank
+mod.lastBank = config.prop("loupedeck.preferences.previewSelectedApplicationAndBankOnHardware.lastBank", "1")
+
 --- plugins.core.loupedeckctandlive.manager.NUMBER_OF_DEVICES -> number
 --- Constant
 --- The number of devices of the same type supported.
@@ -214,9 +229,10 @@ function mod.new(deviceType)
             if o.setupDevicesCount == 10 then
                 o.setupDevicesCount = 0
             else
-                doAfter(1, function()
+                mod.setupRetry = doAfter(1, function()
                     o.setupDevicesCount = o.setupDevicesCount + 1
                     o.setupDevices()
+                    mod.setupRetry = nil
                 end)
             end
         end
@@ -503,12 +519,17 @@ function mod.new(deviceType)
     --- Is Loupedeck support enabled?
     o.enabled = config.prop(o.id .. ".enabled", false):watch(function(enabled)
         if enabled then
-            o.appWatcher:start()
-            o.driveWatcher:start()
-            o.sleepWatcher:start()
-            o.usbWatcher:start()
+            if mod.loupedeckPlugin.enabled() then
+                log.df("Can't use CommandPost's Loupedeck Intergration if the Loupedeck Plugin is enabled")
+                o.enabled(false)
+            else
+                o.appWatcher:start()
+                o.driveWatcher:start()
+                o.sleepWatcher:start()
+                o.usbWatcher:start()
 
-            o.setupDevices()
+                o.setupDevices()
+            end
         else
             --------------------------------------------------------------------------------
             -- Stop all watchers:
@@ -550,37 +571,67 @@ function mod.new(deviceType)
     o.sleepWatcher = sleepWatcher.new(function(eventType)
         if eventType == sleepWatcher.systemDidWake then
             if o.enabled() then
+                --------------------------------------------------------------------------------
+                -- Let's collect garbage first to give ourselves a clean slate.
+                --------------------------------------------------------------------------------
+                collectgarbage()
+                collectgarbage()
+
+                o.appWatcher:start()
+                o.driveWatcher:start()
+                o.usbWatcher:start()
+
+                o.setupDevices()
+
                 local devices = o.getDevices()
-                for _, device in pairs(devices) do
-                    device:disconnect()
-                    device:connect()
+                if mod.numberOfDevicesBeforeSleep ~= tableCount(devices) then
+                    --------------------------------------------------------------------------------
+                    -- It looks like the older "virtual ethernet port" firmware takes up to
+                    -- 3 seconds to "wake up" after the system wakes from sleep.
+                    --------------------------------------------------------------------------------
+                    mod.sleepRetry = doAfter(3, function()
+                        o.setupDevices()
+                        mod.sleepRetry = nil
+                    end)
                 end
+
+                --local devices = o.getDevices()
+                --log.df("Number of Loupedeck's Detected After Sleep: %s", tableCount(devices))
             end
         end
         if eventType == sleepWatcher.systemWillSleep then
             if o.enabled() then
-                local devices = o.getDevices()
-                for _, device in pairs(devices) do
-                    --------------------------------------------------------------------------------
-                    -- Make everything black:
-                    --------------------------------------------------------------------------------
-                    for _, screen in pairs(loupedeck.screens) do
-                        device:updateScreenColor(screen, {hex="#"..defaultColor})
-                    end
-                    for i=7, 26 do
-                        device:buttonColor(i, {hex="#" .. defaultColor})
-                    end
+                --------------------------------------------------------------------------------
+                -- Stop all other watchers:
+                --------------------------------------------------------------------------------
+                o.appWatcher:stop()
+                o.driveWatcher:stop()
+                o.usbWatcher:stop()
 
-                    --------------------------------------------------------------------------------
-                    -- After a slight delay so the websocket message has time to send...
-                    --------------------------------------------------------------------------------
-                    doAfter(0.01, function()
-                        --------------------------------------------------------------------------------
-                        -- Disconnect from the Loupedeck:
-                        --------------------------------------------------------------------------------
-                        device:disconnect()
-                    end)
+                --------------------------------------------------------------------------------
+                -- Destroy the refresh timers:
+                --------------------------------------------------------------------------------
+                if o.refreshTimer then
+                    for _, v in pairs(o.refreshTimer) do
+                        v:stop()
+                    end
                 end
+
+                --------------------------------------------------------------------------------
+                -- Destroy any devices:
+                --------------------------------------------------------------------------------
+                local devices = o.getDevices()
+                mod.numberOfDevicesBeforeSleep = tableCount(devices)
+                --log.df("Number of Loupedeck's Detected Before Sleep: %s", tableCount(devices))
+                for _, device in pairs(devices) do
+                    device:disconnect()
+                end
+
+                --------------------------------------------------------------------------------
+                -- Destroy the devices table:
+                --------------------------------------------------------------------------------
+                o.devices = nil
+                o.deviceCount = 0
             end
         end
     end)
@@ -789,11 +840,13 @@ function mod.new(deviceType)
             -- Add User Added Applications from Loupedeck Preferences:
             local items = o.items()
 
-            for bundleID, v in pairs(items) do
-                if not applications[bundleID] and v.displayName then
-                    applications[bundleID] = {
-                        displayName = v.displayName
-                    }
+            for _, unitObj in pairs(items) do
+                for bundleID, v in pairs(unitObj) do
+                    if not applications[bundleID] and v.displayName then
+                        applications[bundleID] = {
+                            displayName = v.displayName
+                        }
+                    end
                 end
             end
 
@@ -858,10 +911,12 @@ function mod.mt:getFlashDrivePath()
     local storage = execute("system_profiler SPStorageDataType -xml")
     local storagePlist = storage and readString(storage)
     local drives = storagePlist and storagePlist[1] and storagePlist[1]._items
-    for _, data in pairs(drives) do
-        if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
-            local path = data.mount_point
-            return doesDirectoryExist(path) and path
+    if drives then
+        for _, data in pairs(drives) do
+            if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
+                local path = data.mount_point
+                return doesDirectoryExist(path) and path
+            end
         end
     end
 end
@@ -1069,6 +1124,14 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
             bankID = bankID .. "_RightFn"
         end
 
+        --------------------------------------------------------------------------------
+        -- Preview Selected Application & Bank on Hardware:
+        --------------------------------------------------------------------------------
+        if mod.previewSelectedApplicationAndBankOnHardware() then
+            bundleID = mod.lastApplication()
+            bankID = mod.lastBank()
+        end
+
         local item = items[bundleID]
         local bank = item and item[bankID]
 
@@ -1201,9 +1264,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             encodedIcon = fixedImage:encodeAsURLString(true)
                             containsIconSnippets = true
                         end
@@ -1292,9 +1352,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
                         }
 
                         local fixedImage = v:imageFromCanvas()
-
-                        v:delete()
-                        v = nil -- luacheck: ignore
 
                         encodedIcon = fixedImage:encodeAsURLString(true)
                         containsIconSnippets = true
@@ -1394,9 +1451,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
                             local fixedImage = v:imageFromCanvas()
 
-                            v:delete()
-                            v = nil -- luacheck: ignore
-
                             encodedIcon = fixedImage:encodeAsURLString(true)
                             containsIconSnippets = true
                         end
@@ -1446,8 +1500,6 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
                     local encoded = fixedImage:encodeAsURLString(true)
                     decodedImage = imageFromURL(encoded)
 
-                    v:delete()
-                    v = nil -- luacheck: ignore
                 end
                 if decodedImage then
                     device:updateKnobImage(i, decodedImage)
@@ -1563,7 +1615,6 @@ function mod.mt:executeAction(thisAction, deviceNumber)
             local handler = mod.actionmanager.getHandler(handlerID)
             if handler then
                 doAfter(0, function()
-                    action[deviceNumber] = deviceNumber
                     handler:execute(action)
                     self._delayedTimer:start()
                 end)
@@ -1707,6 +1758,14 @@ function mod.mt:callback(data, deviceNumber)
     local bankID = (activeBanks[deviceNumberAsString] and activeBanks[deviceNumberAsString][bundleID] and tostring(activeBanks[deviceNumberAsString][bundleID])) or "1"
 
     local buttonID = tostring(data.buttonID)
+
+    --------------------------------------------------------------------------------
+    -- Preview Selected Application & Bank on Hardware:
+    --------------------------------------------------------------------------------
+    if mod.previewSelectedApplicationAndBankOnHardware() then
+        bundleID = mod.lastApplication()
+        bankID = mod.lastBank()
+    end
 
     local item = items[bundleID]
 
@@ -2170,6 +2229,7 @@ local plugin = {
         ["core.commands.global"]                = "global",
         ["core.controlsurfaces.manager"]        = "csman",
         ["core.preferences.panels.scripting"]   = "scriptingPreferences",
+        ["core.loupedeckplugin.manager"]        = "loupedeckPlugin",
     }
 }
 
@@ -2182,8 +2242,10 @@ function plugin.init(deps, env)
     mod.csman                   = deps.csman
     mod.global                  = deps.global
     mod.scriptingPreferences    = deps.scriptingPreferences
+    mod.loupedeckPlugin         = deps.loupedeckPlugin
 
     mod.env                     = env
+
     --------------------------------------------------------------------------------
     -- Setup devices:
     --------------------------------------------------------------------------------

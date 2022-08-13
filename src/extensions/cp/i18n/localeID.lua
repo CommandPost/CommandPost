@@ -1,7 +1,7 @@
 --- === cp.i18n.localeID ===
 ---
 --- As per [Apple's documentation](https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPInternational/LanguageandLocaleIDs/LanguageandLocaleIDs.html#//apple_ref/doc/uid/10000171i-CH15-SW6),
---- a `local ID` is a code which identifies either a language used across multiple regions,
+--- a `locale ID` is a code which identifies either a language used across multiple regions,
 --- a dialect from a specific region, a script used in multiple regions, or a combination of all three.
 --- See the [parse](#parse) function for details.
 ---
@@ -12,6 +12,8 @@
 --- You can also convert the resulting table back to the code via `tostring`, or the [code](#code) method.
 
 local require = require
+
+local hostLocale        = require "hs.host.locale"
 
 local language          = require "cp.i18n.language"
 local region            = require "cp.i18n.region"
@@ -70,9 +72,25 @@ end
 ---
 --- Returns:
 ---  * language  - The two-character lower-case alpha language code.
----  * script    - the four-character mixed-case alpha script code.
 ---  * region    - The two-character upper-case alpha region code.
+---  * script    - the four-character mixed-case alpha script code.
+---
+--- Notes:
+---  * This function will first attempt to determine the language, script and region by
+---    using `hs.host.locale.details()`. If that fails, it will use Lua patterns
+---    as described above.
 function mod.parse(code)
+    --------------------------------------------------------------
+    -- First let macOS determine the locale ID:
+    --------------------------------------------------------------
+    local langDetails = hostLocale.details(code)
+    if langDetails and langDetails.languageCode then
+       return langDetails.languageCode, langDetails.countryCode, langDetails.scriptCode
+    end
+
+    --------------------------------------------------------------
+    -- Failing that, use patterns:
+    --------------------------------------------------------------
     local l
     local r, s = nil, nil
     l = match(code, LANG_PATTERN)

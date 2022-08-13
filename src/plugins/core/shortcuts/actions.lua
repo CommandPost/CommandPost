@@ -11,13 +11,11 @@ local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local keycodes          = require "hs.keycodes"
-local osascript         = require "hs.osascript"
 
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
-local applescript       = osascript.applescript
 local keyStroke         = tools.keyStroke
 local pressSystemKey    = tools.pressSystemKey
 local imageFromPath     = image.imageFromPath
@@ -28,6 +26,46 @@ local newKeyEvent       = event.newKeyEvent
 
 local mod = {}
 
+--- plugins.core.shortcuts.actions.heldKeys -> table
+--- Variable
+--- A table of held down modifier keys.
+mod.heldKeys = {}
+
+--- plugins.core.shortcuts.actions.eventTapCount -> number
+--- Variable
+--- A counter to detect how many times the event tap has been triggered.
+mod.eventTapCount = 0
+
+--- plugins.core.shortcuts.actions.startEventTap() -> none
+--- Function
+--- Start Event Tap
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.startEventTap()
+    mod.eventtap:start()
+    mod.eventTapCount = mod.eventTapCount + 1
+end
+
+--- plugins.core.shortcuts.actions.stopEventTap() -> none
+--- Function
+--- Start Event Tap
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.stopEventTap()
+    mod.eventTapCount = mod.eventTapCount - 1
+    if mod.eventTapCount == 0 then
+        mod.eventtap:stop()
+    end
+end
+
 local plugin = {
     id              = "core.shortcuts.actions",
     group           = "core",
@@ -37,19 +75,40 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Apply any held key modifiers via an event tap:
+    --------------------------------------------------------------------------------
+    mod.eventtap = eventtap.new({"all"}, function(e)
+        local flags = e:getFlags()
+
+        local hasChanged = false
+
+        if mod.heldKeys["control"] == true then
+            hasChanged = true
+            flags["ctrl"] = true
+        end
+        if mod.heldKeys["option"] == true then
+            hasChanged = true
+            flags[ "alt"] = true
+        end
+
+        if mod.heldKeys["command"] == true then
+            hasChanged = true
+            flags["cmd"] = true
+        end
+        if mod.heldKeys["shift"] == true then
+            hasChanged = true
+            flags["shift"] = true
+        end
+
+        e:setFlags(flags)
+
+        if hasChanged then
+            return true, {e}
+        end
+    end)
 
     local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/Keyboard.icns")
-
-    local heldKeys = {}
-
-    local holdKey = function(key, isDown)
-        applescript([[tell application "System Events" to ]] .. key .. [[ key ]] .. (isDown and "down" or "up"))
-        if isDown then
-            heldKeys[key] = true
-        else
-            heldKeys[key] = nil
-        end
-    end
 
     local pressKey = function(action)
         local m = copy(action.modifiers)
@@ -57,12 +116,26 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Inject modifier keys, if they've already been held down by a hold action:
         --------------------------------------------------------------------------------
-        if heldKeys["control"] == true then table.insert(m, "ctrl") end
-        if heldKeys["option"] == true then table.insert(m, "alt") end
-        if heldKeys["command"] == true then table.insert(m, "cmd") end
-        if heldKeys["shift"] == true then table.insert(m, "shift") end
+        if mod.heldKeys["control"] == true then table.insert(m, "ctrl") end
+        if mod.heldKeys["option"] == true then table.insert(m, "alt") end
+        if mod.heldKeys["command"] == true then table.insert(m, "cmd") end
+        if mod.heldKeys["shift"] == true then table.insert(m, "shift") end
 
         keyStroke(m, action.character)
+    end
+
+    local holdModifiers = function(mods)
+        mod.startEventTap()
+        for _, key in pairs(mods) do
+            mod.heldKeys[key] = true
+        end
+    end
+
+    local releaseModifiers = function(mods)
+        mod.stopEventTap()
+        for _, key in pairs(mods) do
+            mod.heldKeys[key] = nil
+        end
     end
 
     local actions = {
@@ -70,14 +143,23 @@ function plugin.init(deps)
         systemKey           = function(action) pressSystemKey(action.key) end,
         pressTilda          = function() newKeyEvent("`", true):post() end,
         releaseTilda        = function() newKeyEvent("`", false):post() end,
-        pressControl        = function() holdKey("control", true) end,
-        releaseControl      = function() holdKey("control", false) end,
-        pressOption         = function() holdKey("option", true) end,
-        releaseOption       = function() holdKey("option", false) end,
-        pressCommand        = function() holdKey("command", true) end,
-        releaseCommand      = function() holdKey("command", false) end,
-        pressShift          = function() holdKey("shift", true) end,
-        releaseShift        = function() holdKey("shift", false) end,
+
+        --------------------------------------------------------------------------------
+        -- Note: we only have individual ones for CONTROL, OPTION, COMMAND and SHIFT
+        --       for legacy reasons, as we didn't want to break existing layouts.
+        --------------------------------------------------------------------------------
+        pressControl        = function() holdModifiers({"control"}) end,
+        pressOption         = function() holdModifiers({"option"}) end,
+        pressCommand        = function() holdModifiers({"command"}) end,
+        pressShift          = function() holdModifiers({"shift"}) end,
+
+        releaseControl      = function() releaseModifiers({"control"}) end,
+        releaseOption       = function() releaseModifiers({"option"}) end,
+        releaseCommand      = function() releaseModifiers({"command"}) end,
+        releaseShift        = function() releaseModifiers({"shift"}) end,
+
+        holdModifiers       = function(action) holdModifiers(action.mods) end,
+        releaseModifiers    = function(action) releaseModifiers(action.mods) end,
     }
 
     --------------------------------------------------------------------------------
@@ -169,193 +251,237 @@ function plugin.init(deps)
                 end
             end
 
-        --------------------------------------------------------------------------------
-        -- Press & Hold CONTROL:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("pressAndHold") .. " CONTROL " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "pressControl",
-                id = "global_shortcuts_pressControl"
-            })
-            :id("global_shortcuts_pressControl")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Press & Hold CONTROL:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("pressAndHold") .. " CONTROL " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "pressControl",
+                    id = "global_shortcuts_pressControl"
+                })
+                :id("global_shortcuts_pressControl")
+                :image(icon)
 
-        choices
-            :add(i18n("release") .. " CONTROL " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "releaseControl",
-                id = "global_shortcuts_releaseControl"
-            })
-            :id("global_shortcuts_releaseControl")
-            :image(icon)
+            choices
+                :add(i18n("release") .. " CONTROL " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "releaseControl",
+                    id = "global_shortcuts_releaseControl"
+                })
+                :id("global_shortcuts_releaseControl")
+                :image(icon)
 
-        --------------------------------------------------------------------------------
-        -- Press & Hold OPTION:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("pressAndHold") .. " OPTION " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "pressOption",
-                id = "global_shortcuts_pressOption"
-            })
-            :id("global_shortcuts_pressOption")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Press & Hold OPTION:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("pressAndHold") .. " OPTION " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "pressOption",
+                    id = "global_shortcuts_pressOption"
+                })
+                :id("global_shortcuts_pressOption")
+                :image(icon)
 
-        choices
-            :add(i18n("release") .. " OPTION " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "releaseOption",
-                id = "global_shortcuts_releaseOption"
-            })
-            :id("global_shortcuts_releaseOption")
-            :image(icon)
+            choices
+                :add(i18n("release") .. " OPTION " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "releaseOption",
+                    id = "global_shortcuts_releaseOption"
+                })
+                :id("global_shortcuts_releaseOption")
+                :image(icon)
 
 
-        --------------------------------------------------------------------------------
-        -- Press & Hold COMMAND:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("pressAndHold") .. " COMMAND " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "pressCommand",
-                id = "global_shortcuts_pressCommand"
-            })
-            :id("global_shortcuts_pressCommand")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Press & Hold COMMAND:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("pressAndHold") .. " COMMAND " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "pressCommand",
+                    id = "global_shortcuts_pressCommand"
+                })
+                :id("global_shortcuts_pressCommand")
+                :image(icon)
 
-        choices
-            :add(i18n("release") .. " COMMAND " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "releaseCommand",
-                id = "global_shortcuts_releaseCommand"
-            })
-            :id("global_shortcuts_releaseCommand")
-            :image(icon)
+            choices
+                :add(i18n("release") .. " COMMAND " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "releaseCommand",
+                    id = "global_shortcuts_releaseCommand"
+                })
+                :id("global_shortcuts_releaseCommand")
+                :image(icon)
 
-        --------------------------------------------------------------------------------
-        -- Press & Hold SHIFT:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("pressAndHold") .. " SHIFT " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "pressShift",
-                id = "global_shortcuts_pressShift"
-            })
-            :id("global_shortcuts_pressShift")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Press & Hold SHIFT:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("pressAndHold") .. " SHIFT " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "pressShift",
+                    id = "global_shortcuts_pressShift"
+                })
+                :id("global_shortcuts_pressShift")
+                :image(icon)
 
-        choices
-            :add(i18n("release") .. " SHIFT " .. i18n("modifierKey"))
-            :subText(description)
-            :params({
-                action = "releaseShift",
-                id = "global_shortcuts_releaseShift"
-            })
-            :id("global_shortcuts_releaseShift")
-            :image(icon)
+            choices
+                :add(i18n("release") .. " SHIFT " .. i18n("modifierKey"))
+                :subText(description)
+                :params({
+                    action = "releaseShift",
+                    id = "global_shortcuts_releaseShift"
+                })
+                :id("global_shortcuts_releaseShift")
+                :image(icon)
 
-        --------------------------------------------------------------------------------
-        -- Press & Hold TILDA:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("pressAndHold") .. " TILDA")
-            :subText(description)
-            :params({
-                action = "pressTilda",
-                id = "global_shortcuts_pressTilda"
-            })
-            :id("global_shortcuts_pressTilda")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Press & Hold TILDA:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("pressAndHold") .. " TILDA")
+                :subText(description)
+                :params({
+                    action = "pressTilda",
+                    id = "global_shortcuts_pressTilda"
+                })
+                :id("global_shortcuts_pressTilda")
+                :image(icon)
 
-        choices
-            :add(i18n("release") .. " TILDA")
-            :subText(description)
-            :params({
-                action = "releaseTilda",
-                id = "global_shortcuts_releaseTilda"
-            })
-            :id("global_shortcuts_releaseTilda")
-            :image(icon)
+            choices
+                :add(i18n("release") .. " TILDA")
+                :subText(description)
+                :params({
+                    action = "releaseTilda",
+                    id = "global_shortcuts_releaseTilda"
+                })
+                :id("global_shortcuts_releaseTilda")
+                :image(icon)
 
-        --------------------------------------------------------------------------------
-        -- Play:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("play"))
-            :subText(description)
-            :params({
-                action = "systemKey",
-                key = "PLAY",
-                id = "global_shortcuts_play"
-            })
-            :id("global_shortcuts_play")
+            --------------------------------------------------------------------------------
+            -- Press & Hold the other Modifier Keys:
+            --
+            -- NOTE: In retrospect, we should have included all of the above modifiers
+            --       in this code below, but we don't want to break existing layouts,
+            --       so for legacy reasons we have both the above and the below.
+            --------------------------------------------------------------------------------
+            local otherModifiers = {
+                { description = "COMMAND and SHIFT",                              mods = {"shift", "command"} },
+                { description = "OPTION and COMMAND and SHIFT",                   mods = {"option", "shift", "command"} },
+                { description = "CONTROL and OPTION and COMMAND and SHIFT",       mods = {"control", "option", "shift", "command"} },
+                { description = "CONTROL and COMMAND and SHIFT",                  mods = {"control", "shift", "command"} },
+                { description = "OPTION and COMMAND",                             mods = {"option", "command"} },
+                { description = "CONTROL and OPTION and COMMAND",                 mods = {"control", "option", "command"} },
+                { description = "CONTROL and COMMAND",                            mods = {"control", "command"} },
+                { description = "OPTION and SHIFT",                               mods = {"option", "shift"} },
+                { description = "CONTROL and OPTION and SHIFT",                   mods = {"control", "option", "shift"} },
+                { description = "CONTROL and SHIFT",                              mods = {"control", "shift"} },
+                { description = "CONTROL and OPTION",                             mods = {"control", "option"} },
+            }
+            for _, modifier in pairs(otherModifiers) do
+                choices
+                    :add(i18n("pressAndHold") .. " " .. modifier.description .. " " .. i18n("modifierKey"))
+                    :subText(description)
+                    :params({
+                        action = "holdModifiers",
+                        mods = modifier.mods,
+                        id = "global_shortcuts_hold" .. modifier.description
+                    })
+                    :id("global_shortcuts_hold" .. modifier.description)
+                    :image(icon)
 
-        --------------------------------------------------------------------------------
-        -- Next:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("next"))
-            :subText(description)
-            :params({
-                action = "systemKey",
-                key = "NEXT",
-                id = "global_shortcuts_next"
-            })
-            :id("global_shortcuts_next")
-            :image(icon)
+                choices
+                    :add(i18n("release") .. " " .. modifier.description .. " " .. i18n("modifierKey"))
+                    :subText(description)
+                    :params({
+                        action = "releaseModifiers",
+                        mods = modifier.mods,
+                        id = "global_shortcuts_release" .. modifier.description
+                    })
+                    :id("global_shortcuts_release" .. modifier.description)
+                    :image(icon)
+            end
 
-        --------------------------------------------------------------------------------
-        -- Previous:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("previous"))
-            :subText(description)
-            :params({
-                action = "systemKey",
-                key = "PREVIOUS",
-                id = "global_shortcuts_previous"
-            })
-            :id("global_shortcuts_previous")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Play:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("play"))
+                :subText(description)
+                :params({
+                    action = "systemKey",
+                    key = "PLAY",
+                    id = "global_shortcuts_play"
+                })
+                :id("global_shortcuts_play")
 
-        --------------------------------------------------------------------------------
-        -- Fast:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("fast"))
-            :subText(description)
-            :params({
-                action = "systemKey",
-                key = "FAST",
-                id = "global_shortcuts_fast"
-            })
-            :id("global_shortcuts_fast")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Next:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("next"))
+                :subText(description)
+                :params({
+                    action = "systemKey",
+                    key = "NEXT",
+                    id = "global_shortcuts_next"
+                })
+                :id("global_shortcuts_next")
+                :image(icon)
 
-        --------------------------------------------------------------------------------
-        -- Rewind:
-        --------------------------------------------------------------------------------
-        choices
-            :add(i18n("rewind"))
-            :subText(description)
-            :params({
-                action = "systemKey",
-                key = "REWIND",
-                id = "global_shortcuts_rewind"
+            --------------------------------------------------------------------------------
+            -- Previous:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("previous"))
+                :subText(description)
+                :params({
+                    action = "systemKey",
+                    key = "PREVIOUS",
+                    id = "global_shortcuts_previous"
+                })
+                :id("global_shortcuts_previous")
+                :image(icon)
 
-            })
-            :id("global_shortcuts_rewind")
-            :image(icon)
+            --------------------------------------------------------------------------------
+            -- Fast:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("fast"))
+                :subText(description)
+                :params({
+                    action = "systemKey",
+                    key = "FAST",
+                    id = "global_shortcuts_fast"
+                })
+                :id("global_shortcuts_fast")
+                :image(icon)
 
-        end)
+            --------------------------------------------------------------------------------
+            -- Rewind:
+            --------------------------------------------------------------------------------
+            choices
+                :add(i18n("rewind"))
+                :subText(description)
+                :params({
+                    action = "systemKey",
+                    key = "REWIND",
+                    id = "global_shortcuts_rewind"
+
+                })
+                :id("global_shortcuts_rewind")
+                :image(icon)
+
+            end)
         :onExecute(function(action)
             local whichAction = action.action
             if whichAction then

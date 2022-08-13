@@ -304,7 +304,8 @@ end
 function ColorWheels.lazy.value:temperatureSlider()
     return Slider(self,
         function()
-            return childMatching(self.temperatureRow, Slider.matches)
+            local ui = self.temperatureRow:children()
+            return ui and childMatching(ui, Slider.matches)
         end
     )
 end

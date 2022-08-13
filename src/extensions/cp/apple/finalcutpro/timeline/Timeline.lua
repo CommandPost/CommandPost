@@ -1,15 +1,18 @@
 --- === cp.apple.finalcutpro.timeline.Timeline ===
 ---
 --- Timeline Module.
+--- The timeline module provides an interface to the Final Cut Pro timeline.
+--- It delegates to the `contents` property, so any functions which can be called
+--- on the `contents` property can be called on the Timeline module.
 
 local require = require
 
---local log								= require "hs.logger".new "timeline"
+-- local log								= require "hs.logger".new "Timeline"
 
 local axutils							= require "cp.ui.axutils"
+local delegator                         = require "cp.delegator"
 local Element                           = require "cp.ui.Element"
 local go                                = require "cp.rx.go"
-local prop								= require "cp.prop"
 local tools                             = require "cp.tools"
 
 local Contents					        = require "cp.apple.finalcutpro.timeline.Contents"
@@ -33,6 +36,8 @@ local WaitUntil                         = go.WaitUntil
 local playErrorSound                    = tools.playErrorSound
 
 local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
+    :include(delegator)
+    :delegateTo("contents")
 
 --- cp.apple.finalcutpro.timeline.Timeline.matches(element) -> boolean
 --- Function
@@ -154,7 +159,8 @@ end
 --- Field
 --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
 function Timeline.lazy.prop:mainUI()
-    return self.UI:mutate(function(original)
+    local UI = self.UI
+    return UI:mutate(function(original)
         return cache(self, "_main", function()
             local ui = original()
             return ui and childMatching(ui, Timeline.matchesMain)
@@ -170,45 +176,11 @@ function Timeline.lazy.prop:isPlaying()
     return self:app().viewer.isPlaying
 end
 
---- cp.apple.finalcutpro.timeline.Timeline.isLockedPlayhead <cp.prop: boolean>
+--- cp.apple.finalcutpro.timeline.Timeline.isFocused <cp.prop: boolean>
 --- Field
---- Is Playhead Locked?
-function Timeline.lazy.prop.isLockedPlayhead()
-    return prop.TRUE()
-end
-
---- cp.apple.finalcutpro.timeline.Timeline.isLockedInCentre <cp.prop: boolean>
---- Field
---- Is Playhead Locked in the centre?
-function Timeline.lazy.prop.isLockedInCentre()
-    return prop.TRUE()
-end
-
---- cp.apple.finalcutpro.timeline.Timeline.isLoaded <cp.prop: boolean; read-only>
---- Field
---- Checks if the Timeline has finished loading.
-function Timeline.lazy.prop:isLoaded()
-    return self.contents.isLoaded
-end
-
---- cp.apple.finalcutpro.timeline.Timeline.isFocused <cp.prop: boolean; read-only>
---- Field
---- Checks if the Timeline is the focused panel.
+--- Is the timeline focused?
 function Timeline.lazy.prop:isFocused()
     return self.contents.isFocused
-end
-
---- cp.apple.finalcutpro.timeline.Timeline:doFocus() -> cp.rx.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the Timeline.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A Statement
-function Timeline.lazy.method:doFocus()
-    return self:app().menu:doSelectMenu({"Window", "Go To", "Timeline"})
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:app() -> App
@@ -250,6 +222,7 @@ function Timeline.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:doShowOnPrimary())
     :Otherwise(true)
+    :Label("cp.apple.finalcutpro.timeline.Timeline:doShow()")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:showOnPrimary() -> Timeline
@@ -301,6 +274,7 @@ function Timeline.lazy.method:doShowOnPrimary()
             ):Otherwise(true)
         )
     ):Otherwise(false)
+    :Label("cp.apple.finalcutpro.timeline.Timeline:doShowOnPrimary()")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:showOnSecondary() -> Timeline
@@ -341,6 +315,7 @@ function Timeline.lazy.method:doShowOnSecondary()
         :Then(WaitUntil(self.isOnSecondary):TimeoutAfter(5000))
         :Otherwise(true)
     ):Otherwise(false)
+    :Label("cp.apple.finalcutpro.timeline.Timeline:doShowOnSecondary()")
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:hide() -> Timeline
@@ -392,20 +367,7 @@ function Timeline.lazy.method:doHide()
             :Otherwise(true)
         )
     ):Otherwise(false)
-end
-
---- cp.apple.finalcutpro.timeline.Contents:doFocus(show) -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) which will focus on the `Contents`.
----
---- Parameters:
---- * show      - if `true`, the `Contents` will be shown before focusing.
----
---- Returns:
---- * The `Statement`.
-function Timeline:doFocus(show)
-    return self.contents:doFocus(show)
-    :Label("cp.apple.finalcutpro.timeline.Timeline:doFocus(show)")
+    :Label("cp.apple.finalcutpro.timeline.Timeline:doHide()")
 end
 
 -----------------------------------------------------------------------
@@ -436,20 +398,6 @@ end
 --- The (sometimes hidden) Transitions Browser.
 function Timeline.lazy.value:transitions()
     return EffectsBrowser(self, EffectsBrowser.TRANSITIONS)
-end
-
---- cp.apple.finalcutpro.timeline.Timeline.playhead <Playhead>
---- Field
---- The Timeline Playhead.
-function Timeline.lazy.value:playhead()
-    return self.contents.playhead
-end
-
---- cp.apple.finalcutpro.timeline.Timeline.skimmingPlayhead <Playhead>
---- Field
---- The Playhead that tracks under the mouse while skimming.
-function Timeline.lazy.value:skimmingPlayhead()
-    return self.contents.skimmingPlayhead
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.toolbar <Toolbar>

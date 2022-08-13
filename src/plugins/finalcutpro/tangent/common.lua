@@ -427,22 +427,6 @@ function mod.checkboxSliderParameter(group, id, label, options, resetIndex)
 
 end
 
---- plugins.finalcutpro.tangent.common.doShortcut(id) -> none
---- Function
---- Triggers a shortcut via Rx.
----
---- Parameters:
----  * id - The ID of the shortcut.
----
---- Returns:
----  * None
-function mod.doShortcut(id)
-    return fcp:doShortcut(id):Catch(function(message)
-        log.wf("Unable to perform %q shortcut: %s", id, message)
-        displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-    end)
-end
-
 --- plugins.finalcutpro.tangent.common.radioButtonParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Checkbox Parameter for the Tangent

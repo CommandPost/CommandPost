@@ -55,7 +55,7 @@ end
 ---  * `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
 ---  * `[language]-[region]` - eg. "en-AU" for Australian English, "fr-CA" for Canadian French, etc.
 ---
---- It will then return the matched component in three return values: language, region, script.
+--- It will then return the matched component in three return values: language, script, region.
 --- If a script is specified, the `region` will be `nil`. Eg.:
 ---
 --- ```lua

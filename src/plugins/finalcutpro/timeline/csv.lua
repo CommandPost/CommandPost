@@ -13,6 +13,44 @@ local dialog            = require "cp.dialog"
 
 local playErrorSound    = tools.playErrorSound
 
+
+local mod = {}
+
+--- plugins.finalcutpro.timeline.csv.saveTimelineIndexToCSV() -> none
+--- Function
+--- Save Timeline Index to CSV
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.saveTimelineIndexToCSV()
+    local timeline = fcp.timeline
+    local index = timeline.index
+
+    fcp:launch(5)
+    timeline:show()
+    if not timeline.toolbar.index:checked() then
+        timeline.toolbar.index:press()
+    end
+    if index:isShowing() then
+        local activeTab = index:activeTab()
+        local list = activeTab and activeTab.list
+        if list and not index.roles:isShowing() then
+            local result = list:toCSV()
+            if result then
+                local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
+                if path then
+                    tools.writeToFile(path .. "/Timeline Index.csv", result)
+                end
+                return
+            end
+        end
+    end
+    playErrorSound()
+end
+
 local plugin = {
     id = "finalcutpro.timeline.csv",
     group = "finalcutpro",
@@ -28,39 +66,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if not fcp:isSupported() then return end
 
-    local cmds = deps.fcpxCmds
-
-    local timeline = fcp.timeline
-    local index = timeline.index
-
-    local saveTimelineIndexToCSV = function()
-        fcp:launch(5)
-        timeline:show()
-        if not timeline.toolbar.index:checked() then
-            timeline.toolbar.index:press()
-        end
-        if index:isShowing() then
-            local activeTab = index:activeTab()
-            local list = activeTab and activeTab.list
-            if list and not index.roles:isShowing() then
-                local result = list:toCSV()
-                if result then
-                    local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
-                    if path then
-                        tools.writeToFile(path .. "/Timeline Index.csv", result)
-                    end
-                    return
-                end
-            end
-        end
-        playErrorSound()
-    end
-
     --------------------------------------------------------------------------------
     -- Command:
     --------------------------------------------------------------------------------
+    local cmds = deps.fcpxCmds
     cmds:add("saveTimelineIndexToCSV")
-        :whenActivated(saveTimelineIndexToCSV)
+        :whenActivated(mod.saveTimelineIndexToCSV)
         :titled(i18n("saveTimelineIndexToCSV"))
 
     --------------------------------------------------------------------------------
@@ -71,12 +82,12 @@ function plugin.init(deps)
         :addItems(1001, function()
             return {
                 {   title = i18n("saveTimelineIndexToCSV"),
-                    fn = saveTimelineIndexToCSV,
+                    fn = mod.saveTimelineIndexToCSV,
                 },
             }
         end)
 
-
+    return mod
 end
 
 return plugin

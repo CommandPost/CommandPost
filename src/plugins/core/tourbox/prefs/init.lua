@@ -85,6 +85,11 @@ local function renderPanel(context)
     return mod._renderPanel(context)
 end
 
+-- imageCache -> table
+-- Variable
+-- An image cache for objects we encode as URL strings
+local imageCache = {}
+
 -- insertImage(path)
 -- Function
 -- Encodes an image as a PNG URL String
@@ -95,9 +100,15 @@ end
 -- Returns:
 --  * The encoded URL string
 local function insertImage(path)
-    local p = mod._env:pathToAbsolute(path)
-    local i = imageFromPath(p)
-    return i:encodeAsURLString(false, "PNG")
+    if not imageCache[path] then
+        local p = mod._env:pathToAbsolute(path)
+        local i = imageFromPath(p)
+        local data = i:encodeAsURLString(false, "PNG")
+        imageCache[path] = data
+        return data
+    else
+        return imageCache[path]
+    end
 end
 
 -- generateContent() -> string
@@ -816,6 +827,16 @@ local function tourBoxPanelCallback(id, params)
                 disabled = true,
             })
 
+            table.insert(menu, {
+                title = i18n("unlistedAndIgnoredApplications"),
+                fn = function() copyApplication("All Applications") end
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
             for i, v in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
                 table.insert(menu, {
                     title = v,
@@ -942,7 +963,7 @@ function plugin.init(deps, env)
         label           = i18n("tourBox"),
         image           = imageFromPath(env:pathToAbsolute("/images/TourBox.icns")),
         tooltip         = i18n("tourBox"),
-        height          = 1070,
+        height          = 1085,
     })
         :addContent(1, html.style ([[
                 .displayMessageWhenChangingBanks {

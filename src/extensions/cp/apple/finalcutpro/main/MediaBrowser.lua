@@ -10,22 +10,28 @@ local just								= require "cp.just"
 local axutils							= require "cp.ui.axutils"
 
 local Group                             = require "cp.ui.Group"
-local Table								= require "cp.ui.Table"
+local Table								= require "cp.ui.OldTable"
 local PopUpButton				        = require "cp.ui.PopUpButton"
 local ScrollArea                        = require "cp.ui.ScrollArea"
 local SplitGroup                        = require "cp.ui.SplitGroup"
 local TextField						    = require "cp.ui.TextField"
 
+local semver                            = require "semver"
+
 local cache                             = axutils.cache
 local childMatching                     = axutils.childMatching
-
 
 local MediaBrowser = Group:subclass("cp.apple.finalcutpro.main.MediaBrowser")
 
 --- cp.apple.finalcutpro.main.MediaBrowser.TITLE -> string
 --- Constant
---- Photos & Audio Title.
-MediaBrowser.static.TITLE = "Photos and Audio"
+--- Photos & Audio Title in v10.6.2 and later.
+MediaBrowser.static.TITLE = "Photos, Videos and Audio"
+
+--- cp.apple.finalcutpro.main.MediaBrowser.LEGACY_TITLE -> string
+--- Constant
+--- Photos & Audio Title in v10.6.1 and earlier.
+MediaBrowser.static.LEGACY_TITLE = "Photos and Audio"
 
 --- cp.apple.finalcutpro.main.MediaBrowser.MAX_SECTIONS -> number
 --- Constant
@@ -108,10 +114,13 @@ end
 ---  * The `MediaBrowser` object.
 function MediaBrowser:show()
     local menuBar = self:app().menu
-    -----------------------------------------------------------------------
-    -- Go there direct:
-    -----------------------------------------------------------------------
-    menuBar:selectMenu({"Window", "Go To", MediaBrowser.TITLE})
+
+    local menuTitle = MediaBrowser.TITLE
+    if self:app().version() < semver("10.6.2") then
+        menuTitle = MediaBrowser.LEGACY_TITLE
+    end
+
+    menuBar:selectMenu({"Window", "Go To", menuTitle})
     just.doUntil(function() return self:isShowing() end)
     return self
 end
@@ -136,7 +145,7 @@ end
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.MediaBrowser.sidebar <cp.ui.Table>
+--- cp.apple.finalcutpro.main.MediaBrowser.sidebar <cp.ui.OldTable>
 --- Field
 --- The Sidebar `Table`.
 function MediaBrowser.lazy.value:sidebar()

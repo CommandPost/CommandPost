@@ -1,1 +1,1 @@
-0.8.3.1alpha-universal
+0.8.3.2alpha-universal with modification: "Swizzle NSFunctionRow's markActiveFunctionRowsAsDimmed"

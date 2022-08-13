@@ -11,7 +11,7 @@
 
 local require                   = require
 
-local hs                        = _G.hs
+local hs                        = _G["hs"]
 
 local log                       = require "hs.logger".new "app"
 
@@ -19,6 +19,7 @@ local application               = require "hs.application"
 local applicationwatcher        = require "hs.application.watcher"
 local ax                        = require "hs.axuielement"
 local fs                        = require "hs.fs"
+local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
 local timer                     = require "hs.timer"
@@ -47,6 +48,7 @@ local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
 local If                        = go.If
+local imageFromAppBundle        = image.imageFromAppBundle
 local insert                    = table.insert
 local keyStroke                 = tools.keyStroke
 local pathToAbsolute            = fs.pathToAbsolute
@@ -181,10 +183,10 @@ end
 -- Rather, get them via the [forBundleID](#forBundleID) function.
 --
 -- Parameters:
--- * bundleID       - The BundleID for the app
+--  * bundleID - The BundleID for the app
 --
 -- Returns:
--- * The new `cp.app`.
+--  * The new `cp.app`.
 function app:initialize(bundleID)
     self._bundleID = bundleID
     self._windowClasses = {}
@@ -207,6 +209,19 @@ end
 ---  * The Bundle ID.
 function app:bundleID()
     return self._bundleID
+end
+
+--- cp.app:icon() -> image
+--- Method
+--- Returns the application icon as a `hs.image`
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The icon as a `hs.image` object
+function app:icon()
+    return imageFromAppBundle(self._bundleID)
 end
 
 --- cp.app:keyStroke(modifiers, character) -> none
@@ -652,8 +667,8 @@ function app.lazy.prop:currentLocale()
             local appLanguages = self.preferences.AppleLanguages
             if appLanguages then
                 for _,lang in ipairs(appLanguages) do
-                    if self:isSupportedLocale(lang) then
-                        local currentLocale = localeID.forCode(lang)
+                    local currentLocale = localeID.forCode(lang)
+                    if self:isSupportedLocale(currentLocale) then
                         local bestLocale = currentLocale and self:bestSupportedLocale(currentLocale)
                         if bestLocale then
                             return bestLocale
@@ -668,7 +683,7 @@ function app.lazy.prop:currentLocale()
             local output, status = hs.execute("defaults read NSGlobalDomain AppleLanguages")
             if status then
                 local appleLanguages = tools.lines(output)
-                if next(appleLanguages) ~= nil then
+                if appleLanguages and next(appleLanguages) ~= nil then
                     if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
                         for i=2, #appleLanguages - 1 do
                             local line = appleLanguages[i]
@@ -709,7 +724,8 @@ function app.lazy.prop:currentLocale()
             else
                 local bestLocale = self:bestSupportedLocale(value)
                 if bestLocale then
-                    thePrefs.AppleLanguages = {bestLocale.code}
+                    local bestLanguage = languageID.forLocaleID(bestLocale)
+                    thePrefs.AppleLanguages = {bestLanguage.code}
                 else
                     error("Unsupported language: "..value.code)
                 end

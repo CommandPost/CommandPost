@@ -8,6 +8,7 @@ local log								= require "hs.logger".new("timelineContents")
 
 local fnutils							= require "hs.fnutils"
 
+local i18n                              = require "cp.i18n"
 local prop								= require "cp.prop"
 local tools                             = require "cp.tools"
 local axutils							= require "cp.ui.axutils"
@@ -17,19 +18,37 @@ local ScrollArea                        = require "cp.ui.ScrollArea"
 local Playhead							= require "cp.apple.finalcutpro.main.Playhead"
 
 local go                                = require "cp.rx.go"
-local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
+local Do, If, Throw, WaitUntil          = go.Do, go.If, go.Throw, go.WaitUntil
+local toObservable                      = go.Statement.toObservable
 
+local emptyList                         = axutils.match.emptyList
 
 local Contents = Element:subclass("cp.apple.finalcutpro.timeline.Contents")
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.timeline.Contents.matches(element) -> boolean
+--- Function
+--- Checks if an `axuielementObject` matches the `Contents` type.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if it matches, otherwise `false`.
 function Contents.static.matches(element)
     return Element.matches(element)
         and element:attributeValue("AXRole") == "AXLayoutArea"
         and element:attributeValueCount("AXAuditIssues") < 1
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.timeline.Contents(parent) -> Contents
+--- Constructor
+--- Creates a new Timeline `Contents` instance.
+---
+--- Parameters:
+---  * parent - The parent `Timeline`
+---
+--- Returns:
+---  * A new `Contents` object.
 function Contents:initialize(parent)
     self._parent = parent
 
@@ -72,16 +91,6 @@ function Contents:initialize(parent)
     self:app():notifier():watchFor("AXCreated", function() scrollAreaUI:update() end)
 end
 
---- cp.apple.finalcutpro.timeline.Contents.isFocused <cp.prop: booelan; read-only>
---- Field
---- Checks if the Timeline is currently the focused panel.
-function Contents.lazy.prop:isFocused()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        return ui ~= nil and ui:attributeValue("AXFocused") == true
-    end)
-end
-
 --- cp.apple.finalcutpro.timeline.Contents.scrollArea <cp.ui.ScrollArea>
 --- Field
 --- The `ScrollArea` for the Contents element.
@@ -100,20 +109,15 @@ end
 --- Field
 --- The current 'frame' of the internal timeline content,  or `nil` if not available.
 function Contents.lazy.prop:timelineFrame()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXFrame")
-    end)
+    return axutils.prop(self.UI, "AXFrame")
 end
 
 --- cp.apple.finalcutpro.timeline.Contents.children <cp.prop: table; read-only; live>
 --- Field
 --- The current set of child elements in the Contents.
 function Contents.lazy.prop:children()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXChildren")
-    end):preWatch(function(_, theProp)
+    return axutils.prop(self.UI, "AXChildren")
+    :preWatch(function(_, theProp)
         self:app():notifier():watchFor("AXUIElementDestroyed", function()
             theProp:update()
         end)
@@ -124,10 +128,8 @@ end
 --- Field
 --- The current set of selected child elements in the Contents.
 function Contents.lazy.prop:selectedChildren()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXSelectedChildren")
-    end):preWatch(function(_, theProp)
+    return axutils.prop(self.UI, "AXSelectedChildren", true)
+    :preWatch(function(_, theProp)
         self:app():notifier():watchFor("AXUIElementDestroyed", function()
             theProp:update()
         end)
@@ -205,6 +207,20 @@ function Contents.lazy.value:skimmingPlayhead()
     return Playhead(self, true, self.UI)
 end
 
+
+--- cp.apple.finalcutpro.timeline.Contents:activePlayhead() -> Playhead
+--- Method
+--- Returns the active Playhead. If the Skimming Playhead is available, return that, otherwise, return the normal Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The active `Playhead`.
+function Contents:activePlayhead()
+    return self.skimmingPlayhead:isShowing() and self.skimmingPlayhead or self.playhead
+end
+
 -----------------------------------------------------------------------
 --
 -- VIEWING AREA:
@@ -249,8 +265,7 @@ end
 --- Returns:
 ---  * The table of selected axuielements that match the conditions
 function Contents:selectedClipsUI(expandGroups, filterFn)
-    local ui = self:UI()
-    local clips = ui and ui:attributeValue("AXSelectedChildren")
+    local clips = self:selectedChildren()
     if clips then
         return self:_filterClips(clips, expandGroups, filterFn)
     end
@@ -273,9 +288,9 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function Contents:clipsUI(expandGroups, filterFn)
-    local ui = self:UI()
-    if ui then
-        local clips = fnutils.filter(ui:attributeValue("AXChildren"), function(child)
+    local children = self:children()
+    if children then
+        local clips = fnutils.filter(children, function(child)
             local role = child:attributeValue("AXRole")
             return role == "AXLayoutItem" or role == "AXGroup"
         end)
@@ -302,6 +317,35 @@ function Contents:rangeSelectionUI()
     return nil
 end
 
+--- cp.apple.finalcutpro.timeline.Contents:positionClipsUI(position, expandedGroups, filterFn) -> table of axuielements
+--- Function
+--- Returns a table array containing the list of clips in the Timeline at the specified `position`, ordered with the
+--- highest clips at the beginning of the array.
+---
+--- If `expandsGroups` is `true` any `AXGroup` items will be expanded to the list of contained `AXLayoutItems`.
+---
+--- If `filterFn` is provided it will be called with a single argument to check if the provided
+--- clip should be included in the final table.
+---
+--- Parameters:
+---  * position     - The `X` (or horizontal) position value to find clips under.
+---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
+---  * filterFn		- (optional) if provided, the function will be called to check each clip
+---
+--- Returns:
+---  * The table of axuielements that match the conditions
+function Contents:positionClipsUI(position, expandGroups, filterFn)
+    local clips = self:clipsUI(expandGroups, function(clip)
+        local frame = clip.AXFrame
+        return frame and position >= frame.x and position <= (frame.x + frame.w)
+           and (filterFn == nil or filterFn(clip))
+    end)
+    if not clips then return nil end
+
+    table.sort(clips, function(a, b) return a.AXPosition.y < b.AXPosition.y end)
+    return clips
+end
+
 --- cp.apple.finalcutpro.timeline.Contents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the
@@ -319,17 +363,43 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function Contents:playheadClipsUI(expandGroups, filterFn)
-    local playheadPosition = self.playhead:position()
-    local clips = self:clipsUI(expandGroups, function(clip)
-        local frame = clip:attributeValue("AXFrame")
-        return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
-           and (filterFn == nil or filterFn(clip))
-    end)
-    table.sort(clips, function(a, b) return a:position().y < b:position().y end)
-    return clips
+    return self:positionClipsUI(self.playhead:position(), expandGroups, filterFn)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.timeline.Contents:skimmingPlayheadClipsUI(expandedGroups, filterFn) -> table of axuielements
+--- Function
+--- Returns a table array containing the list of clips in the Timeline under the skimming playhead, ordered with the
+--- highest clips at the beginning of the array.
+---
+--- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
+---
+--- If `filterFn` is provided it will be called with a single argument to check if the provided
+--- clip should be included in the final table.
+---
+--- Parameters:
+---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
+---  * filterFn		- (optional) if provided, the function will be called to check each clip
+---
+--- Returns:
+---  * The table of axuielements that match the conditions
+function Contents:skimmingPlayheadClipsUI(expandGroups, filterFn)
+    return self:positionClipsUI(self.skimmingPlayhead:position(), expandGroups, filterFn)
+end
+
+-- cp.apple.finalcutpro.timeline.Contents:_filterClips(clips, expandGroups, filterFn) -> table of axuielements
+-- Method
+-- Filters the provided clips table, expanding any AXGroup items if `expandGroups` is true.
+--
+-- If `filterFn` is provided it will be called with a single argument to check if the provided
+-- clip should be included in the final table.
+--
+-- Parameters:
+--  * clips         - The table of axuielements to filter.
+--  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
+--  * filterFn		- (optional) if provided, the function will be called to check each clip
+--
+-- Returns:
+--  * The table of axuielements that match the conditions
 function Contents:_filterClips(clips, expandGroups, filterFn)
     if expandGroups then
         return self:_expandClips(clips, filterFn)
@@ -340,7 +410,19 @@ function Contents:_filterClips(clips, expandGroups, filterFn)
     end
 end
 
--- TODO: Add documentation
+-- cp.apple.finalcutpro.timeline.Contents:_expandClips(clips, filterFn) -> table of axuielements
+-- Method
+-- Expands any AXGroup items in the provided clips table, and filters the results.
+--
+-- If `filterFn` is provided it will be called with a single argument to check if the provided
+-- clip should be included in the final table.
+--
+-- Parameters:
+--  * clips         - The table of axuielements to filter.
+--  * filterFn		- (optional) if provided, the function will be called to check each clip
+--
+-- Returns:
+--  * The table of axuielements that match the conditions
 function Contents:_expandClips(clips, filterFn)
     return fnutils.mapCat(clips, function(child)
         local role = child:attributeValue("AXRole")
@@ -353,6 +435,13 @@ function Contents:_expandClips(clips, filterFn)
         end
         return {}
     end)
+end
+
+function Contents:selectNone()
+    local ui = self:UI()
+    if ui then
+        self:app():selectMenu({"Edit", "Deselect All"})
+    end
 end
 
 -- TODO: Add documentation
@@ -396,6 +485,28 @@ local function containsOnly(values)
     end
 end
 
+--- cp.apple.finalcutpro.timeline.Contents:doSelectNone() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will clear any clip selection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function Contents.lazy.method:doSelectNone()
+    return If(self.selectedChildren):Then(function(selectedChildren)
+        if #selectedChildren > 0 then
+            return Do(self:doFocus())
+            :Then(self:app():doSelectMenu({"Edit", "Deselect All"}))
+        end
+        return true
+    end)
+    :Then(WaitUntil(self.selectedChildren):Matches(emptyList))
+    :TimeoutAfter(2000)
+    :Label("cp.apple.finalcutpro.timeline.contents:doSelectNone()")
+end
+
 --- cp.apple.finalcutpro.timeline.Contents:doSelectClips(clipsUI) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs.axuielement` values in the Timeline Contents area.
@@ -406,12 +517,16 @@ end
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) that will select the clips or throw an error if there is an issue.
 function Contents:doSelectClips(clipsUI)
-    return If(self.UI):Then(function(ui)
+    return If(self.isShowing)
+    :Then(function()
+        if not clipsUI or #clipsUI == 0 then
+            return self:doSelectNone()
+        end
         local selectedClips = {}
         for i,clip in ipairs(clipsUI) do
             selectedClips[i] = clip
         end
-        ui:setAttributeValue("AXSelectedChildren", selectedClips)
+        self:selectedChildren(selectedClips)
         return true
     end)
     :Then(WaitUntil(self.selectedChildren):Matches(containsOnly(clipsUI)))
@@ -429,8 +544,42 @@ end
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
 function Contents:doSelectClip(clipUI)
-    return self:doSelectClips({clipUI})
+    return If(self.isShowing)
+    :Then(function()
+        if not clipUI then
+            return self:doSelectNone()
+        end
+        return self:doSelectClips({clipUI})
+    end)
     :Label("cp.apple.finalcutpro.timeline.Contents:doSelectClip(clipUI)")
+end
+
+
+--- cp.apple.finalcutpro.timeline.Contents:doSelectTopClip([position]) -> cp.rx.go.Statement
+--- Method
+--- Creates a [Statement](cp.rx.go.Statement.md) that will select the top clip at the given position,
+--- resolving to the top clip if available.
+---
+--- Parameters:
+---  * position - (optional) The position `table` to select the top clip at.
+---     If not provided, the current active playhead position is used.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement)
+function Contents:doSelectTopClip(position)
+    return Do(function()
+        position = position or self:activePlayhead():position()
+
+        local clipsUI = self:positionClipsUI(position)
+        if not clipsUI or #clipsUI == 0 then
+            return Throw(i18n("doSelectTopClip_noclips_error"))
+        end
+
+        local topClip = clipsUI[1]
+        return Do(self:doSelectClip(topClip))
+        :Then(toObservable(topClip))
+    end)
+    :Label("cp.apple.finalcutpro.timeline.Contents:doSelectTopClip(position)")
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:doFocus(show) -> cp.rx.go.Statement

@@ -64,11 +64,23 @@ function mod.start()
                         -- Hide the Media Import Window:
                         --------------------------------------------------------------------------------
                         mediaImport:hide()
-                        if fcpHidden then fcp:hide() end
-                        mod._currentApplication:activate()
+
+                        if fcpHidden then
+                            fcp:hide()
+                        end
                         fcpHidden = nil
-                        mediaImportCount = nil
+
+                        --------------------------------------------------------------------------------
+                        -- In theory, this if statement shouldn't be necessary, however some users
+                        -- have reported that the `frontmostApplication` is `nil` for whatever reason.
+                        -- See: Issue #2843
+                        --------------------------------------------------------------------------------
+                        if mod._currentApplication then
+                            mod._currentApplication:activate()
+                        end
                         mod._currentApplication = nil
+
+                        mediaImportCount = nil
                         mediaImportTimer:stop()
                     end
                     if type(mediaImportCount) ~= "number" then

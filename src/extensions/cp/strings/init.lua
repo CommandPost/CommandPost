@@ -101,9 +101,9 @@ end
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:findInSources(key, context) -- TODO: Quiet isn't actually used?
+function mod.mt:findInSources(key, context, quiet)
     for _,source in ipairs(self._sources) do
-        local value = source:find(key, context)
+        local value = source:find(key, context, quiet)
         if value then return value end
     end
     return nil
@@ -170,14 +170,30 @@ end
 --- Searches for the list of keys with a matching value, in the specified language.
 ---
 --- Parameters:
----  * `value`      - The value to search for.
----  * `context`    - The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * value      - The value to search for.
+---  * context    - The language code to look for (e.g. `"en"`, or `"fr"`).
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if not found.
+---
+--- Notes:
+---  * Not recommended in production code, as it will potentially be very inefficient.
 function mod.mt:findKeys(value, context)
     -- NOTE: Not bothering to cache results currently, since it should not be a frequent operation.
     return self:findKeysInSources(value, context)
+end
+
+--- cp.strings:findAllKeys([context]) -> table
+--- Method
+--- Searches for all keys in all sources, with the given context.
+---
+--- Parameters:
+---  * context      - The intial context to use.
+---
+--- Returns:
+---  * The array of keys, or `{}` if not found.
+function mod.mt:findAllKeys(context)
+    return self:findKeysInSources(".*", context)
 end
 
 --- cp.strings.new(context) -> cp.strings

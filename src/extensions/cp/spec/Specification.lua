@@ -108,7 +108,7 @@ end
 -- If not, the `this:passed()` method is called to complete the test.
 function Specification:_runNext(index, this)
     local t = self.definitions[index]
-    if t then
+    if t and t.run then
         this:log("Running definition #%s", index)
         local run
         run = t:run()

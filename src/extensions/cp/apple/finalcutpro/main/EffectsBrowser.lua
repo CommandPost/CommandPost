@@ -14,7 +14,7 @@ local Group                             = require "cp.ui.Group"
 local tools								= require "cp.tools"
 local just								= require "cp.just"
 
-local Table								= require "cp.ui.Table"
+local Table								= require "cp.ui.OldTable"
 local ScrollArea						= require "cp.ui.ScrollArea"
 local CheckBox							= require "cp.ui.CheckBox"
 local PopUpButton						= require "cp.ui.PopUpButton"
@@ -26,6 +26,7 @@ local If                                = require "cp.rx.go.If"
 local WaitUntil                         = require "cp.rx.go.WaitUntil"
 
 local ninjaDoubleClick                  = tools.ninjaDoubleClick
+local upper                             = tools.upper
 
 local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
 
@@ -378,8 +379,15 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function EffectsBrowser:videoCategoryRowsUI()
-    local video = self:app():string("FFVideo"):upper()
-    local audio = self:app():string("FFAudio"):upper()
+    --------------------------------------------------------------------------------
+    -- NOTE: We have to use cp.tools.upper, because the built-in Lua :upper()
+    --       doesn't handle non-English characters very well. For example:
+    --
+    -- cp.apple.finalcutpro:string("FFVideo") = Vídeo
+    -- cp.tools.upper(cp.apple.finalcutpro:string("FFVideo")) = VÍDEO
+    --------------------------------------------------------------------------------
+    local video = upper(self:app():string("FFVideo"))
+    local audio = upper(self:app():string("FFAudio"))
 
     return self:_startEndRowsUI(video, audio)
 end
@@ -631,7 +639,7 @@ function EffectsBrowser.lazy.prop:mainGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.EffectsBrowser.sidebar <cp.ui.Table>
+--- cp.apple.finalcutpro.main.EffectsBrowser.sidebar <cp.ui.OldTable>
 --- Field
 --- The sidebar `Table` object.
 function EffectsBrowser.lazy.value:sidebar()

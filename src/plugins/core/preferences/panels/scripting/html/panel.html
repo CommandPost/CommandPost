@@ -166,7 +166,7 @@
 
         		function setCode(value){
         			if (editor != null) {
-		        		editor.setValue(atob(value));
+		        		editor.setValue(decodeURI(atob(value)));
 		        	}
         		}
 
@@ -174,7 +174,7 @@
 					if (editor != null) {
 						var doc = editor.getDoc();
 						var cursor = doc.getCursor();
-						doc.replaceRange(text, cursor);
+						doc.replaceRange(decodeURI(atob(text)), cursor);
 					}
 				}
 

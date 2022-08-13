@@ -132,7 +132,8 @@ local function getColumnNames()
         ["Audio Configuration"] = fcp:string("Audio Channel Config"),
         ["File Type"] = fcp:string("file type"),
         ["Date Imported"] = fcp:string("Date Imported"),
-        ["Codecs"] = fcp:string("CPCodecs"),
+        ["Original Codecs"] =  fcp:string("Original Codecs"),
+        ["Proxy Codecs"] =  fcp:string("Proxy Codecs"),
         ["360° Mode"] = fcp:string("FFOrganizerFilterHUDFormatInfoSphericalType"),
         ["Stereoscopic Mode"] = fcp:string("FFMD3DStereoMode"),
     }

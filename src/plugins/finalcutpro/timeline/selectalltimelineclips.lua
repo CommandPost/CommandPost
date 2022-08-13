@@ -2,11 +2,11 @@
 ---
 --- Select All Timeline Clips
 
-local require = require
+local require   = require
 
-local log                               = require("hs.logger").new("selectalltimelineclips")
+local log       = require("hs.logger").new("selectalltimelineclips")
 
-local fcp                               = require("cp.apple.finalcutpro")
+local fcp       = require("cp.apple.finalcutpro")
 
 local mod = {}
 
@@ -43,7 +43,6 @@ function mod.selectAllTimelineClips(forwards)
 
 end
 
-
 local plugin = {
     id = "finalcutpro.timeline.selectalltimelineclips",
     group = "finalcutpro",
@@ -71,6 +70,38 @@ function plugin.init(deps)
         :add("cpSelectBackwards")
         :activatedBy():ctrl():option():cmd("left")
         :whenActivated(function() mod.selectAllTimelineClips(false) end)
+
+    fcpxCmds
+        :add("cpSelectAllEvenClips")
+        :whenActivated(function()
+            fcp:launch()
+            local contents = fcp.timeline.contents
+            local clips = contents:clipsUI()
+            table.sort(clips, function(a, b) return a.AXPosition.x < b.AXPosition.x end)
+            local evenClips = {}
+            for i, clip in ipairs(clips) do
+                if (i % 2 == 0) then
+                    table.insert(evenClips, clip)
+                end
+            end
+            contents:selectClips(evenClips)
+        end)
+
+    fcpxCmds
+        :add("cpSelectAllOddClips")
+        :whenActivated(function()
+            fcp:launch()
+            local contents = fcp.timeline.contents
+            local clips = contents:clipsUI()
+            table.sort(clips, function(a, b) return a.AXPosition.x < b.AXPosition.x end)
+            local oddClips = {}
+            for i, clip in ipairs(clips) do
+                if not (i % 2 == 0) then
+                    table.insert(oddClips, clip)
+                end
+            end
+            contents:selectClips(oddClips)
+        end)
 
     return mod
 end

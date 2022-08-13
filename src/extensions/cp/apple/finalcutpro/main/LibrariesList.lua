@@ -8,7 +8,7 @@ local require               = require
 
 local axutils               = require "cp.ui.axutils"
 local SplitGroup            = require "cp.ui.SplitGroup"
-local Table                 = require "cp.ui.Table"
+local Table                 = require "cp.ui.OldTable"
 
 local Clip                  = require "cp.apple.finalcutpro.content.Clip"
 local Playhead              = require "cp.apple.finalcutpro.main.Playhead"
@@ -157,7 +157,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.LibrariesList.contents <cp.ui.Table>
+--- cp.apple.finalcutpro.main.LibrariesList.contents <cp.ui.OldTable>
 --- Field
 --- The Libraries List Contents UI.
 function LibrariesList.lazy.value:contents()
@@ -202,7 +202,11 @@ end
 -- Returns:
 --  * A table of `Clip` objects.
 function LibrariesList:_uiToClips(clipsUI)
-    local columnIndex = self.contents:findColumnIndex("filmlist name col")
+    --------------------------------------------------------------------------------
+    -- NOTE: At some point the column with "filmlist name col" disappeared, probably
+    --       when custom columns were added so we now just return 1.
+    --------------------------------------------------------------------------------
+    local columnIndex = self.contents:findColumnIndex("filmlist name col") or 1
     local options = {columnIndex = columnIndex}
     return map(clipsUI, function(clipUI)
         return Clip.new(clipUI, options)

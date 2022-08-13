@@ -8,6 +8,7 @@ local hs          = _G.hs
 local log         = require "hs.logger".new "prefsMgr"
 
 local inspect     = require "hs.inspect"
+local mouse       = require "hs.mouse"
 local screen      = require "hs.screen"
 local timer       = require "hs.timer"
 local toolbar     = require "hs.webview.toolbar"
@@ -333,6 +334,7 @@ function mod.new()
             :canCustomize(true)
             :autosaves(true)
             :sizeMode("small")
+            :toolbarStyle("preference")
             :setCallback(function(_, _, id)
                 doAfter(0, function()
                     mod.refresh(id)
@@ -369,16 +371,20 @@ function mod.new()
     return mod
 end
 
---- plugins.core.preferences.manager.show() -> boolean
+--- plugins.core.preferences.manager.show([panelID]) -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
 --- Parameters:
----  * None
+---  * [panelID] - An optional panel ID
 ---
 --- Returns:
 ---  * True if successful or nil if an error occurred
-function mod.show()
+function mod.show(panelID)
+    if panelID then
+        mod.lastTab(panelID)
+    end
+
     if mod._webview == nil then
         mod.new()
     end
@@ -503,15 +509,17 @@ function mod.selectPanel(id)
             end
 
             --------------------------------------------------------------------------------
-            -- Offset macOS Big Sur:
+            -- Make sure the panel isn't bigger than the screen:
             --------------------------------------------------------------------------------
-            local offset = 0
-            local macOSVersion = tools.macOSVersion()
-            if semver(macOSVersion) >= semver("10.16") then
-                offset = -20
+            local currentScreen = mouse.getCurrentScreen()
+            local currentFrame = currentScreen and currentScreen:frame()
+            local currentHeight = currentFrame and currentFrame.h
+
+            if height > currentHeight then
+                height = currentHeight - 10
             end
 
-            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height + offset})
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height})
         end
 
     end
@@ -588,6 +596,25 @@ function plugin.init(deps, env)
     -- Initalise Module:
     --------------------------------------------------------------------------------
     return mod.init(env)
+end
+
+function plugin.postInit(deps)
+    --------------------------------------------------------------------------------
+    -- Add Commands to open individual panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(mod._panels) do
+        local id = v.id
+        local label = v.label
+        local img = v.image
+        deps.global
+            :add("preferences" .. id)
+            :whenActivated(function()
+                mod.show(id)
+            end)
+            :titled(label)
+            :subtitled(i18n("preferences"))
+            :image(img)
+    end
 end
 
 return plugin

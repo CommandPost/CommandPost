@@ -13,15 +13,12 @@ local http                  = require "hs.http"
 
 local config                = require "cp.config"
 local deferred              = require "cp.deferred"
-local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 local plist                 = require "cp.plist"
 
 local convertHtmlEntities   = http.convertHtmlEntities
-local displayMessage        = dialog.displayMessage
 local doAfter               = timer.doAfter
-local fileToTable           = plist.fileToTable
 local imageFromPath         = image.imageFromPath
 
 local mod = {}
@@ -60,13 +57,11 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 action = action.id
             end
-            fcp
-                :doShortcut(action)
-                :Catch(function(message)
-                    displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
-                    log.ef("Failed to trigger shortcut with action: %s; %s", inspect(action), message)
-                end)
-                :Now()
+            --------------------------------------------------------------------------------
+            -- If a shortcut key isn't already defined, then doShortcut will show
+            -- a macOS notification.
+            --------------------------------------------------------------------------------
+            fcp:doShortcut(action):Now()
         end
     end)
 
@@ -76,19 +71,18 @@ function plugin.init(deps)
     local actionmanager = deps.actionmanager
     mod._handler = actionmanager.addHandler(GROUP .. "_shortcuts", GROUP)
         :onChoices(function(choices)
-            local fcpPath = fcp:getPath()
-            local currentLocale = fcp:currentLocale()
-            if fcpPath and currentLocale then
+            local nameData          = fcp.commandNames
+            local descriptionData   = fcp.commandDescriptions
 
-                local namePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
-                local descriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
-
-                local nameData          = fileToTable(namePath)
-                local descriptionData   = fileToTable(descriptionPath)
-
-                if nameData and descriptionData then
-                    for id, name in pairs(nameData) do
-                        local subText = descriptionData[id] or i18n("commandEditorShortcut")
+            if nameData and descriptionData then
+                for _, id in ipairs(nameData:findAllKeys()) do
+                    local name = nameData:find(id)
+                    local subText = name and descriptionData:find(id, nil, true) -- Ignore Errors
+                    --------------------------------------------------------------------------------
+                    -- Only add commands with a description, otherwise it will attempt
+                    -- to add the "Command Groups" (i.e. the category names):
+                    --------------------------------------------------------------------------------
+                    if subText then
                         choices
                             :add(convertHtmlEntities(name))
                             :subText(convertHtmlEntities(subText))

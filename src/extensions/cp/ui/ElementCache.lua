@@ -22,7 +22,7 @@ local ElementCache = class("cp.ui.ElementCache")
 --- Returns:
 ---  * The new `ElementCache`.
 function ElementCache:initialize(parent, createFn)
-    self.items = {}
+    self.items = setmetatable({}, {__mode="k"})
     self.parent = parent
     self.createFn = createFn
 end
