@@ -750,7 +750,7 @@ function mod.latestDTDVersion()
     return supportedDTDs[#supportedDTDs]
 end
 
---- cp.apple.fcpxml:valid(path[, version]) -> string | boolean
+--- cp.apple.fcpxml:valid(path[, version]) -> string|boolean, string
 --- Function
 --- Validates an FCPXML document against a document type definition (DTD).
 ---
@@ -760,26 +760,38 @@ end
 ---
 --- Returns:
 ---  * The FCPXML path or `false` if not valid.
+---  * The output from xmllint as a string.
 ---
 --- Notes:
 ---  * If a version is not supplied, we will try and read the version
 ---    from the file itself, and if that's not possible, we'll default
 ---    to the latest FCPXML version.
+---  * If a `fcpxmld` bundle path is supplied, this function will return
+---    the path to the `Info.fcpxml` document if valid.
 function mod.valid(path, version)
+    --------------------------------------------------------------------------------
+    -- Look inside FCPXML Bundles for metadata:
+    --------------------------------------------------------------------------------
+    local extension = tools.getFileExtensionFromPath(path)
+    if extension and extension == "fcpxmld" then
+        path = path .. "/Info.fcpxml"
+    end
+
     --------------------------------------------------------------------------------
     -- Make sure the file actually exists:
     --------------------------------------------------------------------------------
     if not path or not tools.doesFileExist(path) then
-        log.ef("[cp.apple.fcpxml] FCPXML path is not valid: %s", path)
+        --log.ef("[cp.apple.fcpxml] FCPXML path is not valid: %s", path)
         return false
     end
 
     --------------------------------------------------------------------------------
     -- Make sure the file is actually an XML file:
     --------------------------------------------------------------------------------
-    local document = xml.open(path)
-    if not document then
-        log.ef("[cp.apple.fcpxml] Failed to open XML: %s", path)
+    local validXML, document = pcall(function() return xml.open(path) end)
+    if not validXML or not document then
+        --log.ef("[cp.apple.fcpxml] Invalid XML document: %s", path)
+        return false
     end
 
     --------------------------------------------------------------------------------
@@ -800,7 +812,7 @@ function mod.valid(path, version)
     --------------------------------------------------------------------------------
     local supportedDTDs = mod.supportedDTDs()
     if version and not fnutils.contains(supportedDTDs, version) then
-        log.ef("[cp.apple.fcpxml] Invalid FCPXML Version: %s", version)
+        --log.ef("[cp.apple.fcpxml] Invalid FCPXML Version: %s", version)
         return false
     end
 
@@ -815,19 +827,11 @@ function mod.valid(path, version)
     end
 
     --------------------------------------------------------------------------------
-    -- Look inside FCPXML Bundles for metadata:
-    --------------------------------------------------------------------------------
-    local extension = tools.getFileExtensionFromPath(path)
-    if extension and extension == "fcpxmld" then
-        path = path .. "/Info.fcpxml"
-    end
-
-    --------------------------------------------------------------------------------
     -- Use `xmllint` to make sure the file is valid:
     --------------------------------------------------------------------------------
     local dtdPath = config.scriptPath .. "/cp/apple/fcpxml/dtd/" .. "FCPXMLv" .. version.major .. "_" .. version.minor .. ".dtd"
-    local _, status = execute([[xmllint --noout --dtdvalid "]] .. dtdPath .. [[" "]] .. path .. [["]])
-    return status and path or false
+    local output, status = execute([[xmllint --noout --noblanks --dtdvalid "]] .. dtdPath .. [[" "]] .. path .. [["]])
+    return status and path or false, output
 end
 
 --------------------------------------------------------------------------------

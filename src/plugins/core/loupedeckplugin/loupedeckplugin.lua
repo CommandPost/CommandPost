@@ -194,6 +194,22 @@ function mod._registerActions()
     end
 
     --------------------------------------------------------------------------------
+    -- macOS Accessibility:
+    --------------------------------------------------------------------------------
+    registerAction("IncrementUserInterfaceElementUnderMouse", makeFunctionHandler(function() mod.axtools.changeElementUnderMouse(true) end))
+    registerAction("DecrementUserInterfaceElementUnderMouse", makeFunctionHandler(function() mod.axtools.changeElementUnderMouse(false) end))
+    registerAction("ChangeUserInterfaceElementUnderMouse", function(data)
+        if data.actionType == "turn" then
+            local actionValue = data.actionValue
+            if actionValue < 0 then
+                mod.axtools.changeElementUnderMouse(false)
+            else
+                mod.axtools.changeElementUnderMouse(true)
+            end
+        end
+    end)
+
+    --------------------------------------------------------------------------------
     -- Keyboard Maestro:
     --------------------------------------------------------------------------------
     mod.keyboardMaestroLookup = {}
@@ -208,6 +224,7 @@ local plugin = {
     required    = true,
     dependencies    = {
         ["core.loupedeckplugin.manager"]                = "manager",
+        ["core.accessibility.tools"]                    = "axtools"
     }
 }
 
@@ -216,6 +233,7 @@ function plugin.init(deps)
     -- Manage Dependencies:
     --------------------------------------------------------------------------------
     mod.manager             = deps.manager
+    mod.axtools             = deps.axtools
 
     --------------------------------------------------------------------------------
     -- Add actions:

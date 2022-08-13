@@ -475,6 +475,9 @@ function mod.injectScript(script)
             function(_, theerror)
                 if theerror and theerror.code ~= 0 then
                     log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+                    --log.df("mod._webview: %s", mod._webview)
+                    --log.df("mod._webview:frame(): %s", mod._webview:frame() and inspect(mod._webview:frame()))
+                    --log.df("mod._webview:loading(): %s", mod._webview and mod._webview:loading())
                 end
             end
         )
@@ -597,6 +600,25 @@ function plugin.init(deps, env)
     -- Initalise Module:
     --------------------------------------------------------------------------------
     return mod.init(env)
+end
+
+function plugin.postInit(deps)
+    --------------------------------------------------------------------------------
+    -- Add Commands to open individual panels:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(mod._panels) do
+        local id = v.id
+        local label = v.label
+        local img = v.image
+        deps.global
+            :add("toolbox" .. id)
+            :whenActivated(function()
+                mod.show(id)
+            end)
+            :titled(label)
+            :subtitled(i18n("toolbox"))
+            :image(img)
+    end
 end
 
 return plugin

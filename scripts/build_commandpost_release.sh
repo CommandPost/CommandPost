@@ -142,6 +142,11 @@ echo " * Cleaning up prior to build..."
 echo " * Building CommandPost-App Docs..."
 ./scripts/build.sh docs
 
+echo " * Signing csv2notion..."
+xattr -cr "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+codesign --verbose --force --deep --options=runtime --timestamp --entitlements "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/entitlements.plist" --sign "Developer ID Application: LateNite Films Pty Ltd" "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+codesign -dv --verbose=4 "${COMMANDPOST_HOME}/src/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+
 echo " * Building CommandPost-App..."
 ./scripts/build.sh build -s Release -c Release -d -u
 

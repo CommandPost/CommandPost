@@ -1,1 +1,4 @@
 0.2.1.1-universal
+
+
+Chris modified - as discussed here: https://github.com/asmagill/hs._asm.xml/issues/1#issuecomment-1207100524

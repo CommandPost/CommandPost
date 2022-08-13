@@ -422,6 +422,20 @@
 		}
 	}
 
+	function copyDevice() {
+		try {
+			var result = {
+				id: "{{ id }}",
+				params: {
+					type: "copyDevice",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function copyBank() {
 		try {
 			var result = {
@@ -1199,6 +1213,9 @@
 	</tr>
 	<tr>
 		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="copyDevice()">{{ i18n("copyDevice") }}</a>
+		</th>
 		<th>
 			<a href="#" class="bottomButton" onclick="copyApplication()">{{ i18n("copyApplication") }}</a>
 		</th>
