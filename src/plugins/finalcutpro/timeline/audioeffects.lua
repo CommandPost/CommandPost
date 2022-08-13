@@ -11,7 +11,7 @@ local fcp				= require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 
 local go                = require "cp.rx.go"
-local Do, If, Throw     = go.Do, go.If, go.Throw
+local Do                = go.Do
 
 local mod = {}
 

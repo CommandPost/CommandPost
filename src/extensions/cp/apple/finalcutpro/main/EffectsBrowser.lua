@@ -4,7 +4,7 @@
 
 local require = require
 
-local log								= require "hs.logger".new("EffectsBrowser")
+--local log								= require "hs.logger".new("EffectsBrowser")
 
 local geometry							= require "hs.geometry"
 local fnutils							= require "hs.fnutils"

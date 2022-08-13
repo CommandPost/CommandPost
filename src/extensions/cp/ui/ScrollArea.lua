@@ -46,7 +46,6 @@ local log                               = require "hs.logger".new "ScrollArea"
 local fn                                = require "cp.fn"
 local ax                                = require "cp.fn.ax"
 local is                                = require "cp.is"
-local Observable                        = require "cp.rx.Observable"
 local go                                = require "cp.rx.go"
 local has                               = require "cp.ui.has"
 local Element                           = require "cp.ui.Element"
@@ -56,7 +55,6 @@ local chain                             = fn.chain
 local handler                           = has.handler
 local sort                              = fn.table.sort
 local isFunction                        = is.fn
-local Do, If, Given                     = go.Do, go.If, go.Given
 
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
     :delegateTo("contents")

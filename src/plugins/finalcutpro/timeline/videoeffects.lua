@@ -11,7 +11,7 @@ local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 
 local go                = require "cp.rx.go"
-local Do, Throw         = go.Do, go.Throw
+local Do                = go.Do
 
 local mod = {}
 
@@ -60,7 +60,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     local effects = fcp.effects
     local effectsShowing = effects:isShowing()
-    
+
     --------------------------------------------------------------------------------
     -- Make sure FCPX is at the front.
     --------------------------------------------------------------------------------

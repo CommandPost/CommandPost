@@ -67,11 +67,14 @@ local subclassNumber = 1
 ---
 --- Returns:
 ---  * A new `ElementList` subclass that supports the provided list of `UIHandlers`.
+
+-- TODO: @randomeizer to review the below code:
+
 function ElementList.static:ofExactly(uiHandlers)
     local listClass = self:subclass(format("%s_%d", self.name, subclassNumber))
     subclassNumber = subclassNumber + 1
 
-    function listClass:initialize(parent, uiFinder)
+    function listClass:initialize(parent, uiFinder) -- luacheck:ignore
         listClass.super.initialize(self, parent, uiFinder, uiHandlers)
     end
 

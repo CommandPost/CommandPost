@@ -116,7 +116,7 @@ end
 --- Notes:
 ---  * This will be called by `__tostring` and added to the class name.
 ---  * If you want to change the whole string, you can override `__tostring()` instead.
-function Element:__valuestring()
+function Element:__valuestring() -- luacheck:ignore
     return nil
 end
 
@@ -818,13 +818,16 @@ end
 ---  * They have `lazy` values, so can be used to define additional `value`/`method`/`prop` properties,
 ---    like a standard Element.
 ---  * They have a `static` value, so can be used to define additional class/static properties.
-function Element.static:extension(name)
+
+-- TODO: @randomeizer to review the below code:
+
+function Element.static:extension(name) -- luacheck:ignore
     local extension = {
         lazy = { value = {}, method = {}, prop = {} },
         static = {},
     }
 
-    function extension:included(klass)
+    function extension:included(klass) -- luacheck:ignore
         for key, value in pairs(self.static) do
             klass[key] = value
         end

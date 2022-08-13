@@ -32,7 +32,7 @@ end
 --- Returns:
 ---  * `true` if the handler matches the `hs.axuielement`, otherwise `false`.
 ---  * The remaining `hs.axuielement` objects that were not matched as a slice, or `nil` if it was not matched.
-function EndHandler:matches(uiList)
+function EndHandler:matches(uiList) -- luacheck:ignore
     if #uiList == 0 then
         return true, uiList
     end
@@ -49,7 +49,7 @@ end
 ---
 --- Returns:
 ---  * The result of the internal handler's `build` method.
-function EndHandler:build(parent, uiListFinder)
+function EndHandler:build(parent, uiListFinder) -- luacheck:ignore
     return nil
 end
 

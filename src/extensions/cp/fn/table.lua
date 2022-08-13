@@ -18,7 +18,6 @@ local unpackArgs        = cpfnargs.unpack
 
 local insert            = table.insert
 local pack, unpack      = table.pack, table.unpack
-local format            = string.format
 
 local mod = {}
 
