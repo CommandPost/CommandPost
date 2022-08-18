@@ -832,7 +832,7 @@
     "enableWaveformDrawing": "Enable Waveform Drawing",
     "end": "End",
     "english": "English",
-    "enterCustomFilename": "Please enter a custom filename below.\n\nYou can also use these optional variables:\n\n{original} = Original Clip Name\n{yyyy} = Year\n{yy} = Year\n{mm} = Month\n{dd} = Day\n{hh} = Hour\n{mm} = Minutes\n{ss} = Seconds",
+    "enterCustomFilename": "Please enter a custom filename below.\n\nYou can also use these optional variables:\n\n{projectTimecode} = Project Timecode\n{original} = Original Clip Name\n{yyyy} = Year\n{yy} = Year\n{mm} = Month\n{dd} = Day\n{hh} = Hour\n{mm} = Minutes\n{ss} = Seconds",
     "enterCustomFilenameError": "This filename looks invalid. Please try again.",
     "enterCustomKeyword": "Please enter the Custom Keyword you want to use:",
     "enterCustomKeywordError": "This Custom Keyword looks invalid.\n\nPlease try again.",
