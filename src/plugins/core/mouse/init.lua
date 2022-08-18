@@ -82,7 +82,7 @@ function plugin.init(deps)
             event.newMouseEvent(event.types.leftMouseUp, absolutePosition, action.modifiers):post()
             just.wait(doubleClickInterval)
             event.newMouseEvent(event.types.leftMouseDown, absolutePosition, action.modifiers):post()
-            event.newMouseEvent(event.types.lefttMouseUp, absolutePosition, action.modifiers):post()
+            event.newMouseEvent(event.types.leftMouseUp, absolutePosition, action.modifiers):post()
         end,
         ["rightClick"] = function(action)
             local absolutePosition = mouse.absolutePosition()
