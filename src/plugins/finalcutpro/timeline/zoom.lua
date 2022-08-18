@@ -41,6 +41,13 @@ function plugin.init(deps)
         appearancePopUpCloser:start()
     end)
 
+    local zoomAbsolute
+    local updateZoomAbsolute = deferred.new(0.0000001):action(function()
+        appearance:show()
+        appearance.zoomAmount:value(zoomAbsolute)
+        appearancePopUpCloser:start()
+    end)
+
     fcpxCmds
         :add("timelineZoomIncrease")
         :whenActivated(function()
@@ -58,6 +65,18 @@ function plugin.init(deps)
         end)
         :titled(i18n("timelineZoom") .. " " .. i18n("decrease"))
         :subtitled(i18n("controlsTimelineZoomViaTheAppearancePopup"))
+
+    for i=1, 10, 0.5 do
+        fcpxCmds
+        :add("timelineZoom" .. i)
+        :whenActivated(function()
+            zoomAbsolute = i
+            updateZoomAbsolute()
+        end)
+        :titled(i18n("timelineZoom") .. " " .. i)
+        :subtitled(i18n("controlsTimelineZoomViaTheAppearancePopup"))
+    end
+
 end
 
 return plugin
