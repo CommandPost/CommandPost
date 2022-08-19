@@ -2325,6 +2325,8 @@
     "toggleTourBoxSupport": "Chuyển đổi Hỗ trợ TourBox",
     "toggleVideoScopesInEventViewer": "Chuyển đổi phạm vi video trong Trình xem sự kiện",
     "toggleVideoScopesInViewer": "Chuyển đổi phạm vi video trong trình xem",
+    "toggleZoomToFit": "Chuyển đổi Thu phóng cho vừa vặn",
+    "toggleZoomToSelection": "Chuyển đổi Thu phóng thành Lựa chọn",
     "toolbox": "Hộp công cụ",
     "toolboxDescriptionOne": "Hộp công cụ là một tập hợp đang phát triển của các tiện ích tiện dụng được các thành viên của cộng đồng CommandPost ủy quyền để thực hiện các tác vụ rất cụ thể, thường liên quan đến xử lý XML.",
     "toolboxDescriptionTwo": "Nếu có điều gì đó mà bạn hoặc công ty của bạn muốn tự động hóa, thì bạn có thể liên hệ với nhóm CommandPost để được tư vấn và nhận báo giá.",
