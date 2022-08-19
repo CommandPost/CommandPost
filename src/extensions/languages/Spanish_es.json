@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Alternar soporte TourBox",
     "toggleVideoScopesInEventViewer": "Alternar ámbitos de video en el Visor de eventos",
     "toggleVideoScopesInViewer": "Alternar ámbitos de video en el visor",
+    "toggleZoomToFit": "Alternar Zoom para ajustar",
+    "toggleZoomToSelection": "Alternar zoom a la selección",
     "toolbox": "Caja de herramientas",
     "toolboxDescriptionOne": "La caja de herramientas es una colección en evolución de útiles utilidades encargadas por miembros de la comunidad CommandPost para realizar tareas muy específicas, generalmente relacionadas con el procesamiento XML.",
     "toolboxDescriptionTwo": "Si hay algo que a usted o su empresa le gustaría automatizar, puede ponerse en contacto con el equipo de CommandPost para obtener asesoramiento y una cotización.",
