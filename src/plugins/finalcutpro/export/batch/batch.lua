@@ -244,7 +244,10 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         local clipChildren = clip:attributeValue("AXChildren")
         local leadingEdge = clipChildren and clipChildren[1]
-        local projectTimecode = leadingEdge and leadingEdge:attributeValue("AXValue") or fcp.viewer.timecode()
+        local projectTimecode = leadingEdge and leadingEdge:attributeValue("AXValue") or fcp.viewer.timecode() or "00:00:00:00"
+        if projectTimecode:len() == ("00:00:00:00"):len() then
+            projectTimecode = projectTimecode:sub(1, 2) .. projectTimecode:sub(4, 5) .. projectTimecode:sub(7, 8) .. projectTimecode:sub(10, 11)
+        end
 
         --------------------------------------------------------------------------------
         -- Mark Clip Range:
