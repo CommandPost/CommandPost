@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Alternar suporte TourBox",
     "toggleVideoScopesInEventViewer": "Alternar escopos de vídeo no Visualizador de eventos",
     "toggleVideoScopesInViewer": "Alternar os escopos de vídeo no visualizador",
+    "toggleZoomToFit": "Alternar Zoom para Ajustar",
+    "toggleZoomToSelection": "Alternar Zoom para Seleção",
     "toolbox": "Caixa de ferramentas",
     "toolboxDescriptionOne": "A caixa de ferramentas é uma coleção em evolução de utilitários úteis encomendados por membros da comunidade CommandPost para realizar tarefas muito específicas, geralmente relacionadas ao processamento de XML.",
     "toolboxDescriptionTwo": "Se houver algo que você ou sua empresa gostariam de automatizar, entre em contato com a equipe CommandPost para obter conselhos e um orçamento.",
