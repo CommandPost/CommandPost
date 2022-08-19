@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Commuta el suport de TourBox",
     "toggleVideoScopesInEventViewer": "Commuta els àmbits de vídeo al Visualitzador d'esdeveniments",
     "toggleVideoScopesInViewer": "Commuta els àmbits de vídeo al Visualitzador",
+    "toggleZoomToFit": "Canvia el zoom per ajustar",
+    "toggleZoomToSelection": "Canvia el zoom a la selecció",
     "toolbox": "Caixa d'eines",
     "toolboxDescriptionOne": "La caixa d'eines és una col·lecció en evolució d'utilitats útils encarregades pels membres de la comunitat CommandPost per fer tasques molt específiques, generalment relacionades amb el processament XML.",
     "toolboxDescriptionTwo": "Si voleu automatitzar alguna cosa a vosaltres o a la vostra empresa, podeu contactar amb l'equip de CommandPost per obtenir assessorament i un pressupost.",
