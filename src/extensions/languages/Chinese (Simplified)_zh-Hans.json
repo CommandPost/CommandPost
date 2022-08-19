@@ -2325,6 +2325,8 @@
     "toggleTourBoxSupport": "切换TourBox支持",
     "toggleVideoScopesInEventViewer": "在事件查看器中切换视频范围",
     "toggleVideoScopesInViewer": "在Viewer中切换视频范围",
+    "toggleZoomToFit": "切换缩放以适应",
+    "toggleZoomToSelection": "切换缩放到选择",
     "toolbox": "工具箱",
     "toolboxDescriptionOne": "该工具箱是由CommandPost社区成员委托的便捷实用程序的不断发展的集合，它们可以执行非常具体的任务，通常与XML处理有关。",
     "toolboxDescriptionTwo": "如果您或您的公司希望自动化某些事情，则可以联系CommandPost团队以获取建议和报价。",
