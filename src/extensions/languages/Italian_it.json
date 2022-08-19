@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Attiva / disattiva supporto TourBox",
     "toggleVideoScopesInEventViewer": "Attiva / disattiva gli ambiti video nel visualizzatore eventi",
     "toggleVideoScopesInViewer": "Attiva / disattiva gli ambiti video nel viewer",
+    "toggleZoomToFit": "Attiva Zoom su Adatta",
+    "toggleZoomToSelection": "Attiva lo zoom su selezione",
     "toolbox": "Toolbox",
     "toolboxDescriptionOne": "Il toolbox è una raccolta in contiuna evoluzione di pratiche utility commissionate dai membri della comunità CommandPost per svolgere attività molto specifiche, generalmente correlate all'elaborazione XML.",
     "toolboxDescriptionTwo": "Se c'è qualcosa che tu o la tua azienda vorreste automatizzare, puoi contattare il team CommandPost per un consiglio e un preventivo.",
