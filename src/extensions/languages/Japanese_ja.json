@@ -2325,6 +2325,8 @@
     "toggleTourBoxSupport": "TourBoxサポートの切り替え",
     "toggleVideoScopesInEventViewer": "イベントビューアでビデオスコープを切り替える",
     "toggleVideoScopesInViewer": "ビューアでビデオスコープを切り替える",
+    "toggleZoomToFit": "ズームを切り替えてフィット",
+    "toggleZoomToSelection": "ズームを選択範囲に切り替え",
     "toolbox": "ツールボックス",
     "toolboxDescriptionOne": "ツールボックスは、一般にXML処理に関連する非常に特定のタスクを実行するために、CommandPostコミュニティのメンバーから委託された便利なユーティリティの進化するコレクションです。",
     "toolboxDescriptionTwo": "あなたまたはあなたの会社が自動化したいものがある場合は、CommandPostチームに連絡してアドバイスと見積もりを求めることができます。",
