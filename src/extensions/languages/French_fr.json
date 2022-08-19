@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Toggle Prise en charge de TourBox",
     "toggleVideoScopesInEventViewer": "toggleVideoScopesInEventViewer",
     "toggleVideoScopesInViewer": "basculeVideoScopesInViewer",
+    "toggleZoomToFit": "Basculer le zoom pour ajuster",
+    "toggleZoomToSelection": "Basculer le zoom sur la sélection",
     "toolbox": "Boîte à outils",
     "toolboxDescriptionOne": "La boîte à outils est une collection évolutive d'utilitaires pratiques commandés par des membres de la communauté CommandPost pour effectuer des tâches très spécifiques, généralement liées au traitement XML.",
     "toolboxDescriptionTwo": "S'il y a quelque chose que vous ou votre entreprise souhaitez automatiser, vous pouvez contacter l'équipe CommandPost pour obtenir des conseils et un devis.",
