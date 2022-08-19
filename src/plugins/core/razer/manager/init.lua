@@ -66,6 +66,7 @@ mod.supportedDevices = {
     "Razer Orbweaver",
     "Razer Orbweaver Chroma",
     "Razer Tartarus",
+    "Razer Tartarus Chroma",
     "Razer Tartarus Pro",
     "Razer Tartarus V2",
 }
@@ -207,6 +208,50 @@ mod.bankLabels = {
         }
     },
     ["Razer Tartarus"] = {
+        ["1"] = {
+            label   = "1 (Off)",
+            yellow  = false,
+            green   = false,
+            blue    = false
+        },
+        ["2"] = {
+            label   = "2 (Yellow)",
+            yellow  = true,
+            green   = false,
+            blue    = false
+        },
+        ["3"] = {
+            label   = "3 (Green)",
+            yellow  = false,
+            green   = true,
+            blue    = false
+        },
+        ["4"] = {
+            label   = "4 (Blue)",
+            yellow  = false,
+            green   = false,
+            blue    = true
+        },
+        ["5"] = {
+            label   = "5 (Yellow/Green)",
+            yellow  = true,
+            green   = true,
+            blue    = false
+        },
+        ["6"] = {
+            label   = "6 (Yellow/Blue)",
+            yellow  = true,
+            green   = false,
+            blue    = true
+        },
+        ["7"] = {
+            label   = "7 (Green/Blue)",
+            yellow  = false,
+            green   = true,
+            blue    = true
+        }
+    },
+    ["Razer Tartarus Chroma"] = {
         ["1"] = {
             label   = "1 (Off)",
             yellow  = false,
@@ -563,7 +608,7 @@ end
 --  * None
 local function resetStatusLights(device)
     local deviceName = device:name()
-    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" or deviceName == "Razer Orbweaver Chroma" then
+    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" or deviceName == "Razer Tartarus Chroma" or deviceName == "Razer Orbweaver Chroma" then
         --------------------------------------------------------------------------------
         -- YELLOW / GREEN / BLUE:
         --------------------------------------------------------------------------------
@@ -615,7 +660,7 @@ end
 --  * None
 local function setStatusLights(device, orange, green, blue, yellow, red)
     local deviceName = device:name()
-    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" or deviceName == "Razer Orbweaver Chroma" then
+    if deviceName == "Razer Orbweaver" or deviceName == "Razer Tartarus" or deviceName == "Razer Tartarus Chroma" or deviceName == "Razer Orbweaver Chroma" then
         --------------------------------------------------------------------------------
         -- YELLOW / GREEN / BLUE:
         --------------------------------------------------------------------------------
