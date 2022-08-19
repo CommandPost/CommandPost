@@ -2405,6 +2405,8 @@
     "toggleTourBoxSupport": "تبديل دعم توربوكس",
     "toggleVideoScopesInEventViewer": "تبديل الفيديو نطاقات في عارض الأحداث",
     "toggleVideoScopesInViewer": "تبديل الفيديو نطاقات في عارض",
+    "toggleZoomToFit": "تبديل التكبير للملاءمة",
+    "toggleZoomToSelection": "تبديل التكبير إلى التحديد",
     "toolbox": "صندوق الأدوات",
     "toolboxDescriptionOne": "صندوق الأدوات عبارة عن مجموعة متطورة من الأدوات المساعدة التي يتم تكليفها من قبل أعضاء مجتمع CommandPost للقيام بمهام محددة للغاية ، تتعلق بشكل عام بمعالجة XML.",
     "toolboxDescriptionTwo": "إذا كان هناك شيء ترغب أنت أو شركتك في أتمتة ، فيمكنك الاتصال بفريق CommandPost للحصول على المشورة والاقتباس.",
