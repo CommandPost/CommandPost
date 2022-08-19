@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Kapcsolja be a TourBox támogatást",
     "toggleVideoScopesInEventViewer": "Video Scope-ok kapcsolója az event viewerben",
     "toggleVideoScopesInViewer": "Video Scope-ok kapcsolója a viewerben",
+    "toggleZoomToFit": "Kapcsolja be a nagyítást, hogy illeszkedjen",
+    "toggleZoomToSelection": "Kapcsolja be a Zoom to Selection",
     "toolbox": "Toolbox",
     "toolboxDescriptionOne": "Az eszköztár egy praktikus segédprogramok gyűjteménye, amelyet a CommandPost közösség tagjai bíznak meg nagyon specifikus, általában az XML-feldolgozással kapcsolatos feladatok elvégzésével.",
     "toolboxDescriptionTwo": "Ha valamit szeretne automatizálni, akkor vegye fel a kapcsolatot a CommandPost csapattal tanácsért és ajánlatért.",
