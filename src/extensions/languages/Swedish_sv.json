@@ -2341,6 +2341,8 @@
     "toggleTourBoxSupport": "Växla TourBox-support",
     "toggleVideoScopesInEventViewer": "Växla videoomfattningar i Event Viewer",
     "toggleVideoScopesInViewer": "Växla videoscope i Viewer",
+    "toggleZoomToFit": "Växla Zoom för att passa",
+    "toggleZoomToSelection": "Växla Zoom till markering",
     "toolbox": "Verktygslåda",
     "toolboxDescriptionOne": "Verktygslådan är en växande samling av praktiska verktyg som beställts av medlemmar i CommandPost-communityn för att göra mycket specifika uppgifter, i allmänhet relaterade till XML-bearbetning.",
     "toolboxDescriptionTwo": "Om det finns något som du eller ditt företag vill automatisera, kan du kontakta CommandPost-teamet för råd och offert.",
