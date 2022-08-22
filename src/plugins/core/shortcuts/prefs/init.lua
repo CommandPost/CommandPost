@@ -2,31 +2,32 @@
 ---
 --- Shortcuts Preferences Panel
 
-local require = require
+local require           = require
 
-local log         = require "hs.logger".new "prefsShortcuts"
+local log               = require "hs.logger".new "prefsShortcuts"
 
-local dialog      = require "hs.dialog"
-local fnutils     = require "hs.fnutils"
-local hotkey      = require "hs.hotkey"
-local image       = require "hs.image"
-local keycodes    = require "hs.keycodes"
+local dialog            = require "hs.dialog"
+local fnutils           = require "hs.fnutils"
+local hotkey            = require "hs.hotkey"
+local image             = require "hs.image"
+local keycodes          = require "hs.keycodes"
 
-local commands    = require "cp.commands"
-local config      = require "cp.config"
-local tools       = require "cp.tools"
-local ui          = require "cp.web.ui"
-local i18n        = require "cp.i18n"
+local commands          = require "cp.commands"
+local config            = require "cp.config"
+local tools             = require "cp.tools"
+local ui                = require "cp.web.ui"
+local i18n              = require "cp.i18n"
 
-local moses       = require "moses"
+local moses             = require "moses"
 
-local append      = moses.append
-local clone       = moses.clone
-local isEmpty     = moses.isEmpty
-local map         = moses.map
-local pop         = moses.pop
-local reduce      = moses.reduce
-local same        = moses.same
+local append            = moses.append
+local clone             = moses.clone
+local imageFromPath     = image.imageFromPath
+local isEmpty           = moses.isEmpty
+local map               = moses.map
+local pop               = moses.pop
+local reduce            = moses.reduce
+local same              = moses.same
 
 local mod = {}
 
@@ -592,7 +593,7 @@ function mod.init(deps, env)
         priority        = 2030,
         id              = "shortcuts",
         label           = i18n("keyboard"),
-        image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
+        image           = imageFromPath(env:pathToAbsolute("images/Keyboard.icns")),
         tooltip         = i18n("keyboard"),
         height          = 755,
     })
