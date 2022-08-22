@@ -129,6 +129,38 @@ local function generateContent()
     return renderPanel(context)
 end
 
+-- fcpxmlTimeValueToSeconds(value) -> number
+-- Function
+-- Converts a FCPXML time value into a number in seconds.
+--
+-- Parameters:
+--  * value - A string FCPXML time value (i.e. "3400/2500s")
+--
+-- Returns:
+--  * A number
+local function fcpxmlTimeValueToSeconds(value)
+    --------------------------------------------------------------------------------
+    -- Remove the "s" at the end:
+    --------------------------------------------------------------------------------
+    if value:sub(-1) == "s" then
+        value = value:sub(1, -2)
+    end
+
+    --------------------------------------------------------------------------------
+    -- If there's a slash then do the maths:
+    --------------------------------------------------------------------------------
+    if string.find(value, "/") then
+        local values = value:split("/")
+        local valueA = values and values[1] and tonumber(values[1])
+        local valueB = values and values[2] and tonumber(values[2])
+        if valueA and valueB then
+            value = valueA / valueB
+        end
+    end
+
+    return tonumber(value)
+end
+
 -- processFCPXML(path) -> none
 -- Function
 -- Process a FCPXML file
@@ -233,6 +265,7 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Iterate all the nodes of the clip:
             --------------------------------------------------------------------------------
+            local titlesInNode = {}
             local clipNodes = node:children()
             for _, clipNode in pairs(clipNodes) do
                 local clipName = clipNode:name()
@@ -285,9 +318,122 @@ local function processFCPXML(path)
                     end
 
                     --------------------------------------------------------------------------------
+                    -- Save the title count for connected clips:
+                    --------------------------------------------------------------------------------
+                    table.insert(titlesInNode, titleCount)
+
+                    --------------------------------------------------------------------------------
                     -- Increment the title count:
                     --------------------------------------------------------------------------------
                     titleCount = titleCount + 1
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Now we look at connected clips:
+            --------------------------------------------------------------------------------
+            for _, clipNode in pairs(clipNodes) do
+                local connectedClipType = clipNode:name()
+                if connectedClipType == "asset-clip" or connectedClipType == "mc-clip" or connectedClipType == "sync-clip" then
+
+                    log.df("Found Connected Clip: %s", connectedClipType)
+
+                    --------------------------------------------------------------------------------
+                    -- Save the "ref" of the clip for later:
+                    --------------------------------------------------------------------------------
+                    local currentConnectedClipRef
+                    if connectedClipType == "sync-clip" then
+                        --------------------------------------------------------------------------------
+                        -- 'sync-clip' doesn't contain a 'ref' so we need to look for an 'asset-clip'
+                        -- inside first, before we look for titles:
+                        --------------------------------------------------------------------------------
+                        local syncClipNodes = clipNode:children()
+                        for _, clipNode in pairs(syncClipNodes) do
+                            local clipName = clipNode:name()
+                            if clipName == "asset-clip" then
+                                local syncClipAttributes = clipNode:rawAttributes()
+                                for _, rawAttributeNode in pairs(syncClipAttributes) do
+                                    local rawAttributeNodeName = rawAttributeNode:name()
+                                    if rawAttributeNodeName == "ref" then
+                                        currentConnectedClipRef = rawAttributeNode:stringValue()
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        --------------------------------------------------------------------------------
+                        -- "asset-clip" and "mc-clip" contain a 'ref':
+                        --------------------------------------------------------------------------------
+                        local clipRawAttributes = clipNode:rawAttributes()
+                        for _, rawAttributeNode in pairs(clipRawAttributes) do
+                            local rawAttributeNodeName = rawAttributeNode:name()
+                            if rawAttributeNodeName == "ref" then
+                                currentConnectedClipRef = rawAttributeNode:stringValue()
+                            end
+                        end
+                    end
+
+                    log.df("currentConnectedClipRef: %s", currentConnectedClipRef)
+
+                    --------------------------------------------------------------------------------
+                    -- Get the connected clip offset:
+                    --------------------------------------------------------------------------------
+                    local currentConnectedClipOffset
+                    local clipRawAttributes = clipNode:rawAttributes()
+                    for _, rawAttributeNode in pairs(clipRawAttributes) do
+                        local rawAttributeNodeName = rawAttributeNode:name()
+                        if rawAttributeNodeName == "offset" then
+                            currentConnectedClipOffset = rawAttributeNode:stringValue()
+                        end
+                    end
+
+                    log.df("currentConnectedClipOffset: %s", currentConnectedClipOffset)
+
+
+                    --------------------------------------------------------------------------------
+                    -- Now lets check if any titles go over the top of this connected clip:
+                    --------------------------------------------------------------------------------
+                    for _, titleID in pairs(titlesInNode) do
+
+                        log.df("titleID: %s", titleID)
+
+                        local titleDuration = titles[titleID]["duration"]
+                        local titleName = titles[titleID]["name"]
+                        local titleOffset = titles[titleID]["offset"]
+
+                        log.df("titleDuration: %s", titleDuration)
+                        log.df("titleName: %s", titleName)
+                        log.df("titleOffset: %s", titleOffset)
+
+                        local titleOffsetNumber = fcpxmlTimeValueToSeconds(titleOffset)
+
+                        log.df("titleOffsetNumber: %s", titleOffsetNumber)
+
+                        local currentConnectedClipOffsetNumber = fcpxmlTimeValueToSeconds(currentConnectedClipOffset)
+
+                        log.df("currentConnectedClipOffsetNumber: %s", currentConnectedClipOffsetNumber)
+
+                        local newOffset = titleOffsetNumber - currentConnectedClipOffsetNumber
+
+                        log.df("newOffset: %s", newOffset)
+
+                        if newOffset > 0 then
+                            --------------------------------------------------------------------------------
+                            -- The title aligns with the connected clip:
+                            --------------------------------------------------------------------------------
+                            titles[titleCount]                  = {}
+                            titles[titleCount]["clipType"]      = connectedClipType
+                            titles[titleCount]["ref"]           = currentConnectedClipRef
+                            titles[titleCount]["duration"]      = titleDuration
+                            titles[titleCount]["name"]          = titleName
+                            titles[titleCount]["offset"]        = tostring(newOffset) .. "s"
+
+                            --------------------------------------------------------------------------------
+                            -- Increment the title count:
+                            --------------------------------------------------------------------------------
+                            titleCount = titleCount + 1
+                        end
+                    end
                 end
             end
         end
