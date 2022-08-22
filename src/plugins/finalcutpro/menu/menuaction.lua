@@ -23,6 +23,8 @@ local tools                             = require "cp.tools"
 
 local Do                                = require "cp.rx.go.Do"
 
+local semver                            = require "semver"
+
 local concat                            = table.concat
 local contentsInsideBrackets            = tools.contentsInsideBrackets
 local displayMessage                    = dialog.displayMessage
@@ -741,7 +743,21 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     -- Start Dictation… (Edit)
     --------------------------------------------------------------------------------
     do
-        local title = fcp:string("Start Dictation…")
+        --------------------------------------------------------------------------------
+        -- NOTE: This is a bad temporary workaround for macOS Ventura. Currently we
+        --       can't find an appropriate strings file to get the "Start Dictation…"
+        --       value in multiple languages due to Ventura's new "protected" preferences
+        --       panels. For now, if the user is running Ventura, we'll just return
+        --       the English translation - i.e. this will break on non-English machines.
+        --------------------------------------------------------------------------------
+        local macOSVersion = semver(tools.macOSVersion())
+        local macOSVentura = semver("13.0.0")
+
+        local title = "Start Dictation…"
+        if macOSVersion < macOSVentura then
+            title = fcp:string("Start Dictation…")
+        end
+
         local path = {"Edit"}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title })
@@ -759,7 +775,21 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     -- Emoji & Symbols (Edit)
     --------------------------------------------------------------------------------
     do
-        local title = fcp:string("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
+        --------------------------------------------------------------------------------
+        -- NOTE: This is a bad temporary workaround for macOS Ventura. Currently we
+        --       can't find an appropriate strings file to get the "Start Dictation…"
+        --       value in multiple languages due to Ventura's new "protected" preferences
+        --       panels. For now, if the user is running Ventura, we'll just return
+        --       the English translation - i.e. this will break on non-English machines.
+        --------------------------------------------------------------------------------
+        local macOSVersion = semver(tools.macOSVersion())
+        local macOSVentura = semver("13.0.0")
+
+        local title = "Emoji & Symbols"
+        if macOSVersion < macOSVentura then
+            title = fcp:string("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
+        end
+
         local path = {"Edit"}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title })
