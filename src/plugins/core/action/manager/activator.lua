@@ -851,7 +851,19 @@ function activator:activeChoices()
             -- Check if we are filtering by query:
             --------------------------------------------------------------------------------
             local choiceText = choice.text
-            local choiceTextLower = choiceText:lower()
+
+            --------------------------------------------------------------------------------
+            -- Make sure the choiceText is actually valid:
+            --------------------------------------------------------------------------------
+            if not choiceText then
+                log.ef("[plugins.core.action.activator] Invalid Choice: %s", choice and inspect(choice))
+                return false
+            end
+
+            --------------------------------------------------------------------------------
+            -- Get a lower case version of the choice text:
+            --------------------------------------------------------------------------------
+            local choiceTextLower = choiceText and choiceText:lower()
 
             --------------------------------------------------------------------------------
             -- Don't show deprecated actions in the Search Console:
