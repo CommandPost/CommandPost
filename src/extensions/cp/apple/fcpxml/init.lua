@@ -58,7 +58,7 @@
 --
 --------------------------------------------------------------------------------
 
-local log                   = require "hs.logger".new "fcpxml"
+--local log                   = require "hs.logger".new "fcpxml"
 
 local fnutils               = require "hs.fnutils"
 
