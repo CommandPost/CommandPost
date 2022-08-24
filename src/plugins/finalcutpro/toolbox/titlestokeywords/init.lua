@@ -38,7 +38,7 @@ local mod = {}
 -- ALTERNATIVE_COMMA -> string
 -- Constant
 -- An alternative comma to use to avoid a FCPXML bug.
-local ALTERNATIVE_COMMA = "‚"
+local ALTERNATIVE_COMMA = "‚" -- NOTE: This isn't actually a "normal" comma, even though it looks like one in some fonts.
 
 --- plugins.finalcutpro.toolbox.titlestokeywords.replaceCommasWithAlternativeCommas <cp.prop: boolean>
 --- Field
@@ -210,26 +210,16 @@ local function processFCPXML(path)
                 for _, clipNode in pairs(syncClipNodes) do
                     local clipName = clipNode:name()
                     if clipName == "asset-clip" then
-                        local syncClipAttributes = clipNode:rawAttributes()
-                        for _, rawAttributeNode in pairs(syncClipAttributes) do
-                            local rawAttributeNodeName = rawAttributeNode:name()
-                            if rawAttributeNodeName == "ref" then
-                                currentRef = rawAttributeNode:stringValue()
-                            end
-                        end
+                        local syncClipAttributes = clipNode:attributes()
+                        currentRef = syncClipAttributes and syncClipAttributes["ref"]
                     end
                 end
             else
                 --------------------------------------------------------------------------------
                 -- "asset-clip" and "mc-clip" contain a 'ref':
                 --------------------------------------------------------------------------------
-                local clipRawAttributes = node:rawAttributes()
-                for _, rawAttributeNode in pairs(clipRawAttributes) do
-                    local rawAttributeNodeName = rawAttributeNode:name()
-                    if rawAttributeNodeName == "ref" then
-                        currentRef = rawAttributeNode:stringValue()
-                    end
-                end
+                local clipRawAttributes = node:attributes()
+                currentRef = clipRawAttributes and clipRawAttributes["ref"]
             end
 
             --------------------------------------------------------------------------------
@@ -259,8 +249,8 @@ local function processFCPXML(path)
                     -- Get the title node's attributes:
                     --------------------------------------------------------------------------------
                     local titleAttributes = clipNode:attributes()
-                    titles[titleCount]["offset"] = titleAttributes["offset"]
-                    titles[titleCount]["duration"] = titleAttributes["duration"]
+                    titles[titleCount]["offset"] = titleAttributes and titleAttributes["offset"]
+                    titles[titleCount]["duration"] = titleAttributes and titleAttributes["duration"]
 
                     --------------------------------------------------------------------------------
                     -- Get the Titles Names:
@@ -305,9 +295,6 @@ local function processFCPXML(path)
             for _, clipNode in pairs(clipNodes) do
                 local connectedClipType = clipNode:name()
                 if connectedClipType == "asset-clip" or connectedClipType == "mc-clip" or connectedClipType == "sync-clip" then
-
-                    log.df("Found Connected Clip: %s", connectedClipType)
-
                     --------------------------------------------------------------------------------
                     -- Save the "ref" of the clip for later:
                     --------------------------------------------------------------------------------
@@ -321,37 +308,17 @@ local function processFCPXML(path)
                         for _, syncClipNode in pairs(syncClipNodes) do
                             local clipName = syncClipNode:name()
                             if clipName == "asset-clip" then
-                                --[[
-                                local syncClipAttributes = clipNode:rawAttributes()
-                                for _, rawAttributeNode in pairs(syncClipAttributes) do
-                                    local rawAttributeNodeName = rawAttributeNode:name()
-                                    if rawAttributeNodeName == "ref" then
-                                        currentConnectedClipRef = rawAttributeNode:stringValue()
-                                    end
-                                end
-                                --]]
                                 local syncClipAttributes = syncClipNode:attributes()
-                                currentConnectedClipRef = syncClipAttributes["ref"]
+                                currentConnectedClipRef = syncClipAttributes and syncClipAttributes["ref"]
                             end
                         end
                     else
                         --------------------------------------------------------------------------------
                         -- "asset-clip" and "mc-clip" contain a 'ref':
                         --------------------------------------------------------------------------------
-                        --[[
-                        local clipRawAttributes = clipNode:rawAttributes()
-                        for _, rawAttributeNode in pairs(clipRawAttributes) do
-                            local rawAttributeNodeName = rawAttributeNode:name()
-                            if rawAttributeNodeName == "ref" then
-                                currentConnectedClipRef = rawAttributeNode:stringValue()
-                            end
-                        end
-                        --]]
                         local clipRawAttributes = clipNode:attributes()
-                        currentConnectedClipRef = clipRawAttributes["ref"]
+                        currentConnectedClipRef = clipRawAttributes and clipRawAttributes["ref"]
                     end
-
-                    log.df("currentConnectedClipRef: %s", currentConnectedClipRef)
 
                     --------------------------------------------------------------------------------
                     -- If it's a sync-clip we need to get the sync-clip start attribute as well:
@@ -359,67 +326,40 @@ local function processFCPXML(path)
                     local syncClipStart
                     if connectedClipType == "sync-clip" then
                         local clipRawAttributes = clipNode:attributes()
-                        syncClipStart = clipRawAttributes["start"]
+                        syncClipStart = clipRawAttributes and clipRawAttributes["start"]
                     end
-
-                    log.df("syncClipStart: %s", syncClipStart)
 
                     --------------------------------------------------------------------------------
                     -- Get the connected clip offset:
                     --------------------------------------------------------------------------------
                     local currentConnectedClipOffset
-                    local clipRawAttributes = clipNode:rawAttributes()
-                    for _, rawAttributeNode in pairs(clipRawAttributes) do
-                        local rawAttributeNodeName = rawAttributeNode:name()
-                        if rawAttributeNodeName == "offset" then
-                            currentConnectedClipOffset = rawAttributeNode:stringValue()
-                        end
-                    end
-
-                    log.df("currentConnectedClipOffset: %s", currentConnectedClipOffset)
+                    local clipRawAttributes = clipNode:attributes()
+                    currentConnectedClipOffset = clipRawAttributes and clipRawAttributes["offset"]
 
                     --------------------------------------------------------------------------------
                     -- Now lets check if any titles go over the top of this connected clip:
                     --------------------------------------------------------------------------------
                     for _, titleID in pairs(titlesInNode) do
-
-                        log.df("titleID: %s", titleID)
-
                         local titleDuration = titles[titleID]["duration"]
                         local titleName = titles[titleID]["name"]
                         local titleOffset = titles[titleID]["offset"]
 
-                        log.df("titleDuration: %s", titleDuration)
-                        log.df("titleName: %s", titleName)
-                        log.df("titleOffset: %s", titleOffset)
-
                         local titleOffsetNumber, denominator = timeStringToSeconds(titleOffset)
 
-                        log.df("denominator: %s", denominator)
-
-                        log.df("titleOffsetNumber: %s", titleOffsetNumber)
-
                         local currentConnectedClipOffsetNumber = timeStringToSeconds(currentConnectedClipOffset)
-
-                        log.df("currentConnectedClipOffsetNumber: %s", currentConnectedClipOffsetNumber)
-
                         local newOffset = titleOffsetNumber - currentConnectedClipOffsetNumber
 
+                        --------------------------------------------------------------------------------
+                        -- If it's a sync-clip we need to add the start time to our new offset value:
+                        --------------------------------------------------------------------------------
                         if syncClipStart then
-                            log.df("is a sync-clip")
                             local syncClipStartNumber = timeStringToSeconds(syncClipStart)
                             newOffset = newOffset + syncClipStartNumber
                         end
 
-                        log.df("newOffset: %s", newOffset)
-
                         local newTimeString = numberToTimeString(newOffset, denominator)
 
-                        log.df("newTimeString: %s", newTimeString)
-
                         if newOffset >= 0 then
-                            log.df("New Offset is greater than 0!")
-
                             --------------------------------------------------------------------------------
                             -- The title aligns with the connected clip:
                             --------------------------------------------------------------------------------
@@ -435,9 +375,6 @@ local function processFCPXML(path)
                             --------------------------------------------------------------------------------
                             titleCount = titleCount + 1
                         end
-
-                        log.df("--------------------------------------------------------------------------------")
-
                     end
                 end
             end
@@ -608,9 +545,6 @@ local function processFCPXML(path)
                                     break
                                 end
                             end
-
-                            --timeStringToSeconds
-
 
                             eventNode:addNode("keyword", whereToInsert)
                             local newNode = eventNode:children()[whereToInsert]
