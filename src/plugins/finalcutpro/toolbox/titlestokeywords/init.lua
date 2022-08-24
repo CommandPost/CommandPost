@@ -23,9 +23,11 @@ local xml                       = require "hs._asm.xml"
 
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
+local numberToTimeString        = fcpxml.numberToTimeString
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
+local timeStringToSeconds       = fcpxml.timeStringToSeconds
 local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
@@ -36,7 +38,7 @@ local mod = {}
 -- ALTERNATIVE_COMMA -> string
 -- Constant
 -- An alternative comma to use to avoid a FCPXML bug.
-local ALTERNATIVE_COMMA = "‚"
+local ALTERNATIVE_COMMA = "‚" -- NOTE: This isn't actually a "normal" comma, even though it looks like one in some fonts.
 
 --- plugins.finalcutpro.toolbox.titlestokeywords.replaceCommasWithAlternativeCommas <cp.prop: boolean>
 --- Field
@@ -208,31 +210,22 @@ local function processFCPXML(path)
                 for _, clipNode in pairs(syncClipNodes) do
                     local clipName = clipNode:name()
                     if clipName == "asset-clip" then
-                        local syncClipAttributes = clipNode:rawAttributes()
-                        for _, rawAttributeNode in pairs(syncClipAttributes) do
-                            local rawAttributeNodeName = rawAttributeNode:name()
-                            if rawAttributeNodeName == "ref" then
-                                currentRef = rawAttributeNode:stringValue()
-                            end
-                        end
+                        local syncClipAttributes = clipNode:attributes()
+                        currentRef = syncClipAttributes and syncClipAttributes["ref"]
                     end
                 end
             else
                 --------------------------------------------------------------------------------
                 -- "asset-clip" and "mc-clip" contain a 'ref':
                 --------------------------------------------------------------------------------
-                local clipRawAttributes = node:rawAttributes()
-                for _, rawAttributeNode in pairs(clipRawAttributes) do
-                    local rawAttributeNodeName = rawAttributeNode:name()
-                    if rawAttributeNodeName == "ref" then
-                        currentRef = rawAttributeNode:stringValue()
-                    end
-                end
+                local clipRawAttributes = node:attributes()
+                currentRef = clipRawAttributes and clipRawAttributes["ref"]
             end
 
             --------------------------------------------------------------------------------
             -- Iterate all the nodes of the clip:
             --------------------------------------------------------------------------------
+            local titlesInNode = {}
             local clipNodes = node:children()
             for _, clipNode in pairs(clipNodes) do
                 local clipName = clipNode:name()
@@ -256,8 +249,8 @@ local function processFCPXML(path)
                     -- Get the title node's attributes:
                     --------------------------------------------------------------------------------
                     local titleAttributes = clipNode:attributes()
-                    titles[titleCount]["offset"] = titleAttributes["offset"]
-                    titles[titleCount]["duration"] = titleAttributes["duration"]
+                    titles[titleCount]["offset"] = titleAttributes and titleAttributes["offset"]
+                    titles[titleCount]["duration"] = titleAttributes and titleAttributes["duration"]
 
                     --------------------------------------------------------------------------------
                     -- Get the Titles Names:
@@ -285,9 +278,104 @@ local function processFCPXML(path)
                     end
 
                     --------------------------------------------------------------------------------
+                    -- Save the title count for connected clips:
+                    --------------------------------------------------------------------------------
+                    table.insert(titlesInNode, titleCount)
+
+                    --------------------------------------------------------------------------------
                     -- Increment the title count:
                     --------------------------------------------------------------------------------
                     titleCount = titleCount + 1
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Now we look at connected clips:
+            --------------------------------------------------------------------------------
+            for _, clipNode in pairs(clipNodes) do
+                local connectedClipType = clipNode:name()
+                if connectedClipType == "asset-clip" or connectedClipType == "mc-clip" or connectedClipType == "sync-clip" then
+                    --------------------------------------------------------------------------------
+                    -- Save the "ref" of the clip for later:
+                    --------------------------------------------------------------------------------
+                    local currentConnectedClipRef
+                    if connectedClipType == "sync-clip" then
+                        --------------------------------------------------------------------------------
+                        -- 'sync-clip' doesn't contain a 'ref' so we need to look for an 'asset-clip'
+                        -- inside first, before we look for titles:
+                        --------------------------------------------------------------------------------
+                        local syncClipNodes = clipNode:children()
+                        for _, syncClipNode in pairs(syncClipNodes) do
+                            local clipName = syncClipNode:name()
+                            if clipName == "asset-clip" then
+                                local syncClipAttributes = syncClipNode:attributes()
+                                currentConnectedClipRef = syncClipAttributes and syncClipAttributes["ref"]
+                            end
+                        end
+                    else
+                        --------------------------------------------------------------------------------
+                        -- "asset-clip" and "mc-clip" contain a 'ref':
+                        --------------------------------------------------------------------------------
+                        local clipRawAttributes = clipNode:attributes()
+                        currentConnectedClipRef = clipRawAttributes and clipRawAttributes["ref"]
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If it's a sync-clip we need to get the sync-clip start attribute as well:
+                    --------------------------------------------------------------------------------
+                    local syncClipStart
+                    if connectedClipType == "sync-clip" then
+                        local clipRawAttributes = clipNode:attributes()
+                        syncClipStart = clipRawAttributes and clipRawAttributes["start"]
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Get the connected clip offset:
+                    --------------------------------------------------------------------------------
+                    local currentConnectedClipOffset
+                    local clipRawAttributes = clipNode:attributes()
+                    currentConnectedClipOffset = clipRawAttributes and clipRawAttributes["offset"]
+
+                    --------------------------------------------------------------------------------
+                    -- Now lets check if any titles go over the top of this connected clip:
+                    --------------------------------------------------------------------------------
+                    for _, titleID in pairs(titlesInNode) do
+                        local titleDuration = titles[titleID]["duration"]
+                        local titleName = titles[titleID]["name"]
+                        local titleOffset = titles[titleID]["offset"]
+
+                        local titleOffsetNumber, denominator = timeStringToSeconds(titleOffset)
+
+                        local currentConnectedClipOffsetNumber = timeStringToSeconds(currentConnectedClipOffset)
+                        local newOffset = titleOffsetNumber - currentConnectedClipOffsetNumber
+
+                        --------------------------------------------------------------------------------
+                        -- If it's a sync-clip we need to add the start time to our new offset value:
+                        --------------------------------------------------------------------------------
+                        if syncClipStart then
+                            local syncClipStartNumber = timeStringToSeconds(syncClipStart)
+                            newOffset = newOffset + syncClipStartNumber
+                        end
+
+                        local newTimeString = numberToTimeString(newOffset, denominator)
+
+                        if newOffset >= 0 then
+                            --------------------------------------------------------------------------------
+                            -- The title aligns with the connected clip:
+                            --------------------------------------------------------------------------------
+                            titles[titleCount]                  = {}
+                            titles[titleCount]["clipType"]      = connectedClipType
+                            titles[titleCount]["ref"]           = currentConnectedClipRef
+                            titles[titleCount]["duration"]      = titleDuration
+                            titles[titleCount]["name"]          = titleName
+                            titles[titleCount]["offset"]        = newTimeString
+
+                            --------------------------------------------------------------------------------
+                            -- Increment the title count:
+                            --------------------------------------------------------------------------------
+                            titleCount = titleCount + 1
+                        end
+                    end
                 end
             end
         end
