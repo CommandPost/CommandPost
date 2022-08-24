@@ -23,9 +23,11 @@ local xml                       = require "hs._asm.xml"
 
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
+local numberToTimeString        = fcpxml.numberToTimeString
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
+local timeStringToSeconds       = fcpxml.timeStringToSeconds
 local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
@@ -127,38 +129,6 @@ local function generateContent()
         i18n = i18n,
     }
     return renderPanel(context)
-end
-
--- fcpxmlTimeValueToSeconds(value) -> number
--- Function
--- Converts a FCPXML time value into a number in seconds.
---
--- Parameters:
---  * value - A string FCPXML time value (i.e. "3400/2500s")
---
--- Returns:
---  * A number
-local function fcpxmlTimeValueToSeconds(value)
-    --------------------------------------------------------------------------------
-    -- Remove the "s" at the end:
-    --------------------------------------------------------------------------------
-    if value:sub(-1) == "s" then
-        value = value:sub(1, -2)
-    end
-
-    --------------------------------------------------------------------------------
-    -- If there's a slash then do the maths:
-    --------------------------------------------------------------------------------
-    if string.find(value, "/") then
-        local values = value:split("/")
-        local valueA = values and values[1] and tonumber(values[1])
-        local valueB = values and values[2] and tonumber(values[2])
-        if valueA and valueB then
-            value = valueA / valueB
-        end
-    end
-
-    return tonumber(value)
 end
 
 -- processFCPXML(path) -> none
@@ -348,9 +318,10 @@ local function processFCPXML(path)
                         -- inside first, before we look for titles:
                         --------------------------------------------------------------------------------
                         local syncClipNodes = clipNode:children()
-                        for _, clipNode in pairs(syncClipNodes) do
-                            local clipName = clipNode:name()
+                        for _, syncClipNode in pairs(syncClipNodes) do
+                            local clipName = syncClipNode:name()
                             if clipName == "asset-clip" then
+                                --[[
                                 local syncClipAttributes = clipNode:rawAttributes()
                                 for _, rawAttributeNode in pairs(syncClipAttributes) do
                                     local rawAttributeNodeName = rawAttributeNode:name()
@@ -358,12 +329,16 @@ local function processFCPXML(path)
                                         currentConnectedClipRef = rawAttributeNode:stringValue()
                                     end
                                 end
+                                --]]
+                                local syncClipAttributes = syncClipNode:attributes()
+                                currentConnectedClipRef = syncClipAttributes["ref"]
                             end
                         end
                     else
                         --------------------------------------------------------------------------------
                         -- "asset-clip" and "mc-clip" contain a 'ref':
                         --------------------------------------------------------------------------------
+                        --[[
                         local clipRawAttributes = clipNode:rawAttributes()
                         for _, rawAttributeNode in pairs(clipRawAttributes) do
                             local rawAttributeNodeName = rawAttributeNode:name()
@@ -371,9 +346,23 @@ local function processFCPXML(path)
                                 currentConnectedClipRef = rawAttributeNode:stringValue()
                             end
                         end
+                        --]]
+                        local clipRawAttributes = clipNode:attributes()
+                        currentConnectedClipRef = clipRawAttributes["ref"]
                     end
 
                     log.df("currentConnectedClipRef: %s", currentConnectedClipRef)
+
+                    --------------------------------------------------------------------------------
+                    -- If it's a sync-clip we need to get the sync-clip start attribute as well:
+                    --------------------------------------------------------------------------------
+                    local syncClipStart
+                    if connectedClipType == "sync-clip" then
+                        local clipRawAttributes = clipNode:attributes()
+                        syncClipStart = clipRawAttributes["start"]
+                    end
+
+                    log.df("syncClipStart: %s", syncClipStart)
 
                     --------------------------------------------------------------------------------
                     -- Get the connected clip offset:
@@ -388,7 +377,6 @@ local function processFCPXML(path)
                     end
 
                     log.df("currentConnectedClipOffset: %s", currentConnectedClipOffset)
-
 
                     --------------------------------------------------------------------------------
                     -- Now lets check if any titles go over the top of this connected clip:
@@ -405,19 +393,33 @@ local function processFCPXML(path)
                         log.df("titleName: %s", titleName)
                         log.df("titleOffset: %s", titleOffset)
 
-                        local titleOffsetNumber = fcpxmlTimeValueToSeconds(titleOffset)
+                        local titleOffsetNumber, denominator = timeStringToSeconds(titleOffset)
+
+                        log.df("denominator: %s", denominator)
 
                         log.df("titleOffsetNumber: %s", titleOffsetNumber)
 
-                        local currentConnectedClipOffsetNumber = fcpxmlTimeValueToSeconds(currentConnectedClipOffset)
+                        local currentConnectedClipOffsetNumber = timeStringToSeconds(currentConnectedClipOffset)
 
                         log.df("currentConnectedClipOffsetNumber: %s", currentConnectedClipOffsetNumber)
 
                         local newOffset = titleOffsetNumber - currentConnectedClipOffsetNumber
 
+                        if syncClipStart then
+                            log.df("is a sync-clip")
+                            local syncClipStartNumber = timeStringToSeconds(syncClipStart)
+                            newOffset = newOffset + syncClipStartNumber
+                        end
+
                         log.df("newOffset: %s", newOffset)
 
-                        if newOffset > 0 then
+                        local newTimeString = numberToTimeString(newOffset, denominator)
+
+                        log.df("newTimeString: %s", newTimeString)
+
+                        if newOffset >= 0 then
+                            log.df("New Offset is greater than 0!")
+
                             --------------------------------------------------------------------------------
                             -- The title aligns with the connected clip:
                             --------------------------------------------------------------------------------
@@ -426,13 +428,16 @@ local function processFCPXML(path)
                             titles[titleCount]["ref"]           = currentConnectedClipRef
                             titles[titleCount]["duration"]      = titleDuration
                             titles[titleCount]["name"]          = titleName
-                            titles[titleCount]["offset"]        = tostring(newOffset) .. "s"
+                            titles[titleCount]["offset"]        = newTimeString
 
                             --------------------------------------------------------------------------------
                             -- Increment the title count:
                             --------------------------------------------------------------------------------
                             titleCount = titleCount + 1
                         end
+
+                        log.df("--------------------------------------------------------------------------------")
+
                     end
                 end
             end
@@ -603,6 +608,9 @@ local function processFCPXML(path)
                                     break
                                 end
                             end
+
+                            --timeStringToSeconds
+
 
                             eventNode:addNode("keyword", whereToInsert)
                             local newNode = eventNode:children()[whereToInsert]
