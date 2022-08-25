@@ -4,9 +4,10 @@
 
 local require = require
 
+local log               = require "hs.logger".new "generators"
+
 local base64            = require "hs.base64"
 local timer             = require "hs.timer"
-local window            = require "hs.window"
 
 local config            = require "cp.config"
 local dialog            = require "cp.dialog"
@@ -16,6 +17,10 @@ local json              = require "cp.json"
 local just              = require "cp.just"
 
 local doAfter           = timer.doAfter
+local doUntil           = just.doUntil
+
+local go                = require "cp.rx.go"
+local Do, If            = go.Do, go.If
 
 local mod = {}
 
@@ -23,6 +28,109 @@ local mod = {}
 -- Field
 -- Titles cache.
 mod._cache = json.prop(config.cachePath, "Final Cut Pro", "Generators.cpCache", {})
+
+local function getCacheID(action)
+    local cacheID = action.name
+    if action.theme then cacheID = cacheID .. "-" .. action.theme end
+    if action.category then cacheID = cacheID .. "-" .. action.category end
+    return cacheID
+end
+
+local function hasCacheItem(cacheID)
+    return mod._cache()[cacheID] ~= nil
+end
+
+local function getCacheItem(cacheID)
+    local value = mod._cache()[cacheID]
+    if value then
+        return base64.decode(value)
+    end
+end
+
+local function setCacheItem(cacheID, value)
+    local cache = mod._cache()
+    cache[cacheID] = base64.encode(value)
+    mod._cache(cache)
+end
+
+local function getItemName(action)
+    local name = action.name
+    if action.theme then name = action.theme .. " - " .. name end
+    return name
+end
+
+local function findItem(generators, action)
+    local fullName = getItemName(action)
+    for _, v in ipairs(generators.contents) do
+        local title = v:title()
+        if title == fullName then
+            return v
+        end
+    end
+end
+
+local function preservePasteboard()
+    local pasteboard = mod.pasteboardManager
+    pasteboard.stopWatching()
+    local originalData = pasteboard.readFCPXData()
+
+    -- always restore the pasteboard after the current action is complete
+    doAfter(0, function()
+        if originalData ~= nil and not pasteboard.writeFCPXData(originalData) then
+            log.w("Failed to restore original Pasteboard item after applying Generator.")
+        end
+        pasteboard.startWatching()
+    end)
+
+    return originalData
+end
+
+local function copyCachedItem(cacheID)
+    local cachedItem = getCacheItem(cacheID)
+
+    if not cachedItem then
+        log.ef("Failed to find cached Generator: %s", cacheID)
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Stop Watching Pasteboard:
+    --------------------------------------------------------------------------------
+    preservePasteboard()
+
+    --------------------------------------------------------------------------------
+    -- Add Cached Item to Pasteboard:
+    --------------------------------------------------------------------------------
+    local pasteboard = mod.pasteboardManager
+    local result = pasteboard.writeFCPXData(cachedItem)
+    if not result then
+        dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
+        return false
+    end
+end
+
+local function pasteAsConnectedClip()
+    --------------------------------------------------------------------------------
+    -- Make sure Timeline has focus:
+    --------------------------------------------------------------------------------
+    local timeline = fcp.timeline
+    timeline:show()
+    if not doUntil(function() return timeline:isShowing() end, 0.5) then
+        dialog.displayErrorMessage("Unable to display the Timeline.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Trigger 'Paste' from Menubar:
+    --------------------------------------------------------------------------------
+    local menuBar = fcp.menu
+    if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
+        menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
+    else
+        dialog.displayErrorMessage("Unable to paste Generator.")
+        return false
+    end
+end
 
 --- plugins.finalcutpro.timeline.generators.apply(action) -> boolean
 --- Function
@@ -54,9 +162,7 @@ function mod.apply(action)
         action = { name = action }
     end
 
-    local name, category, theme = action.name, action.category, action.theme
-
-    if name == nil then
+    if action.name == nil then
         dialog.displayMessage(i18n("noGeneratorShortcut"))
         return false
     end
@@ -69,90 +175,29 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Build a Cache ID:
     --------------------------------------------------------------------------------
-    local cacheID = name
-    if theme then cacheID = cacheID .. "-" .. theme end
-    if category then cacheID = cacheID .. "-" .. name end
+    local cacheID = getCacheID(action)
 
     --------------------------------------------------------------------------------
     -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    local rangeSelected = fcp.timeline:rangeSelected()
-    if not rangeSelected and mod._cache()[cacheID] then
+    local rangeSelected = fcp.timeline:isRangeSelected()
+    if not rangeSelected and hasCacheItem(cacheID) then
+        -----------------------------------------------------------
+        -- Restore from Cache:
+        -----------------------------------------------------------
+        log.df("copying cached item: %s", cacheID)
+        copyCachedItem(cacheID)
 
         --------------------------------------------------------------------------------
-        -- Stop Watching Pasteboard:
+        -- Paste the cached item as a connected clip:
         --------------------------------------------------------------------------------
-        local pasteboard = mod.pasteboardManager
-        pasteboard.stopWatching()
-
-        --------------------------------------------------------------------------------
-        -- Save Current Pasteboard Contents for later:
-        --------------------------------------------------------------------------------
-        local originalPasteboard = pasteboard.readFCPXData()
-
-        --------------------------------------------------------------------------------
-        -- Add Cached Item to Pasteboard:
-        --------------------------------------------------------------------------------
-        local cachedItem = base64.decode(mod._cache()[cacheID])
-        local result = pasteboard.writeFCPXData(cachedItem)
-        if not result then
-            dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
-            pasteboard.startWatching()
-            return false
-        end
-
-        --------------------------------------------------------------------------------
-        -- Make sure Timeline has focus:
-        --------------------------------------------------------------------------------
-        local timeline = fcp.timeline
-        timeline:show()
-        if not timeline:isShowing() then
-            dialog.displayErrorMessage("Unable to display the Timeline.")
-            pasteboard.startWatching()
-            return false
-        end
-
-        --------------------------------------------------------------------------------
-        -- Trigger 'Paste' from Menubar:
-        --------------------------------------------------------------------------------
-        local menuBar = fcp.menu
-        if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
-            menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
-        else
-            dialog.displayErrorMessage("Unable to paste Generator.")
-            pasteboard.startWatching()
-            return false
-        end
-
-        --------------------------------------------------------------------------------
-        -- Restore Pasteboard:
-        --------------------------------------------------------------------------------
-        doAfter(1, function()
-
-            --------------------------------------------------------------------------------
-            -- Restore Original Pasteboard Contents:
-            --------------------------------------------------------------------------------
-            if originalPasteboard ~= nil then
-                local cbResult = pasteboard.writeFCPXData(originalPasteboard)
-                if not cbResult then
-                    dialog.displayErrorMessage("Failed to restore original Pasteboard item.")
-                    pasteboard.startWatching()
-                    return false
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Start watching the Pasteboard again:
-            --------------------------------------------------------------------------------
-            pasteboard.startWatching()
-
-        end)
+        log.df("pasting cached item as connected clip")
+        pasteAsConnectedClip()
 
         --------------------------------------------------------------------------------
         -- All done:
         --------------------------------------------------------------------------------
         return true
-
     end
 
     --------------------------------------------------------------------------------
@@ -165,7 +210,6 @@ function mod.apply(action)
     -- Get Generators Browser:
     --------------------------------------------------------------------------------
     local generators = fcp.generators
-    local generatorsLayout = generators:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Make sure the panel is open:
@@ -176,69 +220,45 @@ function mod.apply(action)
         return false
     end
 
+    local generatorsLayout = generators:saveLayout()
+
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
     generators.search:clear()
 
     --------------------------------------------------------------------------------
-    -- Select the Category if provided otherwise just show all:
-    --------------------------------------------------------------------------------
-    if category then
-        generators:showGeneratorsCategory(category)
-    else
-        generators:showAllGenerators()
-    end
-
-    --------------------------------------------------------------------------------
     -- Make sure "Installed Generators" is selected:
     --------------------------------------------------------------------------------
-    local group = generators.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledGeneratorsMenuItem") then
-        generators:showInstalledGenerators()
+    generators:showInstalledGenerators()
+
+    --------------------------------------------------------------------------------
+    -- Select the Category if provided:
+    --------------------------------------------------------------------------------
+    if action.category then
+        generators:showGeneratorsCategory(action.category)
     end
 
     --------------------------------------------------------------------------------
     -- Find the requested Generator:
     --------------------------------------------------------------------------------
-    local currentItemsUI = generators:currentItemsUI()
-    local whichItem = nil
-    for _, v in ipairs(currentItemsUI) do
-        local title = name
-        if theme then
-            title = theme .. " - " .. name
-        end
-        if v:attributeValue("AXTitle") == title then
-            whichItem = v
-        end
-    end
+    local whichItem = findItem(generators, action)
     if not whichItem then
-        dialog.displayErrorMessage("Failed to get whichItem in plugins.finalcutpro.timeline.generators.apply.")
-        return false
-    end
-    local grid = currentItemsUI[1]:attributeValue("AXParent")
-    if not grid then
-        dialog.displayErrorMessage("Failed to get grid in plugins.finalcutpro.timeline.generators.apply.")
+        dialog.displayErrorMessage(string.format("Failed to get find generator \"%s\" in plugins.finalcutpro.timeline.generators.apply.", action.name))
         return false
     end
 
     --------------------------------------------------------------------------------
-    -- If there's a range selected, do the old fashion way:
+    -- If there's a range selected, do the old fashion way (ninja clicking):
     --------------------------------------------------------------------------------
     if rangeSelected then
         --------------------------------------------------------------------------------
         -- Apply item:
         --------------------------------------------------------------------------------
-        generators:applyItem(whichItem)
-
-        --------------------------------------------------------------------------------
-        -- Restore Layout:
-        --------------------------------------------------------------------------------
-        doAfter(0.1, function()
-            generators:loadLayout(generatorsLayout)
-            if browserLayout then browser:loadLayout(browserLayout) end
-        end)
+        Do(whichItem:doApply())
+        :Then(generators:doLayout(generatorsLayout))
+        :Then(If(browserLayout):Then(browser:doLayout(browserLayout)))
+        :Now()
 
         return
     end
@@ -246,14 +266,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure the correct window has focus:
     --------------------------------------------------------------------------------
-    local gridWindow = grid:attributeValue("AXWindow")
-    local whichWindow = gridWindow and gridWindow:asHSWindow()
-    if whichWindow then
-        whichWindow:focus()
-        just.doUntil(function()
-            return whichWindow == window.focusedWindow()
-        end)
-    else
+    if not whichItem:focusOnWindow() then
         dialog.displayErrorMessage("Failed to select the window that contains the Generator Browser.")
         return false
     end
@@ -261,52 +274,32 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Select the chosen Generator:
     --------------------------------------------------------------------------------
-    grid:setAttributeValue("AXSelectedChildren", {whichItem})
-    whichItem:setAttributeValue("AXFocused", true)
+    generators.contents:selectChild(whichItem)
+    whichItem:isFocused(true)
 
-    --------------------------------------------------------------------------------
-    -- Stop Watching Pasteboard:
-    --------------------------------------------------------------------------------
-    local pasteboard = mod.pasteboardManager
-    pasteboard.stopWatching()
-
-    --------------------------------------------------------------------------------
-    -- Save Current Pasteboard Contents for later:
-    --------------------------------------------------------------------------------
-    local originalPasteboard = pasteboard.readFCPXData()
+    preservePasteboard()
 
     --------------------------------------------------------------------------------
     -- Trigger 'Copy' from Menubar:
     --------------------------------------------------------------------------------
-    local menuBar = fcp.menu
-    menuBar:selectMenu({"Edit", "Copy"})
-    local newPasteboard = nil
-    just.doUntil(function()
-
-        newPasteboard = pasteboard.readFCPXData()
-
-        if newPasteboard == nil then
-            menuBar:selectMenu({"Edit", "Copy"})
-            return false
-        end
-
-        if originalPasteboard == nil and newPasteboard ~= nil then
-            return true
-        end
-
-        if newPasteboard ~= originalPasteboard then
-            return true
-        end
-
-        --------------------------------------------------------------------------------
-        -- Let's try again:
-        --------------------------------------------------------------------------------
-        menuBar:selectMenu({"Edit", "Copy"})
+    local pasteboard = mod.pasteboardManager
+    pasteboard.writeFCPXData("")
+    if not doUntil(function() return pasteboard.readFCPXData() == "" end) then
+        dialog.displayErrorMessage("Failed to clear the Pasteboard.")
         return false
-
+    end
+    local menuBar = fcp.menu
+    local newData = doUntil(function()
+        menuBar:selectMenu({"Edit", "Copy"})
+        local data = pasteboard.readFCPXData()
+        if data == "" then
+            return nil
+        else
+            return data
+        end
     end)
 
-    if newPasteboard == nil then
+    if newData == nil then
         dialog.displayErrorMessage("Failed to copy Generator.")
         pasteboard.startWatching()
         return false
@@ -315,30 +308,13 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Cache the item for faster recall next time:
     --------------------------------------------------------------------------------
-    local cache = mod._cache()
-    cache[cacheID] = base64.encode(newPasteboard)
-    mod._cache(cache)
+    log.df("Caching Generator: %s", cacheID)
+    setCacheItem(cacheID, newData)
 
     --------------------------------------------------------------------------------
-    -- Make sure Timeline has focus:
+    -- Paste the copied item as a connected clip:
     --------------------------------------------------------------------------------
-    local timeline = fcp.timeline
-    timeline:show()
-    if not timeline:isShowing() then
-        dialog.displayErrorMessage("Unable to display the Timeline.")
-        return false
-    end
-
-    --------------------------------------------------------------------------------
-    -- Trigger 'Paste' from Menubar:
-    --------------------------------------------------------------------------------
-    if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
-        menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
-    else
-        dialog.displayErrorMessage("Unable to paste Generator.")
-        pasteboard.startWatching()
-        return false
-    end
+    pasteAsConnectedClip()
 
     --------------------------------------------------------------------------------
     -- Restore Layout:
@@ -346,29 +322,6 @@ function mod.apply(action)
     doAfter(0.1, function()
         generators:loadLayout(generatorsLayout)
         if browserLayout then browser:loadLayout(browserLayout) end
-    end)
-
-    --------------------------------------------------------------------------------
-    -- Restore Pasteboard:
-    --------------------------------------------------------------------------------
-    doAfter(1, function()
-
-        --------------------------------------------------------------------------------
-        -- Restore Original Pasteboard Contents:
-        --------------------------------------------------------------------------------
-        if originalPasteboard ~= nil then
-            local result = pasteboard.writeFCPXData(originalPasteboard)
-            if not result then
-                dialog.displayErrorMessage("Failed to restore original Pasteboard item.")
-                pasteboard.startWatching()
-                return false
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Start watching Pasteboard again:
-        --------------------------------------------------------------------------------
-        pasteboard.startWatching()
     end)
 
     --------------------------------------------------------------------------------

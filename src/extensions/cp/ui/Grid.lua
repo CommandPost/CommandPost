@@ -19,6 +19,9 @@ local has                       = require "cp.ui.has"
 local Element                   = require "cp.ui.Element"
 local HasRepeatingChildren      = require "cp.ui.HasRepeatingChildren"
 
+local go                        = require "cp.rx.go"
+local If                        = go.If
+
 local handler, zeroOrMore       = has.handler, has.zeroOrMore
 
 local Grid = Element:subclass("cp.ui.Grid")
@@ -146,6 +149,22 @@ function Grid:selectChild(child)
     return self
 end
 
+--- cp.ui.Grid:doSelectChild(child) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that selects a specific child within the Grid.
+---
+--- Parameters:
+---  * child - The child [Element](cp.ui.Element.md) you want to select.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md) that can be used to select the specified child.
+function Grid:doSelectChild(child)
+    return If(self.UI):Then(function()
+        self:selectChild(child)
+    end)
+    :Label("Grid:doSelectChild(child)")
+end
+
 --- cp.ui.Grid:selectChildAt(index) -> self
 --- Method
 --- Select a child element in the given a specific index.
@@ -163,6 +182,22 @@ function Grid:selectChildAt(index)
     return self
 end
 
+--- cp.ui.Grid:doSelectChildAt(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that selects a child element in the given a specific index.
+---
+--- Parameters:
+---  * index - The index of the child you want to select.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md) that can be used to select the specified child.
+function Grid:doSelectChildAt(index)
+    return If(self.UI):Then(function()
+        self:selectChildAt(index)
+    end)
+    :Label("Grid:doSelectChildAt(index)")
+end
+
 --- cp.ui.Grid:selectAll([childrenUI]) -> self
 --- Method
 --- Select all children in a scroll area.
@@ -178,6 +213,22 @@ function Grid:selectAll(childrenUI)
         self:selectedChildrenUI(childrenUI)
     end
     return self
+end
+
+--- cp.ui.Grid:doSelectAll([childrenUI]) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that selects all children in a scroll area.
+---
+--- Parameters:
+---  * childrenUI - A table of `hs.axuielement` objects.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md) that can be used to select all children.
+function Grid:doSelectAll(childrenUI)
+    return If(self.UI):Then(function()
+        self:selectAll(childrenUI)
+    end)
+    :Label("Grid:doSelectAll(childrenUI)")
 end
 
 --- cp.ui.Grid:saveLayout() -> table

@@ -17,11 +17,12 @@ local require           = require
 local inspect           = require "cp.dev" .inspect
 
 local drawing           = require "hs.drawing"
+local window            = require "hs.window"
 
 local deferred          = require "cp.deferred"
 local is                = require "cp.is"
+local just              = require "cp.just"
 local prop              = require "cp.prop"
-local go	            = require "cp.rx.go"
 local axutils           = require "cp.ui.axutils"
 local Builder           = require "cp.ui.Builder"
 local notifier          = require "cp.ui.notifier"
@@ -30,8 +31,12 @@ local class             = require "middleclass"
 local lazy              = require "cp.lazy"
 local delegator         = require "cp.delegator"
 
-local cache             = axutils.cache
+local go	            = require "cp.rx.go"
 local Do, Given, If     = go.Do, go.Given, go.If
+local WaitUntil         = go.WaitUntil
+
+local cache             = axutils.cache
+local doUntil           = just.doUntil
 local isFunction        = is.fn
 local isCallable        = is.callable
 local pack, unpack      = table.pack, table.unpack
@@ -496,6 +501,62 @@ function Element:app()
     return parent and parent:app()
 end
 
+--- cp.ui.Element.windowUI <cp.prop: hs.axuielement; read-only; live?>
+--- Field
+--- The `AXWindow` instance.
+function Element.lazy.prop:windowUI()
+    return axutils.prop(self.UI, "AXWindow")
+end
+
+--- cp.ui.Element.hsWindow <cp.prop: hs.window; read-only; live?>
+--- Method
+--- The `hs.window` instance.
+function Element.lazy.prop:hsWindow()
+    return self.windowUI:mutate(function(original)
+        local windowUI = original()
+        return windowUI and windowUI:asHSWindow()
+    end)
+end
+
+--- cp.ui.Element:doFocusOnWindow() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will attempt to the OS on the `Element`'s window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will attempt to focus the window.
+function Element.lazy.method:doFocusOnWindow()
+    return If(self.hsWindow)
+    :Then(function(hsWindow)
+        hsWindow:focus()
+        return WaitUntil(function()
+            return hsWindow == window.focusedWindow()
+        end)
+        :TimeoutAfter(1000)
+    end)
+end
+
+--- cp.ui.Element:focusOnWindow() -> boolean
+--- Method
+--- Attempts to focus the `Element`'s window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the window was focused, otherwise `false`.
+function Element:focusOnWindow()
+    local hsWindow = self:hsWindow()
+    if hsWindow then
+        hsWindow:focus()
+        return doUntil(function()
+            return hsWindow == window.focusedWindow()
+        end, 1)
+    end
+end
+
 --- cp.ui.Element:notifier() -> cp.ui.notifier
 --- Method
 --- Returns the [notifier](cp.ui.notifier.lua) instance for this `Element`.
@@ -753,6 +814,16 @@ function Element:doLayout(layout)
     :Label("cp.ui.Element:doLayout(layout)")
 end
 
+--- cp.ui.Element:doStoreLayout(id) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to store the layout based on the parameters
+--- provided by the `id` key value. This can then be restored via the [doRecallLayout](#doRecallLayout) method.
+---
+--- Parameters:
+---  * id - a `string` key to store the layout under.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 function Element:doStoreLayout(id)
     return Given(self:doSaveLayout())
     :Then(function(layout)
@@ -764,6 +835,16 @@ function Element:doStoreLayout(id)
     :Label("cp.ui.Element:doStoreLayout(id)")
 end
 
+--- cp.ui.Element:doForgetLayout(id) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to forget the layout based on the parameters
+--- provided by the `id` key value.
+---
+--- Parameters:
+---  * id - a `string` key to forget the layout under.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 function Element:doForgetLayout(id)
     return Do(function()
         local layouts = self.__storedLayouts
@@ -778,6 +859,17 @@ function Element:doForgetLayout(id)
     :Label("cp.ui.Element:doForgetLayout(id)")
 end
 
+--- cp.ui.Element:doRecallLayout(id, [preserve]) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to recall the layout based on the parameters
+--- provided by the `id` key value.
+---
+--- Parameters:
+---  * id - a `string` key to recall the layout under.
+---  * preserve - (optional) a `boolean` indicating whether to preserve the current layout. Defaults to forgetting it after restoring.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 function Element:doRecallLayout(id, preserve)
     local doForget = preserve and nil or self:doForgetLayout(id)
 

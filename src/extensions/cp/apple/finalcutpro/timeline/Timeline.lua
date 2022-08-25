@@ -416,14 +416,19 @@ function Timeline.lazy.value:title()
     return self.toolbar.title
 end
 
---- cp.apple.finalcutpro.timeline.Timeline.rangeSelected <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.timeline.Timeline.duration <cp.apple.finalcutpro.timeline.Duration>
+--- Field
+--- The Duration of the Timeline.
+function Timeline.lazy.value:duration()
+    return self.toolbar.duration
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isRangeSelected <cp.prop: boolean; live; read-only>
 --- Field
 --- Checks if a range is selected in the timeline.
-function Timeline.lazy.prop:rangeSelected()
-    return self.toolbar.duration.UI:mutate(function(original)
-        local ui = original()
-        local value = ui and ui:attributeValue("AXValue")
-        return value and (value:find("/") ~= nil or value:find("／") ~= nil)
+function Timeline.lazy.prop:isRangeSelected()
+    return self.duration.selection:mutate(function(original)
+        return original() ~= nil
     end)
 end
 
