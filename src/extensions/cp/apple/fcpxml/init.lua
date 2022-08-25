@@ -159,7 +159,7 @@ end
 ---
 --- Parameters:
 ---  * value - A number in seconds
----  * denominator - A optional number of the denominator (i.e. 2500). Defaults to 2500.
+---  * denominator - A optional number of the denominator (i.e. 2500).
 ---
 --- Returns:
 ---  * A string (i.e. "3400/2500s" or "2s")
