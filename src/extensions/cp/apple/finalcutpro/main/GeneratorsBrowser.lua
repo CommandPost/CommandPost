@@ -29,12 +29,10 @@ local TextField							= require "cp.ui.TextField"
 local go                                = require "cp.rx.go"
 
 local Do                                = go.Do
-local If                                = go.If
 local WaitUntil                         = go.WaitUntil
 
 local cache                             = axutils.cache
 local childWithRole                     = axutils.childWithRole
-local childMatching                     = axutils.childMatching
 
 local ninjaDoubleClick                  = tools.ninjaDoubleClick
 
