@@ -20,7 +20,7 @@ local UIHandler = class("cp.ui.has.UIHandler")
 ---
 --- Returns:
 ---  * The new `Handler` instance.
-function UIHandler:initialize()
+function UIHandler:initialize() -- luacheck:ignore
 end
 
 --- cp.ui.has.UIHandler:matches(uiList) -> true, cp.slice | false, nil
@@ -36,7 +36,7 @@ end
 ---
 --- Notes:
 ---  * The default implementation throws an error.
-function UIHandler:matches(uiList)
+function UIHandler:matches(uiList) -- luacheck:ignore
     error(format("%s:matches() is not implemented.", self.class.name))
 end
 
@@ -54,7 +54,7 @@ end
 ---
 --- Notes:
 ---  * The default implementation throws an error.
-function UIHandler:build(parent, uiListFinder)
+function UIHandler:build(parent, uiListFinder) -- luacheck:ignore
     error(format("%s:build() is not implemented.", self.class.name))
 end
 

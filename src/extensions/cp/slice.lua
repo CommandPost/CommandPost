@@ -3,11 +3,10 @@
 --- A slice of a table, from the provided `start` index to the end, or the optional `count` if provided.
 ---
 
-local log               = require "hs.logger" .new "slice"
+--local log               = require "hs.logger" .new "slice"
 
 local format            = string.format
-local min, max          = math.min, math.max
-local pack, unpack      = table.pack, table.unpack
+local max               = math.max
 
 local mod = {}
 mod.mt = {}

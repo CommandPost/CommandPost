@@ -1235,6 +1235,11 @@ local function razerPanelCallback(id, params)
                 if data then
                     items[device][destinationApp] = fnutils.copy(data)
                     mod.items(items)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware (and trash the LED cache):
+                    --------------------------------------------------------------------------------
+                    mod._razerManager.refresh(true)
                 end
             end
 
@@ -1313,9 +1318,9 @@ local function razerPanelCallback(id, params)
             mod.items(items)
 
             --------------------------------------------------------------------------------
-            -- Refresh the hardware:
+            -- Refresh the hardware (and trash the LED cache):
             --------------------------------------------------------------------------------
-            mod._razerManager.refresh()
+            mod._razerManager.refresh(true)
         elseif callbackType == "repeatCheckbox" then
             local device        = params["device"]
             local app           = params["application"]
@@ -1340,6 +1345,11 @@ local function razerPanelCallback(id, params)
                 if data then
                     items[device][app][destinationBank] = fnutils.copy(data)
                     mod.items(items)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware (and trash the LED cache):
+                    --------------------------------------------------------------------------------
+                    mod._razerManager.refresh(true)
                 end
             end
 
@@ -1362,6 +1372,48 @@ local function razerPanelCallback(id, params)
                 table.insert(menu, {
                     title = bankLabels[deviceName][tostring(i)].label,
                     fn = function() copyToBank(tostring(i)) end
+                })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.absolutePosition(), true)
+        elseif callbackType == "copyDevice" then
+            --------------------------------------------------------------------------------
+            -- Copy Device:
+            --------------------------------------------------------------------------------
+            local device = mod.lastDevice()
+
+            local copyDevice = function(destinationDevice)
+                local items = mod.items()
+                local data = items[device]
+                if data then
+                    items[destinationDevice] = copy(data)
+                    mod.items(items)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware (and trash the LED cache):
+                    --------------------------------------------------------------------------------
+                    mod._razerManager.refresh(true)
+                end
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = string.upper(i18n("copyDeviceTo")) .. ":",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for _, deviceID in pairs(mod._razerManager.supportedDevices) do
+                table.insert(menu, {
+                    title = deviceID,
+                    fn = function() copyDevice(deviceID) end
                 })
             end
 
@@ -1523,6 +1575,9 @@ function plugin.init(deps, env)
     mod.displayMessageWhenChangingBanks     = deps.razerManager.displayMessageWhenChangingBanks
     mod.lastBundleID                        = deps.razerManager.lastBundleID
 
+    mod.keyRepeat                           = deps.razerManager.keyRepeat
+    mod.delayUntilRepeat                    = deps.razerManager.delayUntilRepeat
+
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
@@ -1598,6 +1653,80 @@ function plugin.init(deps, env)
                 end,
             }
         )
+
+        :addContent(6.1, [[
+            <br />
+                <style>
+                    .keyRepeat select {
+                        width: 250px;
+                    }
+
+                    .keyRepeatDropdown label {
+                        width: 140px !important;
+                        overflow:hidden;
+                        display:inline-block;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    .keyRepeatDropdown select {
+                        width: 200px !important;
+                    }
+
+                </style>
+        ]], false)
+
+        :addSelect(6.2,
+            {
+                label       =   i18n("keyRepeat"),
+                id          =   "keyRepeat",
+                class       =   "keyRepeat keyRepeatDropdown",
+                value       =   function() return mod.keyRepeat() end,
+                options     =   function()
+                                    local options = {
+                                        { value = "",                   label = i18n("useMacOSPreferences") .. "..." },
+                                        { value = "2.0",                label = "2.0" .. i18n("secs", {count=2}) .. " (" .. i18n("slow") .. ")" },
+                                        { value = "1.5",                label = "1.5" .. i18n("secs", {count=1}) },
+                                        { value = "1.0",                label = "1.0" .. i18n("secs", {count=1}) },
+                                        { value = "0.5",                label = "0.5" .. i18n("secs", {count=1}) },
+                                        { value = "0.2",                label = "0.2" .. i18n("secs", {count=1}) },
+                                        { value = "0.1",                label = "0.1" .. i18n("secs", {count=1}) },
+                                        { value = "0.033333333333333",  label = "0.03" .. i18n("secs", {count=1}) .. " (" .. i18n("fast") .. ")" },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    mod.keyRepeat(params.value)
+                                end,
+            }
+        )
+
+        :addSelect(6.3,
+            {
+                label       =   i18n("delayUntilRepeat"),
+                id          =   "delayUntilRepeat",
+                class       =   "keyRepeat keyRepeatDropdown",
+                value       =   function() return mod.delayUntilRepeat() end,
+                options     =   function()
+                                    local options = {
+                                        { value = "",                   label = i18n("useMacOSPreferences") .. "..." },
+                                        { value = "2.0",                label = "2.0" .. i18n("secs", {count=2}) .. " (" .. i18n("long") .. ")" },
+                                        { value = "1.5666666666667",    label = "1.56" .. i18n("secs", {count=1}) },
+                                        { value = "1.1333333333333",    label = "1.13" .. i18n("secs", {count=1}) },
+                                        { value = "0.58333333333333",   label = "0.58" .. i18n("secs", {count=1}) },
+                                        { value = "0.41666666666667",   label = "0.41" .. i18n("secs", {count=1}) },
+                                        { value = "0.03",               label = "0.25" .. i18n("secs", {count=1}) .. " (" .. i18n("short") .. ")" },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    mod.delayUntilRepeat(params.value)
+                                end,
+            }
+        )
+
         :addContent(7, [[
                 </div>
                 <div class="menubarColumn">

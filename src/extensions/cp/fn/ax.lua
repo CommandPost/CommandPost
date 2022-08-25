@@ -391,8 +391,9 @@ end
 --- Returns:
 ---  * `true` if `a` is left of `b`.
 function mod.leftToRight(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.x < bFrame.x) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.x < bFrame.x) or false
 end
 
 --- cp.fn.ax.rightToLeft(a, b) -> boolean
@@ -406,8 +407,9 @@ end
 --- Returns:
 ---  * `true` if `a` is right of `b`.
 function mod.rightToLeft(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.x + aFrame.w > bFrame.x + bFrame.w) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.x + aFrame.w > bFrame.x + bFrame.w) or false
 end
 
 --- cp.fn.ax.topToBottom(a, b) -> boolean
@@ -421,8 +423,9 @@ end
 --- Returns:
 ---  * `true` if `a` is above `b`.
 function mod.topToBottom(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.y < bFrame.y) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.y < bFrame.y) or false
 end
 
 --- cp.fn.ax.bottomToTop(a, b) -> boolean
@@ -436,8 +439,9 @@ end
 --- Returns:
 ---  * `true` if `a` is below `b`.
 function mod.bottomToTop(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.y + aFrame.h > bFrame.y + bFrame.h) or false
 end
 
 --- cp.fn.ax.topToBottomBaseAligned(a, b) -> boolean
@@ -459,12 +463,13 @@ function mod.topToBottomBaseAligned(a, b)
         return false
     end
 
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    if aFrame == nil or bFrame == nil then
-        return false
-    end
-    local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
-    return aBottom < bBottom
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+
+    local aBottom = aFrame and aFrame.y + aFrame.h
+    local bBottom = bFrame and bFrame.y + bFrame.h
+
+    return aBottom and bBottom and aBottom < bBottom
 end
 
 --- cp.fn.ax.bottomToTopBaseAligned(a, b) -> boolean
@@ -486,13 +491,13 @@ function mod.bottomToTopBaseAligned(a, b)
         return false
     end
 
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    if aFrame == nil or bFrame == nil then
-        return false
-    end
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
 
-    local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
-    return aBottom > bBottom
+    local aBottom = aFrame.y + aFrame.h
+    local bBottom = bFrame and bFrame.y + bFrame.h
+
+    return aBottom and bBottom and aBottom > bBottom
 end
 
 --- cp.fn.ax.narrowToWide(a, b) -> boolean
@@ -506,8 +511,9 @@ end
 --- Returns:
 ---  * `true` if `a` is narrower than `b`.
 function mod.narrowToWide(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.w < bFrame.w) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.w < bFrame.w) or false
 end
 
 --- cp.fn.ax.shortToTall(a, b) -> boolean
@@ -521,8 +527,9 @@ end
 --- Returns:
 ---  * `true` if `a` is shorter than `b`.
 function mod.shortToTall(a, b)
-    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-    return (aFrame ~= nil and bFrame ~= nil and aFrame.h < bFrame.h) or false
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+    return (type(aFrame) == "table" and type(bFrame) == "table" and aFrame.h < bFrame.h) or false
 end
 
 --- cp.fn.ax.topDown(a, b) -> boolean

@@ -23,8 +23,9 @@ local PopUpButton           = require "cp.ui.PopUpButton"
 local has                   = require "cp.ui.has"
 
 local go                    = require "cp.rx.go"
-local Do, If                = go.Do, go.If
-local Given, WaitUntil      = go.Given, go.WaitUntil
+
+local If                    = go.If
+local WaitUntil             = go.WaitUntil
 
 local chain                 = fn.chain
 local get                   = fn.table.get

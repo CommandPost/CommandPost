@@ -67,7 +67,6 @@ local require           = require
 -- local log               = require "hs.logger" .new "Group"
 
 local ax                = require "cp.fn.ax"
-local delegator         = require "cp.delegator"
 local Element           = require "cp.ui.Element"
 local HasExactChildren  = require "cp.ui.HasExactChildren"
 

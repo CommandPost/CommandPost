@@ -9,6 +9,73 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+            <h1>CommandPost 1.4.6</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Disabling "Open Debug Console on Dock Icon Click" in the General Preferences still opened the Debug Console when clicking the dock icon. Thanks for reporting Vigneswaran Rajkumar!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.5</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added an option to "Replace Commas With Alternative Commas" in the "Titles to Keywords" Toolbox. This is to workaround a bug in Final Cut Pro where it will split up a single keyword into multiple keywords when it detects a comma in the keyword name, when imported via a FCPXML. Thanks Knut Hake, Sam Pluemacher, Iain Anderson and Alex Gollner!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>The contextual menu will now appear when you right-click on the "Create Titles from Text" text editor in the "Titles to Keywords" Toolbox.</li>
+                <li>Fixed a bug that could cause a "nil" error in the Debug Console related to "topToBottomBaseAligned" sorting.</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.4</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added a new "Titles to Keywords" Toolbox. When you drag a Final Cut Pro Event to this Toolbox (which must only contain a single Project), we will look through all the Titles connected to the clips in the Primary Storyline, read the name of those clips, then create new Keyword Ranges for each of those Titles. We then send that data back into Final Cut Pro automagically.</li>
+                <li>We've also included a "Create Titles from Text" feature in this same Toolbox, that allows you to create a new Final Cut Pro Project which contains a new Title for every line in the Toolbox's text box - along with some additional formatting features, such as adding a prefix, suffix or sequential numbering. This allows you to easily copy and paste text from things like a PDF Script, convert them into Titles, adjust as required, then convert those Titles into Keywords. You can also setup the CommandPost Dock icon so that it automatically sends any dragged Events or FCPXML files directly to this new Toolbox. Thanks for suggesting Knut Hake & Sam Pluemacher! Thanks for testing Vigneswaran Rajkumar!</li>
+			</ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>The "Shot Data" Toolbox icon has been updated. Thanks Vigneswaran Rajkumar!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>In Final Cut Pro 10.6.2, Apple renamed the "Photos and Audio" menubar item to "Photos, Videos and Audio", which broke some automation features, like inserting specific Titles & Generators. This is now fixed. Thanks for reporting Trace Dominguez!</li>
+                <li>Fixed a bug that could cause a "invalid order function for sorting" error in the Debug Console.</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.3</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added the ability to upload directly to Notion from the Shot Data Toolbox. Thanks Vigneswaran Rajkumar!</li>
+                <li>Added a new Notion Toolbox allowing you to upload the Final Cut Pro Timeline Index and Browser Contents directly to Notion.</li>
+                <li>Added two new drop-boxes in the General section of CommandPost’s preferences allowing you to set a “Drag & Drop Text Action” and a “Drag & Drop File Action”. This allows you to, for example, drag a Final Cut Pro project directly to the CommandPost dock icon to trigger the Vimeo Toolbox.</li>
+                <li>Added a preference for “Key Repeat” and “Delay Until Repeat” in the Razer Control Surfaces panel. Thanks for suggesting Ross Batten!</li>
+                <li>Added button that allows you to copy profiles between Razer devices in the Razer Control Surfaces panel. Thanks for suggesting Ross Batten!</li>
+                <li>Added additional “Press & Hold” modifier actions. Thanks for suggesting Valerio D'Andrassi and Noé Molnár!</li>
+                <li>Added actions to control Spotify. We’ve also added a new “Spotify” section in the CommandPost Loupedeck Plugin for easy access.</li>
+                <li>Added actions to "Increment/Decrement User Interface Element Under Mouse”. This allows you to hover your mouse over a slider, knob or text-box in Final Cut Pro or DaVinci Resolve (for example), and use a control surface to control its value. We’ve also added a new “macOS: Accessibility” section in the CommandPost Loupedeck Plugin for easy access.</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Added missing labels to some Razer Action Groups.</li>
+                <li>Fixed a bug in the Color Board Angles actions. Thanks for reporting Noé Molnár!</li>
+			</ul>
+
+		    <hr />
+
             <h1>CommandPost 1.4.2</h1>
 
 			<h2>🔨 Improvement</h2>

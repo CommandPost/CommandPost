@@ -40,7 +40,7 @@ function ElementRepeater:initialize(parent, uiListFinder, handler, minCount, max
     self.maxCount = maxCount
 end
 
-function ElementRepeater.lazy.value:_items()
+function ElementRepeater.lazy.value:_items() -- luacheck:ignore
     return setmetatable({}, {__mode = "k"})
 end
 
@@ -75,8 +75,8 @@ function ElementRepeater:item(index)
             uiList = slice.from(uiList)
         end
 
-        local success = true
-        for i = 1, index - 1 do
+        local success
+        for _ = 1, index - 1 do
             success, uiList = self.handler:matches(uiList)
             if not success then
                 return nil
@@ -86,7 +86,7 @@ function ElementRepeater:item(index)
         -- check there are enough matching items to meet the criteria
         if isNumber(self.minCount) then
             local remainder = uiList
-            for i = index, self.minCount do
+            for _ = index, self.minCount do
                 success, remainder = self.handler:matches(remainder)
                 if not success then
                     return nil
@@ -116,7 +116,9 @@ function ElementRepeater:count()
     if not uiList then return 0 end
 
     local count = 0
-    local success, remainder = true, slice.from(uiList)
+    local success
+    local remainder = slice.from(uiList)
+
     while true do
         if isNumber(self.maxCount) and count > self.maxCount then
             break

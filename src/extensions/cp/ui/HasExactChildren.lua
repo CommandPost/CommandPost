@@ -39,7 +39,6 @@ HasExactChildren.static.defaultChildrenHandler = DEFAULT_HANDLER
 --- Constant
 --- Defines the [UIHandler] that describes the children of the element.
 --- By default, will map to any number of [Element](cp.ui.Element.md) objects.
---- 
 function HasExactChildren:childrenHandler(handler)
     self[CHILDREN_HANDLER] = has.handler(handler or DEFAULT_HANDLER)
 end

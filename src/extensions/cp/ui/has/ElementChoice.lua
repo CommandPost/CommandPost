@@ -5,7 +5,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "ElementChoice"
+--local log                   = require "hs.logger".new "ElementChoice"
 
 local is                    = require "cp.is"
 local prop                  = require "cp.prop"
@@ -58,19 +58,23 @@ local subclassNumber = 1
 ---
 --- Returns:
 ---  * A function that will return a new `ElementChoice` instance.
-function ElementChoice.static:of(uiHandlers)
+
+-- TODO: @randomeizer to review the below code:
+
+function ElementChoice.static:of(uiHandlers) -- luacheck:ignore
     local choiceClass = self:subclass(format("%s_%d", self.name, subclassNumber))
     subclassNumber = subclassNumber + 1
-    
-    function choiceClass:initialize(parent, uiFinder)
+
+
+    function choiceClass:initialize(parent, uiFinder) -- luacheck:ignore
         choiceClass.super.initialize(self, parent, uiFinder, uiHandlers)
     end
 
     -- map aliases to the appropriate index.
     for i, handler in ipairs(uiHandlers) do
         if handler.alias then
-            choiceClass.lazy.value[handler.alias] = function(self)
-                return self[i]
+            choiceClass.lazy.value[handler.alias] = function(s)
+                return s[i]
             end
         end
     end

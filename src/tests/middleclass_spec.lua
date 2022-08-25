@@ -30,21 +30,21 @@ return describe "middleclass" {
                 expect(MyClass:isClassFor(myInstance)):is(true)
                 expect(MySubclass:isClassFor(myInstance)):is(false)
             end),
-    
+
             it "returns false if the value is a subclass"
             :doing(function()
                 local myInstance = MySubclass()
-    
+
                 expect(MyClass:isClassFor(myInstance)):is(false)
                 expect(MySubclass:isClassFor(myInstance)):is(true)
             end),
-    
+
             it "returns false if the value is not an instance of the class"
             :doing(function()
                 expect(MyClass:isClassFor("foo")):is(false)
             end),
         },
-    
+
         context "isSuperclassFor" {
             it "returns true if the value is a subclass of MyClass"
             :doing(function()
@@ -52,20 +52,20 @@ return describe "middleclass" {
                 expect(MyClass:isSuperclassFor(myInstance)):is(true)
                 expect(MySubclass:isSuperclassFor(myInstance)):is(true)
             end),
-    
+
             it "returns false if the value is not a subclass of MyClass"
             :doing(function()
                 local myInstance = MyClass()
                 expect(MyClass:isSuperclassFor(myInstance)):is(true)
                 expect(MySubclass:isSuperclassFor(myInstance)):is(false)
             end),
-    
+
             it "returns false if the value is not an instance of the class"
             :doing(function()
                 expect(MyClass:isSuperclassFor("foo")):is(false)
             end),
         },
-    
+
         context "isSuperclassOf" {
             it "returns true if the value is a subclass of MyClass"
             :doing(function()
@@ -73,12 +73,12 @@ return describe "middleclass" {
                 expect(MyClass:isSuperclassOf(MySubclass)):is(true)
                 expect(MySubclass:isSuperclassOf(MySubclass)):is(true)
             end),
-    
+
             it "returns false if the value is not a subclass of MyClass"
             :doing(function()
                 expect(MySubclass:isSuperclassOf(MyClass)):is(false)
             end),
-    
+
             it "returns false if the value is not an instance of the class"
             :doing(function()
                 expect(MyClass:isSuperclassOf("foo")):is(false)

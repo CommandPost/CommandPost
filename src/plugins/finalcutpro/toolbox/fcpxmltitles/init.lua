@@ -11,6 +11,7 @@ local log                       = require "hs.logger".new "fcpxmltitles"
 local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
+local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
@@ -23,6 +24,7 @@ local xml                       = require "hs._asm.xml"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local dirFiles                  = tools.dirFiles
+local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
@@ -175,8 +177,6 @@ end
 -- Returns:
 --  * None
 local function updateUI()
-    local injectScript = mod._manager.injectScript
-
     local originalTitleColumn = mod.originalTitleColumn()
     local newTitleColumn = mod.newTitleColumn()
 
@@ -209,6 +209,7 @@ local function updateUI()
         ]]
     end
 
+    local injectScript = mod._manager.injectScript
     injectScript(script)
 end
 
@@ -413,6 +414,54 @@ local function processCSV(csvData)
     end
 end
 
+-- processFCPXML(path) -> none
+-- Function
+-- Process a FCPXML file
+--
+-- Parameters:
+--  * path - The path to the FCPXML file.
+--
+-- Returns:
+--  * None
+local function processFCPXML(path)
+
+    log.df("processFCPXML: %s", path)
+
+    local fcpxmlPath = fcpxml.valid(path)
+    if fcpxmlPath then
+        xmlPath = fcpxmlPath
+        originalFilename = "Dragged FCPXML"
+
+        data = {} -- Reset data.
+        count = 1 -- Reset count.
+
+        local document = xml.open(fcpxmlPath)
+        local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+
+        --------------------------------------------------------------------------------
+        -- If it's not a project FCPXML maybe it's a library FCPXML?
+        --------------------------------------------------------------------------------
+        if tableCount(spine) == 0 then
+            spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+        end
+
+        local spineChildren = spine and spine[1] and spine[1]:children()
+
+        getTitles(spineChildren)
+
+        fcpxmlLoaded = true
+
+        updateUI()
+    else
+        local webview = mod._manager.getWebview()
+        if webview then
+            webviewAlert(webview, function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
+        else
+            log.ef("[Titles Toolbox] Invalid FCPXML File.")
+        end
+    end
+end
+
 -- callback() -> none
 -- Function
 -- JavaScript Callback for the Panel
@@ -436,25 +485,7 @@ local function callback(id, params)
             local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLTemplate") .. ":", mod.lastFCPXMLPath(), true, false, false, {"fcpxml", "fcpxmld"}, true)
             local path = result and result["1"]
             if path then
-                local fcpxmlPath = fcpxml.valid(path)
-                if fcpxmlPath then
-                    mod.lastFCPXMLPath(removeFilenameFromPath(path))
-                    xmlPath = fcpxmlPath
-                    originalFilename = getFilenameFromPath(path, true)
-
-                    data = {} -- Reset data.
-                    count = 1 -- Reset count.
-
-                    local document = xml.open(fcpxmlPath)
-                    local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
-                    local spineChildren = spine and spine[1] and spine[1]:children()
-                    getTitles(spineChildren)
-
-                    fcpxmlLoaded = true
-                    updateUI()
-                else
-                    webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
-                end
+                processFCPXML(path)
             end
          elseif callbackType == "dropbox" then
             ---------------------------------------------------
@@ -476,24 +507,7 @@ local function callback(id, params)
             ---------------------------------------------------
             -- Process the FCPXML:
             ---------------------------------------------------
-            local fcpxmlPath = fcpxml.valid(path)
-            if fcpxmlPath then
-                xmlPath = fcpxmlPath
-                originalFilename = "Dragged FCPXML"
-
-                data = {} -- Reset data.
-                count = 1 -- Reset count.
-
-                local document = xml.open(fcpxmlPath)
-                local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
-                local spineChildren = spine and spine[1] and spine[1]:children()
-                getTitles(spineChildren)
-
-                fcpxmlLoaded = true
-                updateUI()
-            else
-                webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
-            end
+            processFCPXML(path)
         elseif callbackType == "loadCSVData" then
             --------------------------------------------------------------------------------
             -- Load CSV Data:
@@ -580,7 +594,15 @@ local function callback(id, params)
                 --------------------------------------------------------------------------------
                 local fcpxmlPath = exportPath .. "/" .. file .. ".fcpxml"
                 local document = xml.open(fcpxmlPath)
-                local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+                local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+
+                --------------------------------------------------------------------------------
+                -- If it's not a project FCPXML maybe it's a library FCPXML?
+                --------------------------------------------------------------------------------
+                if tableCount(spine) == 0 then
+                    spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+                end
+
                 local spineChildren = spine and spine[1] and spine[1]:children()
                 getTitles(spineChildren)
 
@@ -653,7 +675,16 @@ local function callback(id, params)
             end
 
             local document = xml.open(xmlPath)
-            local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+
+            local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+
+            --------------------------------------------------------------------------------
+            -- If it's not a project FCPXML maybe it's a library FCPXML?
+            --------------------------------------------------------------------------------
+            if tableCount(spine) == 0 then
+                spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+            end
+
             local spineChildren = spine and spine[1] and spine[1]:children()
             local errorLog = ""
             updateTitlesCount = 1
@@ -722,7 +753,7 @@ local function callback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in FCPXML Titles Utilities Panel:")
+            log.df("Unknown Callback in Titles Toolbox Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
@@ -733,7 +764,8 @@ local plugin = {
     id              = "finalcutpro.toolbox.fcpxmltitles",
     group           = "finalcutpro",
     dependencies    = {
-        ["core.toolbox.manager"]    = "manager",
+        ["core.toolbox.manager"]        = "manager",
+        ["core.preferences.general"]    = "preferences",
     }
 }
 
@@ -747,17 +779,19 @@ function plugin.init(deps, env)
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
     mod._manager                = deps.manager
+    mod._preferences            = deps.preferences
     mod._env                    = env
 
     --------------------------------------------------------------------------------
     -- Setup Utilities Panel:
     --------------------------------------------------------------------------------
+    local toolboxID = "fcpxmlTitles"
     mod._panel          =  deps.manager.addPanel({
         priority        = 2,
-        id              = "fcpxmlTitles",
-        label           = i18n("fcpxmlTitles"),
-        image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
-        tooltip         = i18n("fcpxmlTitles"),
+        id              = toolboxID,
+        label           = i18n("titles"),
+        image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
+        tooltip         = i18n("titles"),
         height          = 810,
     })
     :addContent(1, generateContent, false)
@@ -766,6 +800,52 @@ function plugin.init(deps, env)
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
     mod._panel:addHandler("onchange", "fcpxmlTitlesPanelCallback", callback)
+
+    --------------------------------------------------------------------------------
+    -- Drag & Drop Text to the Dock Icon:
+    --------------------------------------------------------------------------------
+    mod._preferences.registerDragAndDropTextAction(toolboxID, i18n("sendFCPXMLToTitlesToolbox"), function(value)
+        ---------------------------------------------------
+        -- Show the Panel:
+        ---------------------------------------------------
+        mod._manager.show(toolboxID)
+
+        ---------------------------------------------------
+        -- Give it a second to load the user interface:
+        ---------------------------------------------------
+        doAfter(1, function()
+            ---------------------------------------------------
+            -- Write the FCPXML data to a temporary file:
+            ---------------------------------------------------
+            local path = os.tmpname() .. ".fcpxml"
+            writeToFile(path, value)
+
+            ---------------------------------------------------
+            -- Process the FCPXML:
+            ---------------------------------------------------
+            processFCPXML(path)
+        end)
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Drag & Drop File to the Dock Icon:
+    --------------------------------------------------------------------------------
+    mod._preferences.registerDragAndDropFileAction(toolboxID, i18n("sendFCPXMLToTitlesToolbox"), function(path)
+        ---------------------------------------------------
+        -- Show the Panel:
+        ---------------------------------------------------
+        mod._manager.show(toolboxID)
+
+        ---------------------------------------------------
+        -- Give it a second to load the user interface:
+        ---------------------------------------------------
+        doAfter(1, function()
+            ---------------------------------------------------
+            -- Process the FCPXML:
+            ---------------------------------------------------
+            processFCPXML(path)
+        end)
+    end)
 
     return mod
 end

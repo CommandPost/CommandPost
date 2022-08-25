@@ -444,6 +444,12 @@ end
 ---
 --- Notes:
 ---  * Author: [Michal Kottman](https://stackoverflow.com/a/15706820)
+---  * Example Usage:
+---    ```lua
+---    for k,v in cp.tools.spairs(theTableToSort, function(t,a,b) return t[b] < t[a] end) do
+---       print(k,v)
+---    end
+---    ```
 function tools.spairs(t, order)
     --------------------------------------------------------------------------------
     -- Collect the keys:

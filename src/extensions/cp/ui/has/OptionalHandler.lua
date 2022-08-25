@@ -6,7 +6,6 @@
 local require                       = require
 
 local inspect                       = require "hs.inspect"
-local is                            = require "cp.is"
 
 local UIHandler                     = require "cp.ui.has.UIHandler"
 

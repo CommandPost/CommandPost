@@ -37,7 +37,7 @@ end
 ---  * The remaining `hs.axuielement` objects that were not matched as a slice, or `nil` if it was not matched.
 function ListHandler:matches(uiList)
     local handlerList = self.handlerList
-    local result, uiList = nil, uiList
+    local result
     for _, handler in ipairs(handlerList) do
         result, uiList = handler:matches(uiList)
         if not result then
