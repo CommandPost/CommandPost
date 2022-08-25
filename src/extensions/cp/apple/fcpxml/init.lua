@@ -93,6 +93,13 @@ local mod = {}
 ---    fraction into whole seconds (for example, 5s).
 function mod.timeStringToSeconds(value)
     --------------------------------------------------------------------------------
+    -- Make sure value is valid:
+    --------------------------------------------------------------------------------
+    if type(value) ~= "string" then
+        return nil
+    end
+
+    --------------------------------------------------------------------------------
     -- Remove the "s" at the end:
     --------------------------------------------------------------------------------
     if value:sub(-1) == "s" then
@@ -118,13 +125,41 @@ function mod.timeStringToSeconds(value)
     return tonumber(value), denominator, numerator
 end
 
+local function gcd(a, b)
+    while a ~= 0 do
+        a, b = b%a, a;
+    end
+    return b;
+end
+
+local function round(a)
+   return math.floor(a+.5)
+end
+
+function numberToFraction(num)
+   local integer = math.floor(num)
+   local decimal = num - integer
+
+   if decimal == 0 then
+      return num, 1.0, 0.0
+   end
+
+   local prec = 1000000000
+   local gcd_ = gcd(round(decimal*prec), prec)
+
+   local numer = math.floor((integer*prec + round(decimal*prec))/gcd_)
+   local denom = math.floor(prec/gcd_)
+   local err   = numer/denom - num
+   return numer, denom, err
+end
+
 --- cp.apple.fcpxml.numberToTimeString(value, [denominator]) -> number
 --- Function
 --- Converts a number into a FCPXML friendly time value string (i.e. "3400/2500s")
 ---
 --- Parameters:
 ---  * value - A number in seconds
----  * denominator - A optional number of the denominator (i.e. 2500)
+---  * denominator - A optional number of the denominator (i.e. 2500). Defaults to 2500.
 ---
 --- Returns:
 ---  * A string (i.e. "3400/2500s" or "2s")
@@ -136,16 +171,25 @@ end
 ---    If a time value is equal to a whole number of seconds, Final Cut Pro may reduce the
 ---    fraction into whole seconds (for example, 5s).
 function mod.numberToTimeString(value, denominator)
+    --------------------------------------------------------------------------------
+    -- Make sure value is valid:
+    --------------------------------------------------------------------------------
+    if type(value) ~= "number" then
+        return nil
+    end
+
     if value == math.floor(value) then
         --------------------------------------------------------------------------------
         -- It's a whole number:
         --------------------------------------------------------------------------------
-        return tostring(value) .. "s"
+        return string.format("%.0f", value) .. "s"
     elseif not denominator then
         --------------------------------------------------------------------------------
-        -- The supplied denominator was nil:
+        -- It's not a whole number, and no denominator was supplied:
         --------------------------------------------------------------------------------
-        return tostring(value) .. "s"
+        local numerator
+        numerator, denominator = numberToFraction(value)
+        return string.format("%.0f", numerator) .. "/" .. string.format("%.0f", denominator) .. "s"
     else
         local numerator = value * denominator
         return string.format("%.0f", numerator) .. "/" .. string.format("%.0f", denominator) .. "s"
