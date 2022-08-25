@@ -136,7 +136,7 @@ local function round(a)
    return math.floor(a+.5)
 end
 
-function numberToFraction(num)
+local function numberToFraction(num)
    local integer = math.floor(num)
    local decimal = num - integer
 

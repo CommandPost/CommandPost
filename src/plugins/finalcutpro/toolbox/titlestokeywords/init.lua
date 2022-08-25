@@ -9,7 +9,6 @@ local hs                        = _G.hs
 local log                       = require "hs.logger".new "titlestokeywords"
 
 local dialog                    = require "hs.dialog"
-local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
@@ -22,7 +21,6 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
-local copy                      = fnutils.copy
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
 local numberToTimeString        = fcpxml.numberToTimeString
@@ -359,15 +357,12 @@ local function processFCPXML(path)
                 if connectedClipType == "asset-clip" or connectedClipType == "mc-clip" or connectedClipType == "sync-clip" then
 
                     --------------------------------------------------------------------------------
-                    -- Get the 'start', 'offset', 'duration' and 'ref' of the current clip:
+                    -- Get the 'start', 'offset' and 'ref' of the current clip:
                     --------------------------------------------------------------------------------
                     local connectedClipAttributes = clipNode:attributes()
 
                     local currentConnectedClipOffset = connectedClipAttributes and connectedClipAttributes["offset"]
                     local currentConnectedClipOffsetInSeconds = timeStringToSeconds(currentConnectedClipOffset)
-
-                    local currentConnectedClipDuration = connectedClipAttributes and connectedClipAttributes["duration"]
-                    local currentConnectedClipDurationInSeconds = timeStringToSeconds(currentConnectedClipDuration)
 
                     local currentConnectedClipRef = connectedClipAttributes and connectedClipAttributes["ref"]
                     if connectedClipType == "sync-clip" then
