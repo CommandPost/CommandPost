@@ -48,7 +48,7 @@ function time.new(n, d)
         -- If there's a slash then do the maths:
         --------------------------------------------------------------------------------
         if string.find(value, "/") then
-            local values = value:split("/")
+            local values = tools.split(value, "/")
             n = values and values[1] and tonumber(values[1])
             d = values and values[2] and tonumber(values[2])
         else
@@ -351,7 +351,7 @@ setmetatable(mod,
     {
         __index     = time,
         __newindex  = time,
-        __call      = function(self, ...) return time.new(...) end
+        __call      = function(_, ...) return time.new(...) end
     }
 )
 return mod

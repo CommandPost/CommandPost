@@ -329,7 +329,7 @@ local function processFCPXML(path)
             local parentStartAsTime = time.new(parentStart)
 
             local parentOffset = nodeAttributes and nodeAttributes["offset"]
-            local parentOffsetAsTime, denominator = time.new(parentOffset)
+            local parentOffsetAsTime = time.new(parentOffset)
 
             local parentDuration = nodeAttributes and nodeAttributes["duration"]
             local parentDurationAsTime = time.new(parentDuration)
