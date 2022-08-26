@@ -2,6 +2,62 @@
 ---
 --- A collection of tools for handling FCPXML Documents.
 
+--------------------------------------------------------------------------------
+--
+-- USEFUL RESOURCES:
+-- -----------------
+--
+-- Pipeline Documentation               https://reuelk.github.io/pipeline/index.html
+-- Demystifying Final Cut Pro XMLs​      http://www.fcp.co/final-cut-pro/tutorials/1912-demystifying-final-cut-pro-xmls-by-philip-hodgetts-and-gregory-clarke
+-- FCPXML Reference                     https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference?language=objc
+--
+--
+-- NOTES:
+-- ------
+--
+-- * 'time' attributes are expressed as a rational number of seconds (e.g., "1001/30000s")
+--   with a 64-bit numerator and 32-bit denominator.
+--   Integer 'time' values, such as 5 seconds, may be expressed as whole numbers (e.g., '5s').
+--
+-- * A 'timelist' is a semi-colon-separated list of time values
+--
+-- * A 'resource' is a project element potentially referenced by other project elements.
+--   To support such references, all resource instances require a local ID attribute.
+--
+-- * A 'media' defines a reference to new or existing media via an FCP-assigned unique
+--   identifier ('uid'). If 'uid' is not specified, FCP creates a new media object as
+--   specified by the optional child element. If 'projectRef' is not specified, FCP
+--   uses the default instance.
+--
+-- * A 'format' describes video properties.
+--
+-- * An 'asset' defines a reference to external source media (i.e., a local file).
+--   'uid' is an FCP-assigned unique ID; if not specified, FCP creates a new default
+--   clip for the asset.
+--
+-- * An 'effect' defines a reference to a built-in or user-defined Motion effect,
+--   FxPlug plug-in, audio bundle, or audio unit.
+--
+-- STORY ELEMENTS:
+-- * The 'ao_attrs' entity declares the attributes common to 'anchorable' objects.
+-- * The 'lane' attribute specifies where the object is contained/anchored relative to its parent:
+--    * 0   = contained inside its parent (default)
+--    * >0  = anchored above its parent
+--    * <0  = anchored below its parent
+-- * The 'offset' attribute defines the location of the object in the parent timeline (default is '0s').
+--
+--
+-- FCPXML Structure:
+--
+-- 1) <fcpxml>
+--      a) <event>
+--      b) <import-options>
+--      c) <library>
+--      d) <project>
+--      e) <resources>
+--
+--------------------------------------------------------------------------------
+
 --local log                   = require "hs.logger".new "fcpxml"
 
 local fnutils               = require "hs.fnutils"
@@ -16,6 +72,85 @@ local semver                = require "semver"
 local execute               = _G.hs.execute
 
 local mod = {}
+
+--- cp.apple.fcpxml.timeStringToSeconds(value) -> number
+--- Function
+--- Converts a FCPXML time string into a number in seconds.
+---
+--- Parameters:
+---  * value - A string FCPXML time value (i.e. "3400/2500s")
+---
+--- Returns:
+---  * A number which has the time value in seconds
+---  * A number of the denominator if not a whole number (i.e. 2500)
+---  * A number of the numerator if not a whole number (i.e. 3400)
+---
+--- Notes:
+---  * Final Cut Pro expresses time values as a rational number of seconds with a 64-bit
+---    numerator and a 32-bit denominator. Frame rates for NTSC-compatible media,
+---    for example, use a frame duration of 1001/30000s (29.97 fps) or 1001/60000s (59.94 fps).
+---    If a time value is equal to a whole number of seconds, Final Cut Pro may reduce the
+---    fraction into whole seconds (for example, 5s).
+function mod.timeStringToSeconds(value)
+    --------------------------------------------------------------------------------
+    -- Remove the "s" at the end:
+    --------------------------------------------------------------------------------
+    if value:sub(-1) == "s" then
+        value = value:sub(1, -2)
+    end
+
+    --------------------------------------------------------------------------------
+    -- If there's a slash then do the maths:
+    --------------------------------------------------------------------------------
+    local numerator
+    local denominator
+    if string.find(value, "/") then
+        local values = value:split("/")
+        local valueA = values and values[1] and tonumber(values[1])
+        local valueB = values and values[2] and tonumber(values[2])
+        if valueA and valueB then
+            value = valueA / valueB
+            numerator = valueA
+            denominator = valueB
+        end
+    end
+
+    return tonumber(value), denominator, numerator
+end
+
+--- cp.apple.fcpxml.numberToTimeString(value, [denominator]) -> number
+--- Function
+--- Converts a number into a FCPXML friendly time value string (i.e. "3400/2500s")
+---
+--- Parameters:
+---  * value - A number in seconds
+---  * denominator - A optional number of the denominator (i.e. 2500)
+---
+--- Returns:
+---  * A string (i.e. "3400/2500s" or "2s")
+---
+--- Notes:
+---  * Final Cut Pro expresses time values as a rational number of seconds with a 64-bit
+---    numerator and a 32-bit denominator. Frame rates for NTSC-compatible media,
+---    for example, use a frame duration of 1001/30000s (29.97 fps) or 1001/60000s (59.94 fps).
+---    If a time value is equal to a whole number of seconds, Final Cut Pro may reduce the
+---    fraction into whole seconds (for example, 5s).
+function mod.numberToTimeString(value, denominator)
+    if value == math.floor(value) then
+        --------------------------------------------------------------------------------
+        -- It's a whole number:
+        --------------------------------------------------------------------------------
+        return tostring(value) .. "s"
+    elseif not denominator then
+        --------------------------------------------------------------------------------
+        -- The supplied denominator was nil:
+        --------------------------------------------------------------------------------
+        return tostring(value) .. "s"
+    else
+        local numerator = value * denominator
+        return string.format("%.0f", numerator) .. "/" .. string.format("%.0f", denominator) .. "s"
+    end
+end
 
 --- cp.apple.fcpxml.supportedDTDs() -> table
 --- Function

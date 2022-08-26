@@ -17,16 +17,17 @@ local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
-local time                      = require "cp.apple.fcpxml.time"
 local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
+local numberToTimeString        = fcpxml.numberToTimeString
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
+local timeStringToSeconds       = fcpxml.timeStringToSeconds
 local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
@@ -186,7 +187,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     for _, node in pairs(spineChildren) do
         local clipType = node:name()
-        if clipType == "asset-clip" or clipType == "mc-clip" or clipType == "sync-clip" or clipType == "gap" then
+        if clipType == "asset-clip" or clipType == "mc-clip" or clipType == "sync-clip" then
             --------------------------------------------------------------------------------
             -- A normal clip, Multi-cam or Synchronised Clip on the Primary Storyline:
             --
@@ -291,22 +292,9 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Now we look at connected clips:
             --------------------------------------------------------------------------------
-            local ignoreFirstNodeInSyncClip = true
             for _, clipNode in pairs(clipNodes) do
                 local connectedClipType = clipNode:name()
-
-                --------------------------------------------------------------------------------
-                -- Ignore the first node in a sync-clip:
-                --------------------------------------------------------------------------------
-                local allow = true
-                if clipType == "sync-clip" then
-                    if ignoreFirstNodeInSyncClip then
-                        allow = false
-                        ignoreFirstNodeInSyncClip = false
-                    end
-                end
-
-                if allow and connectedClipType == "asset-clip" or connectedClipType == "mc-clip" or connectedClipType == "sync-clip" then
+                if connectedClipType == "asset-clip" or connectedClipType == "mc-clip" or connectedClipType == "sync-clip" then
                     --------------------------------------------------------------------------------
                     -- Save the "ref" of the clip for later:
                     --------------------------------------------------------------------------------
@@ -356,21 +344,22 @@ local function processFCPXML(path)
                         local titleName = titles[titleID]["name"]
                         local titleOffset = titles[titleID]["offset"]
 
-                        local titleOffsetNumber = time.new(titleOffset)
-                        local currentConnectedClipOffsetNumber = time.new(currentConnectedClipOffset)
-                        local newOffset = time.sub(titleOffsetNumber, currentConnectedClipOffsetNumber)
+                        local titleOffsetNumber, denominator = timeStringToSeconds(titleOffset)
+
+                        local currentConnectedClipOffsetNumber = timeStringToSeconds(currentConnectedClipOffset)
+                        local newOffset = titleOffsetNumber - currentConnectedClipOffsetNumber
 
                         --------------------------------------------------------------------------------
                         -- If it's a sync-clip we need to add the start time to our new offset value:
                         --------------------------------------------------------------------------------
                         if syncClipStart then
-                            local syncClipStartNumber = time.new(syncClipStart)
-                            newOffset = time.add(newOffset, syncClipStartNumber)
+                            local syncClipStartNumber = timeStringToSeconds(syncClipStart)
+                            newOffset = newOffset + syncClipStartNumber
                         end
 
-                        local newTimeString = tostring(newOffset)
+                        local newTimeString = numberToTimeString(newOffset, denominator)
 
-                        if newOffset >= time.new("0s") then
+                        if newOffset >= 0 then
                             --------------------------------------------------------------------------------
                             -- The title aligns with the connected clip:
                             --------------------------------------------------------------------------------
