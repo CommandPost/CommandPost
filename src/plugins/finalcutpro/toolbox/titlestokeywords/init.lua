@@ -17,17 +17,16 @@ local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
+local time                      = require "cp.apple.fcpxml.time"
 local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
-local numberToTimeString        = fcpxml.numberToTimeString
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
-local timeStringToSeconds       = fcpxml.timeStringToSeconds
 local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
@@ -232,19 +231,19 @@ local function processFCPXML(path)
                     local titleAttributes = clipNode:attributes()
 
                     local duration = titleAttributes and titleAttributes["duration"]
-                    local durationInSeconds = timeStringToSeconds(duration)
-                    titles[titleCount]["duration"]      = durationInSeconds
+                    local durationInSeconds = time.new(duration)
+                    titles[titleCount]["duration"] = durationInSeconds
 
                     local offset = titleAttributes and titleAttributes["offset"]
-                    local offsetInSeconds = timeStringToSeconds(offset) or 0
+                    local offsetInSeconds = time.new(offset or "0s")
 
-                    local parentStartInSeconds = timeStringToSeconds(parentStart) or 0
-                    local parentOffsetInSeconds = timeStringToSeconds(parentOffset) or 0
+                    local parentStartInSeconds = time.new(parentStart or "0s")
+                    local parentOffsetInSeconds = time.new(parentOffset or "0s")
 
                     if parentStart then
-                        titles[titleCount]["positionOnTimeline"] = offsetInSeconds - parentStartInSeconds
+                        titles[titleCount]["positionOnTimeline"] = time.sub(offsetInSeconds, parentStartInSeconds)
                     else
-                        titles[titleCount]["positionOnTimeline"] = offsetInSeconds + parentOffsetInSeconds
+                        titles[titleCount]["positionOnTimeline"] = time.add(offsetInSeconds, parentOffsetInSeconds)
                     end
 
                     --------------------------------------------------------------------------------
@@ -281,6 +280,15 @@ local function processFCPXML(path)
         end
     end
 
+    for _, v in ipairs(titles) do
+        log.df("name: %s", v.name)
+        log.df("positionOnTimeline: %s", time.tonumber(v.positionOnTimeline))
+        log.df("duration: %s", time.tonumber(v.duration))
+        log.df("-----")
+    end
+
+    do return end
+
     --------------------------------------------------------------------------------
     -- Iterate all the spine children again to test each clip on the timeline:
     --------------------------------------------------------------------------------
@@ -293,13 +301,13 @@ local function processFCPXML(path)
             local nodeAttributes = node:attributes()
 
             local currentStart = nodeAttributes and nodeAttributes["start"]
-            local currentStartInSeconds = timeStringToSeconds(currentStart)
+            local currentStartInSeconds = time.new(currentStart)
 
             local currentPosition = nodeAttributes and nodeAttributes["offset"]
-            local currentPositionInSeconds, denominator = timeStringToSeconds(currentPosition)
+            local currentPositionInSeconds, denominator = time.new(currentPosition)
 
             local currentDuration = nodeAttributes and nodeAttributes["duration"]
-            local currentDurationInSeconds = timeStringToSeconds(currentDuration)
+            local currentDurationInSeconds = time.new(currentDuration)
 
             local currentRef = nodeAttributes and nodeAttributes["ref"]
             if clipType == "sync-clip" then
@@ -326,9 +334,9 @@ local function processFCPXML(path)
                     local titleDuration = currentTitle.duration
                     local titleName = currentTitle.name
 
-                    if titlePosition and titlePosition >= currentPositionInSeconds and titlePosition <= (currentPositionInSeconds + currentDurationInSeconds) then
-                        local newOffset = titlePosition - currentPositionInSeconds
-                        local newOffsetString = numberToTimeString(newOffset, denominator)
+                    if titlePosition and titlePosition >= currentPositionInSeconds and titlePosition <= (time.add(currentPositionInSeconds, currentDurationInSeconds)) then
+                        local newOffset = time.sub(titlePosition, currentPositionInSeconds)
+                        local newOffsetString = time.tostring(newOffset)
 
                         --------------------------------------------------------------------------------
                         -- Add a new title:
@@ -336,7 +344,7 @@ local function processFCPXML(path)
                         titles[titleCount]                  = {}
                         titles[titleCount]["clipType"]      = clipType
                         titles[titleCount]["ref"]           = currentRef
-                        titles[titleCount]["duration"]      = numberToTimeString(titleDuration, denominator)
+                        titles[titleCount]["duration"]      = time.tostring(titleDuration)
                         titles[titleCount]["name"]          = titleName
                         titles[titleCount]["offset"]        = newOffsetString
 
@@ -362,7 +370,7 @@ local function processFCPXML(path)
                     local connectedClipAttributes = clipNode:attributes()
 
                     local currentConnectedClipOffset = connectedClipAttributes and connectedClipAttributes["offset"]
-                    local currentConnectedClipOffsetInSeconds = timeStringToSeconds(currentConnectedClipOffset)
+                    local currentConnectedClipOffsetInSeconds = time.new(currentConnectedClipOffset)
 
                     local currentConnectedClipRef = connectedClipAttributes and connectedClipAttributes["ref"]
                     if connectedClipType == "sync-clip" then
@@ -393,9 +401,9 @@ local function processFCPXML(path)
                     --------------------------------------------------------------------------------
                     local currentConnectedClipPositionOnTimeline
                     if currentStartInSeconds then
-                        currentConnectedClipPositionOnTimeline = currentConnectedClipOffsetInSeconds - currentStartInSeconds
+                        currentConnectedClipPositionOnTimeline = time.sub(currentConnectedClipOffsetInSeconds, currentStartInSeconds)
                     else
-                        currentConnectedClipPositionOnTimeline = currentConnectedClipOffsetInSeconds + currentPositionInSeconds
+                        currentConnectedClipPositionOnTimeline = time.add(currentConnectedClipOffsetInSeconds, currentPositionInSeconds)
                     end
 
                     --------------------------------------------------------------------------------
@@ -406,9 +414,9 @@ local function processFCPXML(path)
                         local titleDuration = currentTitle.duration
                         local titleName = currentTitle.name
 
-                        if titlePosition and titlePosition >= currentConnectedClipPositionOnTimeline and titlePosition <= (currentConnectedClipPositionOnTimeline + currentDurationInSeconds) then
-                            local newOffset = titlePosition - currentConnectedClipPositionOnTimeline
-                            local newOffsetString = numberToTimeString(newOffset, denominator)
+                        if titlePosition and titlePosition >= currentConnectedClipPositionOnTimeline and titlePosition <= (time.add(currentConnectedClipPositionOnTimeline, currentDurationInSeconds)) then
+                            local newOffset = time.sub(titlePosition, currentConnectedClipPositionOnTimeline)
+                            local newOffsetString = time.tostring(newOffset)
 
                             --------------------------------------------------------------------------------
                             -- Add a new title:
@@ -416,7 +424,7 @@ local function processFCPXML(path)
                             titles[titleCount]                  = {}
                             titles[titleCount]["clipType"]      = connectedClipType
                             titles[titleCount]["ref"]           = currentConnectedClipRef
-                            titles[titleCount]["duration"]      = numberToTimeString(titleDuration, denominator)
+                            titles[titleCount]["duration"]      = time.tostring(titleDuration)
                             titles[titleCount]["name"]          = titleName
                             titles[titleCount]["offset"]        = newOffsetString
 
