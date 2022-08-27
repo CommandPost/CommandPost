@@ -109,6 +109,21 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.between() -> boolean
+--- Function
+--- Is a value between the minimum and the maximum value?
+---
+--- Parameters:
+---  * value - the value to check
+---  * min - the minimum value
+---  * max - the maximum value
+---
+--- Returns:
+---  * A boolean
+function tools.between(value, min, max)
+  return value >= min and value <= max
+end
+
 --- cp.tools.appleScriptViaTask() -> none
 --- Function
 --- Triggers an AppleScript command via `hs.task` to avoid potential memory leaks in `hs.osascript.applescript`.
