@@ -202,8 +202,12 @@ local function processFCPXML(path)
             -- Save the parent "start" and "offset" of the clip for later use:
             --------------------------------------------------------------------------------
             local nodeAttributes = node:attributes()
+
             local parentStart = nodeAttributes and nodeAttributes["start"]
+            local parentStartAsTime = time.new(parentStart)
+
             local parentOffset = nodeAttributes and nodeAttributes["offset"]
+            local parentOffsetAsTime = time.new(parentOffset)
 
             --------------------------------------------------------------------------------
             -- Iterate all the nodes of the clip:
@@ -234,22 +238,7 @@ local function processFCPXML(path)
                     local offset = titleAttributes and titleAttributes["offset"]
                     local offsetAsTime = time.new(offset)
 
-                    local parentStartAsTime = time.new(parentStart)
-                    local parentOffsetAsTime = time.new(parentOffset)
-
-                    local positionOnTimelineAsTime
-                    if parentStart then
-                        positionOnTimelineAsTime = time.sub(offsetAsTime, parentStartAsTime)
-                    else
-                        positionOnTimelineAsTime = time.add(offsetAsTime, parentOffsetAsTime)
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- If the parent is a gap, we need to add back in the parent offset:
-                    --------------------------------------------------------------------------------
-                    if parentClipType == "gap" then
-                        positionOnTimelineAsTime = time.add(positionOnTimelineAsTime, parentOffsetAsTime)
-                    end
+                    local positionOnTimelineAsTime = offsetAsTime - parentStartAsTime + parentOffsetAsTime
 
                     titles[titleCount]["positionOnTimelineAsTime"] = positionOnTimelineAsTime
 
@@ -282,15 +271,17 @@ local function processFCPXML(path)
                     -- Debugging:
                     --------------------------------------------------------------------------------
                     --[[
+                    log.df("-----")
                     log.df("titleCount: %s", titleCount)
                     log.df("parentClipType: %s", parentClipType)
                     log.df("clipType: %s", clipType)
                     log.df("name: %s", titleNodeName)
-                    log.df("offset: %s", offset)
-                    log.df("duration: %s", duration)
-                    log.df("parentStart: %s", parentStart)
-                    log.df("parentOffset: %s", parentOffset)
+                    log.df("offset: %s", time.tonumber(offsetAsTime))
+                    log.df("duration: %s", time.tonumber(durationAsTime))
+                    log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
+                    log.df("parentOffsetAsTime: %s", time.tonumber(parentOffsetAsTime))
                     log.df("positionOnTimelineAsTime: %s", time.tonumber(positionOnTimelineAsTime))
+                    log.df("-----")
                     --]]
 
                     --------------------------------------------------------------------------------
@@ -307,6 +298,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     --[[
     for _, v in ipairs(titles) do
+        log.df("-----")
         log.df("name: %s", v.name)
         log.df("positionOnTimelineAsTime: %s", time.tonumber(v.positionOnTimelineAsTime))
         log.df("duration: %s", time.tonumber(v.duration))
@@ -384,6 +376,7 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Then we see if there's any other video clips above the primary storyline:
             --------------------------------------------------------------------------------
+            --[[
             local ignoreFirstNodeInSyncClip = true
             local connectedClips = node:children() or {}
             for _, connectedClip in pairs(connectedClips) do
@@ -426,30 +419,7 @@ local function processFCPXML(path)
                         end
                     end
 
-                    --------------------------------------------------------------------------------
-                    -- If it's a sync-clip we need to get the sync-clip start attribute as well:
-                    --------------------------------------------------------------------------------
-                    local syncClipStart
-                    if connectedClipType == "sync-clip" then
-                        syncClipStart = connectedClipAttributes and connectedClipAttributes["start"]
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- Take into account the parent clip's offset:
-                    --------------------------------------------------------------------------------
-                    local connectedClipPositionOnTimeline
-                    if parentStart then
-                        connectedClipPositionOnTimeline = time.sub(connectedClipOffsetAsTime, parentStartAsTime)
-                    else
-                        connectedClipPositionOnTimeline = time.add(connectedClipOffsetAsTime, parentOffsetAsTime)
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- If the parent is a gap, we need to add back in the parent offset:
-                    --------------------------------------------------------------------------------
-                    if parentClipType == "gap" then
-                        connectedClipPositionOnTimeline = time.add(connectedClipPositionOnTimeline, parentOffsetAsTime)
-                    end
+                    local connectedClipPositionOnTimeline = connectedClipOffsetAsTime - parentStartAsTime + parentOffsetAsTime
 
                     --------------------------------------------------------------------------------
                     -- Check to see if the current clip overlaps any of our titles:
@@ -481,6 +451,7 @@ local function processFCPXML(path)
                     end
                 end
             end
+            --]]
         end
     end
 
