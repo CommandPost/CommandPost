@@ -22,6 +22,7 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
+local between                   = tools.between
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
 local replace                   = tools.replace
@@ -147,6 +148,9 @@ local function processFCPXML(path)
     local titles = {}
     local titleCount = 1
 
+    local titlesToAdd = {}
+    local titlesToAddCount = 1
+
     --------------------------------------------------------------------------------
     -- Open the FCPXML document:
     --------------------------------------------------------------------------------
@@ -238,6 +242,10 @@ local function processFCPXML(path)
                     local offset = titleAttributes and titleAttributes["offset"]
                     local offsetAsTime = time.new(offset)
 
+                    --------------------------------------------------------------------------------
+                    -- Connected Clip Position on Timeline =
+                    -- Connected Clip Offset - Parent Start Time + Parent Offset
+                    --------------------------------------------------------------------------------
                     local positionOnTimelineAsTime = offsetAsTime - parentStartAsTime + parentOffsetAsTime
 
                     titles[titleCount]["positionOnTimelineAsTime"] = positionOnTimelineAsTime
@@ -297,13 +305,15 @@ local function processFCPXML(path)
     -- Debugging:
     --------------------------------------------------------------------------------
     --[[
+    log.df("-----------------------------------------------------------")
+    log.df("TITLES:")
     for _, v in ipairs(titles) do
-        log.df("-----")
         log.df("name: %s", v.name)
         log.df("positionOnTimelineAsTime: %s", time.tonumber(v.positionOnTimelineAsTime))
         log.df("duration: %s", time.tonumber(v.duration))
         log.df("-----")
     end
+    log.df("-----------------------------------------------------------")
     --]]
 
     --------------------------------------------------------------------------------
@@ -347,28 +357,53 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             if parentClipType ~= "gap" then
                 for _, currentTitle in ipairs(titles) do
-                    local titlePosition = currentTitle.positionOnTimelineAsTime
-                    local titleDuration = currentTitle.duration
-                    local titleName = currentTitle.name
 
-                    if titlePosition and titlePosition >= parentOffsetAsTime and titlePosition <= (time.add(parentOffsetAsTime, parentDurationAsTime)) then
-                        local newOffset = time.sub(titlePosition, parentOffsetAsTime)
-                        local newOffsetString = time.tostring(newOffset)
+                    local titleName                         = currentTitle.name
+                    local titlePositionOnTimelineAsTime     = currentTitle.positionOnTimelineAsTime
+                    local titleDurationAsTime               = currentTitle.duration
+
+                    local titleEndAsTime                    = parentOffsetAsTime + parentDurationAsTime
+
+                    --------------------------------------------------------------------------------
+                    -- Is the title position between the clip start time and end time?
+                    --------------------------------------------------------------------------------
+                    if between(titlePositionOnTimelineAsTime, parentOffsetAsTime, parentOffsetAsTime + parentDurationAsTime) then
+                        local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - parentOffsetAsTime
+
+                        local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
+                        local newOffsetString = time.tostring(newOffsetAsTime)
+
+                        --[[
+                        log.df("----------------")
+                        log.df("parentClipType: %s", parentClipType)
+                        log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
+                        log.df("parentOffsetAsTime: %s", time.tonumber(parentOffsetAsTime))
+                        log.df("parentDurationAsTime: %s", time.tonumber(parentDurationAsTime))
+                        log.df("--")
+                        log.df("titleName: %s", titleName)
+                        log.df("titlePositionOnTimelineAsTime: %s", time.tonumber(titlePositionOnTimelineAsTime))
+                        log.df("titleDurationAsTime: %s", titleDurationAsTime)
+                        log.df("--")
+                        log.df("differenceBetweenClipStartAndTitleStartAsTime: %s", time.tonumber(differenceBetweenClipStartAndTitleStartAsTime))
+                        log.df("--")
+                        log.df("newOffsetAsTime: %s", time.tonumber(newOffsetAsTime))
+                        log.df("----------------")
+                        --]]
 
                         --------------------------------------------------------------------------------
                         -- Add a new title:
                         --------------------------------------------------------------------------------
-                        titles[titleCount]                  = {}
-                        titles[titleCount]["clipType"]      = parentClipType
-                        titles[titleCount]["ref"]           = parentRef
-                        titles[titleCount]["duration"]      = time.tostring(titleDuration)
-                        titles[titleCount]["name"]          = titleName
-                        titles[titleCount]["offset"]        = newOffsetString
+                        titlesToAdd[titlesToAddCount]                  = {}
+                        titlesToAdd[titlesToAddCount]["clipType"]      = parentClipType
+                        titlesToAdd[titlesToAddCount]["ref"]           = parentRef
+                        titlesToAdd[titlesToAddCount]["duration"]      = time.tostring(titleDurationAsTime)
+                        titlesToAdd[titlesToAddCount]["name"]          = titleName
+                        titlesToAdd[titlesToAddCount]["offset"]        = newOffsetString
 
                         --------------------------------------------------------------------------------
                         -- Increment the title count:
                         --------------------------------------------------------------------------------
-                        titleCount = titleCount + 1
+                        titlesToAddCount = titlesToAddCount + 1
                     end
                 end
             end
@@ -376,7 +411,6 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Then we see if there's any other video clips above the primary storyline:
             --------------------------------------------------------------------------------
-            --[[
             local ignoreFirstNodeInSyncClip = true
             local connectedClips = node:children() or {}
             for _, connectedClip in pairs(connectedClips) do
@@ -399,8 +433,14 @@ local function processFCPXML(path)
                     --------------------------------------------------------------------------------
                     local connectedClipAttributes = connectedClip:attributes()
 
+                    local connectedClipStart = connectedClipAttributes and connectedClipAttributes["start"]
+                    local connectedClipStartAsTime = time.new(connectedClipStart)
+
                     local connectedClipOffset = connectedClipAttributes and connectedClipAttributes["offset"]
                     local connectedClipOffsetAsTime = time.new(connectedClipOffset)
+
+                    local connectedClipDuration = connectedClipAttributes and connectedClipAttributes["duration"]
+                    local connectedClipDurationAsTime = time.new(connectedClipDuration)
 
                     local connectedClipRef = connectedClipAttributes and connectedClipAttributes["ref"]
 
@@ -419,46 +459,83 @@ local function processFCPXML(path)
                         end
                     end
 
-                    local connectedClipPositionOnTimeline = connectedClipOffsetAsTime - parentStartAsTime + parentOffsetAsTime
+                    --------------------------------------------------------------------------------
+                    -- Connected Clip Position on Timeline =
+                    -- Connected Clip Offset - Parent Start Time + Parent Offset
+                    --------------------------------------------------------------------------------
+                    local connectedClipPositionOnTimelineAsTime = connectedClipOffsetAsTime - parentStartAsTime + parentOffsetAsTime
 
                     --------------------------------------------------------------------------------
                     -- Check to see if the current clip overlaps any of our titles:
                     --------------------------------------------------------------------------------
                     for _, currentTitle in ipairs(titles) do
-                        local titlePosition = currentTitle.positionOnTimelineAsTime
-                        local titleDuration = currentTitle.duration
-                        local titleName = currentTitle.name
 
-                        if titlePosition and titlePosition >= connectedClipPositionOnTimeline and titlePosition <= (time.add(connectedClipPositionOnTimeline, parentDurationAsTime)) then
-                            local newOffset = time.sub(titlePosition, connectedClipPositionOnTimeline)
-                            local newOffsetString = time.tostring(newOffset)
+                        local titleName                         = currentTitle.name
+                        local titlePositionOnTimelineAsTime     = currentTitle.positionOnTimelineAsTime
+                        local titleDurationAsTime               = currentTitle.duration
+
+                        local titleEndAsTime                    = parentOffsetAsTime + parentDurationAsTime
+
+                        --------------------------------------------------------------------------------
+                        -- Is the title position between the clip start time and end time?
+                        --------------------------------------------------------------------------------
+                        if between(titlePositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime) then
+
+                            --local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - parentOffsetAsTime
+
+                            --local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
+                            --local newOffsetString = time.tostring(newOffsetAsTime)
+
+                            local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - connectedClipPositionOnTimelineAsTime
+
+                            local newOffsetAsTime = connectedClipStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
+                            local newOffsetString = time.tostring(newOffsetAsTime)
+
+                            log.df("----------------")
+                            log.df("parentClipType: %s", parentClipType)
+                            log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
+                            log.df("parentOffsetAsTime: %s", time.tonumber(parentOffsetAsTime))
+                            log.df("parentDurationAsTime: %s", time.tonumber(parentDurationAsTime))
+                            log.df("--")
+                            log.df("connectedClipStartAsTime: %s", time.tonumber(connectedClipStartAsTime))
+                            log.df("connectedClipOffsetAsTime: %s", time.tonumber(connectedClipOffsetAsTime))
+                            log.df("connectedClipDurationAsTime: %s", time.tonumber(connectedClipDurationAsTime))
+
+                            log.df("--")
+                            log.df("titleName: %s", titleName)
+                            log.df("titlePositionOnTimelineAsTime: %s", time.tonumber(titlePositionOnTimelineAsTime))
+                            log.df("titleDurationAsTime: %s", titleDurationAsTime)
+                            log.df("--")
+                            log.df("differenceBetweenClipStartAndTitleStartAsTime: %s", time.tonumber(differenceBetweenClipStartAndTitleStartAsTime))
+                            log.df("--")
+                            log.df("newOffsetAsTime: %s", time.tonumber(newOffsetAsTime))
+                            log.df("----------------")
 
                             --------------------------------------------------------------------------------
                             -- Add a new title:
                             --------------------------------------------------------------------------------
-                            titles[titleCount]                  = {}
-                            titles[titleCount]["clipType"]      = connectedClipType
-                            titles[titleCount]["ref"]           = connectedClipRef
-                            titles[titleCount]["duration"]      = time.tostring(titleDuration)
-                            titles[titleCount]["name"]          = titleName
-                            titles[titleCount]["offset"]        = newOffsetString
+                            titlesToAdd[titlesToAddCount]                  = {}
+                            titlesToAdd[titlesToAddCount]["clipType"]      = connectedClipType
+                            titlesToAdd[titlesToAddCount]["ref"]           = connectedClipRef
+                            titlesToAdd[titlesToAddCount]["duration"]      = time.tostring(titleDurationAsTime)
+                            titlesToAdd[titlesToAddCount]["name"]          = titleName
+                            titlesToAdd[titlesToAddCount]["offset"]        = newOffsetString
 
                             --------------------------------------------------------------------------------
                             -- Increment the title count:
                             --------------------------------------------------------------------------------
-                            titleCount = titleCount + 1
+                            titlesToAddCount = titlesToAddCount + 1
                         end
                     end
                 end
             end
-            --]]
         end
     end
 
     --------------------------------------------------------------------------------
     -- Abort - no Titles!
     --------------------------------------------------------------------------------
-    if tableCount(titles) == 0 then
+    if tableCount(titlesToAdd) == 0 then
         local webview = mod._manager.getWebview()
         if webview then
             webviewAlert(webview, function() end, i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"), i18n("ok"), nil, "warning")
@@ -504,7 +581,7 @@ local function processFCPXML(path)
             -- Add markers for asset-clip and mc-clip's:
             --------------------------------------------------------------------------------
             local attributes = eventNode:attributes()
-            for _, v in pairs(titles) do
+            for _, v in pairs(titlesToAdd) do
                 if v.ref == attributes.ref and v.clipType == "asset-clip" then
                     --------------------------------------------------------------------------------
                     -- DTD v1.10:
@@ -592,7 +669,7 @@ local function processFCPXML(path)
                 local syncClipNodeName = syncClipNode:name()
                 if syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
                     local attributes = syncClipNode:attributes()
-                    for _, v in pairs(titles) do
+                    for _, v in pairs(titlesToAdd) do
                         if v.ref == attributes.ref and v.clipType == "sync-clip" then
                             --------------------------------------------------------------------------------
                             -- DTD v1.10:
