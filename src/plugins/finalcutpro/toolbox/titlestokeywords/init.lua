@@ -231,13 +231,10 @@ local function processFCPXML(path)
                     --------------------------------------------------------------------------------
                     -- Work out the titles position in relation to the timeline:
                     --------------------------------------------------------------------------------
-                    titles[titleCount] = {}
-
                     local titleAttributes = clipNode:attributes()
 
                     local duration = titleAttributes and titleAttributes["duration"]
                     local durationAsTime = time.new(duration)
-                    titles[titleCount]["duration"] = durationAsTime
 
                     local offset = titleAttributes and titleAttributes["offset"]
                     local offsetAsTime = time.new(offset)
@@ -247,8 +244,6 @@ local function processFCPXML(path)
                     -- Connected Clip Offset - Parent Start Time + Parent Offset
                     --------------------------------------------------------------------------------
                     local positionOnTimelineAsTime = offsetAsTime - parentStartAsTime + parentOffsetAsTime
-
-                    titles[titleCount]["positionOnTimelineAsTime"] = positionOnTimelineAsTime
 
                     --------------------------------------------------------------------------------
                     -- Get the Titles Names:
@@ -267,54 +262,27 @@ local function processFCPXML(path)
                                 end
                             end
                         end
-                        titles[titleCount]["name"] = titleNodeName
-                        uniqueTitleNames[titleNodeName] = true
                     else
                         titleNodeName = titleAttributes["name"]
-                        titles[titleCount]["name"] = titleNodeName
-                        uniqueTitleNames[titleNodeName] = true
                     end
 
                     --------------------------------------------------------------------------------
-                    -- Debugging:
+                    -- Keep track of unique title names:
                     --------------------------------------------------------------------------------
-                    --[[
-                    log.df("-----")
-                    log.df("titleCount: %s", titleCount)
-                    log.df("parentClipType: %s", parentClipType)
-                    log.df("clipType: %s", clipType)
-                    log.df("name: %s", titleNodeName)
-                    log.df("offset: %s", time.tonumber(offsetAsTime))
-                    log.df("duration: %s", time.tonumber(durationAsTime))
-                    log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
-                    log.df("parentOffsetAsTime: %s", time.tonumber(parentOffsetAsTime))
-                    log.df("positionOnTimelineAsTime: %s", time.tonumber(positionOnTimelineAsTime))
-                    log.df("-----")
-                    --]]
+                    uniqueTitleNames[titleNodeName] = true
 
                     --------------------------------------------------------------------------------
-                    -- Increment the title count:
+                    -- Save the title data to a table:
                     --------------------------------------------------------------------------------
+                    titles[titleCount] = {}
+                    titles[titleCount]["name"]                      = titleNodeName
+                    titles[titleCount]["durationAsTime"]            = durationAsTime
+                    titles[titleCount]["positionOnTimelineAsTime"]  = positionOnTimelineAsTime
                     titleCount = titleCount + 1
                 end
             end
         end
     end
-
-    --------------------------------------------------------------------------------
-    -- Debugging:
-    --------------------------------------------------------------------------------
-    --[[
-    log.df("-----------------------------------------------------------")
-    log.df("TITLES:")
-    for _, v in ipairs(titles) do
-        log.df("name: %s", v.name)
-        log.df("positionOnTimelineAsTime: %s", time.tonumber(v.positionOnTimelineAsTime))
-        log.df("duration: %s", time.tonumber(v.duration))
-        log.df("-----")
-    end
-    log.df("-----------------------------------------------------------")
-    --]]
 
     --------------------------------------------------------------------------------
     -- Iterate all the spine children again to test each clip on the timeline:
@@ -360,7 +328,7 @@ local function processFCPXML(path)
 
                     local titleName                         = currentTitle.name
                     local titlePositionOnTimelineAsTime     = currentTitle.positionOnTimelineAsTime
-                    local titleDurationAsTime               = currentTitle.duration
+                    local titleDurationAsTime               = currentTitle.durationAsTime
 
                     --------------------------------------------------------------------------------
                     -- Is the title position between the clip start time and end time?
@@ -371,22 +339,7 @@ local function processFCPXML(path)
                         local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                         local newOffsetString = time.tostring(newOffsetAsTime)
 
-                        --[[
-                        log.df("----------------")
-                        log.df("parentClipType: %s", parentClipType)
-                        log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
-                        log.df("parentOffsetAsTime: %s", time.tonumber(parentOffsetAsTime))
-                        log.df("parentDurationAsTime: %s", time.tonumber(parentDurationAsTime))
-                        log.df("--")
-                        log.df("titleName: %s", titleName)
-                        log.df("titlePositionOnTimelineAsTime: %s", time.tonumber(titlePositionOnTimelineAsTime))
-                        log.df("titleDurationAsTime: %s", titleDurationAsTime)
-                        log.df("--")
-                        log.df("differenceBetweenClipStartAndTitleStartAsTime: %s", time.tonumber(differenceBetweenClipStartAndTitleStartAsTime))
-                        log.df("--")
-                        log.df("newOffsetAsTime: %s", time.tonumber(newOffsetAsTime))
-                        log.df("----------------")
-                        --]]
+                        local titleDurationString = time.tostring(titleDurationAsTime)
 
                         --------------------------------------------------------------------------------
                         -- Add a new title:
@@ -394,7 +347,7 @@ local function processFCPXML(path)
                         titlesToAdd[titlesToAddCount]                  = {}
                         titlesToAdd[titlesToAddCount]["clipType"]      = parentClipType
                         titlesToAdd[titlesToAddCount]["ref"]           = parentRef
-                        titlesToAdd[titlesToAddCount]["duration"]      = time.tostring(titleDurationAsTime)
+                        titlesToAdd[titlesToAddCount]["duration"]      = titleDurationString
                         titlesToAdd[titlesToAddCount]["name"]          = titleName
                         titlesToAdd[titlesToAddCount]["offset"]        = newOffsetString
 
@@ -470,7 +423,7 @@ local function processFCPXML(path)
 
                         local titleName                         = currentTitle.name
                         local titlePositionOnTimelineAsTime     = currentTitle.positionOnTimelineAsTime
-                        local titleDurationAsTime               = currentTitle.duration
+                        local titleDurationAsTime               = currentTitle.durationAsTime
 
                         --------------------------------------------------------------------------------
                         -- Is the title position between the clip start time and end time?
@@ -482,26 +435,7 @@ local function processFCPXML(path)
                             local newOffsetAsTime = connectedClipStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                             local newOffsetString = time.tostring(newOffsetAsTime)
 
-                            --[[
-                            log.df("----------------")
-                            log.df("parentClipType: %s", parentClipType)
-                            log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
-                            log.df("parentOffsetAsTime: %s", time.tonumber(parentOffsetAsTime))
-                            log.df("parentDurationAsTime: %s", time.tonumber(parentDurationAsTime))
-                            log.df("--")
-                            log.df("connectedClipStartAsTime: %s", time.tonumber(connectedClipStartAsTime))
-                            log.df("connectedClipOffsetAsTime: %s", time.tonumber(connectedClipOffsetAsTime))
-                            log.df("connectedClipDurationAsTime: %s", time.tonumber(connectedClipDurationAsTime))
-                            log.df("--")
-                            log.df("titleName: %s", titleName)
-                            log.df("titlePositionOnTimelineAsTime: %s", time.tonumber(titlePositionOnTimelineAsTime))
-                            log.df("titleDurationAsTime: %s", titleDurationAsTime)
-                            log.df("--")
-                            log.df("differenceBetweenClipStartAndTitleStartAsTime: %s", time.tonumber(differenceBetweenClipStartAndTitleStartAsTime))
-                            log.df("--")
-                            log.df("newOffsetAsTime: %s", time.tonumber(newOffsetAsTime))
-                            log.df("----------------")
-                            --]]
+                            local titleDurationString = time.tostring(titleDurationAsTime)
 
                             --------------------------------------------------------------------------------
                             -- Add a new title:
@@ -509,7 +443,7 @@ local function processFCPXML(path)
                             titlesToAdd[titlesToAddCount]                  = {}
                             titlesToAdd[titlesToAddCount]["clipType"]      = connectedClipType
                             titlesToAdd[titlesToAddCount]["ref"]           = connectedClipRef
-                            titlesToAdd[titlesToAddCount]["duration"]      = time.tostring(titleDurationAsTime)
+                            titlesToAdd[titlesToAddCount]["duration"]      = titleDurationString
                             titlesToAdd[titlesToAddCount]["name"]          = titleName
                             titlesToAdd[titlesToAddCount]["offset"]        = newOffsetString
 
