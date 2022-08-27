@@ -362,8 +362,6 @@ local function processFCPXML(path)
                     local titlePositionOnTimelineAsTime     = currentTitle.positionOnTimelineAsTime
                     local titleDurationAsTime               = currentTitle.duration
 
-                    local titleEndAsTime                    = parentOffsetAsTime + parentDurationAsTime
-
                     --------------------------------------------------------------------------------
                     -- Is the title position between the clip start time and end time?
                     --------------------------------------------------------------------------------
@@ -474,23 +472,17 @@ local function processFCPXML(path)
                         local titlePositionOnTimelineAsTime     = currentTitle.positionOnTimelineAsTime
                         local titleDurationAsTime               = currentTitle.duration
 
-                        local titleEndAsTime                    = parentOffsetAsTime + parentDurationAsTime
-
                         --------------------------------------------------------------------------------
                         -- Is the title position between the clip start time and end time?
                         --------------------------------------------------------------------------------
                         if between(titlePositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime) then
-
-                            --local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - parentOffsetAsTime
-
-                            --local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
-                            --local newOffsetString = time.tostring(newOffsetAsTime)
 
                             local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - connectedClipPositionOnTimelineAsTime
 
                             local newOffsetAsTime = connectedClipStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                             local newOffsetString = time.tostring(newOffsetAsTime)
 
+                            --[[
                             log.df("----------------")
                             log.df("parentClipType: %s", parentClipType)
                             log.df("parentStartAsTime: %s", time.tonumber(parentStartAsTime))
@@ -500,7 +492,6 @@ local function processFCPXML(path)
                             log.df("connectedClipStartAsTime: %s", time.tonumber(connectedClipStartAsTime))
                             log.df("connectedClipOffsetAsTime: %s", time.tonumber(connectedClipOffsetAsTime))
                             log.df("connectedClipDurationAsTime: %s", time.tonumber(connectedClipDurationAsTime))
-
                             log.df("--")
                             log.df("titleName: %s", titleName)
                             log.df("titlePositionOnTimelineAsTime: %s", time.tonumber(titlePositionOnTimelineAsTime))
@@ -510,6 +501,7 @@ local function processFCPXML(path)
                             log.df("--")
                             log.df("newOffsetAsTime: %s", time.tonumber(newOffsetAsTime))
                             log.df("----------------")
+                            --]]
 
                             --------------------------------------------------------------------------------
                             -- Add a new title:
