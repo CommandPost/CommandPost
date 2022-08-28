@@ -79,7 +79,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    local rangeSelected = fcp.timeline:rangeSelected()
+    local rangeSelected = fcp.timeline:isRangeSelected()
     if not rangeSelected and mod._cache()[cacheID] then
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
@@ -182,48 +182,33 @@ function mod.apply(action)
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
     generators.search:clear()
+    
+    --------------------------------------------------------------------------------
+    -- Make sure "Installed Titles" is selected:
+    --------------------------------------------------------------------------------
+    generators:showInstalledTitles()
 
     --------------------------------------------------------------------------------
     -- Select the Category if provided otherwise just show all:
     --------------------------------------------------------------------------------
     if category then
         generators:showTitlesCategory(category)
-    else
-        generators:showAllTitles()
-    end
-
-    --------------------------------------------------------------------------------
-    -- Make sure "Installed Titles" is selected:
-    --------------------------------------------------------------------------------
-    local group = generators.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledTitlesMenuItem") then
-        generators:showInstalledTitles()
     end
 
     --------------------------------------------------------------------------------
     -- Find the requested Title:
     --------------------------------------------------------------------------------
-    local currentItemsUI = generators:currentItemsUI()
     local whichItem = nil
-    local altWhichItem = nil
-    for _, v in ipairs(currentItemsUI) do
+    local fullName = theme and theme .. " - " .. name
+    for _, v in ipairs(generators.contents) do
         --------------------------------------------------------------------------------
         -- First we try "Theme - Name", if that fails, we just try "Name":
         --------------------------------------------------------------------------------
-        local title = name
-        if theme then
-            title = theme .. " - " .. name
-        end
-        if v:attributeValue("AXTitle") == title then
+        local title = v:title()
+        if title == name or title == fullName then
             whichItem = v
+            break
         end
-        if v:attributeValue("AXTitle") == name then
-            altWhichItem = v
-        end
-    end
-    if whichItem == nil then
-        whichItem = altWhichItem
     end
     if whichItem == nil then
         log.ef("Failed to get whichItem in plugins.finalcutpro.timeline.titles.apply.")
