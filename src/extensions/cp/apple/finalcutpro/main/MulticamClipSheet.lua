@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.main.MulticamClipSheet ===
 ---
---- Represents the `Synchronize Clips` [Sheet](cp.ui.Sheet.md) in Final Cut Pro.
+--- Represents the `New Multicam Clip` [Sheet](cp.ui.Sheet.md) in Final Cut Pro.
 ---
 --- Extends: [cp.ui.Sheet](cp.ui.Sheet.md)
 --- Delegates To: [children](#children)
@@ -124,6 +124,13 @@ end
 --- cp.apple.finalcutpro.main.MulticamClipSheet.multicamClipName <cp.ui.TextField>
 --- Field
 --- The `TextField` for the Multicam Clip Name.
+
+--- cp.apple.finalcutpro.main.CompoundClipSheet.clipName <cp.ui.TextField>
+--- Field
+--- The `TextField` for the Clip Name.
+function MulticamClipSheet.lazy.value:clipName()
+    return self.multicamClipName
+end
 
 --- cp.apple.finalcutpro.main.MulticamClipSheet.inEvent <cp.ui.PopUpButton>
 --- Field

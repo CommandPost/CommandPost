@@ -11,9 +11,10 @@ local axutils                   = require "cp.ui.axutils"
 local Window                    = require "cp.ui.Window"
 
 local Inspector                 = require "cp.apple.finalcutpro.inspector.Inspector"
+local CompoundClipSheet         = require "cp.apple.finalcutpro.main.CompoundClipSheet"
 local PrimaryToolbar            = require "cp.apple.finalcutpro.main.PrimaryToolbar"
 local MulticamClipSheet         = require "cp.apple.finalcutpro.main.MulticamClipSheet"
-local SynchronizeClipsSheet     = require "cp.apple.finalcutpro.main.SynchronizeClipsSheet"
+local SynchronizedClipSheet     = require "cp.apple.finalcutpro.main.SynchronizedClipSheet"
 
 local Do                        = require "cp.rx.go.Do"
 local If                        = require "cp.rx.go.If"
@@ -341,18 +342,26 @@ function PrimaryWindow.lazy.value:alert()
     return self.window.alert
 end
 
+--- cp.apple.finalcutpro.main.PrimaryWindow.compoundClip <cp.apple.finalcutpro.main.CompoundClip>
+--- Field
+--- Provides access to the [Compound Clip Sheet](cp.apple.finalcutpro.main.CompoundClip.md).
+function PrimaryWindow.lazy.value:compoundClip()
+    return CompoundClipSheet(self)
+end
+
+
 --- cp.apple.finalcutpro.main.PrimaryWindow.multicamClip <cp.apple.finalcutpro.main.MulticamClipSheet>
 --- Field
---- Provides access to the Multicam Clip Sheet.
+--- Provides access to the [Multicam Clip Sheet](cp.apple.finalcutpro.cp.apple.finalcutpro.main.MulticamClipSheet.md).
 function PrimaryWindow.lazy.value:multicamClip()
     return MulticamClipSheet(self)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.synchronizeClipsSheet <cp.apple.finalcutpro.main.SynchronizeClipsSheet>
+--- cp.apple.finalcutpro.main.PrimaryWindow.synchronizeClipsSheet <cp.apple.finalcutpro.main.SynchronizedClipSheet>
 --- Field
---- Provides access to the Synchronize Clips Sheet.
+--- Provides access to the [Synchronize Clips Sheet](cp.apple.finalcutpro.cp.apple.finalcutpro.main.SynchronizedClipSheet).
 function PrimaryWindow.lazy.value:synchronizeClips()
-    return SynchronizeClipsSheet(self)
+    return SynchronizedClipSheet(self)
 end
 
 -- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp.viewer`)

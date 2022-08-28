@@ -1,4 +1,4 @@
---- === cp.apple.finalcutpro.main.SynchronizeClipsSheet ===
+--- === cp.apple.finalcutpro.main.SynchronizedClipSheet ===
 ---
 --- Represents the `Synchronize Clips` [Sheet](cp.ui.Sheet.md) in Final Cut Pro.
 ---
@@ -7,7 +7,7 @@
 
 local require               = require
 
--- local log                   = require("hs.logger").new("SynchronizeClipsSheet")
+-- local log                   = require("hs.logger").new("SynchronizedClipSheet")
 
 local strings               = require "cp.apple.finalcutpro.strings"
 local fn                    = require "cp.fn"
@@ -34,7 +34,7 @@ local filter                = fn.value.filter
 local alias, list, oneOf    = has.alias, has.list, has.oneOf
 local optional              = has.optional
 
-local SynchronizeClipsSheet = Sheet:subclass("cp.apple.finalcutpro.main.SynchronizeClipsSheet")
+local SynchronizedClipSheet = Sheet:subclass("cp.apple.finalcutpro.main.SynchronizedClipSheet")
                                 :delegateTo("children", "method")
 
 local SYNCHRONIZED_CLIP_NAME_KEY = "FFAnchoredSequenceSettingsModule_synchronizedClipLabel"
@@ -43,26 +43,26 @@ local function isSynchronizedClipName(value)
     return value == strings:find(SYNCHRONIZED_CLIP_NAME_KEY)
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.matches(element) -> boolean
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.matches(element) -> boolean
 --- Function
---- Checks if the element is a `SynchronizeClipsSheet`.
+--- Checks if the element is a `SynchronizedClipSheet`.
 ---
 --- Parameters:
 ---  * element - An `axuielement` to check.
 ---
 --- Returns:
 ---  * `true` if it matches, otherwise `false`.
-SynchronizeClipsSheet.static.matches = ax.matchesIf(
+SynchronizedClipSheet.static.matches = ax.matchesIf(
     Sheet.matches,
     chain // ax.childrenTopDown >> get(1)
         >> filter(StaticText.matches)
         >> get "AXValue" >> isSynchronizedClipName
 )
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.children <cp.ui.has.UIHandler>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.children <cp.ui.has.UIHandler>
 --- Constant
---- UI Handler for the children of the `SynchronizeClipsSheet`.
-SynchronizeClipsSheet.static.children = list {
+--- UI Handler for the children of the `SynchronizedClipSheet`.
+SynchronizedClipSheet.static.children = list {
     StaticText, alias "synchronizedClipName" { TextField },
     StaticText, alias "inEvent" { PopUpButton },
     StaticText, alias "startingTimecode" { TextField },
@@ -114,29 +114,37 @@ SynchronizeClipsSheet.static.children = list {
     has.ended
 }
 
-function SynchronizeClipsSheet:initialize(parent)
-    local ui = parent.UI:mutate(ax.childMatching(SynchronizeClipsSheet.matches))
+function SynchronizedClipSheet:initialize(parent)
+    local ui = parent.UI:mutate(ax.childMatching(SynchronizedClipSheet.matches))
 
-    Sheet.initialize(self, parent, ui, SynchronizeClipsSheet.children)
+    Sheet.initialize(self, parent, ui, SynchronizedClipSheet.children)
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.synchronizedClipName <cp.ui.TextField>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.synchronizedClipName <cp.ui.TextField>
 --- Field
 --- The `TextField` for the Synchronized Clip Name.
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.inEvent <cp.ui.PopUpButton>
+
+--- cp.apple.finalcutpro.main.CompoundClipSheet.clipName <cp.ui.TextField>
+--- Field
+--- The `TextField` for the Clip Name.
+function SynchronizedClipSheet.lazy.value:clipName()
+    return self.synchronizedClipName
+end
+
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.inEvent <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "In Event" setting.
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.startingTimecode <cp.ui.TextField>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.startingTimecode <cp.ui.TextField>
 --- Field
 --- The `TextField` for the Starting Timecode.
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.useAudioForSynchronization <cp.ui.CheckBox>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.useAudioForSynchronization <cp.ui.CheckBox>
 --- Field
 --- The `CheckBox` for the "Use Audio for Synchronization" setting.
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.disableAudioComponentsOnAVClips <cp.ui.CheckBox>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.disableAudioComponentsOnAVClips <cp.ui.CheckBox>
 --- Field
 --- The `CheckBox` for the "Disable Audio Components on AV Clips" setting.
 
@@ -144,10 +152,10 @@ end
 -- Automatic Settings
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.useCustomSettings <cp.ui.Button>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.useCustomSettings <cp.ui.Button>
 --- Field
 --- The `Button` for the "Use Custom Settings" button.
-function SynchronizeClipsSheet.lazy.value:useCustomSettings()
+function SynchronizedClipSheet.lazy.value:useCustomSettings()
     return self.method.automatic.useCustomSettings
 end
 
@@ -155,80 +163,80 @@ end
 -- Custom Settings
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.synchronization <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.synchronization <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Synchronization" setting.
-function SynchronizeClipsSheet.lazy.value:synchronization()
+function SynchronizedClipSheet.lazy.value:synchronization()
     return self.method.custom.synchronization
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.videoFormat <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.videoFormat <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Video Format" setting.
-function SynchronizeClipsSheet.lazy.value:videoFormat()
+function SynchronizedClipSheet.lazy.value:videoFormat()
     return self.method.custom.videoFormat
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.videoResolutionPreset <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.videoResolutionPreset <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Video Resolution" setting.
-function SynchronizeClipsSheet.lazy.value:videoResolutionPreset()
+function SynchronizedClipSheet.lazy.value:videoResolutionPreset()
     return self.method.custom.videoResolution.preset
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.videoResolutionCustomWidth <cp.ui.TextField>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.videoResolutionCustomWidth <cp.ui.TextField>
 --- Field
 --- The `TextField` for the "Video Resolution Width" setting width.
-function SynchronizeClipsSheet.lazy.value:videoResolutionCustomWidth()
+function SynchronizedClipSheet.lazy.value:videoResolutionCustomWidth()
     return self.method.custom.videoResolution.custom.width
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.videoResolutionCustomHeight <cp.ui.TextField>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.videoResolutionCustomHeight <cp.ui.TextField>
 --- Field
 --- The `TextField` for the "Video Resolution" setting.
-function SynchronizeClipsSheet.lazy.value:videoResolutionCustomHeight()
+function SynchronizedClipSheet.lazy.value:videoResolutionCustomHeight()
     return self.method.custom.videoResolution.custom.height
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.videoRate <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.videoRate <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Video Rate" setting.
-function SynchronizeClipsSheet.lazy.value:videoRate()
+function SynchronizedClipSheet.lazy.value:videoRate()
     return self.method.custom.videoRate
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.renderingCodec <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.renderingCodec <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Rendering Codec" setting.
-function SynchronizeClipsSheet.lazy.value:renderingCodec()
+function SynchronizedClipSheet.lazy.value:renderingCodec()
     return self.method.custom.renderingCodec
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.renderingColorSpace <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.renderingColorSpace <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Rendering Color Space" setting.
-function SynchronizeClipsSheet.lazy.value:renderingColorSpace()
+function SynchronizedClipSheet.lazy.value:renderingColorSpace()
     return self.method.custom.renderingColorSpace
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.audioChannels <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.audioChannels <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Audio Channels" setting.
-function SynchronizeClipsSheet.lazy.value:audioChannels()
+function SynchronizedClipSheet.lazy.value:audioChannels()
     return self.method.custom.audioChannels
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.audioSampleRate <cp.ui.PopUpButton>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.audioSampleRate <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Audio Sample Rate" setting.
-function SynchronizeClipsSheet.lazy.value:audioSampleRate()
+function SynchronizedClipSheet.lazy.value:audioSampleRate()
     return self.method.custom.audioSampleRate
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.useAutomaticSettings <cp.ui.Button>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.useAutomaticSettings <cp.ui.Button>
 --- Field
 --- The `Button` for the "Use Automatic Settings" button.
-function SynchronizeClipsSheet.lazy.value:useAutomaticSettings()
+function SynchronizedClipSheet.lazy.value:useAutomaticSettings()
     return self.method.custom.useAutomaticSettings
 end
 
@@ -238,7 +246,7 @@ end
 
 -- NOTE: Skipping the "Cancel" button because [Sheet](cp.ui.Sheet.md) already defines one.
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.ok <cp.ui.Button>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.ok <cp.ui.Button>
 --- Field
 --- The `Button` for the "Ok" button.
 
@@ -246,10 +254,10 @@ end
 -- Functionality
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet.isAutomatic <cp.prop: boolean, live>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.isAutomatic <cp.prop: boolean, live>
 --- Field
 --- A `boolean` property indicating whether the sheet is in automatic or custom mode.
-function SynchronizeClipsSheet.lazy.prop:isAutomatic()
+function SynchronizedClipSheet.lazy.prop:isAutomatic()
     return prop(
         function()
             return self.useCustomSettings:isShowing()
@@ -269,7 +277,7 @@ end
 -- Other Functions
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet:doShow() <cp.rx.go.Statement>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet:doShow() <cp.rx.go.Statement>
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that attempt to show the sheet.
 ---
@@ -278,7 +286,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` object.
-function SynchronizeClipsSheet.lazy.method:doShow()
+function SynchronizedClipSheet.lazy.method:doShow()
     local app = self:app()
     return If(app:doLaunch())
     :Then(app.browser)
@@ -289,10 +297,10 @@ function SynchronizeClipsSheet.lazy.method:doShow()
         WaitUntil(self.isShowing):TimeoutAfter(2000)
     )
     :Otherwise(false)
-    :Label("SynchronizeClipsSheet:doShow")
+    :Label("SynchronizedClipSheet:doShow")
 end
 
---- cp.apple.finalcutpro.main.SynchronizeClipsSheet:doHide() <cp.rx.go.Statement>
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet:doHide() <cp.rx.go.Statement>
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that attempt to hide the sheet, if it is visible.
 ---
@@ -301,12 +309,12 @@ end
 ---
 --- Returns:
 ---  * The `Statement` object.
-function SynchronizeClipsSheet.lazy.method:doHide()
+function SynchronizedClipSheet.lazy.method:doHide()
     return If(self.isShowing):Is(true):Then(
         self.cancel:doPress()
     )
-    :Label("SynchronizeClipsSheet:doHide")
+    :Label("SynchronizedClipSheet:doHide")
 end
 
 
-return SynchronizeClipsSheet
+return SynchronizedClipSheet
