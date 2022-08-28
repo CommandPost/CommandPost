@@ -138,6 +138,13 @@ end
 --- Field
 --- Returns the `hs.axuielement`s representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
+    return ax.prop(self.UI, "AXContents")
+end
+
+--- cp.ui.ScrollArea.contentsUI <cp.prop: hs.axuielement; read-only; live?>
+--- Field
+--- Returns the `hs.axuielement`s representing the Scroll Area Contents, or `nil` if not available.
+function ScrollArea.lazy.prop:contentsInTopDownOrderUI()
     return self.UI:mutate(chain // ax.attribute "AXContents" >> sort(ax.topDown))
 end
 
@@ -145,7 +152,7 @@ end
 --- Field
 --- Returns the `Element` representing the `ScrollArea` Contents.
 function ScrollArea.lazy.value:contents()
-    return self.contentsHandler:build(self, self.contentsUI)
+    return self.contentsHandler:build(self, self.contentsInTopDownOrderUI)
 end
 
 --- cp.ui.ScrollArea.verticalScrollBar <cp.ui.ScrollBar>

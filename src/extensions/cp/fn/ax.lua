@@ -124,6 +124,8 @@ end
 ---
 --- Returns:
 ---  * A function which will return the `AX` value of the given `name` from the given `uivalue`.
+---
+--- Notes:
 ---  * This is safe to use as a [cp.prop:mutate](cp.prop.md#mutate) getter, since it will resolve the `original` value before getting the named attribute.
 function mod.attribute(name)
     return function(uivalue)
@@ -144,6 +146,8 @@ end
 ---
 --- Returns:
 ---  * A function which will set the `AX` value of the given `name` from the given `uivalue`.
+---
+--- Notes:
 ---  * The `newValue` will be passed to the `setAttributeValue` method of the `uivalue`.
 ---  * The `uivalue` will attempt to be resolved via [uielement](#uielement).
 ---  * This is safe to use as a [cp.prop:mutate](cp.prop.md#mutate) setter, since it will take the `newValue` and `uivalue` in the correct order and resolve the `uivalue`.
