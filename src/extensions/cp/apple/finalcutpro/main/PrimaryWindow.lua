@@ -12,6 +12,7 @@ local Window                    = require "cp.ui.Window"
 
 local Inspector                 = require "cp.apple.finalcutpro.inspector.Inspector"
 local PrimaryToolbar            = require "cp.apple.finalcutpro.main.PrimaryToolbar"
+local MulticamClipSheet         = require "cp.apple.finalcutpro.main.MulticamClipSheet"
 local SynchronizeClipsSheet     = require "cp.apple.finalcutpro.main.SynchronizeClipsSheet"
 
 local Do                        = require "cp.rx.go.Do"
@@ -338,6 +339,13 @@ end
 --- Provides access to any 'Alert' windows on the PrimaryWindow.
 function PrimaryWindow.lazy.value:alert()
     return self.window.alert
+end
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.multicamClip <cp.apple.finalcutpro.main.MulticamClipSheet>
+--- Field
+--- Provides access to the Multicam Clip Sheet.
+function PrimaryWindow.lazy.value:multicamClip()
+    return MulticamClipSheet(self)
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.synchronizeClipsSheet <cp.apple.finalcutpro.main.SynchronizeClipsSheet>
