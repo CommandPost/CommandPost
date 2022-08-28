@@ -260,7 +260,7 @@ function mod.apply(action)
         :Then(If(browserLayout):Then(browser:doLayout(browserLayout)))
         :Now()
 
-        return
+        return true
     end
 
     --------------------------------------------------------------------------------
