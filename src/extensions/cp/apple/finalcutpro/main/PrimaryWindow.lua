@@ -357,10 +357,10 @@ function PrimaryWindow.lazy.value:multicamClip()
     return MulticamClipSheet(self)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.synchronizeClipsSheet <cp.apple.finalcutpro.main.SynchronizedClipSheet>
+--- cp.apple.finalcutpro.main.PrimaryWindow.synchronizedClip <cp.apple.finalcutpro.main.SynchronizedClipSheet>
 --- Field
 --- Provides access to the [Synchronize Clips Sheet](cp.apple.finalcutpro.cp.apple.finalcutpro.main.SynchronizedClipSheet).
-function PrimaryWindow.lazy.value:synchronizeClips()
+function PrimaryWindow.lazy.value:synchronizedClip()
     return SynchronizedClipSheet(self)
 end
 
