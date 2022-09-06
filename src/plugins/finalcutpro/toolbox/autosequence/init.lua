@@ -13,7 +13,6 @@ local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
-local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
@@ -22,15 +21,9 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
-local between                   = tools.between
 local doesIntersect             = time.doesIntersect
-local escapeTilda               = tools.escapeTilda
-local lines                     = tools.lines
-local replace                   = tools.replace
 local spairs                    = tools.spairs
-local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
-local trim                      = tools.trim
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
