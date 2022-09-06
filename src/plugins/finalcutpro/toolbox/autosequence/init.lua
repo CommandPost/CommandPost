@@ -13,6 +13,7 @@ local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
+local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
@@ -23,12 +24,18 @@ local xml                       = require "hs._asm.xml"
 
 local doesIntersect             = time.doesIntersect
 local spairs                    = tools.spairs
+local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
 local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
+
+--- plugins.finalcutpro.toolbox.autosequence.removeGaps <cp.prop: boolean>
+--- Field
+--- Remove Gaps?
+mod.removeGaps = config.prop("toolbox.autosequence.removeGaps", false)
 
 -- renderPanel(context) -> none
 -- Function
@@ -220,6 +227,8 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Iterate through all our clips sorted by start timecode:
     --------------------------------------------------------------------------------
+    local lastEnd = time.new("0s")
+    local laneCount = 1
     for i, clip in spairs(clips, function(t,a,b) return t[a].start < t[b].start end) do
         --------------------------------------------------------------------------------
         -- If we're not already using this clip:
@@ -233,8 +242,11 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- First we need to work out what clips are overlapping with the current clip:
             --------------------------------------------------------------------------------
-            local aStart = clip.start
-            local aDuration = clip.duration
+            local aStart        = clip.start
+            local aDuration     = clip.duration
+            local aEnd          = aStart + aDuration
+
+            local endOfSection  = aEnd
 
             local currentClips = {}
             table.insert(currentClips, clip)
@@ -242,8 +254,9 @@ local function processFCPXML(path)
             for ii = 1, #clips do
                 if i ~= ii and clips[ii].used == false then
 
-                    local bStart = clips[ii].start
-                    local bDuration = clips[ii].duration
+                    local bStart        = clips[ii].start
+                    local bDuration     = clips[ii].duration
+                    local bEnd          = bStart + bDuration
 
                     if doesIntersect(aStart, aDuration, bStart, bDuration) then
                         --------------------------------------------------------------------------------
@@ -252,6 +265,10 @@ local function processFCPXML(path)
                         --------------------------------------------------------------------------------
                         clips[ii].used = true
                         table.insert(currentClips, clips[ii])
+
+                        if bEnd > aEnd then
+                            endOfSection = bEnd
+                        end
                     end
                 end
             end
@@ -260,8 +277,8 @@ local function processFCPXML(path)
             -- Now we sort out our current clips by start timecode to work out which
             -- one goes on the Primary Storyline:
             --------------------------------------------------------------------------------
-            local clipCount = 1
             local firstClip = true
+            local gapStarts
             for _, currentClip in spairs(currentClips, function(t,a,b) return t[a].start < t[b].start end) do
                 if firstClip then
                     --------------------------------------------------------------------------------
@@ -270,8 +287,17 @@ local function processFCPXML(path)
                     firstClip = false
 
                     local node = currentClip.node
-                    node:addAttribute("offset", time.tostring(currentClip.start))
+                    node:addAttribute("offset", time.tostring(currentClip.start - lastEnd))
+
                     spine:insertNode(node)
+
+                    --------------------------------------------------------------------------------
+                    -- If "Remove Gaps" is enabled, then do some extra maths:
+                    --------------------------------------------------------------------------------
+                    if mod.removeGaps() then
+                        gapStarts = (currentClip.start - lastEnd) + currentClip.duration
+                        lastEnd = lastEnd + gapStarts
+                    end
                 else
                     --------------------------------------------------------------------------------
                     -- Subsequent clips get connected to the first clip:
@@ -283,14 +309,89 @@ local function processFCPXML(path)
 
                     node:addAttribute("offset", time.tostring(currentClip.start))
 
-                    node:addAttribute("lane", tostring(clipCount))
-                    clipCount = clipCount + 1
+                    node:addAttribute("lane", tostring(laneCount))
+                    laneCount = laneCount + 1
 
-                    lastNode:insertNode(node)
+                    --------------------------------------------------------------------------------
+                    -- DTD v1.10:
+                    --
+                    -- <!-- A 'sync-clip' is a container for other story elements that are used as a synchronized clip. -->
+                    -- <!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+                    -- <!ELEMENT sync-clip (note?, %timing-params;, %intrinsic-params;, (spine | (%clip_item;) | caption)*, (%marker_item;)*, sync-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
+                    --
+                    -- <!ENTITY % video_filter_item "(filter-video | filter-video-mask)">
+                    -- <!ENTITY % marker_item "(marker | chapter-marker | rating | keyword | analysis-marker)">
+                    --------------------------------------------------------------------------------
+
+                    --------------------------------------------------------------------------------
+                    -- We need to insert our clip BEFORE markers, 'sync-source', 'filter-video',
+                    -- 'filter-video-mask', 'filter-audio' and 'metadata'.
+                    --------------------------------------------------------------------------------
+                    local whereToInsert = lastNode:childCount() + 1
+                    local lastNodeChildren = lastNode:children() or {} -- Just incase there are no children!
+                    local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                    for i, vv in pairs(lastNodeChildren) do
+                        local abortName = vv:name()
+                        if tableContains(abortClipNames, abortName) then
+                            whereToInsert = i
+                            break
+                        end
+                    end
+
+                    lastNode:insertNode(node, whereToInsert)
                 end
+            end
+
+            --------------------------------------------------------------------------------
+            -- If "Remove Gaps" is enabled, add a gap clip on the primary storyline if any
+            -- connected clips are longer than the clip on the primary storyline:
+            --------------------------------------------------------------------------------
+            if mod.removeGaps() and endOfSection > aEnd then
+                --------------------------------------------------------------------------------
+                -- Example:
+                -- <gap name="Gap" offset="3600s" start="3600s" duration="3s">
+                --------------------------------------------------------------------------------
+                spine:addNode("gap")
+
+                local lastChild = spine:childCount()
+                local lastNode = spine:childAtIndex(lastChild - 1)
+
+                local gapDuration = endOfSection - aEnd
+
+                lastNode:addAttribute("name", "Gap")
+                lastNode:addAttribute("offset", time.tostring(gapStarts))
+                lastNode:addAttribute("start", time.tostring(gapStarts))
+                lastNode:addAttribute("duration", time.tostring(gapDuration))
             end
         end
     end
+
+    --------------------------------------------------------------------------------
+    -- Now lets "wrap" the project in an "event" to make it cleaner:
+    --------------------------------------------------------------------------------
+    projectObjects = document:XPathQuery("/fcpxml[1]/project[1]")
+    project = projectObjects and projectObjects[1]
+
+    local fcpxmlObjects = document:XPathQuery("/fcpxml[1]")
+    local fcpxmlObject = fcpxmlObjects and fcpxmlObjects[1]
+
+    local lastChild = fcpxmlObject:childCount()
+    fcpxmlObject:removeNode(lastChild)
+
+    --------------------------------------------------------------------------------
+    -- Example:
+    -- <event name="6-9-2022 2" uid="E9D98126-4F86-4A9C-AB75-71690571C084">
+    --------------------------------------------------------------------------------
+
+    fcpxmlObject:addNode("event")
+
+    lastChild = fcpxmlObject:childCount()
+
+    local event = fcpxmlObject:children()[lastChild]
+
+    event:addAttribute("name", "🎛 Sorted Timelines")
+
+    event:insertNode(project)
 
     --------------------------------------------------------------------------------
     -- Work out if there's only one library currently open, and if so, lets
@@ -350,7 +451,9 @@ end
 --  * None
 local function updateUI()
     local injectScript = mod._manager.injectScript
-    local script = [[]]
+    local script = [[
+        changeCheckedByID("removeGaps", ]] .. tostring(mod.removeGaps()) .. [[);
+    ]]
     injectScript(script)
 end
 
@@ -388,6 +491,16 @@ local function callback(id, params)
             -- Process the FCPXML:
             ---------------------------------------------------
             processFCPXML(path)
+        elseif callbackType == "updateChecked" then
+            --------------------------------------------------------------------------------
+            -- Update Checked:
+            --------------------------------------------------------------------------------
+            local tid = params["id"]
+            local value = params["value"]
+            if tid == "removeGaps" then
+                mod.removeGaps(value)
+            end
+
         elseif callbackType == "updateUI" then
             --------------------------------------------------------------------------------
             -- Update the User Interface:
@@ -436,7 +549,7 @@ function plugin.init(deps, env)
         label           = i18n("autoSequence"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XMLD.icns")),
         tooltip         = i18n("autoSequence"),
-        height          = 260,
+        height          = 300,
     })
     :addContent(1, generateContent, false)
 
