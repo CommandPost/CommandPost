@@ -330,10 +330,10 @@ local function processFCPXML(path)
                     local whereToInsert = lastNode:childCount() + 1
                     local lastNodeChildren = lastNode:children() or {} -- Just incase there are no children!
                     local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
-                    for i, vv in pairs(lastNodeChildren) do
+                    for ii, vv in pairs(lastNodeChildren) do
                         local abortName = vv:name()
                         if tableContains(abortClipNames, abortName) then
-                            whereToInsert = i
+                            whereToInsert = ii
                             break
                         end
                     end
