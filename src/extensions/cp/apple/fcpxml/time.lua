@@ -331,6 +331,67 @@ function time.le(a, b)
     return r.n <= 0
 end
 
+--- cp.apple.fcpxml.time.min(a, b) -> timeObject
+--- Function
+--- Gets the smaller of the two time objects.
+---
+--- Parameters:
+---  * a - A time object.
+---  * b - A time object.
+---
+--- Returns:
+---  * A time object.
+function time.min(a, b)
+    assert(type(a) == "table", "[cp.apple.fcpxml.time.min] First attribute must be a time object.")
+    assert(type(b) == "table", "[cp.apple.fcpxml.time.min] Second attribute must be a time object.")
+
+    return a <= b and a or b
+end
+
+--- cp.apple.fcpxml.time.max(a, b) -> timeObject
+--- Function
+--- Gets the bigger of the two time objects.
+---
+--- Parameters:
+---  * a - A time object.
+---  * b - A time object.
+---
+--- Returns:
+---  * A time object.
+function time.max(a, b)
+    assert(type(a) == "table", "[cp.apple.fcpxml.time.max] First attribute must be a time object.")
+    assert(type(b) == "table", "[cp.apple.fcpxml.time.max] Second attribute must be a time object.")
+
+    return a >= b and a or b
+end
+
+--- cp.apple.fcpxml.time.doesIntersect(aStart, aDuration, bStart, bDuration) -> boolean
+--- Function
+--- Checks to see if two clips intersect.
+---
+--- Parameters:
+---  * aStart - The start time of clip one as a time object.
+---  * aDuration - The duration of clip one as a time object.
+---  * bStart - The start time of clip two as a time object.
+---  * bDuration - The duration of clip two as a time object.
+---
+--- Returns:
+---  * A boolean
+function time.doesIntersect(aStart, aDuration, bStart, bDuration)
+    assert(type(aStart) == "table", "[cp.apple.fcpxml.time.doesIntersect] First attribute must be a time object.")
+    assert(type(aDuration) == "table", "[cp.apple.fcpxml.time.doesIntersect] Second attribute must be a time object.")
+    assert(type(bStart) == "table", "[cp.apple.fcpxml.time.doesIntersect] Third attribute must be a time object.")
+    assert(type(bDuration) == "table", "[cp.apple.fcpxml.time.doesIntersect] Fourth attribute must be a time object.")
+
+    local aEnd = aStart + aDuration
+    local bEnd = bStart + bDuration
+
+    local cStart = time.min(aEnd, time.max(aStart, bStart))
+    local cEnd = time.max(aStart, time.min(aEnd, bEnd))
+
+    return cEnd > cStart
+end
+
 mt = {
    __add        = time.add,
    __call       = time.tonumber,
