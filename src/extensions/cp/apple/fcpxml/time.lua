@@ -17,7 +17,7 @@ local mod = {}
 local time = {}
 local mt
 
---- cp.apple.fcpxml.time.timecodeToSeconds(timecode) -> timeObject
+--- cp.apple.fcpxml.time.newFromTimecode(timecode) -> timeObject
 --- Constructor
 ---
 --- Parameters:
