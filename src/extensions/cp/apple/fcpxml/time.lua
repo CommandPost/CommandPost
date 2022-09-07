@@ -17,6 +17,30 @@ local mod = {}
 local time = {}
 local mt
 
+--- cp.apple.fcpxml.time.timecodeToSeconds(timecode) -> timeObject
+--- Constructor
+---
+--- Parameters:
+---  * A timecode string in "hh:mm:ss:ff" format (i.e. 01:00:00:00).
+---  * Frame rate in seconds (i.e. 25)
+---
+--- Returns:
+---  * A new `cp.apple.fcpxml.time` object.
+function time.newFromTimecode(timecode, framerate)
+    local values = tools.split(timecode, ":")
+
+    local h = tonumber(values[1]) * 60 * 60
+    local m = tonumber(values[2]) * 60
+    local s = tonumber(values[3])
+    local f = tonumber(values[4]) * (1/framerate)
+
+    local total = h + m + s + f
+
+    local totalXFramerate = math.ceil(total * framerate)
+
+    return time.new(totalXFramerate, framerate)
+end
+
 --- cp.apple.fcpxml.time.new([numerator], [denominator]) -> timeObject
 --- Constructor
 ---
@@ -81,6 +105,8 @@ function time.new(n, d)
 
     if n ~= math.floor(n) or d ~= math.floor(d) then
         log.ef("[cp.apple.fcpxml.time.new] The numerator and denominator must be whole numbers.")
+        log.df("n: %s", n)
+        log.df("d: %s", d)
         return
     end
 
