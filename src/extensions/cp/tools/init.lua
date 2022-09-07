@@ -109,6 +109,52 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.fileLinesBackward() -> function
+--- Function
+--- An iterator function that reads a file backwards.
+---
+--- Parameters:
+---  * filename - The file to open in read only mode
+---
+--- Returns:
+---  * An iterator function
+---
+--- Notes:
+---  * This is similar to `io.lines`, but works in reverse.
+---  * Example Usage: `for line in cp.tools.fileLinesBackward("file") do print(line) end`
+function tools.fileLinesBackward(filename)
+    local file = assert(io.open(filename))
+    local chunkSize = 4*1024
+    local iterator = function() return "" end
+    local tail = ""
+    local chunkIndex = math.ceil(file:seek("end") / chunkSize)
+
+    return function()
+        while true do
+            local lineEOL, line = iterator()
+            if line and lineEOL and lineEOL ~= "" then
+                return line:reverse()
+            end
+            repeat
+                chunkIndex = chunkIndex - 1
+                if chunkIndex < 0 then
+                    file:close()
+                    iterator = function()
+                        error('No more lines in file "'..filename..'"', 3)
+                    end
+                    return
+                end
+                file:seek("set", chunkIndex * chunkSize)
+                local chunk = file:read(chunkSize)
+                local pattern = "^(.-"..(chunkIndex > 0 and "\n" or "")..")(.*)"
+                local newTail, lines = chunk:match(pattern)
+                iterator = lines and (lines..tail):reverse():gmatch"(\n?\r?([^\n]*))"
+                tail = newTail or chunk..tail
+            until iterator
+        end
+    end
+end
+
 --- cp.tools.between() -> boolean
 --- Function
 --- Is a value between the minimum and the maximum value?

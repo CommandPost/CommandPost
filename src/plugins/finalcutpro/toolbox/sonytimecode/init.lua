@@ -24,6 +24,7 @@ local xml                       = require "hs._asm.xml"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
+local fileLinesBackward         = tools.fileLinesBackward
 local newFromTimecode           = time.newFromTimecode
 local replace                   = tools.replace
 local webviewAlert              = dialog.webviewAlert
@@ -155,15 +156,80 @@ local function processFCPXML(path)
                         src = src:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
 
                         --------------------------------------------------------------------------------
+                        -- Save the original filename for later:
+                        --------------------------------------------------------------------------------
+                        local originalSrc = src
+
+                        --------------------------------------------------------------------------------
                         -- Replace the MP4 extension with the XML extension:
                         --------------------------------------------------------------------------------
                         src = src:sub(1, -5) .. "M01.XML"
 
                         --------------------------------------------------------------------------------
-                        -- Does the file actually exist?
+                        -- Does the sidecar file actually exist?
                         --------------------------------------------------------------------------------
                         if not doesFileExist(src) then
                             log.df("[Sony Timecode Toolbox] No sidecar file detected: %s", src)
+
+                            --------------------------------------------------------------------------------
+                            -- If no sidecar file, lets try the file itself:
+                            --------------------------------------------------------------------------------
+                            if doesFileExist(originalSrc) then
+
+                                local startOfMetadata = [[<?xml version="1.0" encoding="UTF-8"?>]]
+                                local endOfMetadata = "</NonRealTimeMeta>"
+
+                                local data = {}
+
+                                local count = 0
+                                local max = 50
+
+                                local hasStarted = false
+
+                                for line in fileLinesBackward(originalSrc) do
+
+                                    if count >= max then
+                                        break
+                                    end
+
+                                    if line:find(endOfMetadata, 1, true) then
+                                        hasStarted = true
+                                    end
+
+                                    count = count + 1
+
+                                    local shouldEnd = false
+
+                                    if hasStarted and line and line ~= "" then
+
+                                        local startOfLine = line:find(startOfMetadata, 1, true)
+                                        if startOfLine then
+                                            shouldEnd = true
+                                            line = line:sub(startOfLine)
+                                        end
+
+                                        table.insert(data, 1, line)
+                                    end
+
+                                    if shouldEnd then
+                                        break
+                                    end
+                                end
+
+                                local result = table.concat(data, "\n")
+
+                                local outputPath = os.tmpname() .. ".xml"
+
+                                writeToFile(outputPath, result)
+
+                                src = outputPath
+
+                                log.df("[Sony Timecode Toolbox] Successfully read metadata from file: %s", originalSrc)
+                            end
+                        end
+
+                        if not doesFileExist(src) then
+                            log.df("[Sony Timecode Toolbox] No embedded metadata detected: %s", originalSrc)
                         else
                             --------------------------------------------------------------------------------
                             -- Lets read the XML sidecar file:
@@ -323,6 +389,11 @@ local function processFCPXML(path)
         local outputPath = exportPath .. "/" .. projectName .. " - Fixed.fcpxml"
 
         writeToFile(outputPath, xmlOutput)
+
+        --------------------------------------------------------------------------------
+        -- Open the folder in Finder:
+        --------------------------------------------------------------------------------
+        hs.execute([[open "]] .. exportPath .. [["]])
     end
 end
 
