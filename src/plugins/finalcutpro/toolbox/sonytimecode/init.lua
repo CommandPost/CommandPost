@@ -430,7 +430,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local toolboxID = "sonytimecode"
     mod._panel          =  deps.manager.addPanel({
-        priority        = 10,
+        priority        = 90,
         id              = toolboxID,
         label           = i18n("sonyTimecode"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/sony.png")),
