@@ -9,7 +9,6 @@ local hs                        = _G.hs
 local log                       = require "hs.logger".new "sonytimecode"
 
 local dialog                    = require "hs.dialog"
-local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
@@ -25,13 +24,8 @@ local xml                       = require "hs._asm.xml"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
-local doesIntersect             = time.doesIntersect
 local newFromTimecode           = time.newFromTimecode
 local replace                   = tools.replace
-local spairs                    = tools.spairs
-local tableContains             = tools.tableContains
-local tableCount                = tools.tableCount
-local urlFromPath               = fs.urlFromPath
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
@@ -93,11 +87,6 @@ end
 -- Returns:
 --  * None
 local function processFCPXML(path)
-    --------------------------------------------------------------------------------
-    -- This is where we'll store a table of clips:
-    --------------------------------------------------------------------------------
-    local clips = {}
-
     --------------------------------------------------------------------------------
     -- Open the FCPXML document:
     --------------------------------------------------------------------------------
@@ -263,7 +252,7 @@ local function processFCPXML(path)
 
                                             local tc = h .. ":" .. m .. ":" .. s .. ":" .. f
 
-                                            local timeValue = time.newFromTimecode(tc, tcFps)
+                                            local timeValue = newFromTimecode(tc, tcFps)
 
                                             if timeValue then
                                                 --------------------------------------------------------------------------------
