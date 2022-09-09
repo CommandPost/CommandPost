@@ -361,8 +361,9 @@ local function processFCPXML(path)
                                             local timeValueA = time.newFromTimecodeWithFrameDuration(tc, frameDuration)
                                             local timeValueB = time.newFromTimecodeWithFpsAndFrameDuration(tc, tcFps, frameDuration)
                                             local timeValueC = time.newFromTimecodeWithFps(tc, tcFps)
+                                            local timeValueD = time.newFromTimecodeOriginal(tc, tcFps)
 
-                                            local timeValue = timeValueA
+                                            local timeValue = timeValueD
 
                                             if timeValue then
                                                 --------------------------------------------------------------------------------
@@ -384,6 +385,7 @@ local function processFCPXML(path)
                                                 log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFps: %s", time.tostring(timeValueC))
                                                 log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFrameDuration: %s", time.tostring(timeValueA))
                                                 log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFpsAndFrameDuration: %s", time.tostring(timeValueB))
+                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeOriginal: %s", time.tostring(timeValueB))
                                                 log.df("-----------------------")
 
                                             else

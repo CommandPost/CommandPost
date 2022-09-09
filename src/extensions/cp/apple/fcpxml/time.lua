@@ -17,6 +17,30 @@ local mod = {}
 local time = {}
 local mt
 
+--- cp.apple.fcpxml.time.newFromTimecodeOriginal(timecode, framerate) -> timeObject
+--- Constructor
+---
+--- Parameters:
+---  * timecode - A timecode string in "hh:mm:ss:ff" format (i.e. 01:00:00:00).
+---  * framerate - Frame rate in seconds (i.e. 25)
+---
+--- Returns:
+---  * A new `cp.apple.fcpxml.time` object.
+function time.newFromTimecodeOriginal(timecode, framerate)
+    local values = tools.split(timecode, ":")
+
+    local h = tonumber(values[1]) * 60 * 60
+    local m = tonumber(values[2]) * 60
+    local s = tonumber(values[3])
+    local f = tonumber(values[4]) * (1/framerate)
+
+    local total = h + m + s + f
+
+    local totalXFramerate = math.ceil(total * framerate)
+
+    return time.new(totalXFramerate, framerate)
+end
+
 --- cp.apple.fcpxml.time.newFromTimecodeWithFrameDuration(timecode, frameDuration) -> timeObject
 --- Constructor
 --- Create a time object from timecode and frame duration.
