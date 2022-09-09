@@ -625,7 +625,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     local spineChildren = findSpineChildren(document) or {}
 
-    for _, node in ipairs(spineChildren) do
+    local function updateStartTimeInNode(node)
         if isNamed "asset-clip" (node) then
             local ref       = attribute "ref" (node)
             local start     = attribute "start" (node)
@@ -641,6 +641,18 @@ local function processFCPXML(path)
             end
         end
     end
+
+    local function processNodeTable(nodeTable)
+        for _, node in ipairs(nodeTable) do
+            updateStartTimeInNode(node)
+            local nodeChildren = node:children()
+            if nodeChildren then
+                processNodeTable(nodeChildren)
+            end
+        end
+    end
+
+    processNodeTable(spineChildren)
 
     --------------------------------------------------------------------------------
     -- Now lets delete the project:
