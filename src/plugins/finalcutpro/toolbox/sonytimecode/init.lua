@@ -382,10 +382,10 @@ local function processFCPXML(path)
                                                 log.df("[Sony Timecode Toolbox] halfStep from metadata: %s", halfStep)
                                                 log.df("[Sony Timecode Toolbox] Timecode from metadata: %s", tc)
                                                 log.df("[Sony Timecode Toolbox] Frame Duration from FCPXML: %s", time.tostring(frameDuration))
-                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFps: %s", time.tostring(timeValueC))
                                                 log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFrameDuration: %s", time.tostring(timeValueA))
                                                 log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFpsAndFrameDuration: %s", time.tostring(timeValueB))
-                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeOriginal: %s", time.tostring(timeValueB))
+                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFps: %s", time.tostring(timeValueC))
+                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeOriginal: %s", time.tostring(timeValueD))
                                                 log.df("-----------------------")
 
                                             else
