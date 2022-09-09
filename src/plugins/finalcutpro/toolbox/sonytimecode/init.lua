@@ -396,8 +396,6 @@ local function processFCPXML(path)
         return showError(i18n("invalidDataDetected") .. ".", i18n("sonyTimecodeError"))
     end
 
-    log.df("found %d resources", #resourcesChildren)
-
     --------------------------------------------------------------------------------
     -- Access the "FCPXML > Project":
     --------------------------------------------------------------------------------
@@ -491,7 +489,7 @@ local function processFCPXML(path)
             end
 
             if not doesFileExist(src) then
-                log.df("[Sony Timecode Toolbox] No embedded metadata detected: %s", originalSrc)
+                log.df("[Sony Timecode Toolbox] Unable to find metadata: %s", originalSrc)
                 goto next_resource_item
             end
             
@@ -556,7 +554,7 @@ local function processFCPXML(path)
             local ltcChangeTable = findLtcChangeTable(sonyXML)
             local tcFps = attribute "tcFps" (ltcChangeTable)
             if not tcFps then
-                log.df("[Sony Timecode Toolbox] Failed to find 'tcFps' value in sidecar file: %s", src)
+                log.df("[Sony Timecode Toolbox] Failed to find 'tcFps' value in metadata: %s", src)
                 goto next_resource_item
             end
             tcFps = tonumber(tcFps)
@@ -565,22 +563,27 @@ local function processFCPXML(path)
             local startTimecodeValue = findLtcChangeStartTimecode(sonyXML)
 
             if not startTimecodeValue then
-                log.df("[Sony Timecode Toolbox] Failed to find 'startTimecodeValue' value in sidecar file: %s", src)
+                log.df("[Sony Timecode Toolbox] Failed to find 'startTimecodeValue' value in metadata: %s", src)
                 goto next_resource_item
             end
 
             if not startTimecodeValue:len() == 8 then
-                log.df("[Sony Timecode Toolbox] 'startTimecodeValue' value of '%s' is not 8 characters in sidecar file: %s", startTimecodeValue, src)
+                log.df("[Sony Timecode Toolbox] 'startTimecodeValue' value of '%s' is not 8 characters in metadata: %s", startTimecodeValue, src)
                 goto next_resource_item
             end
 
             local startTimecode = timecode.fromFFSSMMHH(startTimecodeValue)
 
+            --------------------------------------------------------------------------------
+            -- The timecode is always saved with the tcFps value (eg. 25fps), not the actual
+            -- FPS of the clip (eg. 50fps), so we need pass that in when parsing.
+            --------------------------------------------------------------------------------
             local totalFrames = startTimecode:totalFramesWithFPS(tcFps)
 
             --------------------------------------------------------------------------------
-            -- If halfStep is true, we need to double the total frame count
-            -- (eg, 50fps recorded, 25fps playback)
+            -- However, if halfStep is true, we need to double the total frame count to
+            -- get the correct amount of time relative to the frame duration.
+            -- (eg. 50fps recorded, 25fps playback)
             --------------------------------------------------------------------------------
             if halfStep then
                 totalFrames = totalFrames * 2
@@ -589,12 +592,12 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Now we multiply total frames by the frame duration to get the time in seconds.
             --------------------------------------------------------------------------------
-            local timeValue = time.new(totalFrames) * frameDuration
+            local timeValue = time(totalFrames) * frameDuration
 
             --------------------------------------------------------------------------------
             -- We have our start timecode, lets put it back in the FCPXML:
             --------------------------------------------------------------------------------
-            node:addAttribute("start", time.tostring(timeValue))
+            node:addAttribute("start", tostring(timeValue))
 
             --------------------------------------------------------------------------------
             -- Save the 'start' time for later:
@@ -626,7 +629,6 @@ local function processFCPXML(path)
         if isNamed "asset-clip" (node) then
             local ref       = attribute "ref" (node)
             local start     = attribute "start" (node)
-            log.df("Current Asset Ref: %s, Start: %s", ref, start)
 
             if ref and start then
                 local startAsTime = time.new(start)
@@ -634,10 +636,7 @@ local function processFCPXML(path)
 
                 if startAsTime and startTime then
                     local newStart = startAsTime + startTime
-
                     node:addAttribute("start", time.tostring(newStart))
-
-                    log.df("Updated Asset Clip: %s", time.tostring(newStart))
                 end
             end
         end
