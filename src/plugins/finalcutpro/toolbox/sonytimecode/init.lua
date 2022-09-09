@@ -25,7 +25,7 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local fileLinesBackward         = tools.fileLinesBackward
-local newFromTimecode           = time.newFromTimecode
+local newFromTimecodeWithFps    = time.newFromTimecodeWithFps
 local replace                   = tools.replace
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
@@ -132,12 +132,40 @@ local function processFCPXML(path)
     end
 
     --------------------------------------------------------------------------------
+    -- Iterate all the Resources to get the format's frameDuration:
+    --------------------------------------------------------------------------------
+    local frameDurations = {}
+    for _, node in pairs(resourcesChildren) do
+        local nodeName = node:name()
+        local nodeAttributes = node:rawAttributes() and node:attributes()
+        if nodeName == "format" then
+            local id                = nodeAttributes.id
+            local frameDuration     = nodeAttributes.frameDuration
+            if id and frameDuration then
+                frameDurations[id] = time.new(frameDuration)
+            end
+        end
+    end
+
+    --log.df("[Sony Timecode Toolbox] Frame Durations: %s", hs.inspect(frameDurations))
+
+    --------------------------------------------------------------------------------
     -- Iterate all the Resources:
     --------------------------------------------------------------------------------
+    local startTimes = {}
     for _, node in pairs(resourcesChildren) do
         local nodeName = node:name()
         local nodeAttributes = node:rawAttributes() and node:attributes()
         if nodeName == "asset" and nodeAttributes and nodeAttributes.start == "0s" then
+            local assetID = nodeAttributes.id
+
+            local formatID = nodeAttributes.format
+            local frameDuration = frameDurations[formatID]
+
+            if not frameDuration then
+                log.ef("[Sony Timecode Toolbox] Failed to lookup frame duration.")
+            end
+
             local nodeChildren = node:children() or {}
             for _, nodeChild in pairs(nodeChildren) do
                 local nodeChildName = nodeChild:name()
@@ -285,7 +313,7 @@ local function processFCPXML(path)
                                 log.df("[Sony Timecode Toolbox] Failed to read sidecar file: %s", src)
                             else
                                 --------------------------------------------------------------------------------
-                                -- First we get the tcFps value:
+                                -- First we get the 'tcFps' value:
                                 --------------------------------------------------------------------------------
                                 local changeTableContainer = sonyXML:XPathQuery("/NonRealTimeMeta[1]/LtcChangeTable[1]")
                                 local changeTableNode = changeTableContainer and changeTableContainer[1]
@@ -294,8 +322,10 @@ local function processFCPXML(path)
 
                                 local tcFps = changeTableNodeAttributes and changeTableNodeAttributes.tcFps and tonumber(changeTableNodeAttributes.tcFps)
 
+                                local halfStep = changeTableNodeAttributes and changeTableNodeAttributes.halfStep
+
                                 if not tcFps then
-                                    log.df("[Sony Timecode Toolbox] Failed to read tcFps: %s", src)
+                                    log.df("[Sony Timecode Toolbox] Failed to get tcFps: %s", src)
                                 else
                                     --------------------------------------------------------------------------------
                                     -- Now lets get the start timecode:
@@ -308,23 +338,54 @@ local function processFCPXML(path)
                                         local startTimecodeValue = startTimecodeAttributes and startTimecodeAttributes.value
 
                                         if startTimecodeValue and startTimecodeValue:len() == 8 then
-                                            -- 00000000
-                                            -- ffssmmhh
-                                            -- 12345678
+                                            --------------------------------------------------------------------------------
+                                            -- The timecode in the metadata is in the 'ffssmmhh' order:
+                                            --------------------------------------------------------------------------------
                                             local h = startTimecodeValue:sub(7,8)
                                             local m = startTimecodeValue:sub(5,6)
                                             local s = startTimecodeValue:sub(3,4)
                                             local f = startTimecodeValue:sub(1,2)
 
+                                            --------------------------------------------------------------------------------
+                                            -- If it's a half step, let's double the frames:
+                                            --------------------------------------------------------------------------------
+                                            if halfStep == "true" then
+                                                f = string.format("%02d", tonumber(f) * 2)
+                                            end
+
                                             local tc = h .. ":" .. m .. ":" .. s .. ":" .. f
 
-                                            local timeValue = newFromTimecode(tc, tcFps)
+                                            --------------------------------------------------------------------------------
+                                            -- Experimenting with different methods:
+                                            --------------------------------------------------------------------------------
+                                            local timeValueA = time.newFromTimecodeWithFrameDuration(tc, frameDuration)
+                                            local timeValueB = time.newFromTimecodeWithFpsAndFrameDuration(tc, tcFps, frameDuration)
+                                            local timeValueC = time.newFromTimecodeWithFps(tc, tcFps)
+
+                                            local timeValue = timeValueA
 
                                             if timeValue then
                                                 --------------------------------------------------------------------------------
                                                 -- We have our start timecode, lets put it back in the FCPXML:
                                                 --------------------------------------------------------------------------------
                                                 node:addAttribute("start", time.tostring(timeValue))
+
+                                                --------------------------------------------------------------------------------
+                                                -- Save the 'start' time for later:
+                                                --------------------------------------------------------------------------------
+                                                startTimes[assetID] = timeValue
+
+                                                log.df("-----------------------")
+                                                log.df("[Sony Timecode Toolbox] File: %s", originalSrc)
+                                                log.df("[Sony Timecode Toolbox] tcFps from metadata: %s", tcFps)
+                                                log.df("[Sony Timecode Toolbox] halfStep from metadata: %s", halfStep)
+                                                log.df("[Sony Timecode Toolbox] Timecode from metadata: %s", tc)
+                                                log.df("[Sony Timecode Toolbox] Frame Duration from FCPXML: %s", time.tostring(frameDuration))
+                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFps: %s", time.tostring(timeValueC))
+                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFrameDuration: %s", time.tostring(timeValueA))
+                                                log.df("[Sony Timecode Toolbox] Converted Timecode - newFromTimecodeWithFpsAndFrameDuration: %s", time.tostring(timeValueB))
+                                                log.df("-----------------------")
+
                                             else
                                                 log.df("[Sony Timecode Toolbox] Failed to add new start timecode: %s", src)
                                             end
@@ -336,6 +397,38 @@ local function processFCPXML(path)
                             end
                         end
                     end
+                end
+            end
+        end
+    end
+
+    --log.df("[Sony Timecode Toolbox] Start Times: %s", hs.inspect(startTimes))
+
+    --------------------------------------------------------------------------------
+    -- Iterate all the Spine Elements:
+    --------------------------------------------------------------------------------
+    local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+    local spineChildren = spine and spine[1] and spine[1]:children()
+
+    for _, node in pairs(spineChildren) do
+        local nodeName = node:name()
+        local nodeAttributes = node:rawAttributes() and node:attributes()
+        if nodeName == "asset-clip" then
+            local ref           = nodeAttributes.ref
+            local start         = nodeAttributes.start
+
+            log.df("Current Asset Ref: %s, Start: %s", ref, start)
+
+            if ref and start then
+                local startAsTime = time.new(start)
+                local startTime = startTimes[ref]
+
+                if offsetAsTime and startTime then
+                    local newStart = startAsTime + startTime
+
+                    node:addAttribute("start", time.tostring(newStart))
+
+                    log.df("Updated Asset Clip: %s", time.tostring(newStart))
                 end
             end
         end
