@@ -131,8 +131,8 @@ end
 --
 -- Returns:
 --  * The function.
-local function attribute(name)
-    return chain // attributes >> get(name)
+local function attribute(nodeName)
+    return chain // attributes >> get(nodeName)
 end
 
 -- children(node) -> table | nil
@@ -492,7 +492,7 @@ local function processFCPXML(path)
                 log.df("[Sony Timecode Toolbox] Unable to find metadata: %s", originalSrc)
                 goto next_resource_item
             end
-            
+
             --------------------------------------------------------------------------------
             -- Lets read the XML sidecar file:
             --
@@ -624,7 +624,7 @@ local function processFCPXML(path)
     -- Iterate all the Spine Elements:
     --------------------------------------------------------------------------------
     local spineChildren = findSpineChildren(document) or {}
-    
+
     for _, node in ipairs(spineChildren) do
         if isNamed "asset-clip" (node) then
             local ref       = attribute "ref" (node)

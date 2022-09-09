@@ -8,14 +8,14 @@
 --- `timecode:totalFramesWithFPS(fps)` method, where `fps` is a `number`.
 ---
 --- To calculate the exact number of seconds for a timecode, call the
---- `timecode:timeWithFrameDuration(frameDuration)` method, 
+--- `timecode:timeWithFrameDuration(frameDuration)` method,
 --- where `frameDuration` is the frame duration as a `time` value.
 ---
 --- Note, this currently does not support "Drop Frame" timecodes.
 
 local require       = require
 
-local log           = require "hs.logger".new "timecode"
+--local log           = require "hs.logger".new "timecode"
 local time          = require "cp.apple.fcpxml.time"
 
 local timecode = {}
