@@ -431,8 +431,7 @@ local function processFCPXML(path)
     -- Iterate all the Resources:
     --------------------------------------------------------------------------------
     local startTimes = {}
-    for i, node in ipairs(resourcesChildren) do
-        log.df("%d: resource child: %s", i, name(node))
+    for _, node in ipairs(resourcesChildren) do
         if not isNamed "asset" (node) then goto next_resource end
 
         local nodeAttributes = attributes(node)
@@ -446,8 +445,7 @@ local function processFCPXML(path)
             log.df("[Sony Timecode Toolbox] Failed to lookup frame duration for asset: %s.", assetID)
         end
 
-        for j, nodeChild in ipairs(children(node) or {}) do
-            log.df("resource: %d; child: %d", i, j)
+        for _, nodeChild in ipairs(children(node) or {}) do
             if not isNamed "media-rep" (nodeChild) then goto next_resource_item end
             if not isKind "original-media" (nodeChild) then goto next_resource_item end
 
