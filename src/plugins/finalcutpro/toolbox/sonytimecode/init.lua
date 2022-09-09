@@ -27,14 +27,12 @@ local fntable                   = require "cp.fn.table"
 local fnvalue                   = require "cp.fn.value"
 local chain, pipe               = fn.chain, fn.pipe
 local get                       = fntable.get
-local filter, is                = fnvalue.filter, fnvalue.is
+local is                        = fnvalue.is
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local fileLinesBackward         = tools.fileLinesBackward
-local newFromTimecodeWithFps    = time.newFromTimecodeWithFps
-local replace                   = tools.replace
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
