@@ -106,7 +106,7 @@ end
 -- Returns:
 --  * The function.
 local function isNamed(value)
-    return pipe // name >> is(value)
+    return pipe(name, is(value))
 end
 
 -- attributes(node) -> table | nil
@@ -429,7 +429,7 @@ local function processFCPXML(path)
     -- Iterate all the Resources:
     --------------------------------------------------------------------------------
     local startTimes = {}
-    for _, node in pairs(resourcesChildren) do
+    for i, node in ipairs(resourcesChildren) do
         if not isNamed "asset" (node) then break end
 
         local nodeAttributes = attributes(node)
@@ -443,7 +443,8 @@ local function processFCPXML(path)
             log.df("[Sony Timecode Toolbox] Failed to lookup frame duration for asset: %s.", assetID)
         end
 
-        for _, nodeChild in ipairs(children(node) or {}) do
+        for j, nodeChild in ipairs(children(node) or {}) do
+            log.df("resource: %d; child: %d", i, j)
             if not isNamed "media-rep" (nodeChild) then break end
             if not isKind "original-media" (nodeChild) then break end
 
@@ -616,7 +617,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     local spineChildren = findSpineChildren(document) or {}
     
-    for _, node in pairs(spineChildren) do
+    for _, node in ipairs(spineChildren) do
         if isNamed "asset-clip" (node) then
             local ref       = attribute "ref" (node)
             local start     = attribute "start" (node)

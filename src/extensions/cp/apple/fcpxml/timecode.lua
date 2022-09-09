@@ -10,6 +10,8 @@
 --- To calculate the exact number of seconds for a timecode, call the
 --- `timecode:timeWithFrameDuration(frameDuration)` method, 
 --- where `frameDuration` is the frame duration as a `time` value.
+---
+--- Note, this currently does not support "Drop Frame" timecodes.
 
 local require       = require
 
@@ -109,5 +111,9 @@ end
 function timecode.mt:__tostring()
     return string.format("%02d:%02d:%02d:%02d", self.hours, self.minutes, self.seconds, self.frames)
 end
+
+setmetatable(timecode, {
+    __call = function(_, ...) return timecode.new(...) end
+})
 
 return timecode
