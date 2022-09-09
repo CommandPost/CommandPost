@@ -25,14 +25,17 @@ local xml                       = require "hs._asm.xml"
 local fn                        = require "cp.fn"
 local fntable                   = require "cp.fn.table"
 local fnvalue                   = require "cp.fn.value"
-local chain, pipe               = fn.chain, fn.pipe
+
+local chain                     = fn.chain
 local get                       = fntable.get
 local is                        = fnvalue.is
+local pipe                      = fn.pipe
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local fileLinesBackward         = tools.fileLinesBackward
+local urlToFilename             = tools.urlToFilename
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
@@ -81,7 +84,6 @@ end
 local function xPath(value)
     return chain // xPathQuery(value) >> get(1)
 end
-
 
 -- name(node) -> string | nil
 -- Function
@@ -264,23 +266,6 @@ local function endsWith(value)
     end
 end
 
--- urlToFilename(url) -> string
--- Function
--- Converts a URL to a filename.
---
--- Parameters:
---  * url - The URL.
---
--- Returns:
---  * The filename.
-local function urlToFilename(url)
-    local path = url:match("file://(.*)")
-    --------------------------------------------------------------------------------
-    -- Remove any URL encoding:
-    --------------------------------------------------------------------------------
-    return path:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
-end
-
 -- exportMP4MetadataToFile(originalSrc) -> string
 -- Function
 -- Exports the metadata from an MP4 file to a temporary file.
@@ -291,6 +276,53 @@ end
 -- Returns:
 --  * The temporary filename, or `nil` if an error occurred.
 local function exportMP4MetadataToFile(originalPath)
+    --------------------------------------------------------------------------------
+    -- Example:
+    --
+    -- <?xml version="1.0" encoding="UTF-8"?>
+    -- <NonRealTimeMeta xmlns="urn:schemas-professionalDisc:nonRealTimeMeta:ver.2.20" xmlns:lib="urn:schemas-professionalDisc:lib:ver.2.00" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lastUpdate="2022-09-25T11:57:59+10:00">
+    -- 	<TargetMaterial umidRef="060A2B340101010501010D4313000000C20AA47F479805C59C50D1FFFEAC3B63"/>
+    -- 	<Duration value="4380"/>
+    -- 	<LtcChangeTable tcFps="25" halfStep="false">
+    -- 		<LtcChange frameCount="0" value="17305719" status="increment"/>
+    -- 		<LtcChange frameCount="4379" value="21250020" status="end"/>
+    -- 	</LtcChangeTable>
+    -- 	<CreationDate value="2022-09-25T11:57:59+10:00"/>
+    -- 	<VideoFormat>
+    -- 		<VideoRecPort port="DIRECT"/>
+    -- 		<VideoFrame videoCodec="AVC_3840_2160_HP@L51" captureFps="25p" formatFps="25p"/>
+    -- 		<VideoLayout pixel="3840" numOfVerticalLine="2160" aspectRatio="16:9"/>
+    -- 	</VideoFormat>
+    -- 	<AudioFormat numOfChannel="2">
+    -- 		<AudioRecPort port="DIRECT" audioCodec="LPCM16" trackDst="CH1"/>
+    -- 		<AudioRecPort port="DIRECT" audioCodec="LPCM16" trackDst="CH2"/>
+    -- 	</AudioFormat>
+    -- 	<Device manufacturer="Sony" modelName="ILME-FX3" serialNo="4294967295"/>
+    -- 	<RecordingMode type="normal" cacheRec="false"/>
+    -- 	<AcquisitionRecord>
+    -- 		<Group name="CameraUnitMetadataSet">
+    -- 			<Item name="CaptureGammaEquation" value="s-cinetone"/>
+    -- 			<Item name="CaptureColorPrimaries" value="rec709"/>
+    -- 			<Item name="CodingEquations" value="rec709"/>
+    -- 		</Group>
+    -- 		<ChangeTable name="ImagerControlInformation">
+    -- 			<Event status="start" frameCount="0"/>
+    -- 		</ChangeTable>
+    -- 		<ChangeTable name="LensControlInformation">
+    -- 			<Event status="start" frameCount="0"/>
+    -- 		</ChangeTable>
+    -- 		<ChangeTable name="DistortionCorrection">
+    -- 			<Event status="start" frameCount="0"/>
+    -- 		</ChangeTable>
+    -- 		<ChangeTable name="Gyroscope">
+    -- 			<Event status="start" frameCount="0"/>
+    -- 		</ChangeTable>
+    -- 		<ChangeTable name="Accelerometor">
+    -- 			<Event status="start" frameCount="0"/>
+    -- 		</ChangeTable>
+    -- 	</AcquisitionRecord>
+    -- </NonRealTimeMeta>
+    --------------------------------------------------------------------------------
     local startOfMetadata = [[<?xml version="1.0" encoding="UTF-8"?>]]
     local endOfMetadata = "</NonRealTimeMeta>"
 
@@ -423,8 +455,6 @@ local function processFCPXML(path)
         end
     end
 
-    --log.df("[Sony Timecode Toolbox] Frame Durations: %s", hs.inspect(frameDurations))
-
     --------------------------------------------------------------------------------
     -- Iterate all the Resources:
     --------------------------------------------------------------------------------
@@ -443,7 +473,9 @@ local function processFCPXML(path)
             log.df("[Sony Timecode Toolbox] Failed to lookup frame duration for asset: %s.", assetID)
         end
 
-        for _, nodeChild in ipairs(children(node) or {}) do
+        local nodeChildren = children(node) or {}
+
+        for _, nodeChild in ipairs(nodeChildren) do
             if not isNamed "media-rep" (nodeChild) then goto next_resource_item end
             if not isKind "original-media" (nodeChild) then goto next_resource_item end
 
@@ -495,52 +527,6 @@ local function processFCPXML(path)
 
             --------------------------------------------------------------------------------
             -- Lets read the XML sidecar file:
-            --
-            -- Example:
-            --
-            -- <?xml version="1.0" encoding="UTF-8"?>
-            -- <NonRealTimeMeta xmlns="urn:schemas-professionalDisc:nonRealTimeMeta:ver.2.20" xmlns:lib="urn:schemas-professionalDisc:lib:ver.2.00" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lastUpdate="2022-09-25T11:57:59+10:00">
-            -- 	<TargetMaterial umidRef="060A2B340101010501010D4313000000C20AA47F479805C59C50D1FFFEAC3B63"/>
-            -- 	<Duration value="4380"/>
-            -- 	<LtcChangeTable tcFps="25" halfStep="false">
-            -- 		<LtcChange frameCount="0" value="17305719" status="increment"/>
-            -- 		<LtcChange frameCount="4379" value="21250020" status="end"/>
-            -- 	</LtcChangeTable>
-            -- 	<CreationDate value="2022-09-25T11:57:59+10:00"/>
-            -- 	<VideoFormat>
-            -- 		<VideoRecPort port="DIRECT"/>
-            -- 		<VideoFrame videoCodec="AVC_3840_2160_HP@L51" captureFps="25p" formatFps="25p"/>
-            -- 		<VideoLayout pixel="3840" numOfVerticalLine="2160" aspectRatio="16:9"/>
-            -- 	</VideoFormat>
-            -- 	<AudioFormat numOfChannel="2">
-            -- 		<AudioRecPort port="DIRECT" audioCodec="LPCM16" trackDst="CH1"/>
-            -- 		<AudioRecPort port="DIRECT" audioCodec="LPCM16" trackDst="CH2"/>
-            -- 	</AudioFormat>
-            -- 	<Device manufacturer="Sony" modelName="ILME-FX3" serialNo="4294967295"/>
-            -- 	<RecordingMode type="normal" cacheRec="false"/>
-            -- 	<AcquisitionRecord>
-            -- 		<Group name="CameraUnitMetadataSet">
-            -- 			<Item name="CaptureGammaEquation" value="s-cinetone"/>
-            -- 			<Item name="CaptureColorPrimaries" value="rec709"/>
-            -- 			<Item name="CodingEquations" value="rec709"/>
-            -- 		</Group>
-            -- 		<ChangeTable name="ImagerControlInformation">
-            -- 			<Event status="start" frameCount="0"/>
-            -- 		</ChangeTable>
-            -- 		<ChangeTable name="LensControlInformation">
-            -- 			<Event status="start" frameCount="0"/>
-            -- 		</ChangeTable>
-            -- 		<ChangeTable name="DistortionCorrection">
-            -- 			<Event status="start" frameCount="0"/>
-            -- 		</ChangeTable>
-            -- 		<ChangeTable name="Gyroscope">
-            -- 			<Event status="start" frameCount="0"/>
-            -- 		</ChangeTable>
-            -- 		<ChangeTable name="Accelerometor">
-            -- 			<Event status="start" frameCount="0"/>
-            -- 		</ChangeTable>
-            -- 	</AcquisitionRecord>
-            -- </NonRealTimeMeta>
             --------------------------------------------------------------------------------
             local sonyXML = xml.open(src)
             if not sonyXML then
@@ -576,21 +562,22 @@ local function processFCPXML(path)
 
             --------------------------------------------------------------------------------
             -- The timecode is always saved with the tcFps value (eg. 25fps), not the actual
-            -- FPS of the clip (eg. 50fps), so we need pass that in when parsing.
+            -- FPS of the clip (eg. 50fps), so we need pass that in when parsing:
             --------------------------------------------------------------------------------
             local totalFrames = startTimecode:totalFramesWithFPS(tcFps)
 
             --------------------------------------------------------------------------------
             -- However, if halfStep is true, we need to double the total frame count to
             -- get the correct amount of time relative to the frame duration.
-            -- (eg. 50fps recorded, 25fps playback)
+            -- (eg. 50fps recorded, 25fps playback):
             --------------------------------------------------------------------------------
             if halfStep then
                 totalFrames = totalFrames * 2
             end
 
             --------------------------------------------------------------------------------
-            -- Now we multiply total frames by the frame duration to get the time in seconds.
+            -- Now we multiply total frames by the frame duration to get the
+            -- time in seconds:
             --------------------------------------------------------------------------------
             local timeValue = time(totalFrames) * frameDuration
 
@@ -604,6 +591,7 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             startTimes[assetID] = timeValue
 
+            --[[
             log.df("-----------------------")
             log.df("[Sony Timecode Toolbox] File: %s", originalSrc)
             log.df("[Sony Timecode Toolbox] tcFps from metadata: %s", tcFps)
@@ -612,32 +600,30 @@ local function processFCPXML(path)
             log.df("[Sony Timecode Toolbox] Frame Duration from FCPXML: %s", frameDuration)
             log.df("[Sony Timecode Toolbox] Converted Timecode: %s", timeValue)
             log.df("-----------------------")
+            --]]
 
             ::next_resource_item::
         end
         ::next_resource::
     end
 
-    --log.df("[Sony Timecode Toolbox] Start Times: %s", hs.inspect(startTimes))
-
     --------------------------------------------------------------------------------
-    -- Iterate all the Spine Elements:
+    -- Iterate all the 'spine' nodes to update the start time of asset-clips:
     --------------------------------------------------------------------------------
     local spineChildren = findSpineChildren(document) or {}
 
     local function updateStartTimeInNode(node)
         if isNamed "asset-clip" (node) then
-            local ref       = attribute "ref" (node)
-            local start     = attribute "start" (node)
+            local ref           = attribute "ref" (node)
+            local start         = attribute "start" (node)
 
-            if ref and start then
-                local startAsTime = time.new(start)
-                local startTime = startTimes[ref]
+            local startAsTime   = start and time.new(start) or time.ZERO
+            local startTime     = ref and startTimes[ref]
 
-                if startAsTime and startTime then
-                    local newStart = startAsTime + startTime
-                    node:addAttribute("start", time.tostring(newStart))
-                end
+            local newStart      = startTime and startAsTime + startTime
+
+            if newStart then
+                node:addAttribute("start", time.tostring(newStart))
             end
         end
     end
@@ -653,6 +639,12 @@ local function processFCPXML(path)
     end
 
     processNodeTable(spineChildren)
+
+    --------------------------------------------------------------------------------
+    -- Iterate all the 'resources' nodes to update the start time of Compound Clips
+    -- and Multicam Clips:
+    --------------------------------------------------------------------------------
+    processNodeTable(resourcesChildren)
 
     --------------------------------------------------------------------------------
     -- Now lets delete the project:

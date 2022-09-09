@@ -109,6 +109,23 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.urlToFilename(url) -> string
+--- Function
+--- Converts a URL to a filename.
+---
+--- Parameters:
+---  * url - The URL.
+---
+--- Returns:
+---  * The filename.
+function tools.urlToFilename(url)
+    local path = url:match("file://(.*)")
+    --------------------------------------------------------------------------------
+    -- Remove any URL encoding:
+    --------------------------------------------------------------------------------
+    return path:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+end
+
 --- cp.tools.fileLinesBackward() -> function
 --- Function
 --- An iterator function that reads a file backwards.
