@@ -17,30 +17,6 @@ local mod = {}
 local time = {}
 local mt
 
---- cp.apple.fcpxml.time.newFromTimecode(timecode) -> timeObject
---- Constructor
----
---- Parameters:
----  * A timecode string in "hh:mm:ss:ff" format (i.e. 01:00:00:00).
----  * Frame rate in seconds (i.e. 25)
----
---- Returns:
----  * A new `cp.apple.fcpxml.time` object.
-function time.newFromTimecode(timecode, framerate)
-    local values = tools.split(timecode, ":")
-
-    local h = tonumber(values[1]) * 60 * 60
-    local m = tonumber(values[2]) * 60
-    local s = tonumber(values[3])
-    local f = tonumber(values[4]) * (1/framerate)
-
-    local total = h + m + s + f
-
-    local totalXFramerate = math.ceil(total * framerate)
-
-    return time.new(totalXFramerate, framerate)
-end
-
 --- cp.apple.fcpxml.time.new([numerator], [denominator]) -> timeObject
 --- Constructor
 ---
@@ -417,6 +393,16 @@ function time.doesIntersect(aStart, aDuration, bStart, bDuration)
 
     return cEnd > cStart
 end
+
+--- cp.apple.fcpxml.time.ONE -> timeObject
+--- Constant
+--- A time object with a value of 1/1s.
+time.ONE = time.new(1, 1)
+
+--- cp.apple.fcpxml.time.ONE -> timeObject
+--- Constant
+--- A time object with a value of 0/1s.
+time.ZERO = time.new(0, 1)
 
 mt = {
    __add        = time.add,
