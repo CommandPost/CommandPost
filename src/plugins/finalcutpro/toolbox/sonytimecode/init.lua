@@ -396,6 +396,8 @@ local function processFCPXML(path)
         return showError(i18n("invalidDataDetected") .. ".", i18n("sonyTimecodeError"))
     end
 
+    log.df("found %d resources", #resourcesChildren)
+
     --------------------------------------------------------------------------------
     -- Access the "FCPXML > Project":
     --------------------------------------------------------------------------------
@@ -430,10 +432,11 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     local startTimes = {}
     for i, node in ipairs(resourcesChildren) do
-        if not isNamed "asset" (node) then break end
+        log.df("%d: resource child: %s", i, name(node))
+        if not isNamed "asset" (node) then goto next_resource end
 
         local nodeAttributes = attributes(node)
-        if not nodeAttributes or nodeAttributes.start ~= "0s" then break end
+        if not nodeAttributes or nodeAttributes.start ~= "0s" then goto next_resource end
 
         local assetID = nodeAttributes.id
         local formatID = nodeAttributes.format
@@ -445,13 +448,13 @@ local function processFCPXML(path)
 
         for j, nodeChild in ipairs(children(node) or {}) do
             log.df("resource: %d; child: %d", i, j)
-            if not isNamed "media-rep" (nodeChild) then break end
-            if not isKind "original-media" (nodeChild) then break end
+            if not isNamed "media-rep" (nodeChild) then goto next_resource_item end
+            if not isKind "original-media" (nodeChild) then goto next_resource_item end
 
             local nodeChildAttributes = attributes(nodeChild)
 
             local src = nodeChildAttributes.src or ""
-            if not endsWith ".mp4" (src) then break end
+            if not endsWith ".mp4" (src) then goto next_resource_item end
 
             --------------------------------------------------------------------------------
             -- Remove the file://
@@ -481,7 +484,7 @@ local function processFCPXML(path)
                     local outputFile = exportMP4MetadataToFile(originalSrc)
                     if not outputFile then
                         log.df("[Sony Timecode Toolbox] Failed to export metadata from MP4 file: %s", originalSrc)
-                        break
+                        goto next_resource_item
                     end
 
                     src = outputFile
@@ -491,7 +494,7 @@ local function processFCPXML(path)
 
             if not doesFileExist(src) then
                 log.df("[Sony Timecode Toolbox] No embedded metadata detected: %s", originalSrc)
-                break
+                goto next_resource_item
             end
             
             --------------------------------------------------------------------------------
@@ -546,30 +549,31 @@ local function processFCPXML(path)
             local sonyXML = xml.open(src)
             if not sonyXML then
                 log.df("[Sony Timecode Toolbox] Failed to read sidecar file: %s", src)
-                break
+                goto next_resource_item
             end
 
             --------------------------------------------------------------------------------
             -- First we get the 'tcFps' value:
             --------------------------------------------------------------------------------
             local ltcChangeTable = findLtcChangeTable(sonyXML)
-            local tcFps = attribute "tcFps" (ltcChangeTable) >> tonumber
+            local tcFps = attribute "tcFps" (ltcChangeTable)
             if not tcFps then
                 log.df("[Sony Timecode Toolbox] Failed to find 'tcFps' value in sidecar file: %s", src)
-                break
+                goto next_resource_item
             end
+            tcFps = tonumber(tcFps)
 
             local halfStep = attribute "halfStep" (ltcChangeTable) == "true"
             local startTimecodeValue = findLtcChangeStartTimecode(sonyXML)
 
             if not startTimecodeValue then
                 log.df("[Sony Timecode Toolbox] Failed to find 'startTimecodeValue' value in sidecar file: %s", src)
-                break
+                goto next_resource_item
             end
 
             if not startTimecodeValue:len() == 8 then
                 log.df("[Sony Timecode Toolbox] 'startTimecodeValue' value of '%s' is not 8 characters in sidecar file: %s", startTimecodeValue, src)
-                break
+                goto next_resource_item
             end
 
             local startTimecode = timecode.fromFFSSMMHH(startTimecodeValue)
@@ -607,7 +611,10 @@ local function processFCPXML(path)
             log.df("[Sony Timecode Toolbox] Frame Duration from FCPXML: %s", frameDuration)
             log.df("[Sony Timecode Toolbox] Converted Timecode: %s", timeValue)
             log.df("-----------------------")
+
+            ::next_resource_item::
         end
+        ::next_resource::
     end
 
     --log.df("[Sony Timecode Toolbox] Start Times: %s", hs.inspect(startTimes))
