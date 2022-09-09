@@ -469,9 +469,11 @@ local function processFCPXML(path)
         local formatID = nodeAttributes.format
         local frameDuration = frameDurations[formatID]
 
+        --[[
         if not frameDuration then
             log.df("[Sony Timecode Toolbox] Failed to lookup frame duration for asset: %s.", assetID)
         end
+        --]]
 
         local nodeChildren = children(node) or {}
 
