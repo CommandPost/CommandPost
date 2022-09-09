@@ -425,7 +425,7 @@ local function processFCPXML(path)
                 local startAsTime = time.new(start)
                 local startTime = startTimes[ref]
 
-                if offsetAsTime and startTime then
+                if startAsTime and startTime then
                     local newStart = startAsTime + startTime
 
                     node:addAttribute("start", time.tostring(newStart))
