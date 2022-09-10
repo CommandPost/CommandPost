@@ -649,10 +649,10 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Is there a 'timeMap' inside this 'asset-clip'?
             --------------------------------------------------------------------------------
-            for _, node in ipairs(nodeChildren) do
-                if isNamed "timeMap" (node) then
+            for _, nodeChild in ipairs(nodeChildren) do
+                if isNamed "timeMap" (nodeChild) then
                     hasTimeMap = true
-                    updateTimeMap(node, startTime)
+                    updateTimeMap(nodeChild, startTime)
                 end
             end
 
