@@ -451,7 +451,26 @@ local function updateTimeMap(timeMapNode, startTime)
     end
 end
 
--- updateStartTimeInNode(node, startTimes) -> nil
+-- updateOffsetTimeInNode(node, parentStartTime) -> nil
+-- Function
+-- Updates the `offset` attribute of a node if the parent was changed.
+--
+-- Parameters:
+--  * node - The node.
+--  * parentStartTime - The new start timecode of the parent.
+--
+-- Returns:
+--  * Nothing
+local function updateOffsetTimeInNode(node, parentStartTime)
+    if parentStartTime then
+        local oldOffset = timeAttribute "offset" (node)
+        local newOffset = oldOffset + parentStartTime
+        node:addAttribute("offset", tostring(newOffset))
+    end
+end
+
+
+-- updateStartTimeInNode(node, startTimes) -> time | nil
 -- Function
 -- Updates the `node`'s `start` attribute with the new start timecode.
 -- Also handles retimed elements (with a `timeMap` child node).
@@ -459,19 +478,23 @@ end
 -- Parameters:
 --  * node - The node to update.
 --  * startTimes - The new start timecode.
+--  * parentStartTime - The parent's adjusted start time. Set to `nil` if no adjustment required.
 --
 -- Returns:
---  * Nothing
-local function updateStartTimeInNode(node, startTimes)
+--  * The new start time, or `nil` if not found.
+local function updateStartTimeInNode(node, startTimes, parentStartTime)
+    --------------------------------------------------------------------------------
+    -- Update the "start" attribute if referencing an adjusted asset:
+    --------------------------------------------------------------------------------
     if not isNamed "asset-clip" (node) and not isNamed "video" (node) then return end
     
     local ref           = attribute "ref" (node)
-    local assetStart    = ref and startTimes[ref] or time.ZERO
+    local assetStart    = ref and startTimes[ref]
 
     --------------------------------------------------------------------------------
-    -- Only update if we have a non-zero start time in the original asset:
+    -- Only update if we have a new start time in the original asset:
     --------------------------------------------------------------------------------
-    if assetStart == time.ZERO then return end
+    if assetStart == nil then return end
 
     local timeMap = firstChildNamed "timeMap" (node)
     if timeMap then
@@ -487,10 +510,11 @@ local function updateStartTimeInNode(node, startTimes)
         local newStart  = timeAttribute "start" (node) + assetStart
         node:addAttribute("start", tostring(newStart))
         log.df("[Sony Timecode Toolbox] Updated Start to '%s' for ref: %s", newStart, ref)
+        return newStart
     end
 end
 
--- processNodeTable(nodeTable, startTimes) -> nil
+-- processNodeTable(nodeTable, startTimes, parentStartTime) -> nil
 -- Function
 -- Updates the `nodeTable`'s `start` attribute with the new start timecode.
 -- Also handles retimed elements (with a `timeMap` child node).
@@ -498,20 +522,25 @@ end
 -- Parameters:
 --  * nodeTable - The node table to update.
 --  * startTimes - The new start timecode.
+--  * parentStartTime - If provided, this is the amount the parent start time was adjusted to.
 --
 -- Returns:
 --  * Nothing
-local function processNodeTable(nodeTable, startTimes)
+local function processNodeTable(nodeTable, startTimes, parentStartTime)
     for _, node in ipairs(nodeTable) do
+        --------------------------------------------------------------------------------
+        -- Update the "offset" attribute if referencing an adjusted asset:
+        --------------------------------------------------------------------------------
+        updateOffsetTimeInNode(node, parentStartTime)
         --------------------------------------------------------------------------------
         -- Process the node:
         --------------------------------------------------------------------------------
-        updateStartTimeInNode(node, startTimes)
+        local newStartTime = updateStartTimeInNode(node, startTimes)
 
         --------------------------------------------------------------------------------
         -- Process the node's children:
         --------------------------------------------------------------------------------
-        processNodeTable(children(node), startTimes)
+        processNodeTable(children(node), startTimes, newStartTime)
     end
 end
 
@@ -542,7 +571,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Access the "FCPXML > Resources":
     --------------------------------------------------------------------------------
-    local resourcesChildren = findResources(document) or {}
+    local resourcesChildren = findResources(document)
     if #resourcesChildren < 1 then
         return showError(i18n("invalidDataDetected") .. ".", i18n("sonyTimecodeError"))
     end
