@@ -113,6 +113,37 @@ local function isNamed(value)
     return pipe(name, is(value))
 end
 
+-- _hasOffsetAttribute <table: string:boolean>
+-- Constant
+-- Table of elements that have an `offset` attribute.
+local _hasOffsetAttribute = {
+    ["asset-clip"]  = true,
+    ["audio"]       = true,
+    ["caption"]     = true,
+    ["clip"]        = true,
+    ["gap"]         = true,
+    ["mc-clip"]     = true,
+    ["ref-clip"]    = true,
+    ["spine"]       = true,
+    ["sync-clip"]   = true,
+    ["title"]       = true,
+    ["transition"]  = true,
+    ["video"]       = true,
+}
+
+-- hasOffsetAttribute(node) -> boolean
+-- Function
+-- Returns `true` if the node has an `offset` attribute.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * `true` if the node has an `offset` attribute, otherwise `false`.
+local function hasOffsetAttribute(node)
+    return _hasOffsetAttribute[name(node)] == true
+end
+
 -- attributes(node) -> table | nil
 -- Function
 -- Returns the attributes of a node as a table if present, or `nil` if not available.
@@ -445,7 +476,7 @@ local function updateTimeMap(timeMapNode, startTime)
             --------------------------------------------------------------------------------
             local value = timeAttribute "value" (node)
             local newValue = value + startTime
-            log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
+            -- log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
             node:addAttribute("value", tostring(newValue))
         end
     end
@@ -462,7 +493,7 @@ end
 -- Returns:
 --  * Nothing
 local function updateOffsetTimeInNode(node, parentStartTime)
-    if parentStartTime then
+    if parentStartTime and hasOffsetAttribute(node) then
         local oldOffset = timeAttribute "offset" (node)
         local newOffset = oldOffset + parentStartTime
         node:addAttribute("offset", tostring(newOffset))
@@ -501,7 +532,7 @@ local function updateStartTimeInNode(node, startTimes, parentStartTime)
         --------------------------------------------------------------------------------
         -- Update the 'timeMap' to take into account the new asset start:
         --------------------------------------------------------------------------------
-        log.df("[Sony Timecode Toolbox] Updating 'timeMap' for asset: %s", ref)
+        -- log.df("[Sony Timecode Toolbox] Updating 'timeMap' for asset: %s", ref)
         updateTimeMap(timeMap, assetStart)
     else
         --------------------------------------------------------------------------------
@@ -509,7 +540,7 @@ local function updateStartTimeInNode(node, startTimes, parentStartTime)
         --------------------------------------------------------------------------------
         local newStart  = timeAttribute "start" (node) + assetStart
         node:addAttribute("start", tostring(newStart))
-        log.df("[Sony Timecode Toolbox] Updated Start to '%s' for ref: %s", newStart, ref)
+        -- log.df("[Sony Timecode Toolbox] Updated `start` to '%s' for ref: %s", newStart, ref)
         return newStart
     end
 end
@@ -617,12 +648,6 @@ local function processFCPXML(path)
         local formatID = nodeAttributes.format
         local frameDuration = frameDurations[formatID]
 
-        --[[
-        if not frameDuration then
-            log.df("[Sony Timecode Toolbox] Failed to lookup frame duration for asset: %s.", assetID)
-        end
-        --]]
-
         for _, nodeChild in ipairs(children(node)) do
             if not isNamed "media-rep" (nodeChild) then goto next_resource_item end
             if not isKind "original-media" (nodeChild) then goto next_resource_item end
@@ -649,7 +674,7 @@ local function processFCPXML(path)
             -- Does the sidecar file actually exist?
             --------------------------------------------------------------------------------
             if not doesFileExist(src) then
-                log.df("[Sony Timecode Toolbox] No sidecar file detected: %s", src)
+                -- log.df("[Sony Timecode Toolbox] No sidecar file detected: %s", src)
 
                 --------------------------------------------------------------------------------
                 -- If no sidecar file, lets try the file itself:
@@ -657,17 +682,17 @@ local function processFCPXML(path)
                 if doesFileExist(originalSrc) then
                     local outputFile = exportMP4MetadataToFile(originalSrc)
                     if not outputFile then
-                        log.df("[Sony Timecode Toolbox] Failed to export metadata from MP4 file: %s", originalSrc)
+                        -- log.df("[Sony Timecode Toolbox] Failed to export metadata from MP4 file: %s", originalSrc)
                         goto next_resource_item
                     end
 
                     src = outputFile
-                    log.df("[Sony Timecode Toolbox] Successfully read metadata from file: %s", originalSrc)
+                    -- log.df("[Sony Timecode Toolbox] Successfully read metadata from file: %s", originalSrc)
                 end
             end
 
             if not doesFileExist(src) then
-                log.df("[Sony Timecode Toolbox] Unable to find metadata: %s", originalSrc)
+                -- log.df("[Sony Timecode Toolbox] Unable to find metadata: %s", originalSrc)
                 goto next_resource_item
             end
 
@@ -676,7 +701,7 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             local sonyXML = xml.open(src)
             if not sonyXML then
-                log.df("[Sony Timecode Toolbox] Failed to read sidecar file: %s", src)
+                -- log.df("[Sony Timecode Toolbox] Failed to read metadata: %s", src)
                 goto next_resource_item
             end
 
@@ -686,7 +711,7 @@ local function processFCPXML(path)
             local ltcChangeTable = findLtcChangeTable(sonyXML)
             local tcFps = attribute "tcFps" (ltcChangeTable)
             if not tcFps then
-                log.df("[Sony Timecode Toolbox] Failed to find 'tcFps' value in metadata: %s", src)
+                log.wf("[Sony Timecode Toolbox] Failed to find 'tcFps' value in metadata: %s", src)
                 goto next_resource_item
             end
             tcFps = tonumber(tcFps)
@@ -695,12 +720,12 @@ local function processFCPXML(path)
             local startTimecodeValue = findLtcChangeStartTimecode(sonyXML)
 
             if not startTimecodeValue then
-                log.df("[Sony Timecode Toolbox] Failed to find 'startTimecodeValue' value in metadata: %s", src)
+                log.wf("[Sony Timecode Toolbox] Failed to find starting timecode value in metadata: %s", src)
                 goto next_resource_item
             end
 
             if not startTimecodeValue:len() == 8 then
-                log.df("[Sony Timecode Toolbox] 'startTimecodeValue' value of '%s' is not 8 characters in metadata: %s", startTimecodeValue, src)
+                log.wf("[Sony Timecode Toolbox] starting timecode value of '%s' must be of the format 'FFSSMMHH' in metadata: %s", startTimecodeValue, src)
                 goto next_resource_item
             end
 
@@ -736,17 +761,6 @@ local function processFCPXML(path)
             -- Save the 'start' time for later:
             --------------------------------------------------------------------------------
             startTimes[assetID] = timeValue
-
-            --[[
-            log.df("-----------------------")
-            log.df("[Sony Timecode Toolbox] File: %s", originalSrc)
-            log.df("[Sony Timecode Toolbox] tcFps from metadata: %s", tcFps)
-            log.df("[Sony Timecode Toolbox] halfStep from metadata: %s", halfStep)
-            log.df("[Sony Timecode Toolbox] Timecode from metadata: %s", startTimecode)
-            log.df("[Sony Timecode Toolbox] Frame Duration from FCPXML: %s", frameDuration)
-            log.df("[Sony Timecode Toolbox] Converted Timecode: %s", timeValue)
-            log.df("-----------------------")
-            --]]
 
             ::next_resource_item::
         end
@@ -797,8 +811,10 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Validate the FCPXML before sending to FCPX:
     --------------------------------------------------------------------------------
-    if not fcpxml.valid(outputPath) then
-        log.df("Sony Toolbox Repair FCPXML was temporarily saved to: %s", outputPath)
+    local ok, errorMessage = fcpxml.valid(outputPath)
+    if not ok then
+        log.wf("[Sony Timecode Toolbox] XML Validation Error: %s", errorMessage)
+        log.wf("[Sony Timecode Toolbox] Invalid FCPXML was temporarily saved to: %s", outputPath)
         return showError("DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.")
     end
 
@@ -894,9 +910,9 @@ local function callback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Sony Timecode Toolbox Panel:")
-            log.df("id: %s", inspect(id))
-            log.df("params: %s", inspect(params))
+            log.ef("Unknown Callback in Sony Timecode Toolbox Panel:")
+            log.ef("id: %s", inspect(id))
+            log.ef("params: %s", inspect(params))
         end
     end
 end
