@@ -109,6 +109,19 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.desktopPath() -> string
+--- Function
+--- Gets the users Desktop Path
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The path as a string.
+function tools.desktopPath()
+    return os.getenv("HOME") .. "/Desktop/"
+end
+
 --- cp.tools.urlToFilename(url) -> string
 --- Function
 --- Converts a URL to a filename.

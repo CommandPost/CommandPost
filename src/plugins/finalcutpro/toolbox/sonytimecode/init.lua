@@ -34,6 +34,7 @@ local is                        = fnvalue.is
 local pipe                      = fn.pipe
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
+local desktopPath               = tools.desktopPath
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local fileLinesBackward         = tools.fileLinesBackward
@@ -43,15 +44,10 @@ local writeToFile               = tools.writeToFile
 
 local mod = {}
 
--- desktopPath -> string
--- Constant
--- Path to the users desktop
-local desktopPath = os.getenv("HOME") .. "/Desktop/"
-
 --- plugins.finalcutpro.toolbox.sonytimecode.lastExportPath <cp.prop: string>
 --- Field
 --- Last Export Path
-mod.lastExportPath = config.prop("toolbox.sonytimecode.lastExportPath", desktopPath)
+mod.lastExportPath = config.prop("toolbox.sonytimecode.lastExportPath", desktopPath())
 
 ---------------------------------------------------
 -- HELPER FUNCTIONS:
@@ -113,24 +109,6 @@ local function isNamed(value)
     return pipe(name, is(value))
 end
 
--- _hasOffsetAttribute <table: string:boolean>
--- Constant
--- Table of elements that have an `offset` attribute.
-local _hasOffsetAttribute = {
-    ["asset-clip"]  = true,
-    ["audio"]       = true,
-    ["caption"]     = true,
-    ["clip"]        = true,
-    ["gap"]         = true,
-    ["mc-clip"]     = true,
-    ["ref-clip"]    = true,
-    ["spine"]       = true,
-    ["sync-clip"]   = true,
-    ["title"]       = true,
-    ["transition"]  = true,
-    ["video"]       = true,
-}
-
 -- hasOffsetAttribute(node) -> boolean
 -- Function
 -- Returns `true` if the node has an `offset` attribute.
@@ -141,7 +119,7 @@ local _hasOffsetAttribute = {
 -- Returns:
 --  * `true` if the node has an `offset` attribute, otherwise `false`.
 local function hasOffsetAttribute(node)
-    return _hasOffsetAttribute[name(node)] == true
+    return fcpxml.HAS_OFFSET_ATTRIBUTE[name(node)] == true
 end
 
 -- attributes(node) -> table | nil
@@ -282,7 +260,6 @@ local findSpineChildren = chain // xPath "/fcpxml[1]/project[1]/sequence[1]/spin
 local function firstChildNamed(name)
     return chain // children >> firstMatching(isNamed(name))
 end
-
 
 -- isKind(value) -> function(node) -> boolean
 -- Function
@@ -500,7 +477,6 @@ local function updateOffsetTimeInNode(node, parentStartTime)
     end
 end
 
-
 -- updateStartTimeInNode(node, startTimes) -> time | nil
 -- Function
 -- Updates the `node`'s `start` attribute with the new start timecode.
@@ -518,7 +494,7 @@ local function updateStartTimeInNode(node, startTimes, parentStartTime)
     -- Update the "start" attribute if referencing an adjusted asset:
     --------------------------------------------------------------------------------
     if not isNamed "asset-clip" (node) and not isNamed "video" (node) then return end
-    
+
     local ref           = attribute "ref" (node)
     local assetStart    = ref and startTimes[ref]
 
@@ -574,7 +550,6 @@ local function processNodeTable(nodeTable, startTimes, parentStartTime)
         processNodeTable(children(node), startTimes, newStartTime)
     end
 end
-
 
 -- processFCPXML(path) -> boolean
 -- Function
@@ -823,7 +798,7 @@ local function processFCPXML(path)
     -- back to the Desktop:
     --------------------------------------------------------------------------------
     if not doesDirectoryExist(mod.lastExportPath()) then
-        mod.lastExportPath(desktopPath)
+        mod.lastExportPath(desktopPath())
     end
 
     --------------------------------------------------------------------------------
