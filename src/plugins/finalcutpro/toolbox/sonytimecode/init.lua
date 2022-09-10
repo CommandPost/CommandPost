@@ -27,11 +27,14 @@ local fntable                   = require "cp.fn.table"
 local fnvalue                   = require "cp.fn.value"
 
 local chain                     = fn.chain
+local default                   = fnvalue.default
+local firstMatching             = fntable.firstMatching
 local get                       = fntable.get
 local is                        = fnvalue.is
 local pipe                      = fn.pipe
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
+local desktopPath               = tools.desktopPath
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local fileLinesBackward         = tools.fileLinesBackward
@@ -41,15 +44,10 @@ local writeToFile               = tools.writeToFile
 
 local mod = {}
 
--- desktopPath -> string
--- Constant
--- Path to the users desktop
-local desktopPath = os.getenv("HOME") .. "/Desktop/"
-
 --- plugins.finalcutpro.toolbox.sonytimecode.lastExportPath <cp.prop: string>
 --- Field
 --- Last Export Path
-mod.lastExportPath = config.prop("toolbox.sonytimecode.lastExportPath", desktopPath)
+mod.lastExportPath = config.prop("toolbox.sonytimecode.lastExportPath", desktopPath())
 
 ---------------------------------------------------
 -- HELPER FUNCTIONS:
@@ -111,6 +109,19 @@ local function isNamed(value)
     return pipe(name, is(value))
 end
 
+-- hasOffsetAttribute(node) -> boolean
+-- Function
+-- Returns `true` if the node has an `offset` attribute.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * `true` if the node has an `offset` attribute, otherwise `false`.
+local function hasOffsetAttribute(node)
+    return fcpxml.HAS_OFFSET_ATTRIBUTE[name(node)] == true
+end
+
 -- attributes(node) -> table | nil
 -- Function
 -- Returns the attributes of a node as a table if present, or `nil` if not available.
@@ -137,9 +148,9 @@ local function attribute(nodeName)
     return chain // attributes >> get(nodeName)
 end
 
--- children(node) -> table | nil
+-- children(node) -> table
 -- Function
--- Returns the children of a node as a table if present, or `nil` if not available.
+-- Returns the children of a node as a table if present, or `{}` if not available.
 --
 -- Parameters:
 --  * node - The node.
@@ -147,7 +158,7 @@ end
 -- Returns:
 --  * The children table, or `nil`.
 local function children(node)
-    return node:children()
+    return node:children() or {}
 end
 
 -- renderPanel(context) -> none
@@ -204,7 +215,7 @@ local function showError(title, message)
     return false
 end
 
--- findResources(document) -> table | nil
+-- findResources(document) -> table
 -- Function
 -- Finds the `resources` nodes in a FCPXML document.
 --
@@ -212,7 +223,7 @@ end
 --  * document - The FCPXML document.
 --
 -- Returns:
---  * The `resources` nodes, or `nil` if not found.
+--  * The `resources` nodes.
 local findResources = chain // xPath "/fcpxml[1]/resources[1]" >> children
 
 -- findProjectName(document) -> string | nil
@@ -226,7 +237,7 @@ local findResources = chain // xPath "/fcpxml[1]/resources[1]" >> children
 --  * The project name, or `nil` if not found.
 local findProjectName = chain // xPath "/fcpxml[1]/project[1]" >> attribute "name"
 
--- findSpineChildren(document) -> table | nil
+-- findSpineChildren(document) -> table
 -- Function
 -- Finds the `spine` nodes in a FCPXML document.
 --
@@ -234,8 +245,21 @@ local findProjectName = chain // xPath "/fcpxml[1]/project[1]" >> attribute "nam
 --  * document - The FCPXML document.
 --
 -- Returns:
---  * The `spine` nodes, or `nil` if not found.
+--  * The list of `spine` nodes
 local findSpineChildren = chain // xPath "/fcpxml[1]/project[1]/sequence[1]/spine[1]" >> children
+
+-- firstChildNamed(name) -> function(node) -> table | nil
+-- Function
+-- Returns a function that takes a node and returns the first child with the specified element name.
+--
+-- Parameters:
+--  * name - The name of the child element
+--
+-- Returns:
+--  * The function.
+local function firstChildNamed(nameOfChildElement)
+    return chain // children >> firstMatching(isNamed(nameOfChildElement))
+end
 
 -- isKind(value) -> function(node) -> boolean
 -- Function
@@ -250,15 +274,29 @@ local function isKind(value)
     return chain // attribute "kind" >> is(value)
 end
 
---- endsWith(value) -> function(node) -> boolean
---- Function
---- Returns a function that takes a node and returns `true` if the node has the specified `src` attribute that ends with the specified value.
----
---- Parameters:
----  * value - The value to check for.
----
---- Returns:
----  * The function.
+-- timeAttribute(key) -> function(node) -> cp.apple.fcpxml.time
+-- Function
+-- Returns a function that takes a node and returns the value of the specified attribute
+-- as a `cp.apple.fcpxml.time` object. Defaults to `0s` if the attribute is not present.
+--
+-- Parameters:
+--  * key - The name of the attribute.
+--
+-- Returns:
+--  * The function.
+local function timeAttribute(key)
+    return pipe(attribute(key), default "0s", time)
+end
+
+-- endsWith(value) -> function(node) -> boolean
+-- Function
+-- Returns a function that takes a node and returns `true` if the node has the specified `src` attribute that ends with the specified value.
+--
+-- Parameters:
+--  * value - The value to check for.
+--
+-- Returns:
+--  * The function.
 local function endsWith(value)
     value = value:lower()
     return function(str)
@@ -397,6 +435,122 @@ local findLtcChangeStartTimecode =
     chain // xPath "/NonRealTimeMeta[1]/LtcChangeTable[1]/LtcChange[@status='increment']"
         >> attribute "value"
 
+-- updateTimeMap(timeMapNode, startTime) -> nil
+-- Function
+-- Updates the `timeMap`'s `timept` nodes with the new start timecode.
+--
+-- Parameters:
+--  * timeMapNode - The `timeMap` node.
+--  * startTime - The new start timecode.
+--
+-- Returns:
+--  * Nothing
+local function updateTimeMap(timeMapNode, startTime)
+    for _, node in ipairs(children(timeMapNode)) do
+        if isNamed "timept" (node) then
+            --------------------------------------------------------------------------------
+            -- Update the 'timept' to take into account the new asset start:
+            --------------------------------------------------------------------------------
+            local value = timeAttribute "value" (node)
+            local newValue = value + startTime
+            -- log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
+            node:addAttribute("value", tostring(newValue))
+        end
+    end
+end
+
+-- updateOffsetTimeInNode(node, parentStartTime) -> nil
+-- Function
+-- Updates the `offset` attribute of a node if the parent was changed.
+--
+-- Parameters:
+--  * node - The node.
+--  * parentStartTime - The new start timecode of the parent.
+--
+-- Returns:
+--  * Nothing
+local function updateOffsetTimeInNode(node, parentStartTime)
+    if parentStartTime and hasOffsetAttribute(node) then
+        local oldOffset = timeAttribute "offset" (node)
+        local newOffset = oldOffset + parentStartTime
+        node:addAttribute("offset", tostring(newOffset))
+    end
+end
+
+-- updateStartTimeInNode(node, startTimes) -> time | nil
+-- Function
+-- Updates the `node`'s `start` attribute with the new start timecode.
+-- Also handles retimed elements (with a `timeMap` child node).
+--
+-- Parameters:
+--  * node - The node to update.
+--  * startTimes - The new start timecode.
+--  * parentStartTime - The parent's adjusted start time. Set to `nil` if no adjustment required.
+--
+-- Returns:
+--  * The new start time, or `nil` if not found.
+local function updateStartTimeInNode(node, startTimes)
+    --------------------------------------------------------------------------------
+    -- Update the "start" attribute if referencing an adjusted asset:
+    --------------------------------------------------------------------------------
+    if not isNamed "asset-clip" (node) and not isNamed "video" (node) then return end
+
+    local ref           = attribute "ref" (node)
+    local assetStart    = ref and startTimes[ref]
+
+    --------------------------------------------------------------------------------
+    -- Only update if we have a new start time in the original asset:
+    --------------------------------------------------------------------------------
+    if assetStart == nil then return end
+
+    local timeMap = firstChildNamed "timeMap" (node)
+    if timeMap then
+        --------------------------------------------------------------------------------
+        -- Update the 'timeMap' to take into account the new asset start:
+        --------------------------------------------------------------------------------
+        -- log.df("[Sony Timecode Toolbox] Updating 'timeMap' for asset: %s", ref)
+        updateTimeMap(timeMap, assetStart)
+    else
+        --------------------------------------------------------------------------------
+        -- We only update the 'start' if there's no 'timeMap' applied:
+        --------------------------------------------------------------------------------
+        local newStart  = timeAttribute "start" (node) + assetStart
+        node:addAttribute("start", tostring(newStart))
+        -- log.df("[Sony Timecode Toolbox] Updated `start` to '%s' for ref: %s", newStart, ref)
+        return newStart
+    end
+end
+
+-- processNodeTable(nodeTable, startTimes, parentStartTime) -> nil
+-- Function
+-- Updates the `nodeTable`'s `start` attribute with the new start timecode.
+-- Also handles retimed elements (with a `timeMap` child node).
+--
+-- Parameters:
+--  * nodeTable - The node table to update.
+--  * startTimes - The new start timecode.
+--  * parentStartTime - If provided, this is the amount the parent start time was adjusted to.
+--
+-- Returns:
+--  * Nothing
+local function processNodeTable(nodeTable, startTimes, parentStartTime)
+    for _, node in ipairs(nodeTable) do
+        --------------------------------------------------------------------------------
+        -- Update the "offset" attribute if referencing an adjusted asset:
+        --------------------------------------------------------------------------------
+        updateOffsetTimeInNode(node, parentStartTime)
+        --------------------------------------------------------------------------------
+        -- Process the node:
+        --------------------------------------------------------------------------------
+        local newStartTime = updateStartTimeInNode(node, startTimes)
+
+        --------------------------------------------------------------------------------
+        -- Process the node's children:
+        --------------------------------------------------------------------------------
+        processNodeTable(children(node), startTimes, newStartTime)
+    end
+end
+
 -- processFCPXML(path) -> boolean
 -- Function
 -- Process a FCPXML file
@@ -423,7 +577,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Access the "FCPXML > Resources":
     --------------------------------------------------------------------------------
-    local resourcesChildren = findResources(document) or {}
+    local resourcesChildren = findResources(document)
     if #resourcesChildren < 1 then
         return showError(i18n("invalidDataDetected") .. ".", i18n("sonyTimecodeError"))
     end
@@ -469,21 +623,11 @@ local function processFCPXML(path)
         local formatID = nodeAttributes.format
         local frameDuration = frameDurations[formatID]
 
-        --[[
-        if not frameDuration then
-            log.df("[Sony Timecode Toolbox] Failed to lookup frame duration for asset: %s.", assetID)
-        end
-        --]]
-
-        local nodeChildren = children(node) or {}
-
-        for _, nodeChild in ipairs(nodeChildren) do
+        for _, nodeChild in ipairs(children(node)) do
             if not isNamed "media-rep" (nodeChild) then goto next_resource_item end
             if not isKind "original-media" (nodeChild) then goto next_resource_item end
 
-            local nodeChildAttributes = attributes(nodeChild)
-
-            local src = nodeChildAttributes.src or ""
+            local src = attribute "src" (nodeChild) or ""
             if not endsWith ".mp4" (src) then goto next_resource_item end
 
             --------------------------------------------------------------------------------
@@ -505,7 +649,7 @@ local function processFCPXML(path)
             -- Does the sidecar file actually exist?
             --------------------------------------------------------------------------------
             if not doesFileExist(src) then
-                log.df("[Sony Timecode Toolbox] No sidecar file detected: %s", src)
+                -- log.df("[Sony Timecode Toolbox] No sidecar file detected: %s", src)
 
                 --------------------------------------------------------------------------------
                 -- If no sidecar file, lets try the file itself:
@@ -513,17 +657,17 @@ local function processFCPXML(path)
                 if doesFileExist(originalSrc) then
                     local outputFile = exportMP4MetadataToFile(originalSrc)
                     if not outputFile then
-                        log.df("[Sony Timecode Toolbox] Failed to export metadata from MP4 file: %s", originalSrc)
+                        -- log.df("[Sony Timecode Toolbox] Failed to export metadata from MP4 file: %s", originalSrc)
                         goto next_resource_item
                     end
 
                     src = outputFile
-                    log.df("[Sony Timecode Toolbox] Successfully read metadata from file: %s", originalSrc)
+                    -- log.df("[Sony Timecode Toolbox] Successfully read metadata from file: %s", originalSrc)
                 end
             end
 
             if not doesFileExist(src) then
-                log.df("[Sony Timecode Toolbox] Unable to find metadata: %s", originalSrc)
+                -- log.df("[Sony Timecode Toolbox] Unable to find metadata: %s", originalSrc)
                 goto next_resource_item
             end
 
@@ -532,7 +676,7 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             local sonyXML = xml.open(src)
             if not sonyXML then
-                log.df("[Sony Timecode Toolbox] Failed to read sidecar file: %s", src)
+                -- log.df("[Sony Timecode Toolbox] Failed to read metadata: %s", src)
                 goto next_resource_item
             end
 
@@ -542,7 +686,7 @@ local function processFCPXML(path)
             local ltcChangeTable = findLtcChangeTable(sonyXML)
             local tcFps = attribute "tcFps" (ltcChangeTable)
             if not tcFps then
-                log.df("[Sony Timecode Toolbox] Failed to find 'tcFps' value in metadata: %s", src)
+                log.wf("[Sony Timecode Toolbox] Failed to find 'tcFps' value in metadata: %s", src)
                 goto next_resource_item
             end
             tcFps = tonumber(tcFps)
@@ -551,12 +695,12 @@ local function processFCPXML(path)
             local startTimecodeValue = findLtcChangeStartTimecode(sonyXML)
 
             if not startTimecodeValue then
-                log.df("[Sony Timecode Toolbox] Failed to find 'startTimecodeValue' value in metadata: %s", src)
+                log.wf("[Sony Timecode Toolbox] Failed to find starting timecode value in metadata: %s", src)
                 goto next_resource_item
             end
 
             if not startTimecodeValue:len() == 8 then
-                log.df("[Sony Timecode Toolbox] 'startTimecodeValue' value of '%s' is not 8 characters in metadata: %s", startTimecodeValue, src)
+                log.wf("[Sony Timecode Toolbox] starting timecode value of '%s' must be of the format 'FFSSMMHH' in metadata: %s", startTimecodeValue, src)
                 goto next_resource_item
             end
 
@@ -593,17 +737,6 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             startTimes[assetID] = timeValue
 
-            --[[
-            log.df("-----------------------")
-            log.df("[Sony Timecode Toolbox] File: %s", originalSrc)
-            log.df("[Sony Timecode Toolbox] tcFps from metadata: %s", tcFps)
-            log.df("[Sony Timecode Toolbox] halfStep from metadata: %s", halfStep)
-            log.df("[Sony Timecode Toolbox] Timecode from metadata: %s", startTimecode)
-            log.df("[Sony Timecode Toolbox] Frame Duration from FCPXML: %s", frameDuration)
-            log.df("[Sony Timecode Toolbox] Converted Timecode: %s", timeValue)
-            log.df("-----------------------")
-            --]]
-
             ::next_resource_item::
         end
         ::next_resource::
@@ -612,41 +745,13 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Iterate all the 'spine' nodes to update the start time of asset-clips:
     --------------------------------------------------------------------------------
-    local spineChildren = findSpineChildren(document) or {}
-
-    local function updateStartTimeInNode(node)
-        if isNamed "asset-clip" (node) then
-            local ref           = attribute "ref" (node)
-            local start         = attribute "start" (node)
-
-            local startAsTime   = start and time.new(start) or time.ZERO
-            local startTime     = ref and startTimes[ref]
-
-            local newStart      = startTime and startAsTime + startTime
-
-            if newStart then
-                node:addAttribute("start", time.tostring(newStart))
-            end
-        end
-    end
-
-    local function processNodeTable(nodeTable)
-        for _, node in ipairs(nodeTable) do
-            updateStartTimeInNode(node)
-            local nodeChildren = node:children()
-            if nodeChildren then
-                processNodeTable(nodeChildren)
-            end
-        end
-    end
-
-    processNodeTable(spineChildren)
+    processNodeTable(findSpineChildren(document), startTimes)
 
     --------------------------------------------------------------------------------
     -- Iterate all the 'resources' nodes to update the start time of Compound Clips
     -- and Multicam Clips:
     --------------------------------------------------------------------------------
-    processNodeTable(resourcesChildren)
+    processNodeTable(resourcesChildren, startTimes)
 
     --------------------------------------------------------------------------------
     -- Now lets delete the project:
@@ -667,26 +772,51 @@ local function processFCPXML(path)
     eventNode:insertNode(project)
 
     --------------------------------------------------------------------------------
-    -- Ask where to save the FCPXML:
+    -- Create an XML string:
     --------------------------------------------------------------------------------
-    if not doesDirectoryExist(mod.lastExportPath()) then
-        mod.lastExportPath(desktopPath)
+    local nodeOptions = xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes | xml.nodeOptions.prettyPrint
+    local xmlOutput = document:xmlString(nodeOptions)
+
+    --------------------------------------------------------------------------------
+    -- Output a temporary file:
+    --------------------------------------------------------------------------------
+    local outputPath = os.tmpname() .. ".fcpxml"
+    writeToFile(outputPath, xmlOutput)
+
+    --------------------------------------------------------------------------------
+    -- Validate the FCPXML before sending to FCPX:
+    --------------------------------------------------------------------------------
+    local ok, errorMessage = fcpxml.valid(outputPath)
+    if not ok then
+        log.wf("[Sony Timecode Toolbox] XML Validation Error: %s", errorMessage)
+        log.wf("[Sony Timecode Toolbox] Invalid FCPXML was temporarily saved to: %s", outputPath)
+        return showError("DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.")
     end
 
+    --------------------------------------------------------------------------------
+    -- Make sure the last output path still exists, otherwise default
+    -- back to the Desktop:
+    --------------------------------------------------------------------------------
+    if not doesDirectoryExist(mod.lastExportPath()) then
+        mod.lastExportPath(desktopPath())
+    end
+
+    --------------------------------------------------------------------------------
+    -- Ask where to save the FCPXML:
+    --------------------------------------------------------------------------------
     local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAnOutputDirectory") .. ":", mod.lastExportPath(), false, true, false)
     local exportPath = exportPathResult and exportPathResult["1"]
 
     if exportPath then
+        --------------------------------------------------------------------------------
+        -- Update the last Export Path:
+        --------------------------------------------------------------------------------
         mod.lastExportPath(exportPath)
 
         --------------------------------------------------------------------------------
-        -- Output the revised FCPXML to file:
+        -- Write the XML data to file:
         --------------------------------------------------------------------------------
-        local nodeOptions = xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes | xml.nodeOptions.prettyPrint
-        local xmlOutput = document:xmlString(nodeOptions)
-
-        local outputPath = exportPath .. "/" .. projectName .. " - Fixed.fcpxml"
-
+        outputPath = exportPath .. "/" .. projectName .. " - Fixed.fcpxml"
         writeToFile(outputPath, xmlOutput)
 
         --------------------------------------------------------------------------------
@@ -755,9 +885,9 @@ local function callback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Sony Timecode Toolbox Panel:")
-            log.df("id: %s", inspect(id))
-            log.df("params: %s", inspect(params))
+            log.ef("Unknown Callback in Sony Timecode Toolbox Panel:")
+            log.ef("id: %s", inspect(id))
+            log.ef("params: %s", inspect(params))
         end
     end
 end

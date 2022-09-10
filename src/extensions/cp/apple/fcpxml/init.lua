@@ -17,6 +17,24 @@ local execute               = _G.hs.execute
 
 local mod = {}
 
+--- cp.apple.fcpxml.HAS_OFFSET_ATTRIBUTE <table: string:boolean>
+--- Constant
+--- Table of elements that have an `offset` attribute.
+mod.HAS_OFFSET_ATTRIBUTE = {
+    ["asset-clip"]  = true,
+    ["audio"]       = true,
+    ["caption"]     = true,
+    ["clip"]        = true,
+    ["gap"]         = true,
+    ["mc-clip"]     = true,
+    ["ref-clip"]    = true,
+    ["spine"]       = true,
+    ["sync-clip"]   = true,
+    ["title"]       = true,
+    ["transition"]  = true,
+    ["video"]       = true,
+}
+
 --- cp.apple.fcpxml.supportedDTDs() -> table
 --- Function
 --- Returns a table containing the version numbers of all the DTD documents included in this extension.
