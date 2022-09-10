@@ -257,8 +257,8 @@ local findSpineChildren = chain // xPath "/fcpxml[1]/project[1]/sequence[1]/spin
 --
 -- Returns:
 --  * The function.
-local function firstChildNamed(name)
-    return chain // children >> firstMatching(isNamed(name))
+local function firstChildNamed(nameOfChildElement)
+    return chain // children >> firstMatching(isNamed(nameOfChildElement))
 end
 
 -- isKind(value) -> function(node) -> boolean
@@ -489,7 +489,7 @@ end
 --
 -- Returns:
 --  * The new start time, or `nil` if not found.
-local function updateStartTimeInNode(node, startTimes, parentStartTime)
+local function updateStartTimeInNode(node, startTimes)
     --------------------------------------------------------------------------------
     -- Update the "start" attribute if referencing an adjusted asset:
     --------------------------------------------------------------------------------
