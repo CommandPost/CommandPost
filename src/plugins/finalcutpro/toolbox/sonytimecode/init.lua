@@ -427,6 +427,95 @@ local findLtcChangeStartTimecode =
     chain // xPath "/NonRealTimeMeta[1]/LtcChangeTable[1]/LtcChange[@status='increment']"
         >> attribute "value"
 
+-- updateTimeMap(timeMapNode, startTime) -> nil
+-- Function
+-- Updates the `timeMap`'s `timept` nodes with the new start timecode.
+--
+-- Parameters:
+--  * timeMapNode - The `timeMap` node.
+--  * startTime - The new start timecode.
+--
+-- Returns:
+--  * Nothing
+local function updateTimeMap(timeMapNode, startTime)
+    for _, node in ipairs(children(timeMapNode)) do
+        if isNamed "timept" (node) then
+            --------------------------------------------------------------------------------
+            -- Update the 'timept' to take into account the new asset start:
+            --------------------------------------------------------------------------------
+            local value = timeAttribute "value" (node)
+            local newValue = value + startTime
+            log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
+            node:addAttribute("value", tostring(newValue))
+        end
+    end
+end
+
+-- updateStartTimeInNode(node, startTimes) -> nil
+-- Function
+-- Updates the `node`'s `start` attribute with the new start timecode.
+-- Also handles retimed elements (with a `timeMap` child node).
+--
+-- Parameters:
+--  * node - The node to update.
+--  * startTimes - The new start timecode.
+--
+-- Returns:
+--  * Nothing
+local function updateStartTimeInNode(node, startTimes)
+    if not isNamed "asset-clip" (node) and not isNamed "video" (node) then return end
+    
+    local ref           = attribute "ref" (node)
+    local assetStart    = ref and startTimes[ref] or time.ZERO
+
+    --------------------------------------------------------------------------------
+    -- Only update if we have a non-zero start time in the original asset:
+    --------------------------------------------------------------------------------
+    if assetStart == time.ZERO then return end
+
+    local timeMap = firstChildNamed "timeMap" (node)
+    if timeMap then
+        --------------------------------------------------------------------------------
+        -- Update the 'timeMap' to take into account the new asset start:
+        --------------------------------------------------------------------------------
+        log.df("[Sony Timecode Toolbox] Updating 'timeMap' for asset: %s", ref)
+        updateTimeMap(timeMap, assetStart)
+    else
+        --------------------------------------------------------------------------------
+        -- We only update the 'start' if there's no 'timeMap' applied:
+        --------------------------------------------------------------------------------
+        local newStart  = timeAttribute "start" (node) + assetStart
+        node:addAttribute("start", tostring(newStart))
+        log.df("[Sony Timecode Toolbox] Updated Start to '%s' for ref: %s", newStart, ref)
+    end
+end
+
+-- processNodeTable(nodeTable, startTimes) -> nil
+-- Function
+-- Updates the `nodeTable`'s `start` attribute with the new start timecode.
+-- Also handles retimed elements (with a `timeMap` child node).
+--
+-- Parameters:
+--  * nodeTable - The node table to update.
+--  * startTimes - The new start timecode.
+--
+-- Returns:
+--  * Nothing
+local function processNodeTable(nodeTable, startTimes)
+    for _, node in ipairs(nodeTable) do
+        --------------------------------------------------------------------------------
+        -- Process the node:
+        --------------------------------------------------------------------------------
+        updateStartTimeInNode(node, startTimes)
+
+        --------------------------------------------------------------------------------
+        -- Process the node's children:
+        --------------------------------------------------------------------------------
+        processNodeTable(children(node), startTimes)
+    end
+end
+
+
 -- processFCPXML(path) -> boolean
 -- Function
 -- Process a FCPXML file
@@ -636,105 +725,9 @@ local function processFCPXML(path)
     end
 
     --------------------------------------------------------------------------------
-    -- Update the 'value' time for an 'timept':
-    --------------------------------------------------------------------------------
-    local function updateTimeMap(timeMapNode, startTime)
-        for _, node in ipairs(children(timeMapNode)) do
-            if isNamed "timept" (node) then
-                --------------------------------------------------------------------------------
-                -- Update the 'timept' to take into account the new asset start:
-                --------------------------------------------------------------------------------
-                local value = timeAttribute "value" (node)
-                local newValue = value + startTime
-                log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
-                node:addAttribute("value", tostring(newValue))
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Update the 'start' time for an 'asset-clip':
-    --------------------------------------------------------------------------------
-    local function updateStartTimeInNode(node, startTimes)
-        if not isNamed "asset-clip" (node) and not isNamed "video" (node) then return end
-        
-        local ref           = attribute "ref" (node)
-        local assetStart    = ref and startTimes[ref] or time.ZERO
-
-        --------------------------------------------------------------------------------
-        -- Only update if we have a non-zero start time in the original asset:
-        --------------------------------------------------------------------------------
-        if assetStart == time.ZERO then return end
-
-        local timeMap = firstChildNamed "timeMap" (node)
-        if timeMap then
-            --------------------------------------------------------------------------------
-            -- Update the 'timeMap' to take into account the new asset start:
-            --------------------------------------------------------------------------------
-            log.df("[Sony Timecode Toolbox] Updating 'timeMap' for asset: %s", ref)
-            updateTimeMap(timeMap, assetStart)
-        else
-            --------------------------------------------------------------------------------
-            -- We only update the 'start' if there's no 'timeMap' applied:
-            --------------------------------------------------------------------------------
-            local newStart  = timeAttribute "start" (node) + assetStart
-            node:addAttribute("start", tostring(newStart))
-            log.df("[Sony Timecode Toolbox] Updated Start to '%s' for ref: %s", newStart, ref)
-        end
-
-        -- --------------------------------------------------------------------------------
-        -- -- Is this 'asset-clip' inside a 'sync-clip' that contains a 'timeMap'?
-        -- --------------------------------------------------------------------------------
-        -- local parentNode = node:parent()
-        -- local parentNodeName = parentNode and node:parent():name()
-        -- if parentNodeName == "sync-clip" then
-        --     log.df("[Sony Timecode Toolbox] Parent of '%s' is a sync-clip.", ref)
-        --     local parentNodeChildren = parentNode:children()
-        --     for _, parentNodeChildrenNode in ipairs(parentNodeChildren) do
-        --         if isNamed "timeMap" (parentNodeChildrenNode) then
-        --             --------------------------------------------------------------------------------
-        --             -- NOTE: This currently doesn't work. We're attempting to update
-        --             --       the sync-clip start time, and the timeMap values.
-        --             --------------------------------------------------------------------------------
-        --             log.df("[Sony Timecode Toolbox] Parent of '%s' contains a 'timeMap'.", ref)
-
-        --             local syncClipStart = attribute "start" (parentNode)
-        --             local syncClipStartAsTime = syncClipStart and time.new(syncClipStart) or time.ZERO
-
-        --             local newSyncClipStart = startTime and syncClipStartAsTime + startTime
-
-        --             parentNode:addAttribute("start", time.tostring(newSyncClipStart))
-
-        --             log.df("[Sony Timecode Toolbox] Updated Start sync-clip: %s", time.tostring(newSyncClipStart))
-
-        --             updateTimeMap(parentNodeChildrenNode, newSyncClipStart)
-        --         end
-        --     end
-        -- end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Process a node table:
-    --------------------------------------------------------------------------------
-    local function processNodeTable(nodeTable, startTimes)
-        for _, node in ipairs(nodeTable) do
-            --------------------------------------------------------------------------------
-            -- Process the node:
-            --------------------------------------------------------------------------------
-            updateStartTimeInNode(node, startTimes)
-
-            --------------------------------------------------------------------------------
-            -- Process the node's children:
-            --------------------------------------------------------------------------------
-            processNodeTable(children(node), startTimes)
-        end
-    end
-
-    --------------------------------------------------------------------------------
     -- Iterate all the 'spine' nodes to update the start time of asset-clips:
     --------------------------------------------------------------------------------
-    local spineChildren = findSpineChildren(document) or {}
-    processNodeTable(spineChildren, startTimes)
+    processNodeTable(findSpineChildren(document), startTimes)
 
     --------------------------------------------------------------------------------
     -- Iterate all the 'resources' nodes to update the start time of Compound Clips
