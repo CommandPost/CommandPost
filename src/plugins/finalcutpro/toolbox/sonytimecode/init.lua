@@ -666,13 +666,11 @@ local function processFCPXML(path)
                 local parentNodeChildren = parentNode:children()
                 for _, parentNodeChildrenNode in ipairs(parentNodeChildren) do
                     if isNamed "timeMap" (parentNodeChildrenNode) then
+                        --------------------------------------------------------------------------------
+                        -- NOTE: This currently doesn't work. We're attempting to update
+                        --       the sync-clip start time, and the timeMap values.
+                        --------------------------------------------------------------------------------
                         log.df("[Sony Timecode Toolbox] Parent of '%s' contains a 'timeMap'.", ref)
-
-                        -- TODO: I have no idea what we need to do in this scenario.
-
-                        --[[
-                        hasTimeMap = true
-                        updateTimeMap(parentNodeChildrenNode, startTime)
 
                         local syncClipStart = attribute "start" (parentNode)
                         local syncClipStartAsTime = syncClipStart and time.new(syncClipStart) or time.ZERO
@@ -680,7 +678,10 @@ local function processFCPXML(path)
                         local newSyncClipStart = startTime and syncClipStartAsTime + startTime
 
                         parentNode:addAttribute("start", time.tostring(newSyncClipStart))
-                        --]]
+
+                        log.df("[Sony Timecode Toolbox] Updated Start sync-clip: %s", time.tostring(newSyncClipStart))
+
+                        updateTimeMap(parentNodeChildrenNode, newSyncClipStart)
                     end
                 end
             end
@@ -689,7 +690,7 @@ local function processFCPXML(path)
             -- We only update the 'start' if there's no 'timeMap' applied:
             --------------------------------------------------------------------------------
             if newStart and not hasTimeMap then
-                --log.df("[Sony Timecode Toolbox] Updated Start for ref: %s", ref)
+                log.df("[Sony Timecode Toolbox] Updated Start for ref: %s", ref)
                 node:addAttribute("start", time.tostring(newStart))
             end
 
