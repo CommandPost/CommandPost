@@ -539,6 +539,7 @@ local function processNodeTable(nodeTable, startTimes, parentStartTime)
         -- Update the "offset" attribute if referencing an adjusted asset:
         --------------------------------------------------------------------------------
         updateOffsetTimeInNode(node, parentStartTime)
+
         --------------------------------------------------------------------------------
         -- Process the node:
         --------------------------------------------------------------------------------
