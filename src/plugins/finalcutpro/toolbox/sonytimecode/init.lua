@@ -623,6 +623,7 @@ local function processFCPXML(path)
                 local valueAsTime = value and time.new(value)
                 local newValue = value and valueAsTime and valueAsTime + startTime
                 if newValue then
+                    --log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
                     node:addAttribute("value", time.tostring(newValue))
                 end
             end
@@ -656,9 +657,39 @@ local function processFCPXML(path)
             end
 
             --------------------------------------------------------------------------------
-            -- We only update the 'start' if there's no timeMap applied:
+            -- Is this 'asset-clip' inside a 'sync-clip' that contains a 'timeMap'?
+            --------------------------------------------------------------------------------
+            local parentNode = node:parent()
+            local parentNodeName = parentNode and node:parent():name()
+            if parentNodeName == "sync-clip" then
+                log.df("[Sony Timecode Toolbox] Parent of '%s' is a sync-clip.", ref)
+                local parentNodeChildren = parentNode:children()
+                for _, parentNodeChildrenNode in ipairs(parentNodeChildren) do
+                    if isNamed "timeMap" (parentNodeChildrenNode) then
+                        log.df("[Sony Timecode Toolbox] Parent of '%s' contains a 'timeMap'.", ref)
+
+                        -- TODO: I have no idea what we need to do in this scenario.
+
+                        --[[
+                        hasTimeMap = true
+                        updateTimeMap(parentNodeChildrenNode, startTime)
+
+                        local syncClipStart = attribute "start" (parentNode)
+                        local syncClipStartAsTime = syncClipStart and time.new(syncClipStart) or time.ZERO
+
+                        local newSyncClipStart = startTime and syncClipStartAsTime + startTime
+
+                        parentNode:addAttribute("start", time.tostring(newSyncClipStart))
+                        --]]
+                    end
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- We only update the 'start' if there's no 'timeMap' applied:
             --------------------------------------------------------------------------------
             if newStart and not hasTimeMap then
+                --log.df("[Sony Timecode Toolbox] Updated Start for ref: %s", ref)
                 node:addAttribute("start", time.tostring(newStart))
             end
 
@@ -670,7 +701,14 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     local function processNodeTable(nodeTable)
         for _, node in ipairs(nodeTable) do
+            --------------------------------------------------------------------------------
+            -- Process the node:
+            --------------------------------------------------------------------------------
             updateStartTimeInNode(node)
+
+            --------------------------------------------------------------------------------
+            -- Process the node's children:
+            --------------------------------------------------------------------------------
             local nodeChildren = node:children()
             if nodeChildren then
                 processNodeTable(nodeChildren)
@@ -709,26 +747,49 @@ local function processFCPXML(path)
     eventNode:insertNode(project)
 
     --------------------------------------------------------------------------------
-    -- Ask where to save the FCPXML:
+    -- Create an XML string:
+    --------------------------------------------------------------------------------
+    local nodeOptions = xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes | xml.nodeOptions.prettyPrint
+    local xmlOutput = document:xmlString(nodeOptions)
+
+    --------------------------------------------------------------------------------
+    -- Output a temporary file:
+    --------------------------------------------------------------------------------
+    local outputPath = os.tmpname() .. ".fcpxml"
+    writeToFile(outputPath, xmlOutput)
+
+    --------------------------------------------------------------------------------
+    -- Validate the FCPXML before sending to FCPX:
+    --------------------------------------------------------------------------------
+    if not fcpxml.valid(outputPath) then
+        log.df("Sony Toolbox Repair FCPXML was temporarily saved to: %s", outputPath)
+        return showError("DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.")
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure the last output path still exists, otherwise default
+    -- back to the Desktop:
     --------------------------------------------------------------------------------
     if not doesDirectoryExist(mod.lastExportPath()) then
         mod.lastExportPath(desktopPath)
     end
 
+    --------------------------------------------------------------------------------
+    -- Ask where to save the FCPXML:
+    --------------------------------------------------------------------------------
     local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAnOutputDirectory") .. ":", mod.lastExportPath(), false, true, false)
     local exportPath = exportPathResult and exportPathResult["1"]
 
     if exportPath then
+        --------------------------------------------------------------------------------
+        -- Update the last Export Path:
+        --------------------------------------------------------------------------------
         mod.lastExportPath(exportPath)
 
         --------------------------------------------------------------------------------
-        -- Output the revised FCPXML to file:
+        -- Write the XML data to file:
         --------------------------------------------------------------------------------
-        local nodeOptions = xml.nodeOptions.compactEmptyElement | xml.nodeOptions.preserveAll | xml.nodeOptions.useDoubleQuotes | xml.nodeOptions.prettyPrint
-        local xmlOutput = document:xmlString(nodeOptions)
-
-        local outputPath = exportPath .. "/" .. projectName .. " - Fixed.fcpxml"
-
+        outputPath = exportPath .. "/" .. projectName .. " - Fixed.fcpxml"
         writeToFile(outputPath, xmlOutput)
 
         --------------------------------------------------------------------------------
