@@ -27,6 +27,8 @@ local fntable                   = require "cp.fn.table"
 local fnvalue                   = require "cp.fn.value"
 
 local chain                     = fn.chain
+local default                   = fnvalue.default
+local firstMatching             = fntable.firstMatching
 local get                       = fntable.get
 local is                        = fnvalue.is
 local pipe                      = fn.pipe
@@ -137,9 +139,9 @@ local function attribute(nodeName)
     return chain // attributes >> get(nodeName)
 end
 
--- children(node) -> table | nil
+-- children(node) -> table
 -- Function
--- Returns the children of a node as a table if present, or `nil` if not available.
+-- Returns the children of a node as a table if present, or `{}` if not available.
 --
 -- Parameters:
 --  * node - The node.
@@ -147,7 +149,7 @@ end
 -- Returns:
 --  * The children table, or `nil`.
 local function children(node)
-    return node:children()
+    return node:children() or {}
 end
 
 -- renderPanel(context) -> none
@@ -204,7 +206,7 @@ local function showError(title, message)
     return false
 end
 
--- findResources(document) -> table | nil
+-- findResources(document) -> table
 -- Function
 -- Finds the `resources` nodes in a FCPXML document.
 --
@@ -212,7 +214,7 @@ end
 --  * document - The FCPXML document.
 --
 -- Returns:
---  * The `resources` nodes, or `nil` if not found.
+--  * The `resources` nodes.
 local findResources = chain // xPath "/fcpxml[1]/resources[1]" >> children
 
 -- findProjectName(document) -> string | nil
@@ -226,7 +228,7 @@ local findResources = chain // xPath "/fcpxml[1]/resources[1]" >> children
 --  * The project name, or `nil` if not found.
 local findProjectName = chain // xPath "/fcpxml[1]/project[1]" >> attribute "name"
 
--- findSpineChildren(document) -> table | nil
+-- findSpineChildren(document) -> table
 -- Function
 -- Finds the `spine` nodes in a FCPXML document.
 --
@@ -234,8 +236,22 @@ local findProjectName = chain // xPath "/fcpxml[1]/project[1]" >> attribute "nam
 --  * document - The FCPXML document.
 --
 -- Returns:
---  * The `spine` nodes, or `nil` if not found.
+--  * The list of `spine` nodes
 local findSpineChildren = chain // xPath "/fcpxml[1]/project[1]/sequence[1]/spine[1]" >> children
+
+-- firstChildNamed(name) -> function(node) -> table | nil
+-- Function
+-- Returns a function that takes a node and returns the first child with the specified element name.
+--
+-- Parameters:
+--  * name - The name of the child element
+--
+-- Returns:
+--  * The function.
+local function firstChildNamed(name)
+    return chain // children >> firstMatching(isNamed(name))
+end
+
 
 -- isKind(value) -> function(node) -> boolean
 -- Function
@@ -250,15 +266,29 @@ local function isKind(value)
     return chain // attribute "kind" >> is(value)
 end
 
---- endsWith(value) -> function(node) -> boolean
---- Function
---- Returns a function that takes a node and returns `true` if the node has the specified `src` attribute that ends with the specified value.
----
---- Parameters:
----  * value - The value to check for.
----
---- Returns:
----  * The function.
+-- timeAttribute(key) -> function(node) -> cp.apple.fcpxml.time
+-- Function
+-- Returns a function that takes a node and returns the value of the specified attribute
+-- as a `cp.apple.fcpxml.time` object. Defaults to `0s` if the attribute is not present.
+--
+-- Parameters:
+--  * key - The name of the attribute.
+--
+-- Returns:
+--  * The function.
+local function timeAttribute(key)
+    return pipe(attribute(key), default "0s", time)
+end
+
+-- endsWith(value) -> function(node) -> boolean
+-- Function
+-- Returns a function that takes a node and returns `true` if the node has the specified `src` attribute that ends with the specified value.
+--
+-- Parameters:
+--  * value - The value to check for.
+--
+-- Returns:
+--  * The function.
 local function endsWith(value)
     value = value:lower()
     return function(str)
@@ -475,15 +505,11 @@ local function processFCPXML(path)
         end
         --]]
 
-        local nodeChildren = children(node) or {}
-
-        for _, nodeChild in ipairs(nodeChildren) do
+        for _, nodeChild in ipairs(children(node)) do
             if not isNamed "media-rep" (nodeChild) then goto next_resource_item end
             if not isKind "original-media" (nodeChild) then goto next_resource_item end
 
-            local nodeChildAttributes = attributes(nodeChild)
-
-            local src = nodeChildAttributes.src or ""
+            local src = attribute "src" (nodeChild) or ""
             if not endsWith ".mp4" (src) then goto next_resource_item end
 
             --------------------------------------------------------------------------------
@@ -613,19 +639,15 @@ local function processFCPXML(path)
     -- Update the 'value' time for an 'timept':
     --------------------------------------------------------------------------------
     local function updateTimeMap(timeMapNode, startTime)
-        local nodeChildren = timeMapNode:children() or {} -- There SHOULD be children, but just incase there's not for some reason.
-        for _, node in ipairs(nodeChildren) do
+        for _, node in ipairs(children(timeMapNode)) do
             if isNamed "timept" (node) then
                 --------------------------------------------------------------------------------
                 -- Update the 'timept' to take into account the new asset start:
                 --------------------------------------------------------------------------------
-                local value = attribute "value" (node)
-                local valueAsTime = value and time.new(value)
-                local newValue = value and valueAsTime and valueAsTime + startTime
-                if newValue then
-                    --log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
-                    node:addAttribute("value", time.tostring(newValue))
-                end
+                local value = timeAttribute "value" (node)
+                local newValue = value + startTime
+                log.df("[Sony Timecode Toolbox] Updated timept: %s", time.tostring(newValue))
+                node:addAttribute("value", tostring(newValue))
             end
         end
     end
@@ -633,87 +655,78 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     -- Update the 'start' time for an 'asset-clip':
     --------------------------------------------------------------------------------
-    local function updateStartTimeInNode(node)
-        if isNamed "asset-clip" (node) then
-            local ref           = attribute "ref" (node)
-            local start         = attribute "start" (node)
+    local function updateStartTimeInNode(node, startTimes)
+        if not isNamed "asset-clip" (node) and not isNamed "video" (node) then return end
+        
+        local ref           = attribute "ref" (node)
+        local assetStart    = ref and startTimes[ref] or time.ZERO
 
-            local startAsTime   = start and time.new(start) or time.ZERO
-            local startTime     = ref and startTimes[ref]
+        --------------------------------------------------------------------------------
+        -- Only update if we have a non-zero start time in the original asset:
+        --------------------------------------------------------------------------------
+        if assetStart == time.ZERO then return end
 
-            local newStart      = startTime and startAsTime + startTime
-
-            local hasTimeMap = false
-            local nodeChildren = node:children() or {} -- There might not be any children.
-
+        local timeMap = firstChildNamed "timeMap" (node)
+        if timeMap then
             --------------------------------------------------------------------------------
-            -- Is there a 'timeMap' inside this 'asset-clip'?
+            -- Update the 'timeMap' to take into account the new asset start:
             --------------------------------------------------------------------------------
-            for _, nodeChild in ipairs(nodeChildren) do
-                if isNamed "timeMap" (nodeChild) then
-                    hasTimeMap = true
-                    updateTimeMap(nodeChild, startTime)
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Is this 'asset-clip' inside a 'sync-clip' that contains a 'timeMap'?
-            --------------------------------------------------------------------------------
-            local parentNode = node:parent()
-            local parentNodeName = parentNode and node:parent():name()
-            if parentNodeName == "sync-clip" then
-                log.df("[Sony Timecode Toolbox] Parent of '%s' is a sync-clip.", ref)
-                local parentNodeChildren = parentNode:children()
-                for _, parentNodeChildrenNode in ipairs(parentNodeChildren) do
-                    if isNamed "timeMap" (parentNodeChildrenNode) then
-                        --------------------------------------------------------------------------------
-                        -- NOTE: This currently doesn't work. We're attempting to update
-                        --       the sync-clip start time, and the timeMap values.
-                        --------------------------------------------------------------------------------
-                        log.df("[Sony Timecode Toolbox] Parent of '%s' contains a 'timeMap'.", ref)
-
-                        local syncClipStart = attribute "start" (parentNode)
-                        local syncClipStartAsTime = syncClipStart and time.new(syncClipStart) or time.ZERO
-
-                        local newSyncClipStart = startTime and syncClipStartAsTime + startTime
-
-                        parentNode:addAttribute("start", time.tostring(newSyncClipStart))
-
-                        log.df("[Sony Timecode Toolbox] Updated Start sync-clip: %s", time.tostring(newSyncClipStart))
-
-                        updateTimeMap(parentNodeChildrenNode, newSyncClipStart)
-                    end
-                end
-            end
-
+            log.df("[Sony Timecode Toolbox] Updating 'timeMap' for asset: %s", ref)
+            updateTimeMap(timeMap, assetStart)
+        else
             --------------------------------------------------------------------------------
             -- We only update the 'start' if there's no 'timeMap' applied:
             --------------------------------------------------------------------------------
-            if newStart and not hasTimeMap then
-                log.df("[Sony Timecode Toolbox] Updated Start for ref: %s", ref)
-                node:addAttribute("start", time.tostring(newStart))
-            end
-
+            local newStart  = timeAttribute "start" (node) + assetStart
+            node:addAttribute("start", tostring(newStart))
+            log.df("[Sony Timecode Toolbox] Updated Start to '%s' for ref: %s", newStart, ref)
         end
+
+        -- --------------------------------------------------------------------------------
+        -- -- Is this 'asset-clip' inside a 'sync-clip' that contains a 'timeMap'?
+        -- --------------------------------------------------------------------------------
+        -- local parentNode = node:parent()
+        -- local parentNodeName = parentNode and node:parent():name()
+        -- if parentNodeName == "sync-clip" then
+        --     log.df("[Sony Timecode Toolbox] Parent of '%s' is a sync-clip.", ref)
+        --     local parentNodeChildren = parentNode:children()
+        --     for _, parentNodeChildrenNode in ipairs(parentNodeChildren) do
+        --         if isNamed "timeMap" (parentNodeChildrenNode) then
+        --             --------------------------------------------------------------------------------
+        --             -- NOTE: This currently doesn't work. We're attempting to update
+        --             --       the sync-clip start time, and the timeMap values.
+        --             --------------------------------------------------------------------------------
+        --             log.df("[Sony Timecode Toolbox] Parent of '%s' contains a 'timeMap'.", ref)
+
+        --             local syncClipStart = attribute "start" (parentNode)
+        --             local syncClipStartAsTime = syncClipStart and time.new(syncClipStart) or time.ZERO
+
+        --             local newSyncClipStart = startTime and syncClipStartAsTime + startTime
+
+        --             parentNode:addAttribute("start", time.tostring(newSyncClipStart))
+
+        --             log.df("[Sony Timecode Toolbox] Updated Start sync-clip: %s", time.tostring(newSyncClipStart))
+
+        --             updateTimeMap(parentNodeChildrenNode, newSyncClipStart)
+        --         end
+        --     end
+        -- end
     end
 
     --------------------------------------------------------------------------------
     -- Process a node table:
     --------------------------------------------------------------------------------
-    local function processNodeTable(nodeTable)
+    local function processNodeTable(nodeTable, startTimes)
         for _, node in ipairs(nodeTable) do
             --------------------------------------------------------------------------------
             -- Process the node:
             --------------------------------------------------------------------------------
-            updateStartTimeInNode(node)
+            updateStartTimeInNode(node, startTimes)
 
             --------------------------------------------------------------------------------
             -- Process the node's children:
             --------------------------------------------------------------------------------
-            local nodeChildren = node:children()
-            if nodeChildren then
-                processNodeTable(nodeChildren)
-            end
+            processNodeTable(children(node), startTimes)
         end
     end
 
@@ -721,13 +734,13 @@ local function processFCPXML(path)
     -- Iterate all the 'spine' nodes to update the start time of asset-clips:
     --------------------------------------------------------------------------------
     local spineChildren = findSpineChildren(document) or {}
-    processNodeTable(spineChildren)
+    processNodeTable(spineChildren, startTimes)
 
     --------------------------------------------------------------------------------
     -- Iterate all the 'resources' nodes to update the start time of Compound Clips
     -- and Multicam Clips:
     --------------------------------------------------------------------------------
-    processNodeTable(resourcesChildren)
+    processNodeTable(resourcesChildren, startTimes)
 
     --------------------------------------------------------------------------------
     -- Now lets delete the project:
