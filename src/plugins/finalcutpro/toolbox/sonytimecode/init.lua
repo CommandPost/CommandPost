@@ -610,10 +610,28 @@ local function processFCPXML(path)
     end
 
     --------------------------------------------------------------------------------
-    -- Iterate all the 'spine' nodes to update the start time of asset-clips:
+    -- Update the 'value' time for an 'timept':
     --------------------------------------------------------------------------------
-    local spineChildren = findSpineChildren(document) or {}
+    local function updateTimeMap(timeMapNode, startTime)
+        local nodeChildren = timeMapNode:children() or {} -- There SHOULD be children, but just incase there's not for some reason.
+        for _, node in ipairs(nodeChildren) do
+            if isNamed "timept" (node) then
+                --------------------------------------------------------------------------------
+                -- Update the 'timept' to take into account the new asset start:
+                --------------------------------------------------------------------------------
+                local value = attribute "value" (node)
+                local valueAsTime = value and time.new(value)
+                local newValue = value and valueAsTime and valueAsTime + startTime
+                if newValue then
+                    node:addAttribute("value", time.tostring(newValue))
+                end
+            end
+        end
+    end
 
+    --------------------------------------------------------------------------------
+    -- Update the 'start' time for an 'asset-clip':
+    --------------------------------------------------------------------------------
     local function updateStartTimeInNode(node)
         if isNamed "asset-clip" (node) then
             local ref           = attribute "ref" (node)
@@ -624,12 +642,32 @@ local function processFCPXML(path)
 
             local newStart      = startTime and startAsTime + startTime
 
-            if newStart then
+            local hasTimeMap = false
+            local nodeChildren = node:children() or {} -- There might not be any children.
+
+            --------------------------------------------------------------------------------
+            -- Is there a 'timeMap' inside this 'asset-clip'?
+            --------------------------------------------------------------------------------
+            for _, node in ipairs(nodeChildren) do
+                if isNamed "timeMap" (node) then
+                    hasTimeMap = true
+                    updateTimeMap(node, startTime)
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- We only update the 'start' if there's no timeMap applied:
+            --------------------------------------------------------------------------------
+            if newStart and not hasTimeMap then
                 node:addAttribute("start", time.tostring(newStart))
             end
+
         end
     end
 
+    --------------------------------------------------------------------------------
+    -- Process a node table:
+    --------------------------------------------------------------------------------
     local function processNodeTable(nodeTable)
         for _, node in ipairs(nodeTable) do
             updateStartTimeInNode(node)
@@ -640,6 +678,10 @@ local function processFCPXML(path)
         end
     end
 
+    --------------------------------------------------------------------------------
+    -- Iterate all the 'spine' nodes to update the start time of asset-clips:
+    --------------------------------------------------------------------------------
+    local spineChildren = findSpineChildren(document) or {}
     processNodeTable(spineChildren)
 
     --------------------------------------------------------------------------------
