@@ -2395,6 +2395,7 @@
     "transform": "Transform",
     "transition": "Transition",
     "transition_group": "Transition",
+    "treatFavoriteAndRejectAsRatingsInsteadOfKeywords": "Treat FAVORITE and REJECT as Ratings instead of Keywords",
     "trebleBoost": "Treble Boost",
     "trebleBoost9": "Treble +",
     "trebleReduce": "Treble Reduce",
