@@ -40,6 +40,11 @@ local mod = {}
 -- An alternative comma to use to avoid a FCPXML bug.
 local ALTERNATIVE_COMMA = "‚" -- NOTE: This isn't actually a "normal" comma, even though it looks like one in some fonts.
 
+--- plugins.finalcutpro.toolbox.titlestokeywords.treatFavoriteAndRejectAsRatingsInsteadOfKeywords <cp.prop: boolean>
+--- Field
+--- Treat FAVORITE and REJECT as ratings instead of keywords
+mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords = config.prop("toolbox.titlestokeywords.treatFavoriteAndRejectAsRatingsInsteadOfKeywords", true)
+
 --- plugins.finalcutpro.toolbox.titlestokeywords.replaceCommasWithAlternativeCommas <cp.prop: boolean>
 --- Field
 --- Remove Project from Event
@@ -477,18 +482,26 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     local event = document:XPathQuery("/fcpxml[1]/event[1]")[1]
     for clipName, _ in pairs(uniqueTitleNames) do
-        event:addNode("keyword-collection")
-        local numberOfNodes = event:childCount()
-        local newNode = event:children()[numberOfNodes]
-
-        --------------------------------------------------------------------------------
-        -- Replace Commas if we need to:
-        --------------------------------------------------------------------------------
-        local newClipName = clipName
-        if mod.replaceCommasWithAlternativeCommas() then
-            newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+        local shouldSkip = false
+        if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
+            if clipName == "FAVORITE" or clipName == "REJECT" then
+                shouldSkip = true
+            end
         end
-        newNode:addAttribute("name", newClipName)
+        if not shouldSkip then
+            event:addNode("keyword-collection")
+            local numberOfNodes = event:childCount()
+            local newNode = event:children()[numberOfNodes]
+
+            --------------------------------------------------------------------------------
+            -- Replace Commas if we need to:
+            --------------------------------------------------------------------------------
+            local newClipName = clipName
+            if mod.replaceCommasWithAlternativeCommas() then
+                newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+            end
+            newNode:addAttribute("name", newClipName)
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -536,7 +549,15 @@ local function processFCPXML(path)
                         end
                     end
 
-                    eventNode:addNode("keyword", whereToInsert)
+                    --------------------------------------------------------------------------------
+                    -- Is it a keyword or a rating?
+                    --------------------------------------------------------------------------------
+                    local newNodeType = "keyword"
+                    if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() and v.name == "FAVORITE" or v.name == "REJECT" then
+                        newNodeType = "rating"
+                    end
+
+                    eventNode:addNode(newNodeType, whereToInsert)
                     local newNode = eventNode:children()[whereToInsert]
                     newNode:addAttribute("start", v.offset)
                     newNode:addAttribute("duration", v.duration)
@@ -547,6 +568,9 @@ local function processFCPXML(path)
                     local newClipName = v.name
                     if mod.replaceCommasWithAlternativeCommas() then
                         newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                    end
+                    if newNodeType == "rating" then
+                        newClipName = string.lower(newClipName)
                     end
                     newNode:addAttribute("value", newClipName)
                 elseif v.ref == attributes.ref and v.clipType == "mc-clip" then
@@ -571,7 +595,15 @@ local function processFCPXML(path)
                         end
                     end
 
-                    eventNode:addNode("keyword", whereToInsert)
+                    --------------------------------------------------------------------------------
+                    -- Is it a keyword or a rating?
+                    --------------------------------------------------------------------------------
+                    local newNodeType = "keyword"
+                    if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() and v.name == "FAVORITE" or v.name == "REJECT" then
+                        newNodeType = "rating"
+                    end
+
+                    eventNode:addNode(newNodeType, whereToInsert)
                     local newNode = eventNode:children()[whereToInsert]
                     newNode:addAttribute("start", v.offset)
                     newNode:addAttribute("duration", v.duration)
@@ -582,6 +614,9 @@ local function processFCPXML(path)
                     local newClipName = v.name
                     if mod.replaceCommasWithAlternativeCommas() then
                         newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                    end
+                    if newNodeType == "rating" then
+                        newClipName = string.lower(newClipName)
                     end
                     newNode:addAttribute("value", newClipName)
                 end
@@ -623,7 +658,15 @@ local function processFCPXML(path)
                                 end
                             end
 
-                            eventNode:addNode("keyword", whereToInsert)
+                            --------------------------------------------------------------------------------
+                            -- Is it a keyword or a rating?
+                            --------------------------------------------------------------------------------
+                            local newNodeType = "keyword"
+                            if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() and v.name == "FAVORITE" or v.name == "REJECT" then
+                                newNodeType = "rating"
+                            end
+
+                            eventNode:addNode(newNodeType, whereToInsert)
                             local newNode = eventNode:children()[whereToInsert]
                             newNode:addAttribute("start", v.offset)
                             newNode:addAttribute("duration", v.duration)
@@ -634,6 +677,9 @@ local function processFCPXML(path)
                             local newClipName = v.name
                             if mod.replaceCommasWithAlternativeCommas() then
                                 newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                            end
+                            if newNodeType == "rating" then
+                                newClipName = string.lower(newClipName)
                             end
                             newNode:addAttribute("value", newClipName)
                         end
@@ -737,6 +783,12 @@ local function createTitlesFromText(text)
     local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")[1]
 
     local textLines = lines(text)
+
+    if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
+        table.insert(textLines, 1, "REJECT")
+        table.insert(textLines, 1, "FAVORITE")
+    end
+
     for i, v in pairs(textLines) do
         --------------------------------------------------------------------------------
         -- EXAMPLE:
@@ -758,6 +810,17 @@ local function createTitlesFromText(text)
         titleNode:addAttribute("name", v)
         titleNode:addAttribute("start", "0s")
         titleNode:addAttribute("duration", "10s")
+
+        --------------------------------------------------------------------------------
+        -- Add roles if appropriate:
+        --------------------------------------------------------------------------------
+        if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
+            if v == "REJECT" then
+                titleNode:addAttribute("role", "REJECT.REJECT-1")
+            elseif v == "FAVORITE" then
+                titleNode:addAttribute("role", "FAVORITE.FAVORITE-1")
+            end
+        end
 
         titleNode:addNode("text")
         local textNode = titleNode:children()[1]
@@ -857,6 +920,7 @@ local function updateUI()
         changeCheckedByID("useTitleContentsInsteadOfTitleName", ]] .. tostring(mod.useTitleContentsInsteadOfTitleName()) .. [[);
         changeCheckedByID("removeProjectFromEvent", ]] .. tostring(mod.removeProjectFromEvent()) .. [[);
         changeCheckedByID("replaceCommasWithAlternativeCommas", ]] .. tostring(mod.replaceCommasWithAlternativeCommas()) .. [[);
+        changeCheckedByID("treatFavoriteAndRejectAsRatingsInsteadOfKeywords", ]] .. tostring(mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords()) .. [[);
     ]]
     injectScript(script)
 end
@@ -995,6 +1059,8 @@ local function callback(id, params)
                 mod.removeProjectFromEvent(value)
             elseif tid == "replaceCommasWithAlternativeCommas" then
                 mod.replaceCommasWithAlternativeCommas(value)
+            elseif tid == "treatFavoriteAndRejectAsRatingsInsteadOfKeywords" then
+                mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords(value)
             end
         elseif callbackType == "update" then
             --------------------------------------------------------------------------------
@@ -1055,7 +1121,7 @@ function plugin.init(deps, env)
         label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
         tooltip         = i18n("titlesToKeywords"),
-        height          = 930,
+        height          = 950,
     })
     :addContent(1, generateContent, false)
 
