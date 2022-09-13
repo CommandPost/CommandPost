@@ -40,6 +40,11 @@ local mod = {}
 -- An alternative comma to use to avoid a FCPXML bug.
 local ALTERNATIVE_COMMA = "‚" -- NOTE: This isn't actually a "normal" comma, even though it looks like one in some fonts.
 
+--- plugins.finalcutpro.toolbox.titlestokeywords.addSpaceAfterSequence <cp.prop: boolean>
+--- Field
+--- Add Space After Sequence
+mod.addSpaceAfterSequence = config.prop("toolbox.titlestokeywords.addSpaceAfterSequence", true)
+
 --- plugins.finalcutpro.toolbox.titlestokeywords.treatFavoriteAndRejectAsRatingsInsteadOfKeywords <cp.prop: boolean>
 --- Field
 --- Treat FAVORITE and REJECT as ratings instead of keywords
@@ -69,6 +74,11 @@ mod.useTitleContentsInsteadOfTitleName = config.prop("toolbox.titlestokeywords.u
 --- Field
 --- Last Text Editor Value
 mod.textEditor = config.prop("toolbox.titlestokeywords.textEditor", "")
+
+--- plugins.finalcutpro.toolbox.titlestokeywords.textEditorTwo <cp.prop: string>
+--- Field
+--- Last Text Editor Two Value
+mod.textEditorTwo = config.prop("toolbox.titlestokeywords.textEditorTwo", "")
 
 --- plugins.finalcutpro.toolbox.titlestokeywords.prefix <cp.prop: string>
 --- Field
@@ -812,8 +822,9 @@ local function createTitlesFromText(text)
         titleNode:addAttribute("duration", "10s")
 
         --------------------------------------------------------------------------------
-        -- Add roles if appropriate:
+        -- Add roles:
         --------------------------------------------------------------------------------
+        titleNode:addAttribute("role", "KEYWORD.KEYWORD-1")
         if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
             if v == "REJECT" then
                 titleNode:addAttribute("role", "REJECT.REJECT-1")
@@ -909,6 +920,7 @@ local function updateUI()
     local injectScript = mod._manager.injectScript
     local script = [[
         changeValueByID("textEditor", `]]   .. escapeTilda(mod.textEditor())    .. [[`);
+        changeValueByID("textEditorTwo", `]].. escapeTilda(mod.textEditorTwo()) .. [[`);
         changeValueByID("prefix", `]]       .. escapeTilda(mod.prefix())        .. [[`);
         changeValueByID("suffix", `]]       .. escapeTilda(mod.suffix())        .. [[`);
         changeValueByID("startOrEnd", `]]   .. escapeTilda(mod.startOrEnd())    .. [[`);
@@ -921,6 +933,7 @@ local function updateUI()
         changeCheckedByID("removeProjectFromEvent", ]] .. tostring(mod.removeProjectFromEvent()) .. [[);
         changeCheckedByID("replaceCommasWithAlternativeCommas", ]] .. tostring(mod.replaceCommasWithAlternativeCommas()) .. [[);
         changeCheckedByID("treatFavoriteAndRejectAsRatingsInsteadOfKeywords", ]] .. tostring(mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords()) .. [[);
+        changeCheckedByID("addSpaceAfterSequence", ]] .. tostring(mod.addSpaceAfterSequence()) .. [[);
     ]]
     injectScript(script)
 end
@@ -964,8 +977,9 @@ local function callback(id, params)
             -- Send to Final Cut Pro:
             --------------------------------------------------------------------------------
             local textEditor = params["textEditor"]
-            createTitlesFromText(textEditor)
+            local textEditorTwo = params["textEditorTwo"]
 
+            createTitlesFromText(textEditor .. "\n" .. textEditorTwo)
         elseif callbackType == "addSequence" then
             --------------------------------------------------------------------------------
             -- Add Sequence:
@@ -977,13 +991,18 @@ local function callback(id, params)
             local textEditor = params["textEditor"]
             local textEditorLines = textEditor:split("\n")
 
+            local prefix = ""
+            if mod.addSpaceAfterSequence() then
+                prefix = " "
+            end
+
             local counter = tonumber(startWith)
 
             for i, v in pairs(textEditorLines) do
                 local sequenceValue = string.format("%0" .. padding .. "d", counter)
 
                 if startOrEnd == "start" then
-                    textEditorLines[i] = sequenceValue .. v
+                    textEditorLines[i] = sequenceValue .. prefix .. v
                 else
                     textEditorLines[i] = v .. sequenceValue
                 end
@@ -1044,6 +1063,7 @@ local function callback(id, params)
             mod.startWith("1")
             mod.stepValue("1")
             mod.padding("0")
+            mod.addSpaceAfterSequence(true)
             updateUI()
         elseif callbackType == "updateChecked" then
             --------------------------------------------------------------------------------
@@ -1061,12 +1081,15 @@ local function callback(id, params)
                 mod.replaceCommasWithAlternativeCommas(value)
             elseif tid == "treatFavoriteAndRejectAsRatingsInsteadOfKeywords" then
                 mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords(value)
+            elseif tid == "addSpaceAfterSequence" then
+                mod.addSpaceAfterSequence(value)
             end
         elseif callbackType == "update" then
             --------------------------------------------------------------------------------
             -- A user interface element has changed value:
             --------------------------------------------------------------------------------
             mod.textEditor(params["textEditor"])
+            mod.textEditorTwo(params["textEditorTwo"])
             mod.prefix(params["prefix"])
             mod.suffix(params["suffix"])
             mod.startOrEnd(params["startOrEnd"])
