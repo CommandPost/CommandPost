@@ -100,6 +100,11 @@ mod.startOrEnd = config.prop("toolbox.titlestokeywords.startOrEnd", "start")
 --- Last Start With Value
 mod.startWith = config.prop("toolbox.titlestokeywords.startWith", "1")
 
+--- plugins.finalcutpro.toolbox.titlestokeywords.duration <cp.prop: string>
+--- Field
+--- Duration of the titles created by "Create Titles from Text"
+mod.duration = config.prop("toolbox.titlestokeywords.duration", "5")
+
 --- plugins.finalcutpro.toolbox.titlestokeywords.stepValue <cp.prop: string>
 --- Field
 --- Last Step With Value
@@ -780,7 +785,7 @@ end
 --
 -- Returns:
 --  * None
-local function createTitlesFromText(text)
+local function createTitlesFromText(textA, textB)
     --------------------------------------------------------------------------------
     -- Start with a FCPXML Template:
     --------------------------------------------------------------------------------
@@ -792,14 +797,21 @@ local function createTitlesFromText(text)
     --------------------------------------------------------------------------------
     local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")[1]
 
-    local textLines = lines(text)
+    local duration = tonumber(mod.duration())
+
+    local durationAsTime = time.new(duration)
+
+    local textLinesA = lines(textA)
+    local numberOfLinesInA = #textLinesA
+
+    local textLines = lines(textA .. "\n" .. textB)
 
     if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
         table.insert(textLines, 1, "REJECT")
         table.insert(textLines, 1, "FAVORITE")
     end
 
-    for i, v in pairs(textLines) do
+    for i, v in ipairs(textLines) do
         --------------------------------------------------------------------------------
         -- EXAMPLE:
         --
@@ -815,11 +827,14 @@ local function createTitlesFromText(text)
         spine:addNode("title")
         local titleNode = spine:children()[i]
 
+        local offset = (i - 1) * duration
+        local offsetAsTime = time.new(offset)
+
         titleNode:addAttribute("ref", "r2")
-        titleNode:addAttribute("offset", tostring((i - 1) * 10) .. "s")
+        titleNode:addAttribute("offset",  time.tostring(offsetAsTime))
         titleNode:addAttribute("name", v)
         titleNode:addAttribute("start", "0s")
-        titleNode:addAttribute("duration", "10s")
+        titleNode:addAttribute("duration", time.tostring(durationAsTime))
 
         --------------------------------------------------------------------------------
         -- Add roles:
@@ -833,8 +848,45 @@ local function createTitlesFromText(text)
             end
         end
 
+        --------------------------------------------------------------------------------
+        -- Add Position Metadata if needed:
+        --------------------------------------------------------------------------------
+        local positionValue
+        local countOffset = 0
+        if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
+            countOffset = 2
+            if i == 1 then
+                positionValue = "0 -200"
+            elseif i == 2 then
+                positionValue = "0 -300"
+            end
+        end
+        if not positionValue and i <= (numberOfLinesInA + countOffset) then
+            if ((i - countOffset) % 2 == 0) then
+                --------------------------------------------------------------------------------
+                -- Offset the position of every even title in the left text box:
+                --------------------------------------------------------------------------------
+                positionValue = "0 -100"
+            end
+        end
+        if i > (numberOfLinesInA + countOffset) then
+            positionValue = "0 100"
+        end
+        if positionValue then
+            --------------------------------------------------------------------------------
+            -- Example:
+            --
+            -- <param name="Position" key="9999/999166631/999166633/1/100/101" value="0 100"/>
+            --------------------------------------------------------------------------------
+            titleNode:addNode("param")
+            local positionNode = titleNode:children()[1]
+            positionNode:addAttribute("name", "Position")
+            positionNode:addAttribute("key", "9999/999166631/999166633/1/100/101")
+            positionNode:addAttribute("value", positionValue)
+        end
+
         titleNode:addNode("text")
-        local textNode = titleNode:children()[1]
+        local textNode = titleNode:children()[titleNode:childCount()]
 
         textNode:addNode("text-style")
         local textStyleNode = textNode:children()[1]
@@ -844,7 +896,7 @@ local function createTitlesFromText(text)
 
 
         titleNode:addNode("text-style-def")
-        local textStyleDefNode = titleNode:children()[2]
+        local textStyleDefNode = titleNode:children()[titleNode:childCount()]
 
         textStyleDefNode:addAttribute("id", "ts" .. i)
 
@@ -853,7 +905,21 @@ local function createTitlesFromText(text)
         local textStyleDefTextStyleNode = textStyleDefNode:children()[1]
 
         textStyleDefTextStyleNode:addAttribute("font", "Helvetica")
-        textStyleDefTextStyleNode:addAttribute("fontSize", "63")
+
+        --------------------------------------------------------------------------------
+        -- Adjust font size:
+        --------------------------------------------------------------------------------
+        local fontSize = "30"
+        if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
+            if i == 1 or i == 2 then
+                fontSize = "50"
+            end
+        end
+        if i > (numberOfLinesInA + countOffset) then
+            fontSize = "50"
+        end
+
+        textStyleDefTextStyleNode:addAttribute("fontSize", fontSize)
         textStyleDefTextStyleNode:addAttribute("fontFace", "Regular")
         textStyleDefTextStyleNode:addAttribute("fontColor", "1 1 1 1")
         textStyleDefTextStyleNode:addAttribute("alignment", "center")
@@ -927,6 +993,7 @@ local function updateUI()
         changeValueByID("startWith", `]]    .. escapeTilda(mod.startWith())     .. [[`);
         changeValueByID("stepValue", `]]    .. escapeTilda(mod.stepValue())     .. [[`);
         changeValueByID("padding", `]]      .. escapeTilda(mod.padding())       .. [[`);
+        changeValueByID("duration", `]]     .. escapeTilda(mod.duration())      .. [[`);
 
         changeCheckedByID("mergeWithExistingEvent", ]] .. tostring(mod.mergeWithExistingEvent()) .. [[);
         changeCheckedByID("useTitleContentsInsteadOfTitleName", ]] .. tostring(mod.useTitleContentsInsteadOfTitleName()) .. [[);
@@ -979,7 +1046,7 @@ local function callback(id, params)
             local textEditor = params["textEditor"]
             local textEditorTwo = params["textEditorTwo"]
 
-            createTitlesFromText(textEditor .. "\n" .. textEditorTwo)
+            createTitlesFromText(textEditor, textEditorTwo)
         elseif callbackType == "addSequence" then
             --------------------------------------------------------------------------------
             -- Add Sequence:
@@ -1096,6 +1163,7 @@ local function callback(id, params)
             mod.startWith(params["startWith"])
             mod.stepValue(params["stepValue"])
             mod.padding(params["padding"])
+            mod.duration(params["duration"])
         elseif callbackType == "updateUI" then
             --------------------------------------------------------------------------------
             -- Update the User Interface:
@@ -1144,7 +1212,7 @@ function plugin.init(deps, env)
         label           = i18n("titlesToKeywords"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/LibraryTextStyleIcon.icns")),
         tooltip         = i18n("titlesToKeywords"),
-        height          = 950,
+        height          = 980,
     })
     :addContent(1, generateContent, false)
 

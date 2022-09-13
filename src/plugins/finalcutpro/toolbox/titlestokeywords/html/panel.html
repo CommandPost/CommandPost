@@ -56,6 +56,7 @@
                     startWith: document.getElementById("startWith").value,
                     stepValue: document.getElementById("stepValue").value,
                     padding: document.getElementById("padding").value,
+                    duration: document.getElementById("duration").value,
 				},
 			}
 			postMessage(result);
@@ -209,6 +210,16 @@
 		<th style="width: 13px;"></th>
 		<th>
 			<a href="#" class="bottomButton" style="width: 50px" onclick="doAction('addSequence')">{{ i18n("insert") }}</a>
+		</th>
+	</tr>
+</table>
+<table style="margin-left: 10px;">
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("duration") }}:</span>
+		</th>
+		<th style="width: 100px">
+			<input id="duration" class="rename" type="number" min="1" name="duration" style="width: 50px" onchange="doAction('update');" />
 		</th>
 	</tr>
 </table>
