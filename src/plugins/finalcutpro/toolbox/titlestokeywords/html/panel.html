@@ -49,6 +49,7 @@
 				params: {
 					type: actionType,
 					textEditor: document.getElementById("textEditor").value,
+					textEditorTwo: document.getElementById("textEditorTwo").value,
                     prefix: document.getElementById("prefix").value,
                     suffix: document.getElementById("suffix").value,
                     startOrEnd: document.getElementById("startOrEnd").value,
@@ -134,8 +135,11 @@
 <br />
 <table width="100%" style="margin-left: 10px;">
 	<tr>
+		<th style="text-align: left; width: 700px;">
+            <textarea style="width: 680px;" id="textEditor" class="textEditor" onchange="doAction('update');"></textarea>
+		</th>
 		<th style="text-align: left;">
-            <textarea id="textEditor" class="textEditor" onchange="doAction('update');"></textarea>
+            <textarea style="width: 210px;" id="textEditorTwo" class="textEditor" onchange="doAction('update');"></textarea>
 		</th>
 	</tr>
 </table>
@@ -166,16 +170,19 @@
 		</th>
 	</tr>
 </table>
-<table style="margin-left: 10px;">
+<table style="margin-left: 10px; text-align:left;">
 	<tr>
 		<th style="width: 100px;">
 			<span class="label">{{ i18n("sequence") }}:</span>
 		</th>
-		<th>
+		<th style="width: 100px;">
 			<select id="startOrEnd" onchange="doAction('update');">
 				<option value="start">{{ i18n("start") }}</option>
 				<option value="end">{{ i18n("end") }}</option>
 			</select>
+		</th>
+		<th>
+		    <p class="uiItem" style="padding-left: 0px !important;"><label><input type="checkbox" id="addSpaceAfterSequence" onchange="updateChecked(this)"> {{ i18n("addSpaceAfterSequence") }}</label></p>
 		</th>
 	</tr>
 </table>
