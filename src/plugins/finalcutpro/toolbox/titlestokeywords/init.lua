@@ -16,26 +16,22 @@ local inspect                   = require "hs.inspect"
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
+local fn                        = require "cp.fn"
+local fntable                   = require "cp.fn.table"
+local fnvalue                   = require "cp.fn.value"
 local i18n                      = require "cp.i18n"
 local time                      = require "cp.apple.fcpxml.time"
 local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
-local fn                        = require "cp.fn"
-local fntable                   = require "cp.fn.table"
-local fnvalue                   = require "cp.fn.value"
-
+local between                   = tools.between
 local chain                     = fn.chain
-local default                   = fnvalue.default
-local firstMatching             = fntable.firstMatching
+local escapeTilda               = tools.escapeTilda
 local get                       = fntable.get
 local is                        = fnvalue.is
-local pipe                      = fn.pipe
-
-local between                   = tools.between
-local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
+local pipe                      = fn.pipe
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
@@ -173,32 +169,6 @@ local function name(node)
     return node:name()
 end
 
--- isNamed(name) -> function(node) -> boolean
--- Function
--- Returns a function that takes a node and returns `true` if the node has the specified name.
---
--- Parameters:
---  * name - The name to check for.
---
--- Returns:
---  * The function.
-local function isNamed(value)
-    return pipe(name, is(value))
-end
-
--- hasOffsetAttribute(node) -> boolean
--- Function
--- Returns `true` if the node has an `offset` attribute.
---
--- Parameters:
---  * node - The node.
---
--- Returns:
---  * `true` if the node has an `offset` attribute, otherwise `false`.
-local function hasOffsetAttribute(node)
-    return fcpxml.HAS_OFFSET_ATTRIBUTE[name(node)] == true
-end
-
 -- attributes(node) -> table | nil
 -- Function
 -- Returns the attributes of a node as a table if present, or `nil` if not available.
@@ -210,19 +180,6 @@ end
 --  * The attributes table, or `nil`.
 local function attributes(node)
     return node:rawAttributes() and node:attributes()
-end
-
--- attribute(name) -> function(node) -> any | nil
--- Function
--- Returns a function that takes a node and returns the value of the attribute with the specified name.
---
--- Parameters:
---  * name - The name of the attribute.
---
--- Returns:
---  * The function.
-local function attribute(nodeName)
-    return chain // attributes >> get(nodeName)
 end
 
 -- children(node) -> table
