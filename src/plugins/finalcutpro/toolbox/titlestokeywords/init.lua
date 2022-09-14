@@ -29,9 +29,7 @@ local between                   = tools.between
 local chain                     = fn.chain
 local escapeTilda               = tools.escapeTilda
 local get                       = fntable.get
-local is                        = fnvalue.is
 local lines                     = tools.lines
-local pipe                      = fn.pipe
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
 local tableCount                = tools.tableCount
@@ -122,10 +120,6 @@ mod.stepValue = config.prop("toolbox.titlestokeywords.stepValue", "1")
 --- Last Padding Value
 mod.padding = config.prop("toolbox.titlestokeywords.padding", "0")
 
----------------------------------------------------
--- HELPER FUNCTIONS:
----------------------------------------------------
-
 -- xPathQuery(xPath) -> function(node) -> table
 -- Function
 -- A function combinator that takes an XPath query and returns a function that takes
@@ -154,32 +148,6 @@ end
 --  * The chain function.
 local function xPath(value)
     return chain // xPathQuery(value) >> get(1)
-end
-
--- name(node) -> string | nil
--- Function
--- Returns the name of the node.
---
--- Parameters:
---  * node - The node.
---
--- Returns:
---  * The name of the node, or `nil` if it doesn't have one.
-local function name(node)
-    return node:name()
-end
-
--- attributes(node) -> table | nil
--- Function
--- Returns the attributes of a node as a table if present, or `nil` if not available.
---
--- Parameters:
---  * node - The node.
---
--- Returns:
---  * The attributes table, or `nil`.
-local function attributes(node)
-    return node:rawAttributes() and node:attributes()
 end
 
 -- children(node) -> table
