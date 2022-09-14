@@ -314,28 +314,6 @@ function mod.mt:sendCommand(commandID, callbackFn, ...)
     return self:sendBytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...)
 end
 
--- tableContains(table, element) -> boolean
--- Function
--- Does a element exist in a table?
---
--- Parameters:
---  * table - the table you want to check
---  * element - the element you want to check for
---
--- Returns:
---  * Boolean
-local function tableContains(table, element)
-    if not table or not element then
-        return false
-    end
-    for _, value in pairs(table) do
-        if value == element then
-            return true
-        end
-    end
-    return false
-end
-
 --- hs.loupedeck:initaliseDevice() -> None
 --- Method
 --- Starts the background loop, performs self-test and resets screens and buttons.
@@ -1380,7 +1358,6 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
             frame = {}
         end
 
-        local originalScreen
         if tableMatch(screen, mod.screens.left) then
             frame.x = (frame.x or 0)
             frame.w = frame.w or 60
