@@ -22,6 +22,17 @@ local tools                     = require "cp.tools"
 
 local xml                       = require "hs._asm.xml"
 
+local fn                        = require "cp.fn"
+local fntable                   = require "cp.fn.table"
+local fnvalue                   = require "cp.fn.value"
+
+local chain                     = fn.chain
+local default                   = fnvalue.default
+local firstMatching             = fntable.firstMatching
+local get                       = fntable.get
+local is                        = fnvalue.is
+local pipe                      = fn.pipe
+
 local between                   = tools.between
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
@@ -115,6 +126,118 @@ mod.stepValue = config.prop("toolbox.titlestokeywords.stepValue", "1")
 --- Last Padding Value
 mod.padding = config.prop("toolbox.titlestokeywords.padding", "0")
 
+---------------------------------------------------
+-- HELPER FUNCTIONS:
+---------------------------------------------------
+
+-- xPathQuery(xPath) -> function(node) -> table
+-- Function
+-- A function combinator that takes an XPath query and returns a function that takes
+-- a node and returns the result of the query, usually a table with one or more values.
+--
+-- Parameters:
+--  * xPath - The XPath query.
+--
+-- Returns:
+--  * The function.
+local function xPathQuery(xPath)
+    return function(node)
+        return node:XPathQuery(xPath)
+    end
+end
+
+-- xPath(value) -> function(node) -> anything | nil
+-- Function
+-- A function combinator that takes an XPath query and returns a chain function that takes
+-- a node and returns the first result of the query, or `nil` if nothing was found.
+--
+-- Parameters:
+--  * xPath - The XPath query.
+--
+-- Returns:
+--  * The chain function.
+local function xPath(value)
+    return chain // xPathQuery(value) >> get(1)
+end
+
+-- name(node) -> string | nil
+-- Function
+-- Returns the name of the node.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * The name of the node, or `nil` if it doesn't have one.
+local function name(node)
+    return node:name()
+end
+
+-- isNamed(name) -> function(node) -> boolean
+-- Function
+-- Returns a function that takes a node and returns `true` if the node has the specified name.
+--
+-- Parameters:
+--  * name - The name to check for.
+--
+-- Returns:
+--  * The function.
+local function isNamed(value)
+    return pipe(name, is(value))
+end
+
+-- hasOffsetAttribute(node) -> boolean
+-- Function
+-- Returns `true` if the node has an `offset` attribute.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * `true` if the node has an `offset` attribute, otherwise `false`.
+local function hasOffsetAttribute(node)
+    return fcpxml.HAS_OFFSET_ATTRIBUTE[name(node)] == true
+end
+
+-- attributes(node) -> table | nil
+-- Function
+-- Returns the attributes of a node as a table if present, or `nil` if not available.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * The attributes table, or `nil`.
+local function attributes(node)
+    return node:rawAttributes() and node:attributes()
+end
+
+-- attribute(name) -> function(node) -> any | nil
+-- Function
+-- Returns a function that takes a node and returns the value of the attribute with the specified name.
+--
+-- Parameters:
+--  * name - The name of the attribute.
+--
+-- Returns:
+--  * The function.
+local function attribute(nodeName)
+    return chain // attributes >> get(nodeName)
+end
+
+-- children(node) -> table
+-- Function
+-- Returns the children of a node as a table if present, or `{}` if not available.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * The children table, or `nil`.
+local function children(node)
+    return node:children() or {}
+end
+
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -151,65 +274,55 @@ local function generateContent()
     return renderPanel(context)
 end
 
--- processFCPXML(path) -> none
+-- showError(message) -> false
 -- Function
--- Process a FCPXML file
+-- Shows an error message, returning `false` to indicate the function failed.
 --
 -- Parameters:
---  * path - The path to the FCPXML file.
+--  * message - The error message
 --
 -- Returns:
---  * None
-local function processFCPXML(path)
-    --------------------------------------------------------------------------------
-    -- This is where we'll store the Titles metadata:
-    --------------------------------------------------------------------------------
-    local uniqueTitleNames = {}
+--  * `false`
+local function showError(title, message)
+    local webview = mod._manager.getWebview()
+    log.ef(message)
+    if webview then
+        webviewAlert(webview, function() end, title, message, i18n("ok"), nil, "warning")
+    end
+    return false
+end
+
+-- findSpineChildren(document) -> table
+-- Function
+-- Finds the `spine` nodes in a FCPXML document.
+--
+-- Parameters:
+--  * document - The FCPXML document.
+--
+-- Returns:
+--  * The list of `spine` nodes
+local findSpineChildren = chain // xPath "/fcpxml[1]/event[1]/project[1]/sequence[1]/spine[1]" >> children
+
+-- getAllTitlesOnTimeline(spineChildren)
+-- Function
+-- Get all the Titles on a timeline.
+--
+-- Parameters:
+--  * spineChildren - A table of nodes.
+--
+-- Returns:
+--  * A table of title metadata
+--  * A table of unique names
+local function getAllTitlesOnTimeline(spineChildren)
     local titles = {}
+    local uniqueTitleNames = {}
     local titleCount = 1
-
-    local titlesToAdd = {}
-    local titlesToAddCount = 1
-
-    --------------------------------------------------------------------------------
-    -- Open the FCPXML document:
-    --------------------------------------------------------------------------------
-    local fcpxmlPath = fcpxml.valid(path)
-    local document = fcpxmlPath and xml.open(fcpxmlPath)
-
-    --------------------------------------------------------------------------------
-    -- Abort if the FCPXML is not valid:
-    --------------------------------------------------------------------------------
-    if not document then
-        local webview = mod._manager.getWebview()
-        if webview then
-            webviewAlert(webview, function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
-        end
-        return
-    end
-
-    --------------------------------------------------------------------------------
-    -- Access the "Event > Project > Sequence > Spine":
-    --------------------------------------------------------------------------------
-    local spine = document:XPathQuery("/fcpxml[1]/event[1]/project[1]/sequence[1]/spine[1]")
-    local spineChildren = spine and spine[1] and spine[1]:children()
-
-    --------------------------------------------------------------------------------
-    -- Abort if the FCPXML doesn't contain "Event > Project > Sequence > Spine":
-    --------------------------------------------------------------------------------
-    if not spineChildren then
-        local webview = mod._manager.getWebview()
-        if webview then
-            webviewAlert(webview, function() end, i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"), i18n("ok"), nil, "warning")
-        end
-        return
-    end
 
     --------------------------------------------------------------------------------
     -- Iterate all the spine children to find connected titles, and get their
     -- name, duration and position on the timeline:
     --------------------------------------------------------------------------------
-    for _, node in pairs(spineChildren) do
+    for _, node in ipairs(spineChildren) do
         local parentClipType = node:name()
         if parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" or parentClipType == "gap" then
             --------------------------------------------------------------------------------
@@ -237,7 +350,7 @@ local function processFCPXML(path)
             -- Iterate all the nodes of the clip:
             --------------------------------------------------------------------------------
             local clipNodes = node:children() or {}
-            for _, clipNode in pairs(clipNodes) do
+            for _, clipNode in ipairs(clipNodes) do
                 local clipType = clipNode:name()
                 if clipType == "title" then
                     --------------------------------------------------------------------------------
@@ -271,10 +384,10 @@ local function processFCPXML(path)
                     local titleNodeName = ""
                     if mod.useTitleContentsInsteadOfTitleName() then
                         local nodeChildren = clipNode:children()
-                        for _, nodeChild in pairs(nodeChildren) do
+                        for _, nodeChild in ipairs(nodeChildren) do
                             if nodeChild:name() == "text" then
                                 local textStyles = nodeChild:children() or {}
-                                for _, textStyle in pairs(textStyles) do
+                                for _, textStyle in ipairs(textStyles) do
                                     local originalValue = textStyle:stringValue() or ""
                                     originalValue = trim(originalValue)
                                     originalValue = string.gsub(originalValue, "\n", "")
@@ -303,11 +416,27 @@ local function processFCPXML(path)
             end
         end
     end
+    return titles, uniqueTitleNames
+end
+
+-- checkIfTitlesIntersectWithClips(spineChildren, titles)
+-- Function
+-- Check if a Title Intersects with Clips:
+--
+-- Parameters:
+--  * spineChildren - A table of nodes.
+--  * titles - A table of title metadata
+--
+-- Returns:
+--  * A table of title metadata
+local function checkIfTitlesIntersectWithClips(spineChildren, titles)
+    local titlesToAdd = {}
+    local titlesToAddCount = 1
 
     --------------------------------------------------------------------------------
     -- Iterate all the spine children again to test each clip on the timeline:
     --------------------------------------------------------------------------------
-    for _, node in pairs(spineChildren) do
+    for _, node in ipairs(spineChildren) do
         local parentClipType = node:name()
         if parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" or parentClipType == "gap" then
             --------------------------------------------------------------------------------
@@ -331,7 +460,7 @@ local function processFCPXML(path)
                 -- inside to get it:
                 --------------------------------------------------------------------------------
                 local syncClipNodes = node:children()
-                for _, syncClipNode in pairs(syncClipNodes) do
+                for _, syncClipNode in ipairs(syncClipNodes) do
                     local clipName = syncClipNode:name()
                     if clipName == "asset-clip" then
                         local syncClipAttributes = syncClipNode:attributes()
@@ -384,7 +513,7 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             local ignoreFirstNodeInSyncClip = true
             local connectedClips = node:children() or {}
-            for _, connectedClip in pairs(connectedClips) do
+            for _, connectedClip in ipairs(connectedClips) do
                 local connectedClipType = connectedClip:name()
 
                 --------------------------------------------------------------------------------
@@ -421,7 +550,7 @@ local function processFCPXML(path)
                     --------------------------------------------------------------------------------
                     if connectedClipType == "sync-clip" then
                         local syncClipNodes = connectedClip:children()
-                        for _, syncClipNode in pairs(syncClipNodes) do
+                        for _, syncClipNode in ipairs(syncClipNodes) do
                             local clipName = syncClipNode:name()
                             if clipName == "asset-clip" then
                                 local syncClipAttributes = syncClipNode:attributes()
@@ -478,15 +607,67 @@ local function processFCPXML(path)
         end
     end
 
+    return titlesToAdd
+end
+
+-- processFCPXML(path) -> none
+-- Function
+-- Process a FCPXML file
+--
+-- Parameters:
+--  * path - The path to the FCPXML file.
+--
+-- Returns:
+--  * None
+local function processFCPXML(path)
+    --------------------------------------------------------------------------------
+    -- Open the FCPXML document:
+    --------------------------------------------------------------------------------
+    local fcpxmlPath = fcpxml.valid(path)
+    local document = fcpxmlPath and xml.open(fcpxmlPath)
+
+    --------------------------------------------------------------------------------
+    -- Abort if the FCPXML is not valid:
+    --------------------------------------------------------------------------------
+    if not document then
+        return showError(i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"))
+    end
+
+    --------------------------------------------------------------------------------
+    -- Access the "Event > Project > Sequence > Spine":
+    --------------------------------------------------------------------------------
+    local spineChildren = findSpineChildren(document)
+
+    --------------------------------------------------------------------------------
+    -- Abort if the FCPXML doesn't contain "Event > Project > Sequence > Spine":
+    --------------------------------------------------------------------------------
+    if not spineChildren then
+        return showError(i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"))
+    end
+
+    --------------------------------------------------------------------------------
+    -- Iterate all the spine children to find connected titles, and get their
+    -- name, duration and position on the timeline:
+    --------------------------------------------------------------------------------
+    local titles, uniqueTitleNames = getAllTitlesOnTimeline(spineChildren)
+
+    --------------------------------------------------------------------------------
+    -- Abort - no Titles!
+    --------------------------------------------------------------------------------
+    if tableCount(titles) == 0 then
+        return showError(i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"))
+    end
+
+    --------------------------------------------------------------------------------
+    -- Iterate all the spine children again to test each clip on the timeline:
+    --------------------------------------------------------------------------------
+    local titlesToAdd = checkIfTitlesIntersectWithClips(spineChildren, titles)
+
     --------------------------------------------------------------------------------
     -- Abort - no Titles!
     --------------------------------------------------------------------------------
     if tableCount(titlesToAdd) == 0 then
-        local webview = mod._manager.getWebview()
-        if webview then
-            webviewAlert(webview, function() end, i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"), i18n("ok"), nil, "warning")
-        end
-        return
+        return showError(i18n("invalidDataDetected") .. ".", i18n("titlesToMarkersNoTitlesDetected"))
     end
 
     --------------------------------------------------------------------------------
@@ -495,7 +676,7 @@ local function processFCPXML(path)
     -- EXAMPLE:
     -- <keyword-collection name="One Second"/>
     --------------------------------------------------------------------------------
-    local event = document:XPathQuery("/fcpxml[1]/event[1]")[1]
+    local event = xPath "/fcpxml[1]/event[1]" (document)
     for clipName, _ in pairs(uniqueTitleNames) do
         local shouldSkip = false
         if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() then
@@ -528,14 +709,14 @@ local function processFCPXML(path)
     -- </asset-clip>
     --------------------------------------------------------------------------------
     local eventChildren = event:children()
-    for _, eventNode in pairs(eventChildren) do
+    for _, eventNode in ipairs(eventChildren) do
         local clipType = eventNode:name()
         if clipType == "asset-clip" or clipType == "mc-clip" or clipType == "gap" then
             --------------------------------------------------------------------------------
             -- Add markers for asset-clip and mc-clip's:
             --------------------------------------------------------------------------------
             local attributes = eventNode:attributes()
-            for _, v in pairs(titlesToAdd) do
+            for _, v in ipairs(titlesToAdd) do
                 if v.ref == attributes.ref and v.clipType == "asset-clip" then
                     --------------------------------------------------------------------------------
                     -- DTD v1.10:
@@ -556,7 +737,7 @@ local function processFCPXML(path)
                     local whereToInsert = eventNode:childCount() + 1
                     local eventNodeChildren = eventNode:children() or {} -- Just incase there are no children!
                     local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "audio-channel-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
-                    for i, vv in pairs(eventNodeChildren) do
+                    for i, vv in ipairs(eventNodeChildren) do
                         local abortName = vv:name()
                         if tableContains(abortClipNames, abortName) then
                             whereToInsert = i
@@ -602,7 +783,7 @@ local function processFCPXML(path)
                     local whereToInsert = eventNode:childCount() + 1
                     local eventNodeChildren = eventNode:children() or {} -- Just incase there are no children!
                     local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "filter-audio", "metadata"}
-                    for i, vv in pairs(eventNodeChildren) do
+                    for i, vv in ipairs(eventNodeChildren) do
                         local abortName = vv:name()
                         if tableContains(abortClipNames, abortName) then
                             whereToInsert = i
@@ -641,11 +822,11 @@ local function processFCPXML(path)
             -- Add markers for sync-clips:
             --------------------------------------------------------------------------------
             local syncClipNodes = eventNode:children()
-            for _, syncClipNode in pairs(syncClipNodes) do
+            for _, syncClipNode in ipairs(syncClipNodes) do
                 local syncClipNodeName = syncClipNode:name()
                 if syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
                     local attributes = syncClipNode:attributes()
-                    for _, v in pairs(titlesToAdd) do
+                    for _, v in ipairs(titlesToAdd) do
                         if v.ref == attributes.ref and v.clipType == "sync-clip" then
                             --------------------------------------------------------------------------------
                             -- DTD v1.10:
@@ -710,7 +891,7 @@ local function processFCPXML(path)
     if mod.removeProjectFromEvent() then
         local projectIndex
         eventChildren = event:children()
-        for i, eventNode in pairs(eventChildren) do
+        for i, eventNode in ipairs(eventChildren) do
             local clipType = eventNode:name()
             if clipType == "project" then
                 projectIndex = i
@@ -737,7 +918,7 @@ local function processFCPXML(path)
     if tableCount(activeLibraryPaths) == 1 then
         local libraryPath = urlFromPath(activeLibraryPaths[1])
         if libraryPath then
-            local fcpxmlData = document:XPathQuery("/fcpxml[1]")[1]
+            local fcpxmlData = xPath "/fcpxml[1]" (document)
             fcpxmlData:addNode("import-options", 1)
             local importOptions = fcpxmlData:children()[1]
             importOptions:addNode("option")
@@ -763,11 +944,7 @@ local function processFCPXML(path)
     -- Validate the FCPXML before sending to FCPX:
     --------------------------------------------------------------------------------
     if not fcpxml.valid(outputPath) then
-        local webview = mod._manager.getWebview()
-        if webview then
-            webviewAlert(webview, function() end, "DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.", i18n("ok"), nil, "warning")
-        end
-        return
+        return showError("DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.")
     end
 
     --------------------------------------------------------------------------------
@@ -795,7 +972,7 @@ local function createTitlesFromText(textA, textB)
     --------------------------------------------------------------------------------
     -- Access the "Event > Project > Sequence > Spine":
     --------------------------------------------------------------------------------
-    local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")[1]
+    local spine = xPath "/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]" (document)
 
     local duration = tonumber(mod.duration())
 
@@ -933,7 +1110,7 @@ local function createTitlesFromText(textA, textB)
     if tableCount(activeLibraryPaths) == 1 then
         local libraryPath = urlFromPath(activeLibraryPaths[1])
         if libraryPath then
-            local fcpxmlData = document:XPathQuery("/fcpxml[1]")[1]
+            local fcpxmlData = xPath "/fcpxml[1]" (document)
             fcpxmlData:addNode("import-options", 1)
             local importOptions = fcpxmlData:children()[1]
             importOptions:addNode("option")
