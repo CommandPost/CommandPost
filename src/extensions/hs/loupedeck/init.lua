@@ -1,6 +1,6 @@
 --- === hs.loupedeck ===
 ---
---- Control surface support for the Loupedeck CT and Loupedeck Live.
+--- Control surface support for the Loupedeck CT, Loupedeck Live and Razer Stream Controller.
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 ---
@@ -17,6 +17,7 @@ local timer             = require "hs.timer"
 local utf8              = require "hs.utf8"
 
 local just              = require "cp.just"
+local tools             = require "cp.tools"
 local wshttp            = require "cp.websocket.http"
 local wsserial          = require "cp.websocket.serial"
 
@@ -25,6 +26,8 @@ local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
+local tableContains     = tools.tableContains
+local tableMatch        = tools.tableMatch
 
 local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
@@ -42,6 +45,11 @@ local uint8             = bytes.uint8
 -- Loupedeck's USB Vendor ID
 local LOUPEDECK_VENDOR_ID = 11970
 
+-- RAZER_VENDOR_ID -> number
+-- Constant
+-- Razer's USB Vendor ID
+local RAZER_VENDOR_ID = 0x1532
+
 -- LOUPEDECK_CT_ID -> number
 -- Constant
 -- Loupedeck CT USB Product ID
@@ -52,6 +60,11 @@ local LOUPEDECK_CT_ID = 3
 -- Loupedeck LIVE USB Product ID
 local LOUPEDECK_LIVE_ID = 4
 
+-- RAZER_STREAM_CONTROLLER_ID -> number
+-- Constant
+-- Razer Stream Controller USB Product ID
+local RAZER_STREAM_CONTROLLER_ID = 0x0d06
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
@@ -60,8 +73,9 @@ mod.mt.__index = mod.mt
 --- Constant
 --- A table containing the device types.
 mod.deviceTypes = {
-    CT      = "Loupedeck CT",
-    LIVE    = "Loupedeck Live",
+    CT                          = "Loupedeck CT",
+    LIVE                        = "Loupedeck Live",
+    RAZER_STREAM_CONTROLLER     = "Razer Stream Controller",
 }
 
 --- hs.loupedeck:registerCallback([callbackFn]) -> number
@@ -1357,6 +1371,38 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     --          command id
     --------------------------------------------------------------------------------
 
+    --------------------------------------------------------------------------------
+    -- The Razer Stream Controller only has one screen object, so we need to do
+    -- a bit of processing to convert it back into left, middle and right screens:
+    --------------------------------------------------------------------------------
+    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER then
+        if not frame then
+            frame = {}
+        end
+
+        local originalScreen
+        if tableMatch(screen, mod.screens.left) then
+            frame.x = (frame.x or 0)
+            frame.w = frame.w or 60
+        elseif tableMatch(screen, mod.screens.middle) then
+            frame.x = (frame.x or 0) + 60
+            frame.w = frame.w or 360
+        elseif tableMatch(screen, mod.screens.right) then
+            frame.x = (frame.x or 0) + 60 + 360
+            frame.w = frame.w or 60
+        else
+            --------------------------------------------------------------------------------
+            -- The Razer Stream Controller doesn't have a wheel, so abort:
+            --------------------------------------------------------------------------------
+            return
+        end
+
+        screen = {}
+        screen.id       = 0x004D
+        screen.width    = 60 + 360 + 60
+        screen.height   = 270
+    end
+
     if type(frame) == "function" then
         callbackFn = frame
         frame = nil
@@ -1761,6 +1807,7 @@ function mod.mt:connect()
     local device = devices and devices[self.deviceNumber]
 
     if not device then
+        log.ef("Could not connect - no device")
         return
     end
 
@@ -1853,6 +1900,12 @@ end
 --- Returns:
 ---  * An IP address as a string, or `nil` if no device can be detected.
 function mod.findDevices(deviceType)
+
+    if not tableContains(mod.deviceTypes, deviceType) then
+        log.ef("[hs.loupedeck.findDevices] '%s' is not a valid device type.")
+        return
+    end
+
     --------------------------------------------------------------------------------
     -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
     --       the network interface name changed from "LOUPEDECK device" to
@@ -1892,6 +1945,10 @@ function mod.findDevices(deviceType)
         local portDetails = availablePortDetails[portName]
         if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
             if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID) or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID) then
+                table.insert(results, portName)
+            end
+        elseif portDetails and portDetails.idVendor and portDetails.idVendor == RAZER_VENDOR_ID then
+            if (deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER and portDetails.idProduct == RAZER_STREAM_CONTROLLER_ID) then
                 table.insert(results, portName)
             end
         end

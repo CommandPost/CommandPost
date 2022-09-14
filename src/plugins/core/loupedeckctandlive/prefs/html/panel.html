@@ -3,7 +3,7 @@
 
 {% if id == "loupedeckct" then %}
 <style>{(css/ct.css)}</style>
-{% elseif id == "loupedecklive" then %}
+{% elseif id == "loupedecklive" or id == "razerstreamcontroller" then %}
 <style>{(css/live.css)}</style>
 {% end %}
 
@@ -190,7 +190,7 @@
 				if (id == "25") { label = "D"}
 				if (id == "26") { label = "E"}
 			}
-			{% elseif id == "loupedecklive" then %}
+			{% elseif id == "loupedecklive" or id == "razerstreamcontroller" then %}
 			if (controlType == "ledButton") {
 				if (id == "7") { label = "Home"}
 				if (id == "8") { label = "1"}
@@ -1546,7 +1546,7 @@
 						<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" draggable="false" />
 					</div>
 				</div>
-				{% elseif id == "loupedecklive" then %}
+				{% elseif id == "loupedecklive" or id == "razerstreamcontroller" then %}
 				<div id="loupedeckLive">
 					<div controlType="knob" controlID="1" id="knob1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
 						<img src="{{ insertImage('images/live/knob1.png') }}" width="41" height="41" />

@@ -1,6 +1,6 @@
 --- === plugins.core.loupedeckctandlive.prefs ===
 ---
---- Loupedeck CT & Loupedeck Live Preferences Panels
+--- Loupedeck CT, Loupedeck Live & Razer Stream Controller Preferences Panels
 
 local require                   = require
 
@@ -145,6 +145,17 @@ function mod.new(deviceType)
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
         o.height            = 1140
+    elseif deviceType == loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER then
+        --------------------------------------------------------------------------------
+        -- Razer Stream Controller:
+        --------------------------------------------------------------------------------
+        o.id                = "razerstreamcontroller"
+        o.configFolder      = "Razer Stream Controller"
+        o.device            = mod._deviceManager.devices.RAZER_STREAM_CONTROLLER
+        o.priority          = 2033.03
+        o.label             = "Razer Stream Controller"
+        o.commandID         = "RazerStreamController"
+        o.height            = 1140
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -224,7 +235,6 @@ function mod.new(deviceType)
     --- Automatically Apply Icon from Action
     o.automaticallyApplyIconFromAction = config.prop(o.id .. ".preferences.automaticallyApplyIconFromAction", true)
 
-    o.loupedeck                           = o.device.device
     o.items                               = o.device.items
     o.enabled                             = o.device.enabled
     o.loadSettingsFromDevice              = o.device.loadSettingsFromDevice
@@ -483,7 +493,7 @@ function mod.new(deviceType)
                 required    =   true,
                 onchange    =   function(_, params)
                                     o.screensBacklightLevel(params.value)
-                                    o.loupedeck:updateBacklightLevel(tonumber(params.value))
+                                    o.device:updateBacklightLevel(tonumber(o.lastDevice()), tonumber(params.value))
                                 end,
             }
         )
@@ -3149,9 +3159,10 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup the seperate panels:
     --------------------------------------------------------------------------------
-    mod.panels          = {}
-    mod.panels.CT       = mod.new(loupedeck.deviceTypes.CT)
-    mod.panels.LIVE     = mod.new(loupedeck.deviceTypes.LIVE)
+    mod.panels                              = {}
+    mod.panels.CT                           = mod.new(loupedeck.deviceTypes.CT)
+    mod.panels.LIVE                         = mod.new(loupedeck.deviceTypes.LIVE)
+    mod.panels.RAZER_STREAM_CONTROLLER      = mod.new(loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER)
 
     return mod
 end
