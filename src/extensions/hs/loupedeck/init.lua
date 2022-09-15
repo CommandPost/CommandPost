@@ -1559,13 +1559,12 @@ end
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
 function mod.mt:updateScreenButtonImage(buttonID, imageBytes, callbackFn)
+    local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+    local theScreen = mod.screens.middle
     if self.deviceType == mod.deviceTypes.LIVE_S then
-        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
-        return self:updateScreenImage(mod.screens.live_s, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
-    else
-        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
-        return self:updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+        theScreen = mod.screens.live_s
     end
+    return self:updateScreenImage(theScreen, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
 end
 
 --- hs.loupedeck:updateKnobImage(knobID, imageBytes[, callbackFn]) -> boolean

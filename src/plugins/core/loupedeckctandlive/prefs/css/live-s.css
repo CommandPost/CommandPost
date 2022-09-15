@@ -1,0 +1,183 @@
+/* LOUPEDECK LIVE-S INTERFACE: */
+
+#loupedeckLiveS {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:447px;
+	height:482px;
+	font-size:0px;
+	background-image: url({* insertImage('images/live-s/loupdecklive-s.png') *});
+	background-repeat: no-repeat;
+	background-size: 447px 482px;
+}
+
+#knob1 {
+	position:absolute;
+	left:35px;
+	top:119px;
+	width:41px;
+	height:41px;
+}
+
+#knob2 {
+	position:absolute;
+	left:35px;
+	top:183px;
+	width:41px;
+	height:41px;
+}
+
+#ledButton7 {
+	position:absolute;
+	left:35px;
+	top:252px;
+	width:41px;
+	height:37px;
+}
+
+#ledButton8 {
+	position:absolute;
+	left:378px;
+	top:122px;
+	width:35px;
+	height:34px;
+}
+
+#ledButton9 {
+	position:absolute;
+	left:378px;
+	top:187px;
+	width:35px;
+	height:33px;
+}
+
+#ledButton10 {
+	position:absolute;
+	left:378px;
+	top:252px;
+	width:35px;
+	height:37px;
+}
+
+#touchButton1 {
+	position:absolute;
+	left:108px;
+	top:135px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton2 {
+	position:absolute;
+	left:157px;
+	top:135px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton3 {
+	position:absolute;
+	left:205px;
+	top:135px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton4 {
+	position:absolute;
+	left:254px;
+	top:135px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton5 {
+	position:absolute;
+	left:302px;
+	top:135px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton6 {
+	position:absolute;
+	left:108px;
+	top:183px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton7 {
+	position:absolute;
+	left:157px;
+	top:183px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton8 {
+	position:absolute;
+	left:205px;
+	top:183px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton9 {
+	position:absolute;
+	left:254px;
+	top:183px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton10 {
+	position:absolute;
+	left:302px;
+	top:183px;
+	width:40px;
+	height:40px;
+}
+
+
+
+#touchButton11 {
+	position:absolute;
+	left:108px;
+	top:231px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton12 {
+	position:absolute;
+	left:157px;
+	top:231px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton13 {
+	position:absolute;
+	left:205px;
+	top:231px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton14 {
+	position:absolute;
+	left:254px;
+	top:231px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton15 {
+	position:absolute;
+	left:302px;
+	top:231px;
+	width:40px;
+	height:40px;
+}

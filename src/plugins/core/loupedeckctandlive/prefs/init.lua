@@ -1,6 +1,6 @@
 --- === plugins.core.loupedeckctandlive.prefs ===
 ---
---- Loupedeck CT, Loupedeck Live & Razer Stream Controller Preferences Panels
+--- Preferences Panels for Loupedeck CT, Loupedeck Live, Loupedeck Live-S and Razer Stream Controller.
 
 local require                   = require
 
@@ -133,6 +133,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
+        o.resetCommandID    = "loupedeckCT"
         o.height            = 1150
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
@@ -144,6 +145,19 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
+        o.resetCommandID    = "loupedeckLive"
+        o.height            = 1140
+    elseif deviceType == loupedeck.deviceTypes.LIVE_S then
+        --------------------------------------------------------------------------------
+        -- Loupedeck Live:
+        --------------------------------------------------------------------------------
+        o.id                = "loupedecklives"
+        o.configFolder      = "Loupedeck Live-S"
+        o.device            = mod._deviceManager.devices.LIVE_S
+        o.priority          = 2033.02
+        o.label             = "Loupedeck Live-S"
+        o.commandID         = "LoupedeckLiveS"
+        o.resetCommandID    = "loupedeckLiveS"
         o.height            = 1140
     elseif deviceType == loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER then
         --------------------------------------------------------------------------------
@@ -155,10 +169,20 @@ function mod.new(deviceType)
         o.priority          = 2033.03
         o.label             = "Razer Stream Controller"
         o.commandID         = "RazerStreamController"
+        o.resetCommandID    = "razerStreamController"
         o.height            = 1140
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Number of Touch Buttons:
+    --------------------------------------------------------------------------------
+    if deviceType == loupedeck.deviceTypes.LIVE_S then
+        o.numberOfTouchButtons = 15
+    else
+        o.numberOfTouchButtons = 12
     end
 
     --- plugins.core.loupedeckctandlive.prefs.lastDevice <cp.prop: string>
@@ -911,6 +935,8 @@ function mod.mt:updateUI(params)
     self.lastID(bid)
     self.lastControlType(controlType)
 
+    local numberOfTouchButtons = self.numberOfTouchButtons
+
     local items = self.items()
 
     local lastDevice = self.lastDevice()
@@ -967,7 +993,7 @@ function mod.mt:updateUI(params)
         --------------------------------------------------------------------------------
         -- Touch Buttons:
         --------------------------------------------------------------------------------
-        for i=1, 12 do
+        for i=1, numberOfTouchButtons do
             i = tostring(i)
             local currentEncodedIcon = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIcon
             local currentIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].iconLabel
@@ -1043,25 +1069,29 @@ function mod.mt:updateUI(params)
         --------------------------------------------------------------------------------
         -- Left Screen:
         --------------------------------------------------------------------------------
-        local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
-        if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
-            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
-        elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
-            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
-        else
-            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
+        if self.id ~= "loupedecklives" then
+            local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
+            if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
+            elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
+            else
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
+            end
         end
 
         --------------------------------------------------------------------------------
         -- Right Screen:
         --------------------------------------------------------------------------------
-        local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
-        if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
-            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
-        elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
-            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
-        else
-            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+        if self.id ~= "loupedecklives" then
+            local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
+            if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
+            elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
+            else
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+            end
         end
 
         --------------------------------------------------------------------------------
@@ -1141,12 +1171,16 @@ function mod.mt:updateUI(params)
         --------------------------------------------------------------------------------
         -- Clear all the UI elements in the Preferences Window:
         --------------------------------------------------------------------------------
-        for i=1, 12 do
+        for i=1, numberOfTouchButtons do
             i = tostring(i)
             updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. insertImage("images/touchButton" .. i .. ".png") .. [[")]] .. "\n"
         end
-        updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
-        updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+
+        if self.id ~= "loupedecklives" then
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+        end
+
         if self.id == "loupedeckct" then
             updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
         end
@@ -2475,7 +2509,7 @@ function mod.mt:panelCallback(id, params)
                     mod._manager.refresh()
                     self:refreshDevice()
                 end
-            end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n(self.resetCommandID .. "ResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetApplication" then
             --------------------------------------------------------------------------------
             -- Reset Application:
@@ -2502,7 +2536,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     self:refreshDevice()
                 end
-            end, i18n("loupedeckCTResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n(self.resetCommandID .. "ResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetBank" then
             --------------------------------------------------------------------------------
             -- Reset Bank:
@@ -2527,7 +2561,7 @@ function mod.mt:panelCallback(id, params)
                     --------------------------------------------------------------------------------
                     self:refreshDevice()
                 end
-            end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n(self.resetCommandID .. "ResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "copyUnit" then
 
             --------------------------------------------------------------------------------
@@ -3162,6 +3196,7 @@ function plugin.init(deps, env)
     mod.panels                              = {}
     mod.panels.CT                           = mod.new(loupedeck.deviceTypes.CT)
     mod.panels.LIVE                         = mod.new(loupedeck.deviceTypes.LIVE)
+    mod.panels.LIVE_S                       = mod.new(loupedeck.deviceTypes.LIVE_S)
     mod.panels.RAZER_STREAM_CONTROLLER      = mod.new(loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER)
 
     return mod
