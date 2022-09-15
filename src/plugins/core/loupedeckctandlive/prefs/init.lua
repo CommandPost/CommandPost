@@ -169,7 +169,7 @@ function mod.new(deviceType)
         o.id                = "razerstreamcontroller"
         o.configFolder      = "Razer Stream Controller"
         o.device            = mod._deviceManager.devices.RAZER_STREAM_CONTROLLER
-        o.priority          = 2033.03
+        o.priority          = 2032.34
         o.label             = "Razer Stream Controller"
         o.commandID         = "RazerStreamController"
         o.resetCommandID    = "razerStreamController"
