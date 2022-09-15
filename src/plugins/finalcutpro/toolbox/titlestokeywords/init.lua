@@ -28,7 +28,6 @@ local xml                       = require "hs._asm.xml"
 
 local chain                     = fn.chain
 local default                   = fnvalue.default
-local firstMatching             = fntable.firstMatching
 local get                       = fntable.get
 local is                        = fnvalue.is
 local pipe                      = fn.pipe
@@ -182,19 +181,6 @@ local function isNamed(value)
     return pipe(name, is(value))
 end
 
--- hasOffsetAttribute(node) -> boolean
--- Function
--- Returns `true` if the node has an `offset` attribute.
---
--- Parameters:
---  * node - The node.
---
--- Returns:
---  * `true` if the node has an `offset` attribute, otherwise `false`.
-local function hasOffsetAttribute(node)
-    return fcpxml.HAS_OFFSET_ATTRIBUTE[name(node)] == true
-end
-
 -- attributes(node) -> table | nil
 -- Function
 -- Returns the attributes of a node as a table if present, or `nil` if not available.
@@ -232,19 +218,6 @@ end
 --  * The children table, or `nil`.
 local function children(node)
     return node:children() or {}
-end
-
--- isKind(value) -> function(node) -> boolean
--- Function
--- Returns a function that takes a node and returns `true` if the node has the specified `kind` attribute.
---
--- Parameters:
---  * value - The value to check for.
---
--- Returns:
---  * The function.
-local function isKind(value)
-    return chain // attribute "kind" >> is(value)
 end
 
 -- timeAttribute(key) -> function(node) -> cp.apple.fcpxml.time
