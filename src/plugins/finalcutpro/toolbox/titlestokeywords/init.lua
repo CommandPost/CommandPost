@@ -16,18 +16,25 @@ local inspect                   = require "hs.inspect"
 local config                    = require "cp.config"
 local fcp                       = require "cp.apple.finalcutpro"
 local fcpxml                    = require "cp.apple.fcpxml"
-local fn                        = require "cp.fn"
-local fntable                   = require "cp.fn.table"
 local i18n                      = require "cp.i18n"
 local time                      = require "cp.apple.fcpxml.time"
 local tools                     = require "cp.tools"
 
+local fn                        = require "cp.fn"
+local fntable                   = require "cp.fn.table"
+local fnvalue                   = require "cp.fn.value"
+
 local xml                       = require "hs._asm.xml"
 
-local between                   = tools.between
 local chain                     = fn.chain
-local escapeTilda               = tools.escapeTilda
+local default                   = fnvalue.default
+local firstMatching             = fntable.firstMatching
 local get                       = fntable.get
+local is                        = fnvalue.is
+local pipe                      = fn.pipe
+
+local between                   = tools.between
+local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
 local replace                   = tools.replace
 local tableContains             = tools.tableContains
@@ -149,6 +156,71 @@ local function xPath(value)
     return chain // xPathQuery(value) >> get(1)
 end
 
+-- name(node) -> string | nil
+-- Function
+-- Returns the name of the node.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * The name of the node, or `nil` if it doesn't have one.
+local function name(node)
+    return node:name()
+end
+
+-- isNamed(name) -> function(node) -> boolean
+-- Function
+-- Returns a function that takes a node and returns `true` if the node has the specified name.
+--
+-- Parameters:
+--  * name - The name to check for.
+--
+-- Returns:
+--  * The function.
+local function isNamed(value)
+    return pipe(name, is(value))
+end
+
+-- hasOffsetAttribute(node) -> boolean
+-- Function
+-- Returns `true` if the node has an `offset` attribute.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * `true` if the node has an `offset` attribute, otherwise `false`.
+local function hasOffsetAttribute(node)
+    return fcpxml.HAS_OFFSET_ATTRIBUTE[name(node)] == true
+end
+
+-- attributes(node) -> table | nil
+-- Function
+-- Returns the attributes of a node as a table if present, or `nil` if not available.
+--
+-- Parameters:
+--  * node - The node.
+--
+-- Returns:
+--  * The attributes table, or `nil`.
+local function attributes(node)
+    return node:rawAttributes() and node:attributes()
+end
+
+-- attribute(name) -> function(node) -> any | nil
+-- Function
+-- Returns a function that takes a node and returns the value of the attribute with the specified name.
+--
+-- Parameters:
+--  * name - The name of the attribute.
+--
+-- Returns:
+--  * The function.
+local function attribute(nodeName)
+    return chain // attributes >> get(nodeName)
+end
+
 -- children(node) -> table
 -- Function
 -- Returns the children of a node as a table if present, or `{}` if not available.
@@ -160,6 +232,33 @@ end
 --  * The children table, or `nil`.
 local function children(node)
     return node:children() or {}
+end
+
+-- isKind(value) -> function(node) -> boolean
+-- Function
+-- Returns a function that takes a node and returns `true` if the node has the specified `kind` attribute.
+--
+-- Parameters:
+--  * value - The value to check for.
+--
+-- Returns:
+--  * The function.
+local function isKind(value)
+    return chain // attribute "kind" >> is(value)
+end
+
+-- timeAttribute(key) -> function(node) -> cp.apple.fcpxml.time
+-- Function
+-- Returns a function that takes a node and returns the value of the specified attribute
+-- as a `cp.apple.fcpxml.time` object. Defaults to `0s` if the attribute is not present.
+--
+-- Parameters:
+--  * key - The name of the attribute.
+--
+-- Returns:
+--  * The function.
+local function timeAttribute(key)
+    return pipe(attribute(key), default "0s", time)
 end
 
 -- renderPanel(context) -> none
@@ -247,8 +346,7 @@ local function getAllTitlesOnTimeline(spineChildren)
     -- name, duration and position on the timeline:
     --------------------------------------------------------------------------------
     for _, node in ipairs(spineChildren) do
-        local parentClipType = node:name()
-        if parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" or parentClipType == "gap" then
+        if isNamed "asset-clip" (node) or isNamed "mc-clip" (node) or isNamed "sync-clip" (node) or isNamed "gap" (node) then
             --------------------------------------------------------------------------------
             -- A normal clip, gap, Multi-cam or Synchronised Clip on the Primary Storyline:
             --
@@ -275,8 +373,67 @@ local function getAllTitlesOnTimeline(spineChildren)
             --------------------------------------------------------------------------------
             local clipNodes = node:children() or {}
             for _, clipNode in ipairs(clipNodes) do
-                local clipType = clipNode:name()
-                if clipType == "title" then
+                if isNamed "spine" (clipNode) then
+                    --------------------------------------------------------------------------------
+                    -- A secondary storyline:
+                    --------------------------------------------------------------------------------
+                    local ssOffset = timeAttribute "offset" (clipNode)
+                    for _, ssNode in ipairs(children(clipNode)) do
+                        if isNamed "title" (ssNode) then
+                            --------------------------------------------------------------------------------
+                            -- Work out the titles position in relation to the timeline:
+                            --------------------------------------------------------------------------------
+                            local titleAttributes = ssNode:attributes()
+
+                            local duration = titleAttributes and titleAttributes["duration"]
+                            local durationAsTime = time.new(duration)
+
+                            local offset = titleAttributes and titleAttributes["offset"]
+                            local offsetAsTime = time.new(offset)
+
+                            --------------------------------------------------------------------------------
+                            -- Connected Clip Position on Timeline =
+                            -- Connected Clip Offset - Parent Start Time + Parent Offset
+                            --------------------------------------------------------------------------------
+                            local positionOnTimelineAsTime = offsetAsTime - parentStartAsTime + parentOffsetAsTime + ssOffset
+
+                            --------------------------------------------------------------------------------
+                            -- Get the Titles Names:
+                            --------------------------------------------------------------------------------
+                            local titleNodeName = ""
+                            if mod.useTitleContentsInsteadOfTitleName() then
+                                local nodeChildren = ssNode:children()
+                                for _, nodeChild in ipairs(nodeChildren) do
+                                    if nodeChild:name() == "text" then
+                                        local textStyles = nodeChild:children() or {}
+                                        for _, textStyle in ipairs(textStyles) do
+                                            local originalValue = textStyle:stringValue() or ""
+                                            originalValue = trim(originalValue)
+                                            originalValue = string.gsub(originalValue, "\n", "")
+                                            titleNodeName = originalValue
+                                        end
+                                    end
+                                end
+                            else
+                                titleNodeName = titleAttributes["name"]
+                            end
+
+                            --------------------------------------------------------------------------------
+                            -- Keep track of unique title names:
+                            --------------------------------------------------------------------------------
+                            uniqueTitleNames[titleNodeName] = true
+
+                            --------------------------------------------------------------------------------
+                            -- Save the title data to a table:
+                            --------------------------------------------------------------------------------
+                            titles[titleCount] = {}
+                            titles[titleCount]["name"]                      = titleNodeName
+                            titles[titleCount]["durationAsTime"]            = durationAsTime
+                            titles[titleCount]["positionOnTimelineAsTime"]  = positionOnTimelineAsTime
+                            titleCount = titleCount + 1
+                        end
+                    end
+                elseif isNamed "title" (clipNode) then
                     --------------------------------------------------------------------------------
                     -- A title connected to a clip in the Primary Storyline:
                     --
@@ -574,6 +731,8 @@ local function processFCPXML(path)
     -- name, duration and position on the timeline:
     --------------------------------------------------------------------------------
     local titles, uniqueTitleNames = getAllTitlesOnTimeline(spineChildren)
+
+    log.df("titles: %s", hs.inspect(titles))
 
     --------------------------------------------------------------------------------
     -- Abort - no Titles!
@@ -912,6 +1071,37 @@ local function createTitlesFromText(textA, textB)
         table.insert(textLines, 1, "FAVORITE")
     end
 
+    --------------------------------------------------------------------------------
+    -- Ignore if there's no text to process:
+    --------------------------------------------------------------------------------
+    if #textLines == 0 then
+        return showError(i18n("noTextDetected"), i18n("noTextDetectedDescription"))
+    end
+
+    local totalDuration = durationAsTime * time.new(#textLines)
+
+    --------------------------------------------------------------------------------
+    -- Add a Gap on the primary storyline:
+    --
+    -- <gap name="Gap" offset="0s" start="3600s" duration="36s">
+    --------------------------------------------------------------------------------
+    spine:addNode("gap")
+    local gap = xPath "/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]/gap[1]" (document)
+    gap:addAttribute("name", "Gap")
+    gap:addAttribute("offset", "0s")
+    gap:addAttribute("start", "0s")
+    gap:addAttribute("duration", time.tostring(totalDuration))
+
+    --------------------------------------------------------------------------------
+    -- Add a secondary storyline:
+    --
+    -- <spine lane="1" offset="3600s">
+    --------------------------------------------------------------------------------
+    gap:addNode("spine")
+    local secondaryStoryline = xPath "/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]/gap[1]/spine[1]" (document)
+    secondaryStoryline:addAttribute("lane", "1")
+    secondaryStoryline:addAttribute("offset", "0s")
+
     for i, v in ipairs(textLines) do
         --------------------------------------------------------------------------------
         -- EXAMPLE:
@@ -925,8 +1115,8 @@ local function createTitlesFromText(textA, textB)
         --     </text-style-def>
         -- </title>
         --------------------------------------------------------------------------------
-        spine:addNode("title")
-        local titleNode = spine:children()[i]
+        secondaryStoryline:addNode("title")
+        local titleNode = secondaryStoryline:children()[i]
 
         local offset = (i - 1) * duration
         local offsetAsTime = time.new(offset)

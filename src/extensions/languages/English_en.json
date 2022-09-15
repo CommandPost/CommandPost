@@ -1633,6 +1633,8 @@
     "noteOn": "Note On",
     "notes": "Notes",
     "notesLocation": "Notes Location",
+    "noTextDetected": "No text detected.",
+    "noTextDetectedDescription": "Make sure you have at least one line of text before sending to Final Cut Pro.",
     "nothingLoaded": "Nothing loaded",
     "notificationsPanelLabel": "Notifications",
     "notificationsPanelTooltip": "Notifications Preferences",
