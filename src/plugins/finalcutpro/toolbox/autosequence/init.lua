@@ -129,7 +129,7 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     for id, node in pairs(spineChildren) do
         local parentClipType = node:name()
-        if parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" then
+        if parentClipType == "clip" or parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" then
             --------------------------------------------------------------------------------
             -- A normal clip, gap, Multi-cam or Synchronised Clip on the Primary Storyline:
             --
