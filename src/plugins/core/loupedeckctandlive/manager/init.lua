@@ -1,6 +1,6 @@
 --- === plugins.core.loupedeckctandlive.manager ===
 ---
---- Loupedeck CT & Loupedeck Live Manager Plugin.
+--- Manager Plugin for Loupedeck CT, Loupedeck Live, Loupedeck Live-S and Razer Stream Controller.
 
 local require                   = require
 
@@ -272,6 +272,15 @@ function mod.new(deviceType)
         o.configFolder      = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
         o.i18nID            = "loupedeckLive"
+    elseif deviceType == loupedeck.deviceTypes.LIVE_S then
+        --------------------------------------------------------------------------------
+        -- Loupedeck Live-S:
+        --------------------------------------------------------------------------------
+        o.fileExtension     = ".cpLoupedeckLiveS"
+        o.id                = "loupedecklives"
+        o.configFolder      = "Loupedeck Live-S"
+        o.commandID         = "LoupedeckLiveS"
+        o.i18nID            = "loupedeckLiveS"
     elseif deviceType == loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER then
         --------------------------------------------------------------------------------
         -- Razer Stream Controller:
@@ -1211,7 +1220,13 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
         -- UPDATE TOUCH SCREEN BUTTON IMAGES:
         --------------------------------------------------------------------------------
         local touchButton = bank and bank.touchButton
-        for i=1, 12 do
+
+        local numberOfTouchButtons = 12
+        if deviceType == "Loupedeck Live-S" then
+            numberOfTouchButtons = 15
+        end
+
+        for i=1, numberOfTouchButtons do
             local id = tostring(i)
             success = false
             local thisButton = touchButton and touchButton[id]
@@ -1710,7 +1725,6 @@ end
 --- Returns:
 ---  * None
 function mod.mt:callback(data, deviceNumber)
-
     --[[
     log.df("--------------------------------------------------------------------------------")
     log.df("deviceNumber: %s", deviceNumber)
@@ -2283,6 +2297,7 @@ function plugin.init(deps, env)
     mod.devices                             = {}
     mod.devices.CT                          = mod.new(loupedeck.deviceTypes.CT):refreshItems()
     mod.devices.LIVE                        = mod.new(loupedeck.deviceTypes.LIVE):refreshItems()
+    mod.devices.LIVE_S                      = mod.new(loupedeck.deviceTypes.LIVE_S):refreshItems()
     mod.devices.RAZER_STREAM_CONTROLLER     = mod.new(loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER):refreshItems()
 
     return mod
