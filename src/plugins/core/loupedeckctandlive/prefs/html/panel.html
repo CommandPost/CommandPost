@@ -3,8 +3,10 @@
 
 {% if id == "loupedeckct" then %}
 <style>{(css/ct.css)}</style>
-{% elseif id == "loupedecklive" or id == "razerstreamcontroller" then %}
+{% elseif id == "loupedecklive" then %}
 <style>{(css/live.css)}</style>
+{% elseif id == "razerstreamcontroller" then %}
+<style>{(css/razerstreamcontroller.css)}</style>
 {% elseif id == "loupedecklives" then %}
 <style>{(css/live-s.css)}</style>
 {% end %}

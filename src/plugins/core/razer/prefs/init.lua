@@ -1603,6 +1603,8 @@ function plugin.init(deps, env)
     mod._panel          =  deps.manager.addPanel({
         priority        = 2032.3,
         id              = "razer",
+        group           = "razer",
+        groupMaster     = true,
         label           = i18n("razer"),
         image           = imageFromPath(env:pathToAbsolute("/images/razerIcon.png")),
         tooltip         = i18n("razerDevices"),

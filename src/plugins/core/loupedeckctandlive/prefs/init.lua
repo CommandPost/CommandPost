@@ -135,6 +135,7 @@ function mod.new(deviceType)
         o.commandID         = "LoupedeckCT"
         o.resetCommandID    = "loupedeckCT"
         o.height            = 1150
+        o.preferencesGroup  = "loupedeck"
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -147,6 +148,7 @@ function mod.new(deviceType)
         o.commandID         = "LoupedeckLive"
         o.resetCommandID    = "loupedeckLive"
         o.height            = 1140
+        o.preferencesGroup  = "loupedeck"
     elseif deviceType == loupedeck.deviceTypes.LIVE_S then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -159,6 +161,7 @@ function mod.new(deviceType)
         o.commandID         = "LoupedeckLiveS"
         o.resetCommandID    = "loupedeckLiveS"
         o.height            = 1140
+        o.preferencesGroup  = "loupedeck"
     elseif deviceType == loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER then
         --------------------------------------------------------------------------------
         -- Razer Stream Controller:
@@ -166,11 +169,12 @@ function mod.new(deviceType)
         o.id                = "razerstreamcontroller"
         o.configFolder      = "Razer Stream Controller"
         o.device            = mod._deviceManager.devices.RAZER_STREAM_CONTROLLER
-        o.priority          = 2033.03
+        o.priority          = 2032.34
         o.label             = "Razer Stream Controller"
         o.commandID         = "RazerStreamController"
         o.resetCommandID    = "razerStreamController"
         o.height            = 1140
+        o.preferencesGroup  = "razer"
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -293,7 +297,7 @@ function mod.new(deviceType)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     o.panel             =  mod._manager.addPanel({
-        group           = "loupedeck",
+        group           = o.preferencesGroup,
         priority        = o.priority,
         id              = o.id,
         label           = o.label,

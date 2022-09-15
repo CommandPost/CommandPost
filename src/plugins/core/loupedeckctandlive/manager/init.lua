@@ -1074,7 +1074,11 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
     local success
     local frontmostApplication = application.frontmostApplication()
-    local bundleID = frontmostApplication:bundleID()
+
+    --------------------------------------------------------------------------------
+    -- It's unlikely, but possible that the frontmostApplication is nil:
+    --------------------------------------------------------------------------------
+    local bundleID = frontmostApplication and frontmostApplication:bundleID() or "All Applications"
 
     local containsIconSnippets = false
 
