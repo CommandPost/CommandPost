@@ -732,8 +732,6 @@ local function processFCPXML(path)
     --------------------------------------------------------------------------------
     local titles, uniqueTitleNames = getAllTitlesOnTimeline(spineChildren)
 
-    log.df("titles: %s", hs.inspect(titles))
-
     --------------------------------------------------------------------------------
     -- Abort - no Titles!
     --------------------------------------------------------------------------------
