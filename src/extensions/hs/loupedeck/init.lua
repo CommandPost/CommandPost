@@ -1,6 +1,6 @@
 --- === hs.loupedeck ===
 ---
---- Control surface support for the Loupedeck CT, Loupedeck Live and Razer Stream Controller.
+--- Control surface support for the Loupedeck CT, Loupedeck Live, Loupedeck Live-S and Razer Stream Controller.
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 ---
@@ -60,6 +60,11 @@ local LOUPEDECK_CT_ID = 3
 -- Loupedeck LIVE USB Product ID
 local LOUPEDECK_LIVE_ID = 4
 
+-- LOUPEDECK_LIVE_S_ID -> number
+-- Constant
+-- Loupedeck Live-S USB Product ID
+local LOUPEDECK_LIVE_S_ID = 0x0006
+
 -- RAZER_STREAM_CONTROLLER_ID -> number
 -- Constant
 -- Razer Stream Controller USB Product ID
@@ -75,6 +80,7 @@ mod.mt.__index = mod.mt
 mod.deviceTypes = {
     CT                          = "Loupedeck CT",
     LIVE                        = "Loupedeck Live",
+    LIVE_S                      = "Loupedeck Live-S",
     RAZER_STREAM_CONTROLLER     = "Razer Stream Controller",
 }
 
@@ -335,9 +341,14 @@ function mod.mt:initaliseDevice()
 
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
-    self:updateScreenColor(mod.screens.left, b)
-    self:updateScreenColor(mod.screens.right, b)
-    self:updateScreenColor(mod.screens.middle, b)
+
+    if self.deviceType == mod.deviceTypes.LIVE_S then
+        self:updateScreenColor(mod.screens.live_s, b)
+    else
+        self:updateScreenColor(mod.screens.left, b)
+        self:updateScreenColor(mod.screens.middle, b)
+        self:updateScreenColor(mod.screens.right, b)
+    end
 
     if self.deviceType == mod.deviceTypes.CT then
         self:updateScreenColor(mod.screens.wheel, b)
@@ -577,87 +588,183 @@ local function convertWheelXandYtoButtonID(x, y)
     return button
 end
 
--- convertXandYtoButtonID(x, y) -> number
+-- convertXandYtoButtonID(x, y, deviceType) -> number
 -- Function
 -- Converts X and Y coordinates into a button ID for the middle touch screen.
 --
 -- Parameters:
 --  * x - The x-axis as a number
 --  * y - The y-axis as a number
+--  * deviceType - The device type.
 --
 -- Returns:
 --  * A button ID as a number. Left to right, top to bottom.
-local function convertXandYtoButtonID(x, y)
+local function convertXandYtoButtonID(x, y, deviceType)
     local button = 0
-    -- First Row:
-    if x >= 60 and x <= 140 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 1
+    if deviceType == mod.deviceTypes.LIVE_S then
+        -- Add in the x offset:
+        x = x + (30/2)
+
+        -- First Row:
+        if x >= 60 and x <= 140 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 1
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 6
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 11
+            end
         end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 5
+        -- Second Row:
+        if x >= 160 and x <= 230 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 2
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 7
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 12
+            end
         end
 
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 9
-        end
-    end
+        -- Third Row:
+        if x >= 240 and x <= 320 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 3
+            end
 
-    -- Second Row:
-    if x >= 160 and x <= 230 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 2
-        end
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 8
+            end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 6
-        end
-
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 10
-        end
-    end
-
-    -- Third Row:
-    if x >= 240 and x <= 320 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 3
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 13
+            end
         end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 7
+        -- Fourth Row:
+        if x >= 340 and x <= 390 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 4
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 9
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 14
+            end
         end
 
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 11
-        end
-    end
+        -- Five Row:
+        if x >= 410 and x <= 460 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 5
+            end
 
-    -- Fourth Row:
-    if x >= 340 and x <= 390 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 4
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 10
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 15
+            end
+        end
+    else
+        -- First Row:
+        if x >= 60 and x <= 140 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 1
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 5
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 9
+            end
         end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 8
+        -- Second Row:
+        if x >= 160 and x <= 230 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 2
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 6
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 10
+            end
         end
 
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 12
+        -- Third Row:
+        if x >= 240 and x <= 320 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 3
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 7
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 11
+            end
+        end
+
+        -- Fourth Row:
+        if x >= 340 and x <= 390 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 4
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 8
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 12
+            end
         end
     end
     return button
@@ -757,7 +864,7 @@ mod.responseHandler = {
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
-        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        local buttonID = convertXandYtoButtonID(response.x, response.y, obj.deviceType)
         if buttonID > 0 then
             response.buttonID = buttonID
         end
@@ -784,7 +891,7 @@ mod.responseHandler = {
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
-        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        local buttonID = convertXandYtoButtonID(response.x, response.y, obj.deviceType)
         if buttonID > 0 then
             response.buttonID = buttonID
         end
@@ -1284,6 +1391,10 @@ mod.screens = {
         width = 240, height = 240,
         circular = true,
     },
+    live_s = {
+        id = 0x004D,
+        width = 480, height = 270,
+    },
 }
 
 --- hs.loupedeck:refreshScreen(screen[, callbackFn]) -> boolean
@@ -1413,18 +1524,23 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     return false
 end
 
--- convertButtonIDtoXYCoordinates() -> buttonID
+-- convertButtonIDtoXYCoordinates(buttonID, deviceType) -> number, number
 -- Function
 -- Gets the X and Y coordinates of a specific button on the middle touch screen.
 --
 -- Parameters:
 --  * buttonID - A number between 1 and 12 (left to right, top to bottom).
+--  * deviceType - The device type.
 --
 -- Returns:
 --  * x - The x coordinates of the screen for the specific button as a number
 --  * y - The y coordinates of the screen for the specific button as a number
-local function convertButtonIDtoXYCoordinates(buttonID)
-    return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
+local function convertButtonIDtoXYCoordinates(buttonID, deviceType)
+    if deviceType == mod.deviceTypes.LIVE_S then
+        return (floor(((buttonID-1) % 5)) * 90) + (30/2), floor(((buttonID-1) / 5)) * 90
+    else
+        return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
+    end
 end
 
 --- hs.loupedeck:updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
@@ -1443,8 +1559,13 @@ end
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
 function mod.mt:updateScreenButtonImage(buttonID, imageBytes, callbackFn)
-    local x, y = convertButtonIDtoXYCoordinates(buttonID)
-    self:updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+    if self.deviceType == mod.deviceTypes.LIVE_S then
+        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+        return self:updateScreenImage(mod.screens.live_s, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+    else
+        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+        return self:updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+    end
 end
 
 --- hs.loupedeck:updateKnobImage(knobID, imageBytes[, callbackFn]) -> boolean
@@ -1470,7 +1591,7 @@ function mod.mt:updateKnobImage(knobID, imageBytes, callbackFn)
     elseif knobID == 3 or knobID == 6 then
         y = 180
     end
-    self:updateScreenImage(whichScreen, imageBytes, {x=0, y=y, w=60,h=90}, callbackFn)
+    return self:updateScreenImage(whichScreen, imageBytes, {x=0, y=y, w=60,h=90}, callbackFn)
 end
 
 -- solidColorImage(width, height, color) -> string
@@ -1536,8 +1657,13 @@ end
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
 function mod.mt:updateScreenButtonColor(buttonID, color, callbackFn)
-    local x, y = convertButtonIDtoXYCoordinates(buttonID)
-    self:updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    if self.deviceType == mod.deviceTypes.LIVE_S then
+        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+        return self:updateScreenColor(mod.screens.live_s, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    else
+        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+        return self:updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    end
 end
 
 --- hs.loupedeck:updateScreenKnobColor(knobID, color[, callbackFn]) -> boolean
@@ -1563,7 +1689,7 @@ function mod.mt:updateScreenKnobColor(knobID, color, callbackFn)
     elseif knobID == 3 or knobID == 6 then
         y = 180
     end
-    self:updateScreenColor(whichScreen, color, {x=0, y=y, w=60,h=90}, callbackFn)
+    return self:updateScreenColor(whichScreen, color, {x=0, y=y, w=60,h=90}, callbackFn)
 end
 
 --- hs.loupedeck.buttonID -> table
@@ -1921,7 +2047,9 @@ function mod.findDevices(deviceType)
     for _, portName in pairs(availablePortNames) do
         local portDetails = availablePortDetails[portName]
         if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
-            if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID) or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID) then
+            if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID)
+            or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID)
+            or (deviceType == mod.deviceTypes.LIVE_S and portDetails.idProduct == LOUPEDECK_LIVE_S_ID) then
                 table.insert(results, portName)
             end
         elseif portDetails and portDetails.idVendor and portDetails.idVendor == RAZER_VENDOR_ID then
