@@ -46,8 +46,8 @@ function plugin.init(deps)
             if selectedClips and #selectedClips == 1 then
                 local selectedClip = selectedClips[1]
                 local clips = contents:clipsUI(true, function(clip)
-                    local frame = clip:frame()
-                    local selectedClipFrame = selectedClip:frame()
+                    local frame = clip:attributeValue("AXFrame")
+                    local selectedClipFrame = selectedClip:attributeValue("AXFrame")
                     if frame.y == selectedClipFrame.y and frame.x >= (selectedClipFrame.x + selectedClipFrame.w) then
                         return true
                     end
@@ -58,7 +58,7 @@ function plugin.init(deps)
                     if not nextClip then
                         nextClip = clip
                     else
-                        if clip:frame().x < nextClip:frame().x then
+                        if clip:attributeValue("AXFrame").x < nextClip:attributeValue("AXFrame").x then
                             nextClip = clip
                         end
                     end
@@ -105,8 +105,8 @@ function plugin.init(deps)
             if selectedClips and #selectedClips == 1 then
                 local selectedClip = selectedClips[1]
                 local clips = contents:clipsUI(true, function(clip)
-                    local frame = clip:frame()
-                    local selectedClipFrame = selectedClip:frame()
+                    local frame = clip:attributeValue("AXFrame")
+                    local selectedClipFrame = selectedClip:attributeValue("AXFrame")
                     if frame.y == selectedClipFrame.y and frame.x < selectedClipFrame.x then
                         return true
                     end
@@ -117,7 +117,7 @@ function plugin.init(deps)
                     if not previousClip then
                         previousClip = clip
                     else
-                        if clip:frame().x > previousClip:frame().x then
+                        if clip:attributeValue("AXFrame").x > previousClip:attributeValue("AXFrame").x then
                             previousClip = clip
                         end
                     end
