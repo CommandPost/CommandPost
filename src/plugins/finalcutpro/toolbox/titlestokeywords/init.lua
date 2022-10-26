@@ -550,35 +550,31 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                     --------------------------------------------------------------------------------
                     -- Is the title position between the clip start time and end time?
                     --------------------------------------------------------------------------------
-                    --if doesIntersect(aStart, aDuration, bStart, bDuration) then
                     if doesIntersect(titlePositionOnTimelineAsTime, titleDurationAsTime, parentOffsetAsTime, parentDurationAsTime) then
-                    --function tools.between(value, min, max)
-                    --if between(titlePositionOnTimelineAsTime, parentOffsetAsTime, parentOffsetAsTime + parentDurationAsTime) then
                         local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - parentOffsetAsTime
 
-                        local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
-
-                        if newOffsetAsTime < time.ZERO then
-                            log.df("WAS BELOW ZERO!")
-                            newOffsetAsTime = parentStartAsTime
+                        --------------------------------------------------------------------------------
+                        -- Make sure the title doesn't start earlier than the clip:
+                        --------------------------------------------------------------------------------
+                        if differenceBetweenClipStartAndTitleStartAsTime < time.ZERO then
+                            differenceBetweenClipStartAndTitleStartAsTime = time.ZERO
                         end
 
+                        --------------------------------------------------------------------------------
+                        -- Calculate the new offset for the clip:
+                        --------------------------------------------------------------------------------
+                        local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                         local newOffsetString = time.tostring(newOffsetAsTime)
 
-
-                        if titleDurationAsTime > (parentOffsetAsTime + parentDurationAsTime) then
-                            log.df("LONGER THAN PARENT DURATION!")
-                            titleDurationAsTime = parentDurationAsTime
+                        --------------------------------------------------------------------------------
+                        -- Make sure the title doesn't extend past the clip:
+                        --------------------------------------------------------------------------------
+                        local titleEndPositionAsTime = titlePositionOnTimelineAsTime + titleDurationAsTime
+                        local parentEndPositionAsTime = parentOffsetAsTime + parentDurationAsTime
+                        if titleEndPositionAsTime >= parentEndPositionAsTime then
+                            titleDurationAsTime = parentDurationAsTime - differenceBetweenClipStartAndTitleStartAsTime
                         end
-
                         local titleDurationString = time.tostring(titleDurationAsTime)
-
-
-                        log.df("parentClipType: %s", parentClipType)
-                        log.df("parentRef: %s", parentRef)
-                        log.df("newOffsetString: %s", newOffsetString)
-                        log.df("titleDurationString: %s", titleDurationString)
-                        log.df("--------------------------------")
 
                         --------------------------------------------------------------------------------
                         -- Add a new title:
@@ -680,35 +676,32 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                         --------------------------------------------------------------------------------
                         -- Is the title position between the clip start time and end time?
                         --------------------------------------------------------------------------------
-
                         if doesIntersect(titlePositionOnTimelineAsTime, titleDurationAsTime, connectedClipPositionOnTimelineAsTime, connectedClipDurationAsTime) then
-
-                        --if between(titlePositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime) then
 
                             local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - connectedClipPositionOnTimelineAsTime
 
-                            local newOffsetAsTime = connectedClipStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
-
-                            if newOffsetAsTime < time.ZERO then
-                                log.df("WAS BELOW ZERO!")
-                                newOffsetAsTime = connectedClipPositionOnTimelineAsTime
+                            --------------------------------------------------------------------------------
+                            -- Make sure the title doesn't start earlier than the clip:
+                            --------------------------------------------------------------------------------
+                            if differenceBetweenClipStartAndTitleStartAsTime < time.ZERO then
+                                differenceBetweenClipStartAndTitleStartAsTime = time.ZERO
                             end
 
-
+                            --------------------------------------------------------------------------------
+                            -- Calculate the new offset for the clip:
+                            --------------------------------------------------------------------------------
+                            local newOffsetAsTime = connectedClipStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                             local newOffsetString = time.tostring(newOffsetAsTime)
 
-                            if titleDurationAsTime > (connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime) then
-                                log.df("LONGER THAN PARENT DURATION!")
-                                titleDurationAsTime = parentDurationAsTime
+                            --------------------------------------------------------------------------------
+                            -- Make sure the title doesn't extend past the clip:
+                            --------------------------------------------------------------------------------
+                            local titleEndPositionAsTime = titlePositionOnTimelineAsTime + titleDurationAsTime
+                            local parentEndPositionAsTime = connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime
+                            if titleEndPositionAsTime >= parentEndPositionAsTime then
+                                titleDurationAsTime = connectedClipDurationAsTime - differenceBetweenClipStartAndTitleStartAsTime
                             end
-
                             local titleDurationString = time.tostring(titleDurationAsTime)
-
-                            log.df("connectedClipType: %s", connectedClipType)
-                            log.df("connectedClipRef: %s", connectedClipRef)
-                            log.df("newOffsetString: %s", newOffsetString)
-                            log.df("titleDurationString: %s", titleDurationString)
-                            log.df("--------------------------------")
 
                             --------------------------------------------------------------------------------
                             -- Add a new title:
