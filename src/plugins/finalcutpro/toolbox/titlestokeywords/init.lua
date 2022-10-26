@@ -1029,12 +1029,12 @@ local function processFCPXML(path)
                             --------------------------------------------------------------------------------
 
                             --------------------------------------------------------------------------------
-                            -- We need to insert our 'keyword' BEFORE markers, 'sync-source', 'filter-video',
-                            -- 'filter-video-mask', 'filter-audio' and 'metadata'.
+                            -- We need to insert our 'keyword' BEFORE markers, 'audio-channel-source',
+                            -- 'filter-video', 'filter-video-mask', 'filter-audio' and 'metadata'.
                             --------------------------------------------------------------------------------
                             local whereToInsert = eventNode:childCount() + 1
                             local eventNodeChildren = eventNode:children()  or {} -- Just incase there are no children!
-                            local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                            local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "audio-channel-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
                             for i, vv in pairs(eventNodeChildren) do
                                 local abortName = vv:name()
                                 if tableContains(abortClipNames, abortName) then
