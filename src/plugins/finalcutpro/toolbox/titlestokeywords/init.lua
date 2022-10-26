@@ -1007,9 +1007,9 @@ local function processFCPXML(path)
             for _, syncClipNode in ipairs(syncClipNodes) do
                 local syncClipNodeName = syncClipNode:name()
                 if syncClipNodeName == "audio" or syncClipNodeName == "video" then
-                    local attributes = syncClipNode:attributes()
+                    local currentAttributes = syncClipNode:attributes()
                     for _, v in ipairs(titlesToAdd) do
-                        if v.ref == attributes.ref and v.clipType == "clip" then
+                        if v.ref == currentAttributes.ref and v.clipType == "clip" then
                             --------------------------------------------------------------------------------
                             -- DTD v1.10:
                             --
