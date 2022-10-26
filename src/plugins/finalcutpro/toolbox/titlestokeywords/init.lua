@@ -33,6 +33,7 @@ local is                        = fnvalue.is
 local pipe                      = fn.pipe
 
 local between                   = tools.between
+local doesIntersect             = time.doesIntersect
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
 local replace                   = tools.replace
@@ -319,7 +320,7 @@ local function getAllTitlesOnTimeline(spineChildren)
     -- name, duration and position on the timeline:
     --------------------------------------------------------------------------------
     for _, node in ipairs(spineChildren) do
-        if isNamed "asset-clip" (node) or isNamed "mc-clip" (node) or isNamed "sync-clip" (node) or isNamed "gap" (node) then
+        if isNamed "clip" (node) or isNamed "asset-clip" (node) or isNamed "mc-clip" (node) or isNamed "sync-clip" (node) or isNamed "gap" (node) then
             --------------------------------------------------------------------------------
             -- A normal clip, gap, Multi-cam or Synchronised Clip on the Primary Storyline:
             --
@@ -492,7 +493,7 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
     --------------------------------------------------------------------------------
     for _, node in ipairs(spineChildren) do
         local parentClipType = node:name()
-        if parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" or parentClipType == "gap" then
+        if parentClipType == "clip" or parentClipType == "asset-clip" or parentClipType == "mc-clip" or parentClipType == "sync-clip" or parentClipType == "gap" then
             --------------------------------------------------------------------------------
             -- Get the 'start', 'offset', 'duration' and 'ref' of the current clip:
             --------------------------------------------------------------------------------
@@ -521,6 +522,19 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                         parentRef = syncClipAttributes and syncClipAttributes["ref"]
                     end
                 end
+            elseif parentClipType == "clip" then
+                --------------------------------------------------------------------------------
+                -- 'clip' doesn't contain a 'ref' so we need to look for an 'audio' or 'video'
+                -- inside to get it:
+                --------------------------------------------------------------------------------
+                local syncClipNodes = node:children()
+                for _, syncClipNode in ipairs(syncClipNodes) do
+                    local clipName = syncClipNode:name()
+                    if clipName == "audio" or clipName == "video" then
+                        local syncClipAttributes = syncClipNode:attributes()
+                        parentRef = syncClipAttributes and syncClipAttributes["ref"]
+                    end
+                end
             end
 
             --------------------------------------------------------------------------------
@@ -536,12 +550,30 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                     --------------------------------------------------------------------------------
                     -- Is the title position between the clip start time and end time?
                     --------------------------------------------------------------------------------
-                    if between(titlePositionOnTimelineAsTime, parentOffsetAsTime, parentOffsetAsTime + parentDurationAsTime) then
+                    if doesIntersect(titlePositionOnTimelineAsTime, titleDurationAsTime, parentOffsetAsTime, parentDurationAsTime) then
                         local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - parentOffsetAsTime
 
+                        --------------------------------------------------------------------------------
+                        -- Make sure the title doesn't start earlier than the clip:
+                        --------------------------------------------------------------------------------
+                        if differenceBetweenClipStartAndTitleStartAsTime < time.ZERO then
+                            differenceBetweenClipStartAndTitleStartAsTime = time.ZERO
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Calculate the new offset for the clip:
+                        --------------------------------------------------------------------------------
                         local newOffsetAsTime = parentStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                         local newOffsetString = time.tostring(newOffsetAsTime)
 
+                        --------------------------------------------------------------------------------
+                        -- Make sure the title doesn't extend past the clip:
+                        --------------------------------------------------------------------------------
+                        local titleEndPositionAsTime = titlePositionOnTimelineAsTime + titleDurationAsTime
+                        local parentEndPositionAsTime = parentOffsetAsTime + parentDurationAsTime
+                        if titleEndPositionAsTime >= parentEndPositionAsTime then
+                            titleDurationAsTime = parentDurationAsTime - differenceBetweenClipStartAndTitleStartAsTime
+                        end
                         local titleDurationString = time.tostring(titleDurationAsTime)
 
                         --------------------------------------------------------------------------------
@@ -611,6 +643,19 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                                 connectedClipRef = syncClipAttributes and syncClipAttributes["ref"]
                             end
                         end
+                    --------------------------------------------------------------------------------
+                    -- 'clip' doesn't contain a 'ref' so we need to look for an 'video' or 'audio'
+                    -- inside first, before we look for titles:
+                    --------------------------------------------------------------------------------
+                    elseif connectedClipType == "clip" then
+                        local syncClipNodes = connectedClip:children()
+                        for _, syncClipNode in ipairs(syncClipNodes) do
+                            local clipName = syncClipNode:name()
+                            if clipName == "audio" or clipName == "video" then
+                                local syncClipAttributes = syncClipNode:attributes()
+                                connectedClipRef = syncClipAttributes and syncClipAttributes["ref"]
+                            end
+                        end
                     end
 
                     --------------------------------------------------------------------------------
@@ -631,13 +676,31 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                         --------------------------------------------------------------------------------
                         -- Is the title position between the clip start time and end time?
                         --------------------------------------------------------------------------------
-                        if between(titlePositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime, connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime) then
+                        if doesIntersect(titlePositionOnTimelineAsTime, titleDurationAsTime, connectedClipPositionOnTimelineAsTime, connectedClipDurationAsTime) then
 
                             local differenceBetweenClipStartAndTitleStartAsTime = titlePositionOnTimelineAsTime - connectedClipPositionOnTimelineAsTime
 
+                            --------------------------------------------------------------------------------
+                            -- Make sure the title doesn't start earlier than the clip:
+                            --------------------------------------------------------------------------------
+                            if differenceBetweenClipStartAndTitleStartAsTime < time.ZERO then
+                                differenceBetweenClipStartAndTitleStartAsTime = time.ZERO
+                            end
+
+                            --------------------------------------------------------------------------------
+                            -- Calculate the new offset for the clip:
+                            --------------------------------------------------------------------------------
                             local newOffsetAsTime = connectedClipStartAsTime + differenceBetweenClipStartAndTitleStartAsTime
                             local newOffsetString = time.tostring(newOffsetAsTime)
 
+                            --------------------------------------------------------------------------------
+                            -- Make sure the title doesn't extend past the clip:
+                            --------------------------------------------------------------------------------
+                            local titleEndPositionAsTime = titlePositionOnTimelineAsTime + titleDurationAsTime
+                            local parentEndPositionAsTime = connectedClipPositionOnTimelineAsTime + connectedClipDurationAsTime
+                            if titleEndPositionAsTime >= parentEndPositionAsTime then
+                                titleDurationAsTime = connectedClipDurationAsTime - differenceBetweenClipStartAndTitleStartAsTime
+                            end
                             local titleDurationString = time.tostring(titleDurationAsTime)
 
                             --------------------------------------------------------------------------------
@@ -891,6 +954,78 @@ local function processFCPXML(path)
                             --
                             -- <!ENTITY % video_filter_item "(filter-video | filter-video-mask)">
                             -- <!ENTITY % marker_item "(marker | chapter-marker | rating | keyword | analysis-marker)">
+                            --------------------------------------------------------------------------------
+
+                            --------------------------------------------------------------------------------
+                            -- We need to insert our 'keyword' BEFORE markers, 'sync-source', 'filter-video',
+                            -- 'filter-video-mask', 'filter-audio' and 'metadata'.
+                            --------------------------------------------------------------------------------
+                            local whereToInsert = eventNode:childCount() + 1
+                            local eventNodeChildren = eventNode:children()  or {} -- Just incase there are no children!
+                            local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                            for i, vv in pairs(eventNodeChildren) do
+                                local abortName = vv:name()
+                                if tableContains(abortClipNames, abortName) then
+                                    whereToInsert = i
+                                    break
+                                end
+                            end
+
+                            --------------------------------------------------------------------------------
+                            -- Is it a keyword or a rating?
+                            --------------------------------------------------------------------------------
+                            local newNodeType = "keyword"
+                            if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() and v.name == "FAVORITE" or v.name == "REJECT" then
+                                newNodeType = "rating"
+                            end
+
+                            eventNode:addNode(newNodeType, whereToInsert)
+                            local newNode = eventNode:children()[whereToInsert]
+                            newNode:addAttribute("start", v.offset)
+                            newNode:addAttribute("duration", v.duration)
+
+                            --------------------------------------------------------------------------------
+                            -- Replace Commas if we need to:
+                            --------------------------------------------------------------------------------
+                            local newClipName = v.name
+                            if mod.replaceCommasWithAlternativeCommas() then
+                                newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                            end
+                            if newNodeType == "rating" then
+                                newClipName = string.lower(newClipName)
+                            end
+                            newNode:addAttribute("value", newClipName)
+                        end
+                    end
+                end
+            end
+        elseif clipType == "clip" then
+            --------------------------------------------------------------------------------
+            -- Add markers for clips:
+            --------------------------------------------------------------------------------
+            local syncClipNodes = eventNode:children()
+            for _, syncClipNode in ipairs(syncClipNodes) do
+                local syncClipNodeName = syncClipNode:name()
+                if syncClipNodeName == "audio" or syncClipNodeName == "video" then
+                    local currentAttributes = syncClipNode:attributes()
+                    for _, v in ipairs(titlesToAdd) do
+                        if v.ref == currentAttributes.ref and v.clipType == "clip" then
+                            --------------------------------------------------------------------------------
+                            -- DTD v1.10:
+                            --
+                            -- <!-- A 'clip' is a container for other story elements. -->
+                            -- <!-- Clips have only one primary item, and zero or more anchored items. -->
+                            -- <!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+                            --
+                            -- <!ELEMENT clip (note?, %timing-params;, %intrinsic-params;, (spine | (%clip_item;) | caption)*, (%marker_item;)*, audio-channel-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
+                            -- <!ATTLIST clip %clip_attrs;>
+                            -- <!ATTLIST clip format IDREF #IMPLIED>				<!-- default is same as parent -->
+                            -- <!ATTLIST clip audioStart %time; #IMPLIED>
+                            -- <!ATTLIST clip audioDuration %time; #IMPLIED>
+                            -- <!ATTLIST clip tcStart %time; #IMPLIED>				<!-- clip timecode origin -->
+                            -- <!ATTLIST clip tcFormat (DF | NDF) #IMPLIED>		<!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
+                            -- <!ATTLIST clip modDate CDATA #IMPLIED>
+                            --
                             --------------------------------------------------------------------------------
 
                             --------------------------------------------------------------------------------
