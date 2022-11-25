@@ -24,29 +24,32 @@ mod.appCache = {}
 
 local function modifyNameMap(info, add)
     for _, item in ipairs(info) do
-        local displayname = item.kMDItemDisplayName or displayName(item.kMDItemPath)
-
-        --------------------------------------------------------------------------------
-        -- Add to the cache:
-        --------------------------------------------------------------------------------
-        if add then
-            --------------------------------------------------------------------------------
-            -- AppleScript Icon:
-            --------------------------------------------------------------------------------
-            local icon = imageFromPath(config.bundledPluginsPath .. "/core/console/images/SEScriptDocument.icns")
+        local path = item and item.kMDItemPath
+        if path then
+            local displayname = item.kMDItemDisplayName or displayName(path)
 
             --------------------------------------------------------------------------------
-            -- Add application to cache:
+            -- Add to the cache:
             --------------------------------------------------------------------------------
-            mod.appCache[displayname] = {
-                path = item.kMDItemPath,
-                icon = icon
-            }
-        --------------------------------------------------------------------------------
-        -- Remove from the cache:
-        --------------------------------------------------------------------------------
-        else
-            mod.appCache[displayname] = nil
+            if add then
+                --------------------------------------------------------------------------------
+                -- AppleScript Icon:
+                --------------------------------------------------------------------------------
+                local icon = imageFromPath(config.bundledPluginsPath .. "/core/console/images/SEScriptDocument.icns")
+
+                --------------------------------------------------------------------------------
+                -- Add application to cache:
+                --------------------------------------------------------------------------------
+                mod.appCache[displayname] = {
+                    path = path,
+                    icon = icon
+                }
+            --------------------------------------------------------------------------------
+            -- Remove from the cache:
+            --------------------------------------------------------------------------------
+            else
+                mod.appCache[displayname] = nil
+            end
         end
     end
 
