@@ -75,9 +75,11 @@
 <p class="uiItem">{{ i18n("sonyTimecodeRepairDescriptionTwo") }}</p>
 <p class="uiItem">{{ i18n("sonyTimecodeRepairDescriptionThree") }}</p>
 <br />
-<p class="uiItem"><strong>{{ i18n("sonyTimecodeRepairDescriptionFour") }}</strong></p>
+<p class="uiItem">{{ i18n("sonyTimecodeRepairDescriptionFour") }}</p>
+
 <br />
-<p class="uiItem">{{ i18n("sonyTimecodeRepairDescriptionFive") }}</p>
+
+<p class="uiItem"><label><input type="checkbox" id="forceDropFrame" onchange="updateChecked(this)"> Force Drop Frame Timecode for all Sony MP4s</label></p>
 
 <table width="100%">
 	<tr>
