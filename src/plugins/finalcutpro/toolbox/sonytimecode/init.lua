@@ -753,20 +753,19 @@ local function processFCPXML(path)
                     end
 
                     local newStartTimecodeValue = tostring(frameA) .. startTimecodeValue:sub(2)
-                    log.df("[Sony Timecode Toolbox] Converted timecode from %s to %s", startTimecodeValue, newStartTimecodeValue)
-
+                    --log.df("[Sony Timecode Toolbox] Converted timecode from %s to %s", startTimecodeValue, newStartTimecodeValue)
 
                     local framerate = 29.97
 
                     local frames, seconds, minutes, hours = newStartTimecodeValue:match("(%d%d)(%d%d)(%d%d)(%d%d)")
 
-                    local dropFrames = math.ceil(framerate * 0.066666);
-                    local timeBase = math.ceil(framerate);
+                    local dropFrames    = math.ceil(framerate * 0.066666);
+                    local timeBase      = math.ceil(framerate);
 
-                    local hourFrames = timeBase * 60 * 60;
-                    local minuteFrames = timeBase * 60;
-                    local totalMinutes = (60 * hours) + minutes;
-                    local totalFrames = ((hourFrames * hours) + (minuteFrames * minutes) + (timeBase * seconds) + frames) - (dropFrames * (totalMinutes - (math.floor(totalMinutes / 10))));
+                    local hourFrames    = timeBase * 60 * 60;
+                    local minuteFrames  = timeBase * 60;
+                    local totalMinutes  = (60 * hours) + minutes;
+                    local totalFrames   = ((hourFrames * hours) + (minuteFrames * minutes) + (timeBase * seconds) + frames) - (dropFrames * (totalMinutes - (math.floor(totalMinutes / 10))));
 
                     --------------------------------------------------------------------------------
                     -- Now we multiply total frames by the frame duration to get the
@@ -793,76 +792,86 @@ local function processFCPXML(path)
                     -- Save the 'start' time for later:
                     --------------------------------------------------------------------------------
                     startTimes[assetID] = timeValue
-                end
-            else
-                --------------------------------------------------------------------------------
-                -- Convert timecode string into timecode object:
-                --------------------------------------------------------------------------------
-                local startTimecode = timecode.fromFFSSMMHH(startTimecodeValue)
-                if not startTimecode then
-                    log.wf("[Sony Timecode Toolbox] Failed to calculate start timecode, so skipping file: %s", src)
+
                     goto next_resource_item
-                end
-
-                --------------------------------------------------------------------------------
-                -- The timecode is always saved with the tcFps value (eg. 25fps), not the actual
-                -- FPS of the clip (eg. 50fps), so we need pass that in when parsing:
-                --------------------------------------------------------------------------------
-                local totalFrames = startTimecode:totalFramesWithFPS(tcFps)
-                if not totalFrames then
-                    log.wf("[Sony Timecode Toolbox] Failed to calculate valid total frames, so skipping file: %s", src)
+                elseif halfStep == true and tcFps == 30 and formatFps == "59.94p" then
+                    log.wf("[Sony Timecode Toolbox] We don't currently support this type of DF clip (tcFps: %s, formatFps: %s, halfStep: %s): %s", tcFps, formatFps, halfStep, src)
                     goto next_resource_item
-                end
-                if (totalFrames == math.floor(totalFrames)) == false then
-                    log.wf("[Sony Timecode Toolbox] Total frames is not a whole number (%s), so skipping file. This is most likely due to Drop Frame timecode: %s", totalFrames, src)
+                elseif halfStep == true and tcFps == 30 and formatFps == "119.88p" then
+                    log.wf("[Sony Timecode Toolbox] We don't currently support this type of DF clip (tcFps: %s, formatFps: %s, halfStep: %s): %s", tcFps, formatFps, halfStep, src)
                     goto next_resource_item
+                else
+                    log.wf("[Sony Timecode Toolbox] Unexpected DF format (tcFps: %s, formatFps: %s, halfStep: %s), so assuming NDF: %s", tcFps, formatFps, halfStep, src)
                 end
-
-                --------------------------------------------------------------------------------
-                -- However, if halfStep is true, we need to multiply the total frame count to
-                -- get the correct amount of time relative to the frame duration.
-                -- (eg. 50fps recorded, 25fps playback):
-                --------------------------------------------------------------------------------
-                if halfStep then
-                    --------------------------------------------------------------------------------
-                    -- We'll round 59.94fps to 60fps for example:
-                    --------------------------------------------------------------------------------
-                    local formatFpsNumber = math.ceil(tonumber(formatFps:sub(1, -2)))
-                    local multiplier = formatFpsNumber / tcFps
-                    if not multiplier == math.floor(multiplier) then
-                        log.wf("[Sony Timecode Toolbox] The multiplier is not a whole number (%s), so skipping file. This is most likely due to Drop Frame timecode: %s", multiplier, src)
-                        goto next_resource_item
-                    end
-
-                    totalFrames = totalFrames * multiplier
-                end
-
-                --------------------------------------------------------------------------------
-                -- Now we multiply total frames by the frame duration to get the
-                -- time in seconds:
-                --------------------------------------------------------------------------------
-                local totalFramesInTime = time(totalFrames)
-                if not totalFramesInTime then
-                    log.wf("[Sony Timecode Toolbox] Total Frames in Time is not valid (%s), so skipping file: %s", totalFramesInTime, src)
-                    goto next_resource_item
-                end
-
-                local timeValue = totalFramesInTime  * frameDuration
-                if not timeValue then
-                    log.wf("[Sony Timecode Toolbox] Time Value is not valid (%s), so skipping file: %s", timeValue, src)
-                    goto next_resource_item
-                end
-
-                --------------------------------------------------------------------------------
-                -- We have our start timecode, lets put it back in the FCPXML:
-                --------------------------------------------------------------------------------
-                node:addAttribute("start", tostring(timeValue))
-
-                --------------------------------------------------------------------------------
-                -- Save the 'start' time for later:
-                --------------------------------------------------------------------------------
-                startTimes[assetID] = timeValue
             end
+
+            --------------------------------------------------------------------------------
+            -- Convert timecode string into timecode object:
+            --------------------------------------------------------------------------------
+            local startTimecode = timecode.fromFFSSMMHH(startTimecodeValue)
+            if not startTimecode then
+                log.wf("[Sony Timecode Toolbox] Failed to calculate start timecode, so skipping file: %s", src)
+                goto next_resource_item
+            end
+
+            --------------------------------------------------------------------------------
+            -- The timecode is always saved with the tcFps value (eg. 25fps), not the actual
+            -- FPS of the clip (eg. 50fps), so we need pass that in when parsing:
+            --------------------------------------------------------------------------------
+            local totalFrames = startTimecode:totalFramesWithFPS(tcFps)
+            if not totalFrames then
+                log.wf("[Sony Timecode Toolbox] Failed to calculate valid total frames, so skipping file: %s", src)
+                goto next_resource_item
+            end
+            if (totalFrames == math.floor(totalFrames)) == false then
+                log.wf("[Sony Timecode Toolbox] Total frames is not a whole number (%s), so skipping file. This is most likely due to Drop Frame timecode: %s", totalFrames, src)
+                goto next_resource_item
+            end
+
+            --------------------------------------------------------------------------------
+            -- However, if halfStep is true, we need to multiply the total frame count to
+            -- get the correct amount of time relative to the frame duration.
+            -- (eg. 50fps recorded, 25fps playback):
+            --------------------------------------------------------------------------------
+            if halfStep then
+                --------------------------------------------------------------------------------
+                -- We'll round 59.94fps to 60fps for example:
+                --------------------------------------------------------------------------------
+                local formatFpsNumber = math.ceil(tonumber(formatFps:sub(1, -2)))
+                local multiplier = formatFpsNumber / tcFps
+                if not multiplier == math.floor(multiplier) then
+                    log.wf("[Sony Timecode Toolbox] The multiplier is not a whole number (%s), so skipping file. This is most likely due to Drop Frame timecode: %s", multiplier, src)
+                    goto next_resource_item
+                end
+
+                totalFrames = totalFrames * multiplier
+            end
+
+            --------------------------------------------------------------------------------
+            -- Now we multiply total frames by the frame duration to get the
+            -- time in seconds:
+            --------------------------------------------------------------------------------
+            local totalFramesInTime = time(totalFrames)
+            if not totalFramesInTime then
+                log.wf("[Sony Timecode Toolbox] Total Frames in Time is not valid (%s), so skipping file: %s", totalFramesInTime, src)
+                goto next_resource_item
+            end
+
+            local timeValue = totalFramesInTime  * frameDuration
+            if not timeValue then
+                log.wf("[Sony Timecode Toolbox] Time Value is not valid (%s), so skipping file: %s", timeValue, src)
+                goto next_resource_item
+            end
+
+            --------------------------------------------------------------------------------
+            -- We have our start timecode, lets put it back in the FCPXML:
+            --------------------------------------------------------------------------------
+            node:addAttribute("start", tostring(timeValue))
+
+            --------------------------------------------------------------------------------
+            -- Save the 'start' time for later:
+            --------------------------------------------------------------------------------
+            startTimes[assetID] = timeValue
 
             ::next_resource_item::
         end
@@ -1061,7 +1070,7 @@ function plugin.init(deps, env)
         label           = i18n("sonyTimecode"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/sony.png")),
         tooltip         = i18n("sonyTimecode"),
-        height          = 330,
+        height          = 370,
     })
     :addContent(1, generateContent, false)
 
