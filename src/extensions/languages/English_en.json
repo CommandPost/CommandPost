@@ -2236,7 +2236,7 @@
     "sonyTimecodeRepair": "Sony Timecode Repair",
     "sonyTimecodeRepairDescriptionFive": "This Toolbox was thrown together for Alister Robbie. Thanks Jamie LeJeune, George Elias & Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Final Cut Pro doesn't correctly recognise Drop Frame timecode, so if you shot with DF enabled, you can manually force it for all Sony MP4s.",
-    "sonyTimecodeRepairDescriptionOne": "Final Cut Pro currently doesn't always correctly interpret timecode from certain Sony Cameras that are recording into an MP4 wrapper.",
+    "sonyTimecodeRepairDescriptionOne": "Final Cut Pro currently doesn't correctly interpret timecode from certain Sony Cameras that are recording into an MP4 wrapper.",
     "sonyTimecodeRepairDescriptionThree": "so that you can more easily send timelines from Final Cut Pro to DaVinci Resolve, Baselight or Adobe Premiere (with XtoCC).",
     "sonyTimecodeRepairDescriptionTwo": "This Toolbox will update a Project's FCPXML to use the correct timecode values from the XML sidecar file (or the MP4 itself if no sidecar file exists),",
     "sound": "Sound",
