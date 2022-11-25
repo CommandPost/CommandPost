@@ -79,10 +79,6 @@
 <br />
 <p class="uiItem">{{ i18n("sonyTimecodeRepairDescriptionFive") }}</p>
 
-<br />
-
-<p class="uiItem"><label><input type="checkbox" id="forceDropFrame" onchange="updateChecked(this)"> Force Drop Frame Timecode for all Sony MP4s</label></p>
-
 <table width="100%">
 	<tr>
 		<th style="height: 10px;"></th>
@@ -90,10 +86,13 @@
 	<tr>
 		<th style="width: 100%; text-align:center !important;">
 			<form>
-				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("dropYourFinalCutProProjectHere")) }}"></textarea>
+				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("dragYourProjectFromTheFinalCutProInterfaceAndDropHere")) }}"></textarea>
 			</form>
 		</th>
 	</tr>
 </table>
+
+
+
 
 <script>doAction('updateUI');</script>
