@@ -2619,7 +2619,13 @@ function mod.mt:panelCallback(id, params)
                     if not items[lastDevice] then
                         items[lastDevice] = {}
                     end
+                    --------------------------------------------------------------------------------
+                    -- Don't replace the display name:
+                    --------------------------------------------------------------------------------
+                    local originalDisplayName = items[lastDevice][destinationApp].displayName
                     items[lastDevice][destinationApp] = fnutils.copy(data)
+                    items[lastDevice][destinationApp].displayName = originalDisplayName
+
                     self.items(items)
                 end
             end

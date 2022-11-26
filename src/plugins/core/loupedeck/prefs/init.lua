@@ -676,7 +676,13 @@ local function loupedeckPanelCallback(id, params)
 
                 local data = items[app]
                 if data then
+                    --------------------------------------------------------------------------------
+                    -- Don't replace the display name:
+                    --------------------------------------------------------------------------------
+                    local originalDisplayName = items[destinationApp].displayName
                     items[destinationApp] = fnutils.copy(data)
+                    items[destinationApp].displayName = originalDisplayName
+
                     mod.items(items)
                 end
             end
