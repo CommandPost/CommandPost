@@ -9,6 +9,31 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+		    <h1>CommandPost 1.4.14</h1>
+
+        	<h2>⚠️ Important Changes</h2>
+			<ul>
+			    <li>With the release of macOS Ventura, CommandPost v1.4.14 now requires macOS Big Sur or later. You can still use CommandPost v1.4.13 on macOS Catalina.</li>
+			</ul>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Sony Timecode Toolbox now supports 100fps Non-Drop Frame clips. Thanks for reporting Valerio D'Andrassi!</li>
+                <li>Sony Timecode Toolbox now supports clips with Drop Frame (29.97fps, 59.94fps and 119.88fps) timecode. MASSIVE thank you to George Elias for supplying a huge amount of test clips!</li>
+                <li>Added additional actions for triggering shortcut keys, using a slightly different method that works better with macOS applications using non-native frameworks, such as Blender. Thanks for reporting Alex Petrov!</li>
+                <li>Updated csv2notion to v0.3.6. Thanks for your amazing work Vladilen Zhdanov!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug in our Timeline Index API, which caused the "Save Timeline Index to CSV" to fail on macOS Ventura, due to changes to the Accessibility API on macOS Ventura. Thanks for reporting Dale Ryan and Phil Swallow!</li>
+                <li>Fixed a bug in our MenuButton API, which caused triggering certain menu buttons to fail on macOS Ventura, due to changes to the Accessibility API on macOS Ventura. Thanks for reporting Oli Frost!</li>
+                <li>Fixed a potential error message in our AppleScript handler. Thanks for reporting Daniel Latimer!</li>
+                <li>Fixed a bug with the “Copy Application” function in the Control Surfaces panels. If you copied a built-in application to a user-added application, it would incorrectly replace the display name of the destination application with that of the source application. Thanks for reporting John McAfee!</li>
+			</ul>
+
+		    <hr />
+
 		    <h1>CommandPost 1.4.13</h1>
 
 		    <h2>🔨 Improvements</h2>
