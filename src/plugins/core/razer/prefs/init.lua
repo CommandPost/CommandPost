@@ -1252,13 +1252,24 @@ local function razerPanelCallback(id, params)
 
                 local data = items[device] and items[device][app]
                 if data then
+                    --------------------------------------------------------------------------------
+                    -- Don't replace the display name:
+                    --------------------------------------------------------------------------------
+                    local originalDisplayName = items[device][destinationApp].displayName
                     items[device][destinationApp] = fnutils.copy(data)
+                    items[device][destinationApp].displayName = originalDisplayName
+
                     mod.items(items)
 
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware (and trash the LED cache):
                     --------------------------------------------------------------------------------
                     mod._razerManager.refresh(true)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the UI:
+                    --------------------------------------------------------------------------------
+                    mod._manager.refresh()
                 end
             end
 

@@ -1644,7 +1644,12 @@ local function streamDeckPanelCallback(id, params)
 
                 local data = items[device][unit][app]
                 if data then
+                    --------------------------------------------------------------------------------
+                    -- Don't replace the display name:
+                    --------------------------------------------------------------------------------
+                    local originalDisplayName = items[device][unit][destinationApp].displayName
                     items[device][unit][destinationApp] = copy(data)
+                    items[device][unit][destinationApp].displayName = originalDisplayName
                     mod.items(items)
                 end
             end
