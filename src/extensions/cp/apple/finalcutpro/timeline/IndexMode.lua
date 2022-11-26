@@ -33,7 +33,7 @@ end
 
 --------------------------------------------------------------------------------
 -- macOS Ventura uses AXDescription for the AXRadioButton labels, whereas
--- earlier versions of macOS use AXDescription:
+-- earlier versions of macOS use AXTitle:
 --------------------------------------------------------------------------------
 local macOSVersion = semver(tools.macOSVersion())
 local macOSVentura = semver("13.0.0")
