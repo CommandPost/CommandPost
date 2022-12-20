@@ -162,7 +162,7 @@ function mod.apply(action)
         action = { name = action }
     end
 
-    local name, category, theme = action.name, action.category, action.theme
+    local name, category = action.name, action.category
 
     if name == nil then
         dialog.displayMessage(i18n("noTitleShortcut"))

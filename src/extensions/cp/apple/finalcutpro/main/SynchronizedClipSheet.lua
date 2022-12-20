@@ -205,6 +205,13 @@ function SynchronizedClipSheet.lazy.value:videoRate()
     return self.method.custom.videoRate
 end
 
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet.videoProjectionType <cp.ui.PopUpButton>
+--- Field
+--- The `PopUpButton` for the "Video Projection Type" setting.
+function SynchronizedClipSheet.lazy.value:videoProjectionType()
+    return self.method.custom.videoProjection.type
+end
+
 --- cp.apple.finalcutpro.main.SynchronizedClipSheet.renderingCodec <cp.ui.PopUpButton>
 --- Field
 --- The `PopUpButton` for the "Rendering Codec" setting.
@@ -314,6 +321,78 @@ function SynchronizedClipSheet.lazy.method:doHide()
         self.cancel:doPress()
     )
     :Label("SynchronizedClipSheet:doHide")
+end
+
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet:saveLayout() -> table
+--- Method
+--- Saves the current layout of the sheet.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the layout of the sheet.
+function SynchronizedClipSheet.lazy.method:saveLayout()
+    if not self:isShowing() then return {} end
+
+    local layout = {
+        clipName = self.clipName:saveLayout(),
+        inEvent = self.inEvent:saveLayout(),
+        startingTimecode = self.startingTimecode:saveLayout(),
+        useAudioForSynchronization = self.useAudioForSynchronization:saveLayout(),
+        disableAudioComponentsOnAVClips = self.disableAudioComponentsOnAVClips:saveLayout(),
+        isAutomatic = self:isAutomatic(),
+    }
+
+    if not self:isAutomatic() then
+        layout.synchronization = self.synchronization:saveLayout()
+        layout.videoFormat = self.videoFormat:saveLayout()
+        layout.videoResolutionPreset = self.videoResolutionPreset:saveLayout()
+        layout.videoResolutionCustomWidth = self.videoResolutionCustomWidth:saveLayout()
+        layout.videoResolutionCustomHeight = self.videoResolutionCustomHeight:saveLayout()
+        layout.videoRate = self.videoRate:saveLayout()
+        layout.videoProjectionType = self.videoProjectionType:saveLayout()
+        layout.renderingCodec = self.renderingCodec:saveLayout()
+        layout.renderingColorSpace = self.renderingColorSpace:saveLayout()
+        layout.audioChannels = self.audioChannels:saveLayout()
+        layout.audioSampleRate = self.audioSampleRate:saveLayout()
+    end
+
+    return layout
+end
+
+--- cp.apple.finalcutpro.main.SynchronizedClipSheet:loatLayout(layout) -> nil
+--- Method
+--- Loads the layout of the sheet.
+---
+--- Parameters:
+---  * layout - The layout of the sheet.
+---
+--- Returns:
+---  * None
+function SynchronizedClipSheet.lazy.method:loadLayout(layout)
+    if not layout then return end
+
+    self.clipName:loadLayout(layout.clipName)
+    self.inEvent:loadLayout(layout.inEvent)
+    self.startingTimecode:loadLayout(layout.startingTimecode)
+    self.useAudioForSynchronization:loadLayout(layout.useAudioForSynchronization)
+    self.disableAudioComponentsOnAVClips:loadLayout(layout.disableAudioComponentsOnAVClips)
+    self.isAutomatic(layout.isAutomatic())
+
+    if not self:isAutomatic() then
+        self.synchronization:loadLayout(layout.synchronization)
+        self.videoFormat:loadLayout(layout.videoFormat)
+        self.videoResolutionPreset:loadLayout(layout.videoResolutionPreset)
+        self.videoResolutionCustomWidth:loadLayout(layout.videoResolutionCustomWidth)
+        self.videoResolutionCustomHeight:loadLayout(layout.videoResolutionCustomHeight)
+        self.videoRate:loadLayout(layout.videoRate)
+        self.videoProjectionType:loadLayout(layout.videoProjectionType)
+        self.renderingCodec:loadLayout(layout.renderingCodec)
+        self.renderingColorSpace:loadLayout(layout.renderingColorSpace)
+        self.audioChannels:loadLayout(layout.audioChannels)
+        self.audioSampleRate:loadLayout(layout.audioSampleRate)
+    end
 end
 
 
