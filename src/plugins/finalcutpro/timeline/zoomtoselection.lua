@@ -5,6 +5,7 @@
 local require   = require
 
 local fcp       = require "cp.apple.finalcutpro"
+local i18n      = require "cp.i18n"
 
 local mod = {}
 
@@ -102,10 +103,10 @@ end
 --- Zooms the view to fit the currently-selected clips.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if there is selected content in the timeline and zooming was successful.
+---  * `true` if there is selected content in the timeline and zooming was successful.
 function mod.zoomToSelection()
     local contents = fcp.timeline.contents
     local selectedClips = contents:selectedClipsUI()
@@ -145,6 +146,64 @@ function mod.zoomToSelection()
     return true
 end
 
+-- lastToggleZoomToSelectionValue -> number
+-- Variable
+-- Last Toggle Zoom to Selection Value
+local lastToggleZoomToSelectionValue
+
+--- plugins.finalcutpro.timeline.zoomtoselection.toggleZoomToSelection() -> none
+--- Method
+--- Toggles between "Zoom to Selection" and the last zoom amount.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.toggleZoomToSelection()
+    local appearance = fcp.timeline.toolbar.appearance
+    if not lastToggleZoomToSelectionValue then
+        appearance:show()
+        lastToggleZoomToSelectionValue = appearance.zoomAmount:value()
+        appearance:hide()
+        mod.zoomToSelection()
+    else
+        appearance:show()
+        appearance.zoomAmount:value(lastToggleZoomToSelectionValue)
+        appearance:hide()
+        lastToggleZoomToSelectionValue = nil
+    end
+end
+
+-- lastToggleZoomToFitValue -> number
+-- Variable
+-- Last Toggle Zoom to Fit Value
+local lastToggleZoomToFitValue
+
+--- plugins.finalcutpro.timeline.zoomtoselection.toggleZoomToFit() -> none
+--- Method
+--- Toggles between "Zoom to Selection" and the last zoom amount.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.toggleZoomToFit()
+    local appearance = fcp.timeline.toolbar.appearance
+    if not lastToggleZoomToFitValue then
+        appearance:show()
+        lastToggleZoomToFitValue = appearance.zoomAmount:value()
+        appearance:hide()
+        fcp:doSelectMenu({"View", "Zoom to Fit"}):Now()
+    else
+        appearance:show()
+        appearance.zoomAmount:value(lastToggleZoomToFitValue)
+        appearance:hide()
+        lastToggleZoomToFitValue = nil
+    end
+end
+
 local plugin = {
     id = "finalcutpro.timeline.zoomtoselection",
     group = "finalcutpro",
@@ -166,6 +225,18 @@ function plugin.init(deps)
         :add("cpZoomToSelection")
         :activatedBy():option():shift("z")
         :whenActivated(mod.zoomToSelection)
+
+    deps.fcpxCmds
+        :add("toggleZoomToSelection")
+        :whenActivated(mod.toggleZoomToSelection)
+        :titled(i18n("toggleZoomToSelection"))
+        :subtitled(i18n("controlsTimelineZoomViaTheAppearancePopup"))
+
+    deps.fcpxCmds
+        :add("toggleZoomToFit")
+        :whenActivated(mod.toggleZoomToFit)
+        :titled(i18n("toggleZoomToFit"))
+        :subtitled(i18n("controlsTimelineZoomViaTheAppearancePopup"))
 
     return mod
 end

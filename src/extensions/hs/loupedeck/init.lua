@@ -1,6 +1,6 @@
 --- === hs.loupedeck ===
 ---
---- Control surface support for the Loupedeck CT and Loupedeck Live.
+--- Control surface support for the Loupedeck CT, Loupedeck Live, Loupedeck Live-S and Razer Stream Controller.
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 ---
@@ -17,6 +17,7 @@ local timer             = require "hs.timer"
 local utf8              = require "hs.utf8"
 
 local just              = require "cp.just"
+local tools             = require "cp.tools"
 local wshttp            = require "cp.websocket.http"
 local wsserial          = require "cp.websocket.serial"
 
@@ -25,6 +26,8 @@ local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
+local tableContains     = tools.tableContains
+local tableMatch        = tools.tableMatch
 
 local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
@@ -42,6 +45,11 @@ local uint8             = bytes.uint8
 -- Loupedeck's USB Vendor ID
 local LOUPEDECK_VENDOR_ID = 11970
 
+-- RAZER_VENDOR_ID -> number
+-- Constant
+-- Razer's USB Vendor ID
+local RAZER_VENDOR_ID = 0x1532
+
 -- LOUPEDECK_CT_ID -> number
 -- Constant
 -- Loupedeck CT USB Product ID
@@ -52,6 +60,16 @@ local LOUPEDECK_CT_ID = 3
 -- Loupedeck LIVE USB Product ID
 local LOUPEDECK_LIVE_ID = 4
 
+-- LOUPEDECK_LIVE_S_ID -> number
+-- Constant
+-- Loupedeck Live-S USB Product ID
+local LOUPEDECK_LIVE_S_ID = 0x0006
+
+-- RAZER_STREAM_CONTROLLER_ID -> number
+-- Constant
+-- Razer Stream Controller USB Product ID
+local RAZER_STREAM_CONTROLLER_ID = 0x0d06
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
@@ -60,8 +78,10 @@ mod.mt.__index = mod.mt
 --- Constant
 --- A table containing the device types.
 mod.deviceTypes = {
-    CT      = "Loupedeck CT",
-    LIVE    = "Loupedeck Live",
+    CT                          = "Loupedeck CT",
+    LIVE                        = "Loupedeck Live",
+    LIVE_S                      = "Loupedeck Live-S",
+    RAZER_STREAM_CONTROLLER     = "Razer Stream Controller",
 }
 
 --- hs.loupedeck:registerCallback([callbackFn]) -> number
@@ -300,28 +320,6 @@ function mod.mt:sendCommand(commandID, callbackFn, ...)
     return self:sendBytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...)
 end
 
--- tableContains(table, element) -> boolean
--- Function
--- Does a element exist in a table?
---
--- Parameters:
---  * table - the table you want to check
---  * element - the element you want to check for
---
--- Returns:
---  * Boolean
-local function tableContains(table, element)
-    if not table or not element then
-        return false
-    end
-    for _, value in pairs(table) do
-        if value == element then
-            return true
-        end
-    end
-    return false
-end
-
 --- hs.loupedeck:initaliseDevice() -> None
 --- Method
 --- Starts the background loop, performs self-test and resets screens and buttons.
@@ -343,9 +341,14 @@ function mod.mt:initaliseDevice()
 
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
-    self:updateScreenColor(mod.screens.left, b)
-    self:updateScreenColor(mod.screens.right, b)
-    self:updateScreenColor(mod.screens.middle, b)
+
+    if self.deviceType == mod.deviceTypes.LIVE_S then
+        self:updateScreenColor(mod.screens.live_s, b)
+    else
+        self:updateScreenColor(mod.screens.left, b)
+        self:updateScreenColor(mod.screens.middle, b)
+        self:updateScreenColor(mod.screens.right, b)
+    end
 
     if self.deviceType == mod.deviceTypes.CT then
         self:updateScreenColor(mod.screens.wheel, b)
@@ -585,87 +588,183 @@ local function convertWheelXandYtoButtonID(x, y)
     return button
 end
 
--- convertXandYtoButtonID(x, y) -> number
+-- convertXandYtoButtonID(x, y, deviceType) -> number
 -- Function
 -- Converts X and Y coordinates into a button ID for the middle touch screen.
 --
 -- Parameters:
 --  * x - The x-axis as a number
 --  * y - The y-axis as a number
+--  * deviceType - The device type.
 --
 -- Returns:
 --  * A button ID as a number. Left to right, top to bottom.
-local function convertXandYtoButtonID(x, y)
+local function convertXandYtoButtonID(x, y, deviceType)
     local button = 0
-    -- First Row:
-    if x >= 60 and x <= 140 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 1
+    if deviceType == mod.deviceTypes.LIVE_S then
+        -- Add in the x offset:
+        x = x + (30/2)
+
+        -- First Row:
+        if x >= 60 and x <= 140 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 1
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 6
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 11
+            end
         end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 5
+        -- Second Row:
+        if x >= 160 and x <= 230 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 2
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 7
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 12
+            end
         end
 
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 9
-        end
-    end
+        -- Third Row:
+        if x >= 240 and x <= 320 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 3
+            end
 
-    -- Second Row:
-    if x >= 160 and x <= 230 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 2
-        end
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 8
+            end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 6
-        end
-
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 10
-        end
-    end
-
-    -- Third Row:
-    if x >= 240 and x <= 320 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 3
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 13
+            end
         end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 7
+        -- Fourth Row:
+        if x >= 340 and x <= 390 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 4
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 9
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 14
+            end
         end
 
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 11
-        end
-    end
+        -- Five Row:
+        if x >= 410 and x <= 460 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 5
+            end
 
-    -- Fourth Row:
-    if x >= 340 and x <= 390 then
-        -- Top Row:
-        if y >= 0 and y <= 100 then
-            button = 4
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 10
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 15
+            end
+        end
+    else
+        -- First Row:
+        if x >= 60 and x <= 140 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 1
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 5
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 9
+            end
         end
 
-        -- Middle Row:
-        if y >= 110 and y <= 170 then
-            button = 8
+        -- Second Row:
+        if x >= 160 and x <= 230 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 2
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 6
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 10
+            end
         end
 
-        -- Bottom Row:
-        if y >= 200 and y <= 260 then
-            button = 12
+        -- Third Row:
+        if x >= 240 and x <= 320 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 3
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 7
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 11
+            end
+        end
+
+        -- Fourth Row:
+        if x >= 340 and x <= 390 then
+            -- Top Row:
+            if y >= 0 and y <= 100 then
+                button = 4
+            end
+
+            -- Middle Row:
+            if y >= 110 and y <= 170 then
+                button = 8
+            end
+
+            -- Bottom Row:
+            if y >= 200 and y <= 260 then
+                button = 12
+            end
         end
     end
     return button
@@ -765,7 +864,7 @@ mod.responseHandler = {
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
-        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        local buttonID = convertXandYtoButtonID(response.x, response.y, obj.deviceType)
         if buttonID > 0 then
             response.buttonID = buttonID
         end
@@ -792,7 +891,7 @@ mod.responseHandler = {
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
-        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        local buttonID = convertXandYtoButtonID(response.x, response.y, obj.deviceType)
         if buttonID > 0 then
             response.buttonID = buttonID
         end
@@ -1292,6 +1391,10 @@ mod.screens = {
         width = 240, height = 240,
         circular = true,
     },
+    live_s = {
+        id = 0x004D,
+        width = 480, height = 270,
+    },
 }
 
 --- hs.loupedeck:refreshScreen(screen[, callbackFn]) -> boolean
@@ -1357,6 +1460,37 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     --          command id
     --------------------------------------------------------------------------------
 
+    --------------------------------------------------------------------------------
+    -- The Razer Stream Controller only has one screen object, so we need to do
+    -- a bit of processing to convert it back into left, middle and right screens:
+    --------------------------------------------------------------------------------
+    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER then
+        if not frame then
+            frame = {}
+        end
+
+        if tableMatch(screen, mod.screens.left) then
+            frame.x = (frame.x or 0)
+            frame.w = frame.w or 60
+        elseif tableMatch(screen, mod.screens.middle) then
+            frame.x = (frame.x or 0) + 60
+            frame.w = frame.w or 360
+        elseif tableMatch(screen, mod.screens.right) then
+            frame.x = (frame.x or 0) + 60 + 360
+            frame.w = frame.w or 60
+        else
+            --------------------------------------------------------------------------------
+            -- The Razer Stream Controller doesn't have a wheel, so abort:
+            --------------------------------------------------------------------------------
+            return
+        end
+
+        screen = {}
+        screen.id       = 0x004D
+        screen.width    = 60 + 360 + 60
+        screen.height   = 270
+    end
+
     if type(frame) == "function" then
         callbackFn = frame
         frame = nil
@@ -1390,18 +1524,23 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     return false
 end
 
--- convertButtonIDtoXYCoordinates() -> buttonID
+-- convertButtonIDtoXYCoordinates(buttonID, deviceType) -> number, number
 -- Function
 -- Gets the X and Y coordinates of a specific button on the middle touch screen.
 --
 -- Parameters:
 --  * buttonID - A number between 1 and 12 (left to right, top to bottom).
+--  * deviceType - The device type.
 --
 -- Returns:
 --  * x - The x coordinates of the screen for the specific button as a number
 --  * y - The y coordinates of the screen for the specific button as a number
-local function convertButtonIDtoXYCoordinates(buttonID)
-    return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
+local function convertButtonIDtoXYCoordinates(buttonID, deviceType)
+    if deviceType == mod.deviceTypes.LIVE_S then
+        return (floor(((buttonID-1) % 5)) * 90) + (30/2), floor(((buttonID-1) / 5)) * 90
+    else
+        return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
+    end
 end
 
 --- hs.loupedeck:updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
@@ -1420,8 +1559,12 @@ end
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
 function mod.mt:updateScreenButtonImage(buttonID, imageBytes, callbackFn)
-    local x, y = convertButtonIDtoXYCoordinates(buttonID)
-    self:updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+    local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+    local theScreen = mod.screens.middle
+    if self.deviceType == mod.deviceTypes.LIVE_S then
+        theScreen = mod.screens.live_s
+    end
+    return self:updateScreenImage(theScreen, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
 end
 
 --- hs.loupedeck:updateKnobImage(knobID, imageBytes[, callbackFn]) -> boolean
@@ -1447,7 +1590,7 @@ function mod.mt:updateKnobImage(knobID, imageBytes, callbackFn)
     elseif knobID == 3 or knobID == 6 then
         y = 180
     end
-    self:updateScreenImage(whichScreen, imageBytes, {x=0, y=y, w=60,h=90}, callbackFn)
+    return self:updateScreenImage(whichScreen, imageBytes, {x=0, y=y, w=60,h=90}, callbackFn)
 end
 
 -- solidColorImage(width, height, color) -> string
@@ -1513,8 +1656,13 @@ end
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
 function mod.mt:updateScreenButtonColor(buttonID, color, callbackFn)
-    local x, y = convertButtonIDtoXYCoordinates(buttonID)
-    self:updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    if self.deviceType == mod.deviceTypes.LIVE_S then
+        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+        return self:updateScreenColor(mod.screens.live_s, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    else
+        local x, y = convertButtonIDtoXYCoordinates(buttonID, self.deviceType)
+        return self:updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    end
 end
 
 --- hs.loupedeck:updateScreenKnobColor(knobID, color[, callbackFn]) -> boolean
@@ -1540,7 +1688,7 @@ function mod.mt:updateScreenKnobColor(knobID, color, callbackFn)
     elseif knobID == 3 or knobID == 6 then
         y = 180
     end
-    self:updateScreenColor(whichScreen, color, {x=0, y=y, w=60,h=90}, callbackFn)
+    return self:updateScreenColor(whichScreen, color, {x=0, y=y, w=60,h=90}, callbackFn)
 end
 
 --- hs.loupedeck.buttonID -> table
@@ -1761,6 +1909,7 @@ function mod.mt:connect()
     local device = devices and devices[self.deviceNumber]
 
     if not device then
+        log.ef("Could not connect - no device")
         return
     end
 
@@ -1853,6 +2002,12 @@ end
 --- Returns:
 ---  * An IP address as a string, or `nil` if no device can be detected.
 function mod.findDevices(deviceType)
+
+    if not tableContains(mod.deviceTypes, deviceType) then
+        log.ef("[hs.loupedeck.findDevices] '%s' is not a valid device type.")
+        return
+    end
+
     --------------------------------------------------------------------------------
     -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
     --       the network interface name changed from "LOUPEDECK device" to
@@ -1891,7 +2046,13 @@ function mod.findDevices(deviceType)
     for _, portName in pairs(availablePortNames) do
         local portDetails = availablePortDetails[portName]
         if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
-            if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID) or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID) then
+            if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID)
+            or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID)
+            or (deviceType == mod.deviceTypes.LIVE_S and portDetails.idProduct == LOUPEDECK_LIVE_S_ID) then
+                table.insert(results, portName)
+            end
+        elseif portDetails and portDetails.idVendor and portDetails.idVendor == RAZER_VENDOR_ID then
+            if (deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER and portDetails.idProduct == RAZER_STREAM_CONTROLLER_ID) then
                 table.insert(results, portName)
             end
         end

@@ -109,6 +109,97 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.desktopPath() -> string
+--- Function
+--- Gets the users Desktop Path
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The path as a string.
+function tools.desktopPath()
+    return os.getenv("HOME") .. "/Desktop/"
+end
+
+--- cp.tools.urlToFilename(url) -> string
+--- Function
+--- Converts a URL to a filename.
+---
+--- Parameters:
+---  * url - The URL.
+---
+--- Returns:
+---  * The filename.
+function tools.urlToFilename(url)
+    local path = url:match("file://(.*)")
+    --------------------------------------------------------------------------------
+    -- Remove any URL encoding:
+    --------------------------------------------------------------------------------
+    return path:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+end
+
+--- cp.tools.fileLinesBackward() -> function
+--- Function
+--- An iterator function that reads a file backwards.
+---
+--- Parameters:
+---  * filename - The file to open in read only mode
+---
+--- Returns:
+---  * An iterator function
+---
+--- Notes:
+---  * This is similar to `io.lines`, but works in reverse.
+---  * Example Usage: `for line in cp.tools.fileLinesBackward("file") do print(line) end`
+function tools.fileLinesBackward(filename)
+    local file = assert(io.open(filename))
+    local chunkSize = 4*1024
+    local iterator = function() return "" end
+    local tail = ""
+    local chunkIndex = math.ceil(file:seek("end") / chunkSize)
+
+    return function()
+        while true do
+            local lineEOL, line = iterator()
+            if line and lineEOL and lineEOL ~= "" then
+                return line:reverse()
+            end
+            repeat
+                chunkIndex = chunkIndex - 1
+                if chunkIndex < 0 then
+                    file:close()
+                    iterator = function()
+                        error('No more lines in file "'..filename..'"', 3)
+                    end
+                    return
+                end
+                file:seek("set", chunkIndex * chunkSize)
+                local chunk = file:read(chunkSize)
+                local pattern = "^(.-"..(chunkIndex > 0 and "\n" or "")..")(.*)"
+                local newTail, lines = chunk:match(pattern)
+                iterator = lines and (lines..tail):reverse():gmatch"(\n?\r?([^\n]*))"
+                tail = newTail or chunk..tail
+            until iterator
+        end
+    end
+end
+
+--- cp.tools.between() -> boolean
+--- Function
+--- Is a value between the minimum and the maximum value?
+---
+--- Parameters:
+---  * value - the value to check
+---  * min - the minimum value
+---  * max - the maximum value
+---
+--- Returns:
+---  * A boolean
+function tools.between(value, min, max)
+  return value >= min and value <= max
+end
+
 --- cp.tools.appleScriptViaTask() -> none
 --- Function
 --- Triggers an AppleScript command via `hs.task` to avoid potential memory leaks in `hs.osascript.applescript`.

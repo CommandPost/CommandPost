@@ -236,6 +236,20 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         end
 
         --------------------------------------------------------------------------------
+        -- Get Project Timecode for Custom Naming:
+        --
+        -- NOTE: The leading edge should always work (unless Apple change something),
+        --       but we'll default back to the Viewer Timecode in the unlikely event
+        --       that we can't get the leading edge value for safety.
+        --------------------------------------------------------------------------------
+        local clipChildren = clip:attributeValue("AXChildren")
+        local leadingEdge = clipChildren and clipChildren[1]
+        local projectTimecode = leadingEdge and leadingEdge:attributeValue("AXValue") or fcp.viewer.timecode() or "00:00:00:00"
+        if projectTimecode:len() == ("00:00:00:00"):len() then
+            projectTimecode = projectTimecode:sub(1, 2) .. projectTimecode:sub(4, 5) .. projectTimecode:sub(7, 8) .. projectTimecode:sub(10, 11)
+        end
+
+        --------------------------------------------------------------------------------
         -- Mark Clip Range:
         --------------------------------------------------------------------------------
         if not isOnPrimaryStoryline then
@@ -352,6 +366,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                         -- Process variables:
                         --------------------------------------------------------------------------------
                         newFilename = string.gsub(newFilename, "{original}", clipName)
+                        newFilename = string.gsub(newFilename, "{projectTimecode}", projectTimecode)
                         newFilename = string.gsub(newFilename, "{yyyy}", os.date("%Y"))
                         newFilename = string.gsub(newFilename, "{yy}", os.date("%y"))
                         newFilename = string.gsub(newFilename, "{mm}", os.date("%m"))

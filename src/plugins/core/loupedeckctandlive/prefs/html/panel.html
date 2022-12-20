@@ -5,6 +5,10 @@
 <style>{(css/ct.css)}</style>
 {% elseif id == "loupedecklive" then %}
 <style>{(css/live.css)}</style>
+{% elseif id == "razerstreamcontroller" then %}
+<style>{(css/razerstreamcontroller.css)}</style>
+{% elseif id == "loupedecklives" then %}
+<style>{(css/live-s.css)}</style>
 {% end %}
 
 <script>
@@ -151,6 +155,9 @@
 				if (id == "10") { label = "Touch Button 10" }
 				if (id == "11") { label = "Touch Button 11" }
 				if (id == "12") { label = "Touch Button 12" }
+				if (id == "13") { label = "Touch Button 13" }
+				if (id == "14") { label = "Touch Button 14" }
+				if (id == "15") { label = "Touch Button 15" }
 			}
 			if (controlType == "knob") {
 				if (id == "1") { label = "Knob 1" }
@@ -190,7 +197,7 @@
 				if (id == "25") { label = "D"}
 				if (id == "26") { label = "E"}
 			}
-			{% elseif id == "loupedecklive" then %}
+			{% elseif id == "loupedecklive" or id == "razerstreamcontroller" then %}
 			if (controlType == "ledButton") {
 				if (id == "7") { label = "Home"}
 				if (id == "8") { label = "1"}
@@ -200,6 +207,13 @@
 				if (id == "12") { label = "5"}
 				if (id == "13") { label = "6"}
 				if (id == "14") { label = "7"}
+			}
+			{% elseif id == "loupedecklives" then %}
+			if (controlType == "ledButton") {
+				if (id == "7") { label = "Button 1"}
+				if (id == "8") { label = "Button 2"}
+				if (id == "9") { label = "Button 3"}
+				if (id == "10") { label = "Button 4"}
 			}
 			{% end %}
 
@@ -1546,7 +1560,7 @@
 						<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" draggable="false" />
 					</div>
 				</div>
-				{% elseif id == "loupedecklive" then %}
+				{% elseif id == "loupedecklive" or id == "razerstreamcontroller" then %}
 				<div id="loupedeckLive">
 					<div controlType="knob" controlID="1" id="knob1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
 						<img src="{{ insertImage('images/live/knob1.png') }}" width="41" height="41" />
@@ -1633,6 +1647,72 @@
 						<img src="{{ insertImage('images/live/ledButton8.png') }}" width="36" height="36" />
 					</div>
 				</div>
+				{% elseif id == "loupedecklives" then %}
+                <div id="loupedeckLiveS">
+                    <div id="knob1" controlType="knob" controlID="1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/knob1.png') }}" width="41" height="41" />
+                    </div>
+                    <div id="ledButton8" controlType="ledButton" controlID="8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/ledButton8.png') }}" width="35" height="34" />
+                    </div>
+                    <div id="touchButton1" controlType="touchButton" controlID="1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton1.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton2" controlType="touchButton" controlID="2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton2.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton3" controlType="touchButton" controlID="3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton3.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton4" controlType="touchButton" controlID="4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton4.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton5" controlType="touchButton" controlID="5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton5.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="knob2" controlType="knob" controlID="2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/knob2.png') }}" width="41" height="41" />
+                    </div>
+                    <div id="touchButton6" controlType="touchButton" controlID="6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton6.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton7" controlType="touchButton" controlID="7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton7.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton8" controlType="touchButton" controlID="8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton8.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton9" controlType="touchButton" controlID="9" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton9.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton10" controlType="touchButton" controlID="10" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton10.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="ledButton9" controlType="ledButton" controlID="9" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/ledButton9.png') }}" width="35" height="33" />
+                    </div>
+                    <div id="touchButton11" controlType="touchButton" controlID="11" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton11.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton12" controlType="touchButton" controlID="12" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton12.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton13" controlType="touchButton" controlID="13" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton13.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton14" controlType="touchButton" controlID="14" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton14.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="touchButton15" controlType="touchButton" controlID="15" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/touchButton15.png') }}" width="40" height="40" />
+                    </div>
+                    <div id="ledButton7" controlType="ledButton" controlID="7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/ledButton7.png') }}" width="41" height="37" />
+                    </div>
+                    <div id="ledButton10" controlType="ledButton" controlID="10" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+                        <img src="{{ insertImage('images/live-s/ledButton10.png') }}" width="35" height="37" />
+                    </div>
+                </div>
 				{% end %}
 			</th>
 			<th style="text-align:top; padding-top: 20px;">
@@ -1641,7 +1721,7 @@
 					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
 				</p>
 				<div id="loupedeckGroupControls" class="uiItem">
-					<table class="loupedeck" style="height: 545px;" id="noLoupedeck">
+					<table class="loupedeck" style="height: 560px;" id="noLoupedeck">
 						<tr>
 							<th>
 								<p style="font-size: 12px; font-weight: normal;">{* i18n("loupedeckCTStoreSettingsOnFlashDriveLineOne") *}</p>
@@ -1649,7 +1729,7 @@
 							</th>
 						</tr>
 					</table>
-					<table class="loupedeck" style="height: 545px; display: none;" id="yesLoupedeck">
+					<table class="loupedeck" style="height: 560px; display: none;" id="yesLoupedeck">
 
 						<!-- WHEEL MODES -->
 						<tr id ="wheelModes">
@@ -1960,17 +2040,32 @@
 								</div>
 							</td>
 							<td width="229px" style="vertical-align: top;" id="iconLabelB">
-								<textarea id="iconLabel" class="loupedeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea>
-								<a href="#" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
-								<select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
-									{%
-									for i=1, 200 do
-									%}
-									<option value="{{i}}">{{i}}px</option>
-									{%
-									end
-									%}
-								</select><input style="width: 53px;" id="fontColor" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
+								<table>
+								    <tr>
+								        <th>
+								            <textarea id="iconLabel" class="loupedeckActionTextbox" style="height: 60px; resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onkeyup="updateIconLabel()" onchange="updateIconLabel()"></textarea>
+								        </th>
+								    </tr>
+								    <tr>
+								        <th width="75px" style="font-weight: normal; !important;">
+								            <a href="#" class="button loupedeckActionButton" onclick="selectFont()">{{ i18n("selectFont") }}</a>
+								        </th>
+								        <th style="font-weight: normal !important;">
+                                            <select id="fontSize" style="width: 55px;" onchange="updateFontSize()">
+                                                {%
+                                                for i=1, 200 do
+                                                %}
+                                                <option value="{{i}}">{{i}}px</option>
+                                                {%
+                                                end
+                                                %}
+                                            </select>
+								        </th>
+								        <th style="font-weight: normal !important;">
+								            <input style="width: 53px;" id="fontColor" class="loupedeckActionTextbox jscolor {hash:false, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateFontColor()" value="">
+								        </th>
+								    <tr>
+								</table>
 							</td>
 							<td width="229px" id="wheelSnippetB" style="vertical-align:top;">
 								<input type="text" id="wheel_snippet_action" class="loupedeckActionTextbox" style="margin-bottom: 10px;" value="" disabled="" placeholder="{{ i18n("none") }}"><br />

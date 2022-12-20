@@ -124,6 +124,20 @@ function plugin.init(deps)
         keyStroke(m, action.character)
     end
 
+    local pressKeyAlternative = function(action)
+        local m = copy(action.modifiers)
+
+        --------------------------------------------------------------------------------
+        -- Inject modifier keys, if they've already been held down by a hold action:
+        --------------------------------------------------------------------------------
+        if mod.heldKeys["control"] == true then table.insert(m, "ctrl") end
+        if mod.heldKeys["option"] == true then table.insert(m, "alt") end
+        if mod.heldKeys["command"] == true then table.insert(m, "cmd") end
+        if mod.heldKeys["shift"] == true then table.insert(m, "shift") end
+
+        keyStroke(m, action.character, nil, true)
+    end
+
     local holdModifiers = function(mods)
         mod.startEventTap()
         for _, key in pairs(mods) do
@@ -139,6 +153,7 @@ function plugin.init(deps)
     end
 
     local actions = {
+        pressKeyAlternative = function(action) pressKeyAlternative(action) end,
         pressKey            = function(action) pressKey(action) end,
         systemKey           = function(action) pressSystemKey(action.key) end,
         pressTilda          = function() newKeyEvent("`", true):post() end,
@@ -210,6 +225,7 @@ function plugin.init(deps)
                 { description = "FUNCTION",                                                 label = "Fn", mods = {"fn"} },
             }
             local description = i18n("keyboardShortcutDescription")
+            local alternativeDescription = i18n("keyboardShortcutAlternativeDescription")
             for keycode, _ in pairs(keycodes.map) do
                 if type(keycode) == "string"
                 and keycode ~= ""
@@ -241,6 +257,38 @@ function plugin.init(deps)
                             :add(modifier.description .. " " .. i18n("and") .. " " .. keycode .. " (" .. modifier.label .. keycode .. ")")
                             :subText(description)
                             :params({
+                                character = keycode,
+                                modifiers = modifier.mods,
+                                id = modifier.label .. "_" .. keycode,
+                            })
+                            :id("global_shortcuts_" .. modifier.label .. "_" .. keycode)
+                            :image(icon)
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Alternative - No Modifier:
+                    --------------------------------------------------------------------------------
+                    choices
+                        :add(string.upper(keycode))
+                        :subText(alternativeDescription)
+                        :params({
+                            action = "pressKeyAlternative",
+                            character = keycode,
+                            modifiers = {},
+                            id = keycode,
+                        })
+                        :id("global_shortcuts_" .. keycode)
+                        :image(icon)
+
+                    --------------------------------------------------------------------------------
+                    -- Alternative - With Modifier(s):
+                    --------------------------------------------------------------------------------
+                    for _, modifier in pairs(modifiers) do
+                        choices
+                            :add(modifier.description .. " " .. i18n("and") .. " " .. keycode .. " (" .. modifier.label .. keycode .. ")")
+                            :subText(alternativeDescription)
+                            :params({
+                                action = "pressKeyAlternative",
                                 character = keycode,
                                 modifiers = modifier.mods,
                                 id = modifier.label .. "_" .. keycode,

@@ -49,12 +49,14 @@
 				params: {
 					type: actionType,
 					textEditor: document.getElementById("textEditor").value,
+					textEditorTwo: document.getElementById("textEditorTwo").value,
                     prefix: document.getElementById("prefix").value,
                     suffix: document.getElementById("suffix").value,
                     startOrEnd: document.getElementById("startOrEnd").value,
                     startWith: document.getElementById("startWith").value,
                     stepValue: document.getElementById("stepValue").value,
                     padding: document.getElementById("padding").value,
+                    duration: document.getElementById("duration").value,
 				},
 			}
 			postMessage(result);
@@ -111,6 +113,7 @@
 <p class="uiItem"><label><input type="checkbox" id="mergeWithExistingEvent" onchange="updateChecked(this)"> {{ i18n("mergeWithExistingEvent") }}</label></p>
 <p class="uiItem"><label><input type="checkbox" id="useTitleContentsInsteadOfTitleName" onchange="updateChecked(this)"> {{ i18n("useTitleContentsInsteadOfTitleName") }}</label></p>
 <p class="uiItem"><label><input type="checkbox" id="replaceCommasWithAlternativeCommas" onchange="updateChecked(this)"> {{ i18n("replaceCommasWithAlternativeCommas") }}</label></p>
+<p class="uiItem"><label><input type="checkbox" id="treatFavoriteAndRejectAsRatingsInsteadOfKeywords" onchange="updateChecked(this)"> {{ i18n("treatFavoriteAndRejectAsRatingsInsteadOfKeywords") }}</label></p>
 
 <table width="100%">
 	<tr>
@@ -133,8 +136,11 @@
 <br />
 <table width="100%" style="margin-left: 10px;">
 	<tr>
+		<th style="text-align: left; width: 700px;">
+            <textarea style="width: 680px;" id="textEditor" class="textEditor" onchange="doAction('update');"></textarea>
+		</th>
 		<th style="text-align: left;">
-            <textarea id="textEditor" class="textEditor" onchange="doAction('update');"></textarea>
+            <textarea style="width: 210px;" id="textEditorTwo" class="textEditor" onchange="doAction('update');"></textarea>
 		</th>
 	</tr>
 </table>
@@ -165,16 +171,19 @@
 		</th>
 	</tr>
 </table>
-<table style="margin-left: 10px;">
+<table style="margin-left: 10px; text-align:left;">
 	<tr>
 		<th style="width: 100px;">
 			<span class="label">{{ i18n("sequence") }}:</span>
 		</th>
-		<th>
+		<th style="width: 100px;">
 			<select id="startOrEnd" onchange="doAction('update');">
 				<option value="start">{{ i18n("start") }}</option>
 				<option value="end">{{ i18n("end") }}</option>
 			</select>
+		</th>
+		<th>
+		    <p class="uiItem" style="padding-left: 0px !important;"><label><input type="checkbox" id="addSpaceAfterSequence" onchange="updateChecked(this)"> {{ i18n("addSpaceAfterSequence") }}</label></p>
 		</th>
 	</tr>
 </table>
@@ -201,6 +210,16 @@
 		<th style="width: 13px;"></th>
 		<th>
 			<a href="#" class="bottomButton" style="width: 50px" onclick="doAction('addSequence')">{{ i18n("insert") }}</a>
+		</th>
+	</tr>
+</table>
+<table style="margin-left: 10px;">
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("duration") }}:</span>
+		</th>
+		<th style="width: 100px">
+			<input id="duration" class="rename" type="number" min="1" name="duration" style="width: 50px" onchange="doAction('update');" />
 		</th>
 	</tr>
 </table>

@@ -370,6 +370,7 @@ local function updateUI(params)
             document.getElementById("razer_orbweaver").style.display = "none";
             document.getElementById("razer_orbweaver_chroma").style.display = "none";
             document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_chroma").style.display = "none";
             document.getElementById("razer_tartarus_pro").style.display = "none";
             document.getElementById("razer_tartarus_v2").style.display = "none";
 
@@ -382,6 +383,7 @@ local function updateUI(params)
             document.getElementById("razer_orbweaver").style.display = "table";
             document.getElementById("razer_orbweaver_chroma").style.display = "none";
             document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_chroma").style.display = "none";
             document.getElementById("razer_tartarus_pro").style.display = "none";
             document.getElementById("razer_tartarus_v2").style.display = "none";
 
@@ -394,6 +396,7 @@ local function updateUI(params)
             document.getElementById("razer_orbweaver").style.display = "none";
             document.getElementById("razer_orbweaver_chroma").style.display = "table";
             document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_chroma").style.display = "none";
             document.getElementById("razer_tartarus_pro").style.display = "none";
             document.getElementById("razer_tartarus_v2").style.display = "none";
 
@@ -407,11 +410,25 @@ local function updateUI(params)
             document.getElementById("razer_orbweaver").style.display = "none";
             document.getElementById("razer_orbweaver_chroma").style.display = "none";
             document.getElementById("razer_tartarus").style.display = "table";
+            document.getElementById("razer_tartarus_chroma").style.display = "none";
             document.getElementById("razer_tartarus_pro").style.display = "none";
             document.getElementById("razer_tartarus_v2").style.display = "none";
 
             setStyleDisplayByClass("basicTartarusEffects", "none");
             setStyleDisplayByClass("extraTartarusEffects", "none");
+        ]]
+    elseif device == "Razer Tartarus Chroma" then
+        script = script .. [[
+            document.getElementById("razer_nostromo").style.display = "none";
+            document.getElementById("razer_orbweaver").style.display = "none";
+            document.getElementById("razer_orbweaver_chroma").style.display = "none";
+            document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_chroma").style.display = "table";
+            document.getElementById("razer_tartarus_pro").style.display = "none";
+            document.getElementById("razer_tartarus_v2").style.display = "none";
+
+            setStyleDisplayByClass("basicTartarusEffects", "inline-block");
+            setStyleDisplayByClass("extraTartarusEffects", "inline-block");
         ]]
     elseif device == "Razer Tartarus Pro" then
         script = script .. [[
@@ -419,6 +436,7 @@ local function updateUI(params)
             document.getElementById("razer_orbweaver").style.display = "none";
             document.getElementById("razer_orbweaver_chroma").style.display = "none";
             document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_chroma").style.display = "none";
             document.getElementById("razer_tartarus_pro").style.display = "table";
             document.getElementById("razer_tartarus_v2").style.display = "none";
 
@@ -431,6 +449,7 @@ local function updateUI(params)
             document.getElementById("razer_orbweaver").style.display = "none";
             document.getElementById("razer_orbweaver_chroma").style.display = "none";
             document.getElementById("razer_tartarus").style.display = "none";
+            document.getElementById("razer_tartarus_chroma").style.display = "none";
             document.getElementById("razer_tartarus_pro").style.display = "none";
             document.getElementById("razer_tartarus_v2").style.display = "table";
 
@@ -1233,13 +1252,24 @@ local function razerPanelCallback(id, params)
 
                 local data = items[device] and items[device][app]
                 if data then
+                    --------------------------------------------------------------------------------
+                    -- Don't replace the display name:
+                    --------------------------------------------------------------------------------
+                    local originalDisplayName = items[device][destinationApp].displayName
                     items[device][destinationApp] = fnutils.copy(data)
+                    items[device][destinationApp].displayName = originalDisplayName
+
                     mod.items(items)
 
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware (and trash the LED cache):
                     --------------------------------------------------------------------------------
                     mod._razerManager.refresh(true)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the UI:
+                    --------------------------------------------------------------------------------
+                    mod._manager.refresh()
                 end
             end
 
@@ -1584,6 +1614,8 @@ function plugin.init(deps, env)
     mod._panel          =  deps.manager.addPanel({
         priority        = 2032.3,
         id              = "razer",
+        group           = "razer",
+        groupMaster     = true,
         label           = i18n("razer"),
         image           = imageFromPath(env:pathToAbsolute("/images/razerIcon.png")),
         tooltip         = i18n("razerDevices"),
@@ -1842,6 +1874,13 @@ function plugin.init(deps, env)
                                         options = {
                                             { value = "Off",              label = i18n("off") },
                                             { value = "User Defined",     label = i18n("userDefined") },
+                                            { value = "Static",           label = i18n("static") },
+                                        }
+                                    elseif device == "Razer Tartarus Chroma" then
+                                        options = {
+                                            { value = "Off",              label = i18n("off") },
+                                            { value = "Breathing",        label = i18n("breathing") },
+                                            { value = "Spectrum",         label = i18n("spectrum") },
                                             { value = "Static",           label = i18n("static") },
                                         }
                                     end

@@ -1,1161 +1,4 @@
 {
-  "Razer Orbweaver" : {
-    "com.adobe.AfterEffects" : {
-      "ignore" : true
-    },
-    "com.apple.motionapp" : {
-      "ignore" : true
-    },
-    "com.apple.finder" : {
-      "ignore" : true
-    },
-    "com.apple.systempreferences" : {
-      "ignore" : true
-    },
-    "com.ecamm.EcammLive" : {
-      "ignore" : true
-    },
-    "com.blackmagic-design.DaVinciResolve" : {
-      "ignore" : true
-    },
-    "All Applications" : {
-      "7" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          }
-        }
-      },
-      "3" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          }
-        }
-      },
-      "4" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          }
-        }
-      },
-      "5" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          }
-        }
-      },
-      "1" : {
-        "button" : {
-          "7" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "7",
-                "character" : "7",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "7",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          },
-          "3" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "3",
-                "character" : "3",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "3",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "8" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "8",
-                "character" : "8",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "8",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "4" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "4",
-                "character" : "4",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "4",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "9" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "9",
-                "character" : "9",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "9",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "5" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "5",
-                "character" : "5",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "5",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "1" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "1",
-                "character" : "1",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "1",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "6" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "6",
-                "character" : "6",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "6",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "2" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "2",
-                "character" : "2",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "2",
-              "handlerID" : "global_shortcuts"
-            }
-          }
-        }
-      },
-      "6" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          }
-        }
-      },
-      "2" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Orbweaver",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Orbweaver Bank",
-              "handlerID" : "global_razerorbweaver_banks"
-            }
-          }
-        }
-      }
-    },
-    "com.microsoft.teams" : {
-      "ignore" : true
-    },
-    "com.apple.FinalCut" : {
-      "ignore" : true
-    },
-    "org.latenitefilms.CommandPost" : {
-      "ignore" : true
-    },
-    "com.apple.DiskUtility" : {
-      "ignore" : true
-    },
-    "us.zoom.xos" : {
-      "ignore" : true
-    },
-    "com.apple.Compressor" : {
-      "ignore" : true
-    },
-    "com.apple.TextEdit" : {
-      "ignore" : true
-    }
-  },
-  "Razer Tartarus Pro" : {
-    "com.adobe.AfterEffects" : {
-      "ignore" : true
-    },
-    "com.apple.motionapp" : {
-      "ignore" : true
-    },
-    "com.apple.finder" : {
-      "ignore" : true
-    },
-    "com.apple.systempreferences" : {
-      "ignore" : true
-    },
-    "com.ecamm.EcammLive" : {
-      "ignore" : true
-    },
-    "com.blackmagic-design.DaVinciResolve" : {
-      "ignore" : true
-    },
-    "All Applications" : {
-      "7" : {
-        "button" : {
-          "20" : {
-            "led" : "001aff"
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "led" : "2bff00"
-          }
-        }
-      },
-      "3" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "led" : "11ff00"
-          }
-        }
-      },
-      "4" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "led" : "1900ff"
-          }
-        }
-      },
-      "5" : {
-        "button" : {
-          "20" : {
-            "led" : "00ff00"
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "led" : "ffa200"
-          }
-        }
-      },
-      "1" : {
-        "button" : {
-          "7" : {
-            "led" : "ffe600",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "7",
-                "character" : "7",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "7",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          },
-          "3" : {
-            "led" : "00ff11",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "3",
-                "character" : "3",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "3",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "8" : {
-            "led" : "33ff00",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "8",
-                "character" : "8",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "8",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "4" : {
-            "led" : "00c3ff",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "4",
-                "character" : "4",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "4",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "9" : {
-            "led" : "00ccff",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "9",
-                "character" : "9",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "9",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "5" : {
-            "led" : "c300ff",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "5",
-                "character" : "5",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "5",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "1" : {
-            "led" : "ff0000",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "1",
-                "character" : "1",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "1",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "6" : {
-            "led" : "ff0000",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "6",
-                "character" : "6",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "6",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "2" : {
-            "led" : "ffee00",
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "2",
-                "character" : "2",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "2",
-              "handlerID" : "global_shortcuts"
-            }
-          }
-        }
-      },
-      "6" : {
-        "button" : {
-          "20" : {
-            "led" : "004cff"
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "led" : "ffa200"
-          }
-        }
-      },
-      "2" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus Pro",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Pro Bank",
-              "handlerID" : "global_razertartaruspro_banks"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "led" : "ff8000"
-          }
-        }
-      }
-    },
-    "com.microsoft.teams" : {
-      "ignore" : true
-    },
-    "com.apple.FinalCut" : {
-      "ignore" : true
-    },
-    "org.latenitefilms.CommandPost" : {
-      "ignore" : true
-    },
-    "com.apple.DiskUtility" : {
-      "ignore" : true
-    },
-    "us.zoom.xos" : {
-      "ignore" : true
-    },
-    "com.apple.Compressor" : {
-      "ignore" : true
-    },
-    "com.apple.TextEdit" : {
-      "ignore" : true
-    }
-  },
-  "Razer Tartarus" : {
-    "com.adobe.AfterEffects" : {
-      "ignore" : true
-    },
-    "com.apple.motionapp" : {
-      "ignore" : true
-    },
-    "com.apple.finder" : {
-      "ignore" : true
-    },
-    "com.apple.systempreferences" : {
-      "ignore" : true
-    },
-    "com.ecamm.EcammLive" : {
-      "ignore" : true
-    },
-    "com.blackmagic-design.DaVinciResolve" : {
-      "ignore" : true
-    },
-    "All Applications" : {
-      "7" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          }
-        }
-      },
-      "3" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          }
-        }
-      },
-      "4" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          }
-        }
-      },
-      "5" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          }
-        }
-      },
-      "1" : {
-        "button" : {
-          "7" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "7",
-                "character" : "7",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "7",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          },
-          "3" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "3",
-                "character" : "3",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "3",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "8" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "8",
-                "character" : "8",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "8",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "4" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "4",
-                "character" : "4",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "4",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "9" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "9",
-                "character" : "9",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "9",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "5" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "5",
-                "character" : "5",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "5",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "1" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "1",
-                "character" : "1",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "1",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "6" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "6",
-                "character" : "6",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "6",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "2" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "2",
-                "character" : "2",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "2",
-              "handlerID" : "global_shortcuts"
-            }
-          }
-        }
-      },
-      "6" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          }
-        }
-      },
-      "2" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Tartarus",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Tartarus Bank",
-              "handlerID" : "global_razertartarus_banks"
-            }
-          }
-        }
-      }
-    },
-    "com.microsoft.teams" : {
-      "ignore" : true
-    },
-    "com.apple.FinalCut" : {
-      "ignore" : true
-    },
-    "org.latenitefilms.CommandPost" : {
-      "ignore" : true
-    },
-    "com.apple.DiskUtility" : {
-      "ignore" : true
-    },
-    "us.zoom.xos" : {
-      "ignore" : true
-    },
-    "com.apple.Compressor" : {
-      "ignore" : true
-    },
-    "com.apple.TextEdit" : {
-      "ignore" : true
-    }
-  },
-  "Razer Nostromo" : {
-    "com.apple.FinalCut" : {
-      "ignore" : true
-    },
-    "com.adobe.AfterEffects" : {
-      "ignore" : true
-    },
-    "com.apple.motionapp" : {
-      "ignore" : true
-    },
-    "com.apple.Safari" : [
-
-    ],
-    "com.apple.finder" : {
-      "ignore" : true
-    },
-    "com.apple.systempreferences" : {
-      "ignore" : true
-    },
-    "com.blackmagic-design.DaVinciResolve" : {
-      "ignore" : true
-    },
-    "com.ecamm.EcammLive" : {
-      "ignore" : true
-    },
-    "All Applications" : {
-      "7" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          }
-        }
-      },
-      "3" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          }
-        }
-      },
-      "4" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          }
-        }
-      },
-      "5" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          }
-        }
-      },
-      "1" : {
-        "button" : {
-          "7" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "7",
-                "character" : "7",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "7",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          },
-          "3" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "3",
-                "character" : "3",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "3",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "8" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "8",
-                "character" : "8",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "8",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "4" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "4",
-                "character" : "4",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "4",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "9" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "9",
-                "character" : "9",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "9",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "5" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "5",
-                "character" : "5",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "5",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "1" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "1",
-                "character" : "1",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "1",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "6" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "6",
-                "character" : "6",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "6",
-              "handlerID" : "global_shortcuts"
-            }
-          },
-          "2" : {
-            "pressActionRepeat" : true,
-            "pressAction" : {
-              "action" : {
-                "id" : "2",
-                "character" : "2",
-                "modifiers" : [
-
-                ]
-              },
-              "actionTitle" : "2",
-              "handlerID" : "global_shortcuts"
-            }
-          }
-        },
-        "scrollWheel" : {
-          "1" : {
-            "pressAction" : [
-
-            ],
-            "scrollDownAction" : {
-              "action" : {
-                "amount" : -1,
-                "y" : -1,
-                "modifiers" : [
-
-                ],
-                "x" : 0,
-                "mode" : "scroll",
-                "unit" : "line"
-              },
-              "actionTitle" : "Mouse Scroll Wheel - 1 Line Down",
-              "handlerID" : "global_mouse"
-            },
-            "scrollUpAction" : {
-              "action" : {
-                "amount" : 1,
-                "y" : 1,
-                "modifiers" : [
-
-                ],
-                "x" : 0,
-                "mode" : "scroll",
-                "unit" : "line"
-              },
-              "actionTitle" : "Mouse Scroll Wheel - 1 Line Up",
-              "handlerID" : "global_mouse"
-            }
-          }
-        }
-      },
-      "6" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          }
-        }
-      },
-      "2" : {
-        "button" : {
-          "Mode" : {
-            "pressAction" : {
-              "action" : {
-                "deviceName" : "Razer Nostromo",
-                "id" : "next"
-              },
-              "actionTitle" : "Next Razer Nostromo Bank",
-              "handlerID" : "global_razernostromo_banks"
-            }
-          }
-        }
-      }
-    },
-    "org.latenitefilms.CommandPost" : {
-      "ignore" : true
-    },
-    "com.microsoft.teams" : {
-      "ignore" : true
-    },
-    "com.lastpass.lastpassmacdesktop" : [
-
-    ],
-    "us.zoom.xos" : {
-      "ignore" : true
-    },
-    "com.apple.DiskUtility" : {
-      "ignore" : true
-    },
-    "com.apple.Compressor" : {
-      "ignore" : true
-    },
-    "com.apple.TextEdit" : {
-      "ignore" : true
-    }
-  },
   "Razer Tartarus V2" : {
     "com.adobe.AfterEffects" : {
       "ignore" : true
@@ -1169,10 +12,10 @@
     "com.apple.systempreferences" : {
       "ignore" : true
     },
-    "com.ecamm.EcammLive" : {
+    "com.blackmagic-design.DaVinciResolve" : {
       "ignore" : true
     },
-    "com.blackmagic-design.DaVinciResolve" : {
+    "com.ecamm.EcammLive" : {
       "ignore" : true
     },
     "All Applications" : {
@@ -1265,8 +108,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "7",
                 "character" : "7",
+                "id" : "7",
                 "modifiers" : [
 
                 ]
@@ -1290,8 +133,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "3",
                 "character" : "3",
+                "id" : "3",
                 "modifiers" : [
 
                 ]
@@ -1305,8 +148,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "8",
                 "character" : "8",
+                "id" : "8",
                 "modifiers" : [
 
                 ]
@@ -1320,8 +163,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "4",
                 "character" : "4",
+                "id" : "4",
                 "modifiers" : [
 
                 ]
@@ -1335,8 +178,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "9",
                 "character" : "9",
+                "id" : "9",
                 "modifiers" : [
 
                 ]
@@ -1350,8 +193,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "5",
                 "character" : "5",
+                "id" : "5",
                 "modifiers" : [
 
                 ]
@@ -1365,8 +208,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "1",
                 "character" : "1",
+                "id" : "1",
                 "modifiers" : [
 
                 ]
@@ -1380,8 +223,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "6",
                 "character" : "6",
+                "id" : "6",
                 "modifiers" : [
 
                 ]
@@ -1398,8 +241,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "2",
                 "character" : "2",
+                "id" : "2",
                 "modifiers" : [
 
                 ]
@@ -1452,19 +295,1128 @@
         }
       }
     },
-    "com.microsoft.teams" : {
+    "org.latenitefilms.CommandPost" : {
       "ignore" : true
     },
     "com.apple.FinalCut" : {
-      "ignore" : true
-    },
-    "org.latenitefilms.CommandPost" : {
       "ignore" : true
     },
     "com.apple.DiskUtility" : {
       "ignore" : true
     },
     "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
+      "ignore" : true
+    },
+    "com.apple.Compressor" : {
+      "ignore" : true
+    },
+    "com.apple.TextEdit" : {
+      "ignore" : true
+    }
+  },
+  "Razer Tartarus Chroma" : {
+    "com.adobe.AfterEffects" : {
+      "ignore" : true
+    },
+    "com.apple.motionapp" : {
+      "ignore" : true
+    },
+    "com.apple.finder" : {
+      "ignore" : true
+    },
+    "com.apple.systempreferences" : {
+      "ignore" : true
+    },
+    "com.blackmagic-design.DaVinciResolve" : {
+      "ignore" : true
+    },
+    "com.ecamm.EcammLive" : {
+      "ignore" : true
+    },
+    "All Applications" : {
+      "7" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          }
+        }
+      },
+      "3" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          }
+        }
+      },
+      "4" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          }
+        }
+      },
+      "5" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          }
+        }
+      },
+      "1" : {
+        "button" : {
+          "7" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "7",
+                "id" : "7",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "7",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          },
+          "3" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "3",
+                "id" : "3",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "3",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "8" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "8",
+                "id" : "8",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "8",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "4" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "4",
+                "id" : "4",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "4",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "9" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "9",
+                "id" : "9",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "9",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "5" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "5",
+                "id" : "5",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "5",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "1" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "1",
+                "id" : "1",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "1",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "6" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "6",
+                "id" : "6",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "6",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "2" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "2",
+                "id" : "2",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "2",
+              "handlerID" : "global_shortcuts"
+            }
+          }
+        }
+      },
+      "6" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          }
+        }
+      },
+      "2" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "id" : "next",
+                "deviceName" : "Razer Tartarus Chroma"
+              },
+              "actionTitle" : "Next Razer Tartarus Chroma Bank",
+              "handlerID" : "global_razertartaruschroma_banks"
+            }
+          }
+        }
+      }
+    },
+    "org.latenitefilms.CommandPost" : {
+      "ignore" : true
+    },
+    "com.apple.FinalCut" : {
+      "ignore" : true
+    },
+    "com.apple.DiskUtility" : {
+      "ignore" : true
+    },
+    "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
+      "ignore" : true
+    },
+    "com.apple.Compressor" : {
+      "ignore" : true
+    },
+    "com.apple.TextEdit" : {
+      "ignore" : true
+    }
+  },
+  "Razer Orbweaver" : {
+    "com.adobe.AfterEffects" : {
+      "ignore" : true
+    },
+    "com.apple.motionapp" : {
+      "ignore" : true
+    },
+    "com.apple.finder" : {
+      "ignore" : true
+    },
+    "com.apple.systempreferences" : {
+      "ignore" : true
+    },
+    "com.blackmagic-design.DaVinciResolve" : {
+      "ignore" : true
+    },
+    "com.ecamm.EcammLive" : {
+      "ignore" : true
+    },
+    "All Applications" : {
+      "7" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          }
+        }
+      },
+      "3" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          }
+        }
+      },
+      "4" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          }
+        }
+      },
+      "5" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          }
+        }
+      },
+      "1" : {
+        "button" : {
+          "7" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "7",
+                "id" : "7",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "7",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          },
+          "3" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "3",
+                "id" : "3",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "3",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "8" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "8",
+                "id" : "8",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "8",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "4" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "4",
+                "id" : "4",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "4",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "9" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "9",
+                "id" : "9",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "9",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "5" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "5",
+                "id" : "5",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "5",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "1" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "1",
+                "id" : "1",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "1",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "6" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "6",
+                "id" : "6",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "6",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "2" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "2",
+                "id" : "2",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "2",
+              "handlerID" : "global_shortcuts"
+            }
+          }
+        }
+      },
+      "6" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          }
+        }
+      },
+      "2" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Orbweaver",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Orbweaver Bank",
+              "handlerID" : "global_razerorbweaver_banks"
+            }
+          }
+        }
+      }
+    },
+    "org.latenitefilms.CommandPost" : {
+      "ignore" : true
+    },
+    "com.apple.FinalCut" : {
+      "ignore" : true
+    },
+    "com.apple.DiskUtility" : {
+      "ignore" : true
+    },
+    "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
+      "ignore" : true
+    },
+    "com.apple.Compressor" : {
+      "ignore" : true
+    },
+    "com.apple.TextEdit" : {
+      "ignore" : true
+    }
+  },
+  "Razer Tartarus" : {
+    "com.adobe.AfterEffects" : {
+      "ignore" : true
+    },
+    "com.apple.motionapp" : {
+      "ignore" : true
+    },
+    "com.apple.finder" : {
+      "ignore" : true
+    },
+    "com.apple.systempreferences" : {
+      "ignore" : true
+    },
+    "com.blackmagic-design.DaVinciResolve" : {
+      "ignore" : true
+    },
+    "com.ecamm.EcammLive" : {
+      "ignore" : true
+    },
+    "All Applications" : {
+      "7" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          }
+        }
+      },
+      "3" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          }
+        }
+      },
+      "4" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          }
+        }
+      },
+      "5" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          }
+        }
+      },
+      "1" : {
+        "button" : {
+          "7" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "7",
+                "id" : "7",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "7",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          },
+          "3" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "3",
+                "id" : "3",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "3",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "8" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "8",
+                "id" : "8",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "8",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "4" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "4",
+                "id" : "4",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "4",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "9" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "9",
+                "id" : "9",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "9",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "5" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "5",
+                "id" : "5",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "5",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "1" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "1",
+                "id" : "1",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "1",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "6" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "6",
+                "id" : "6",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "6",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "2" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "2",
+                "id" : "2",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "2",
+              "handlerID" : "global_shortcuts"
+            }
+          }
+        }
+      },
+      "6" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          }
+        }
+      },
+      "2" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Bank",
+              "handlerID" : "global_razertartarus_banks"
+            }
+          }
+        }
+      }
+    },
+    "org.latenitefilms.CommandPost" : {
+      "ignore" : true
+    },
+    "com.apple.FinalCut" : {
+      "ignore" : true
+    },
+    "com.apple.DiskUtility" : {
+      "ignore" : true
+    },
+    "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
+      "ignore" : true
+    },
+    "com.apple.Compressor" : {
+      "ignore" : true
+    },
+    "com.apple.TextEdit" : {
+      "ignore" : true
+    }
+  },
+  "Razer Nostromo" : {
+    "com.lastpass.lastpassmacdesktop" : [
+
+    ],
+    "com.adobe.AfterEffects" : {
+      "ignore" : true
+    },
+    "com.apple.motionapp" : {
+      "ignore" : true
+    },
+    "com.apple.Safari" : [
+
+    ],
+    "com.apple.finder" : {
+      "ignore" : true
+    },
+    "com.apple.systempreferences" : {
+      "ignore" : true
+    },
+    "com.blackmagic-design.DaVinciResolve" : {
+      "ignore" : true
+    },
+    "com.ecamm.EcammLive" : {
+      "ignore" : true
+    },
+    "All Applications" : {
+      "7" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          }
+        }
+      },
+      "3" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          }
+        }
+      },
+      "4" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          }
+        }
+      },
+      "5" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          }
+        }
+      },
+      "1" : {
+        "button" : {
+          "7" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "7",
+                "id" : "7",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "7",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          },
+          "3" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "3",
+                "id" : "3",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "3",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "8" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "8",
+                "id" : "8",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "8",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "4" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "4",
+                "id" : "4",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "4",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "9" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "9",
+                "id" : "9",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "9",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "5" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "5",
+                "id" : "5",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "5",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "1" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "1",
+                "id" : "1",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "1",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "6" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "6",
+                "id" : "6",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "6",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "2" : {
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "2",
+                "id" : "2",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "2",
+              "handlerID" : "global_shortcuts"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "scrollUpAction" : {
+              "action" : {
+                "y" : 1,
+                "amount" : 1,
+                "modifiers" : [
+
+                ],
+                "x" : 0,
+                "unit" : "line",
+                "mode" : "scroll"
+              },
+              "actionTitle" : "Mouse Scroll Wheel - 1 Line Up",
+              "handlerID" : "global_mouse"
+            },
+            "scrollDownAction" : {
+              "action" : {
+                "y" : -1,
+                "amount" : -1,
+                "modifiers" : [
+
+                ],
+                "x" : 0,
+                "unit" : "line",
+                "mode" : "scroll"
+              },
+              "actionTitle" : "Mouse Scroll Wheel - 1 Line Down",
+              "handlerID" : "global_mouse"
+            },
+            "pressAction" : [
+
+            ]
+          }
+        }
+      },
+      "6" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          }
+        }
+      },
+      "2" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Nostromo",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Nostromo Bank",
+              "handlerID" : "global_razernostromo_banks"
+            }
+          }
+        }
+      }
+    },
+    "org.latenitefilms.CommandPost" : {
+      "ignore" : true
+    },
+    "com.apple.FinalCut" : {
+      "ignore" : true
+    },
+    "com.apple.DiskUtility" : {
+      "ignore" : true
+    },
+    "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
       "ignore" : true
     },
     "com.apple.Compressor" : {
@@ -1487,10 +1439,10 @@
     "com.apple.systempreferences" : {
       "ignore" : true
     },
-    "com.ecamm.EcammLive" : {
+    "com.blackmagic-design.DaVinciResolve" : {
       "ignore" : true
     },
-    "com.blackmagic-design.DaVinciResolve" : {
+    "com.ecamm.EcammLive" : {
       "ignore" : true
     },
     "All Applications" : {
@@ -1499,8 +1451,8 @@
           "Mode" : {
             "pressAction" : {
               "action" : {
-                "id" : "next",
-                "deviceName" : "Razer Orbweaver Chroma"
+                "deviceName" : "Razer Orbweaver Chroma",
+                "id" : "next"
               },
               "actionTitle" : "Next Razer Orbweaver Chroma Bank",
               "handlerID" : "global_razerorbweaverchroma_banks"
@@ -1513,8 +1465,8 @@
           "Mode" : {
             "pressAction" : {
               "action" : {
-                "id" : "next",
-                "deviceName" : "Razer Orbweaver Chroma"
+                "deviceName" : "Razer Orbweaver Chroma",
+                "id" : "next"
               },
               "actionTitle" : "Next Razer Orbweaver Chroma Bank",
               "handlerID" : "global_razerorbweaverchroma_banks"
@@ -1541,8 +1493,8 @@
           "Mode" : {
             "pressAction" : {
               "action" : {
-                "id" : "next",
-                "deviceName" : "Razer Orbweaver Chroma"
+                "deviceName" : "Razer Orbweaver Chroma",
+                "id" : "next"
               },
               "actionTitle" : "Next Razer Orbweaver Chroma Bank",
               "handlerID" : "global_razerorbweaverchroma_banks"
@@ -1557,8 +1509,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "7",
                 "character" : "7",
+                "id" : "7",
                 "modifiers" : [
 
                 ]
@@ -1570,8 +1522,8 @@
           "Mode" : {
             "pressAction" : {
               "action" : {
-                "id" : "next",
-                "deviceName" : "Razer Orbweaver Chroma"
+                "deviceName" : "Razer Orbweaver Chroma",
+                "id" : "next"
               },
               "actionTitle" : "Next Razer Orbweaver Chroma Bank",
               "handlerID" : "global_razerorbweaverchroma_banks"
@@ -1582,8 +1534,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "3",
                 "character" : "3",
+                "id" : "3",
                 "modifiers" : [
 
                 ]
@@ -1597,8 +1549,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "8",
                 "character" : "8",
+                "id" : "8",
                 "modifiers" : [
 
                 ]
@@ -1611,8 +1563,8 @@
             "led" : "0091ff",
             "pressAction" : {
               "action" : {
-                "id" : "4",
                 "character" : "4",
+                "id" : "4",
                 "modifiers" : [
 
                 ]
@@ -1626,8 +1578,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "9",
                 "character" : "9",
+                "id" : "9",
                 "modifiers" : [
 
                 ]
@@ -1641,8 +1593,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "5",
                 "character" : "5",
+                "id" : "5",
                 "modifiers" : [
 
                 ]
@@ -1656,8 +1608,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "1",
                 "character" : "1",
+                "id" : "1",
                 "modifiers" : [
 
                 ]
@@ -1670,8 +1622,8 @@
             "led" : "ff0000",
             "pressAction" : {
               "action" : {
-                "id" : "6",
                 "character" : "6",
+                "id" : "6",
                 "modifiers" : [
 
                 ]
@@ -1685,8 +1637,8 @@
             "pressActionRepeat" : true,
             "pressAction" : {
               "action" : {
-                "id" : "2",
                 "character" : "2",
+                "id" : "2",
                 "modifiers" : [
 
                 ]
@@ -1726,19 +1678,334 @@
         }
       }
     },
-    "com.microsoft.teams" : {
+    "org.latenitefilms.CommandPost" : {
       "ignore" : true
     },
     "com.apple.FinalCut" : {
-      "ignore" : true
-    },
-    "org.latenitefilms.CommandPost" : {
       "ignore" : true
     },
     "com.apple.DiskUtility" : {
       "ignore" : true
     },
     "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
+      "ignore" : true
+    },
+    "com.apple.Compressor" : {
+      "ignore" : true
+    },
+    "com.apple.TextEdit" : {
+      "ignore" : true
+    }
+  },
+  "Razer Tartarus Pro" : {
+    "com.adobe.AfterEffects" : {
+      "ignore" : true
+    },
+    "com.apple.motionapp" : {
+      "ignore" : true
+    },
+    "com.apple.finder" : {
+      "ignore" : true
+    },
+    "com.apple.systempreferences" : {
+      "ignore" : true
+    },
+    "com.blackmagic-design.DaVinciResolve" : {
+      "ignore" : true
+    },
+    "com.ecamm.EcammLive" : {
+      "ignore" : true
+    },
+    "All Applications" : {
+      "7" : {
+        "button" : {
+          "20" : {
+            "led" : "001aff"
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "led" : "2bff00"
+          }
+        }
+      },
+      "3" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "led" : "11ff00"
+          }
+        }
+      },
+      "4" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "led" : "1900ff"
+          }
+        }
+      },
+      "5" : {
+        "button" : {
+          "20" : {
+            "led" : "00ff00"
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "led" : "ffa200"
+          }
+        }
+      },
+      "1" : {
+        "button" : {
+          "7" : {
+            "led" : "ffe600",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "7",
+                "id" : "7",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "7",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          },
+          "3" : {
+            "led" : "00ff11",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "3",
+                "id" : "3",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "3",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "8" : {
+            "led" : "33ff00",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "8",
+                "id" : "8",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "8",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "4" : {
+            "led" : "00c3ff",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "4",
+                "id" : "4",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "4",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "9" : {
+            "led" : "00ccff",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "9",
+                "id" : "9",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "9",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "5" : {
+            "led" : "c300ff",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "5",
+                "id" : "5",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "5",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "1" : {
+            "led" : "ff0000",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "1",
+                "id" : "1",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "1",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "6" : {
+            "led" : "ff0000",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "6",
+                "id" : "6",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "6",
+              "handlerID" : "global_shortcuts"
+            }
+          },
+          "2" : {
+            "led" : "ffee00",
+            "pressActionRepeat" : true,
+            "pressAction" : {
+              "action" : {
+                "character" : "2",
+                "id" : "2",
+                "modifiers" : [
+
+                ]
+              },
+              "actionTitle" : "2",
+              "handlerID" : "global_shortcuts"
+            }
+          }
+        }
+      },
+      "6" : {
+        "button" : {
+          "20" : {
+            "led" : "004cff"
+          },
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "led" : "ffa200"
+          }
+        }
+      },
+      "2" : {
+        "button" : {
+          "Mode" : {
+            "pressAction" : {
+              "action" : {
+                "deviceName" : "Razer Tartarus Pro",
+                "id" : "next"
+              },
+              "actionTitle" : "Next Razer Tartarus Pro Bank",
+              "handlerID" : "global_razertartaruspro_banks"
+            }
+          }
+        },
+        "scrollWheel" : {
+          "1" : {
+            "led" : "ff8000"
+          }
+        }
+      }
+    },
+    "org.latenitefilms.CommandPost" : {
+      "ignore" : true
+    },
+    "com.apple.FinalCut" : {
+      "ignore" : true
+    },
+    "com.apple.DiskUtility" : {
+      "ignore" : true
+    },
+    "us.zoom.xos" : {
+      "ignore" : true
+    },
+    "com.microsoft.teams" : {
       "ignore" : true
     },
     "com.apple.Compressor" : {

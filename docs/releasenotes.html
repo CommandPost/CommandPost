@@ -9,6 +9,140 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+		    <h1>CommandPost 1.4.14</h1>
+
+        	<h2>⚠️ Important Changes</h2>
+			<ul>
+			    <li>With the release of macOS Ventura, CommandPost v1.4.14 now requires macOS Big Sur or later. You can still use CommandPost v1.4.13 on macOS Catalina.</li>
+			</ul>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Sony Timecode Toolbox now supports 100fps Non-Drop Frame clips. Thanks for reporting Valerio D'Andrassi!</li>
+                <li>Sony Timecode Toolbox now supports clips with Drop Frame (29.97fps, 59.94fps and 119.88fps) timecode. MASSIVE thank you to George Elias for supplying a huge amount of test clips!</li>
+                <li>Added additional actions for triggering shortcut keys, using a slightly different method that works better with macOS applications using non-native frameworks, such as Blender. Thanks for reporting Alex Petrov!</li>
+                <li>Updated csv2notion to v0.3.6. Thanks for your amazing work Vladilen Zhdanov!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug in our Timeline Index API, which caused the "Save Timeline Index to CSV" to fail on macOS Ventura, due to changes to the Accessibility API on macOS Ventura. Thanks for reporting Dale Ryan and Phil Swallow!</li>
+                <li>Fixed a bug in our MenuButton API, which caused triggering certain menu buttons to fail on macOS Ventura, due to changes to the Accessibility API on macOS Ventura. Thanks for reporting Oli Frost!</li>
+                <li>Fixed a potential error message in our AppleScript handler. Thanks for reporting Daniel Latimer!</li>
+                <li>Fixed a bug with the “Copy Application” function in the Control Surfaces panels. If you copied a built-in application to a user-added application, it would incorrectly replace the display name of the destination application with that of the source application. Thanks for reporting John McAfee!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.4.13</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Titles to Keywords Toolbox now supports audio clips on the primary storyline. Also, now if you have a title that spans across multiple clips, keywords will be applied to all the clips that intersect that title. Thanks Sam Pluemacher!</li>
+                <li>We've updated the CommandPost Workflow Extension icon so that it's greyscale, matching the look of other Workflow Extension icons. This will look much better if CommandPost is the only Workflow Extension you have installed. Thanks for suggesting Byk Valkonen! Designed by the amazing Matthew Skiles!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Final Cut Pro v10.6.5 fixes a regression (introduced in v10.6.2) which prevented CommandPost from detecting selected clips within a secondary storyline. This meant, for example, if you had a clip selected in a secondary storyline and triggered Timeline Batch Export, CommandPost would think no clips are selected in the timeline. This is now fixed! Woohoo! Thanks Apple!</li>
+                <li>Fixed a bug in "Select Middle of Next/Previous Clip in the same storyline" actions. This now works again thanks to the above mentioned fix in Final Cut Pro v10.6.5. Thanks for reporting Nathen McEvoy!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.12</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Fixed an issue in the "Auto Sequence" Toolbox where audio clips were not processed correctly. Thanks for reporting Florian Duffe!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.11</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added support for the Razer Stream Controller.</li>
+                <li>Added support for the Loupedeck Live-S.</li>
+			</ul>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added support for titles in secondary storylines to the Titles to Keywords Toolbox. Thanks for suggesting Knut Hake!</li>
+                <li>Added a second text-box to the Titles to Keywords Toolbox, to be used for "common" keywords.</li>
+                <li>Added a preference to "Add Space After Sequence" in the Titles to Keywords Toolbox. We also now add a "KEYWORD" role to every title.</li>
+                <li>Added an option to "Treat FAVORITE and REJECT as Ratings instead of Keywords" in the Titles to Keywords Toolbox. When "Treat FAVORITE and REJECT as Ratings instead of Keywords" is enabled it will automatically create a "REJECT" and "FAVORITE" title when using "Create Titles from Text" (which also has a "REJECT" or "FAVORITE" role). We also now put the "Create Titles from Text" titles on a secondary storyline to make copying easier.</li>
+                <li>When using "Create Titles from Text" in the Titles to Keywords Toolbox, we now alternate the positioning of the titles, so that you can more easily see them in the Final Cut Pro Viewer.</li>
+                <li>Updated csv2notion to v0.3.5. Thanks for your amazing work Vladilen Zhdanov!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug where "Screens Backlight Level" wouldn't update correctly on Loupedeck devices.</li>
+                <li>The warning popup that appears when using the reset buttons on the Loupedeck control surfaces panels now shows the correct control surface name (i.e. if you want to reset a Loupedeck Live, it now says Loupedeck Live instead of Loupedeck CT).</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.10</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added a new "Auto Sequence" Toolbox. When you drag a Final Cut Pro Project to this Toolbox, we'll send a new Project back to Final Cut Pro with the clips sorted by timecode (with or without gaps). Thanks for suggesting Knut Hake & Sam Pluemacher!</li>
+                <li>Added a new "Sony Timecode Repair" Toolbox. Final Cut Pro currently doesn't always correctly interpret timecode from certain Sony Cameras that are recording into an MP4 wrapper. This Toolbox will update a Project's FCPXML to use the correct timecode values from the XML sidecar file (or the MP4 itself if no sidecar file exists), so that you can more easily send timelines from Final Cut Pro to DaVinci Resolve, Baselight or Adobe Premiere (with XtoCC). Thanks Alister Robbie & Jamie LeJeune!</li>
+			</ul>
+
+			<h2>🔨 Improvement</h2>
+			<ul>
+                <li>The "Titles to Keywords" Toolbox now supports connected clips above the Primary Storyline. This means that you can have a single title over the top of multiple clips, and all of those clips will get the same keyword from this title. Thanks for suggesting Knut Hake & Sam Pluemacher!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.9</h1>
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Added some workarounds for macOS 13 Ventura Beta 22A5321da. Currently the Final Cut Pro "Edit > Start Dictation…" and "Edit > Emoji & Symbols" menu item actions will only work in English due to changes in macOS - we will try to search for a proper fix for this in the future for non-English users. Thanks for reporting Jeff Asher!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.8</h1>
+
+			<h2>🔨 Improvement</h2>
+			<ul>
+                <li>The <code>projectTimecode</code> token that can be used in Timeline Batch Export custom naming no longer uses dashes as separators (i.e. "00000000" instead of "00-00-00-00") so you more easily copy and paste into Final Cut Pro. Thanks for suggesting Jiří Fiala!</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Added missing action group labels for Razer Tartarus Chroma Applications & Banks. Thanks for reporting Frozner Videography!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.7</h1>
+
+			<h2>🎉 New Features</h2>
+			<ul>
+                <li>Added support for the Razer Tartarus Chroma. Thanks for suggesting Frozner Videography!</li>
+                <li>Added a <code>projectTimecode</code> token to the Timeline Batch Export custom naming feature, allowing you to insert the project timecode of where the clip starts to the filename. Thanks for suggesting Jiří Fiala!</li>
+                <li>Added action for "Toggle Zoom to Fit", allowing you to toggle between "Zoom to Fit" and your last zoom value. Thanks for suggesting Jiří Fiala!</li>
+                <li>Added action for "Toggle Zoom to Selection", allowing you to toggle between "Zoom to Selection" and your last zoom value. Thanks for suggesting Richard Taylor!</li>
+                <li>Added individual actions for specific timeline zoom values (1 to 10 in 0.5 increments).</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fix</h2>
+			<ul>
+                <li>Fixed a bug in the "Mouse Left Double Click" action.</li>
+			</ul>
+
+		    <hr />
+
             <h1>CommandPost 1.4.6</h1>
 
 			<h2>🐞 Bug Fix</h2>

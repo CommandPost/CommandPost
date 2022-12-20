@@ -1,6 +1,6 @@
 --- === plugins.core.loupedeckctandlive.manager ===
 ---
---- Loupedeck CT & Loupedeck Live Manager Plugin.
+--- Manager Plugin for Loupedeck CT, Loupedeck Live, Loupedeck Live-S and Razer Stream Controller.
 
 local require                   = require
 
@@ -272,6 +272,24 @@ function mod.new(deviceType)
         o.configFolder      = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
         o.i18nID            = "loupedeckLive"
+    elseif deviceType == loupedeck.deviceTypes.LIVE_S then
+        --------------------------------------------------------------------------------
+        -- Loupedeck Live-S:
+        --------------------------------------------------------------------------------
+        o.fileExtension     = ".cpLoupedeckLiveS"
+        o.id                = "loupedecklives"
+        o.configFolder      = "Loupedeck Live-S"
+        o.commandID         = "LoupedeckLiveS"
+        o.i18nID            = "loupedeckLiveS"
+    elseif deviceType == loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER then
+        --------------------------------------------------------------------------------
+        -- Razer Stream Controller:
+        --------------------------------------------------------------------------------
+        o.fileExtension     = ".cpRazerStreamController"
+        o.id                = "razerstreamcontroller"
+        o.configFolder      = "Razer Stream Controller"
+        o.commandID         = "RazerStreamController"
+        o.i18nID            = "razerStreamController"
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -1052,9 +1070,15 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
         return
     end
 
+    local deviceType = device and device.deviceType
+
     local success
     local frontmostApplication = application.frontmostApplication()
-    local bundleID = frontmostApplication:bundleID()
+
+    --------------------------------------------------------------------------------
+    -- It's unlikely, but possible that the frontmostApplication is nil:
+    --------------------------------------------------------------------------------
+    local bundleID = frontmostApplication and frontmostApplication:bundleID() or "All Applications"
 
     local containsIconSnippets = false
 
@@ -1200,7 +1224,13 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
         -- UPDATE TOUCH SCREEN BUTTON IMAGES:
         --------------------------------------------------------------------------------
         local touchButton = bank and bank.touchButton
-        for i=1, 12 do
+
+        local numberOfTouchButtons = 12
+        if deviceType == "Loupedeck Live-S" then
+            numberOfTouchButtons = 15
+        end
+
+        for i=1, numberOfTouchButtons do
             local id = tostring(i)
             success = false
             local thisButton = touchButton and touchButton[id]
@@ -1296,89 +1326,91 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
         end
 
         --------------------------------------------------------------------------------
-        -- UPDATE WHEEL SCREEN:
+        -- UPDATE WHEEL SCREEN (ONLY ON THE LOUPEDECK CT):
         --------------------------------------------------------------------------------
-        success = false
-        local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
-        local encodedIcon = thisWheel and thisWheel.encodedIcon
+        if deviceType == "Loupedeck CT" then
+            success = false
+            local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
+            local encodedIcon = thisWheel and thisWheel.encodedIcon
 
-        --------------------------------------------------------------------------------
-        -- If there's a Snippet to generate the icon, use that instead:
-        --------------------------------------------------------------------------------
-        local snippetAction = thisWheel and thisWheel.snippetAction
-        if snippetAction and snippetAction.action then
-            local code = snippetAction.action.code
-            if code then
-                --------------------------------------------------------------------------------
-                -- Use the latest Snippet from the Snippets Preferences if it exists:
-                --------------------------------------------------------------------------------
-                local snippets = mod.scriptingPreferences.snippets()
-                local savedSnippet = snippets[snippetAction.action.id]
-                if savedSnippet and savedSnippet.code then
-                    code = savedSnippet.code
-                end
+            --------------------------------------------------------------------------------
+            -- If there's a Snippet to generate the icon, use that instead:
+            --------------------------------------------------------------------------------
+            local snippetAction = thisWheel and thisWheel.snippetAction
+            if snippetAction and snippetAction.action then
+                local code = snippetAction.action.code
+                if code then
+                    --------------------------------------------------------------------------------
+                    -- Use the latest Snippet from the Snippets Preferences if it exists:
+                    --------------------------------------------------------------------------------
+                    local snippets = mod.scriptingPreferences.snippets()
+                    local savedSnippet = snippets[snippetAction.action.id]
+                    if savedSnippet and savedSnippet.code then
+                        code = savedSnippet.code
+                    end
 
-                local successful, result = pcall(load(code))
-                if successful and isImage(result) then
-                    local size = result:size()
-                    if size.w == 240 and size.h == 240 then
-                        --------------------------------------------------------------------------------
-                        -- The generated image is already 240x240 so proceed:
-                        --------------------------------------------------------------------------------
-                        encodedIcon = result:encodeAsURLString(true)
-                        containsIconSnippets = true
-                    else
-                        --------------------------------------------------------------------------------
-                        -- The generated image is not 240x240 so process:
-                        --------------------------------------------------------------------------------
-                        local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
+                    local successful, result = pcall(load(code))
+                    if successful and isImage(result) then
+                        local size = result:size()
+                        if size.w == 240 and size.h == 240 then
+                            --------------------------------------------------------------------------------
+                            -- The generated image is already 240x240 so proceed:
+                            --------------------------------------------------------------------------------
+                            encodedIcon = result:encodeAsURLString(true)
+                            containsIconSnippets = true
+                        else
+                            --------------------------------------------------------------------------------
+                            -- The generated image is not 240x240 so process:
+                            --------------------------------------------------------------------------------
+                            local v = canvas.new{x = 0, y = 0, w = 240, h = 240 }
 
-                        --------------------------------------------------------------------------------
-                        -- Black Background:
-                        --------------------------------------------------------------------------------
-                        v[1] = {
-                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                            fillColor = { alpha = 1, hex = "#000000" },
-                            type = "rectangle",
-                        }
+                            --------------------------------------------------------------------------------
+                            -- Black Background:
+                            --------------------------------------------------------------------------------
+                            v[1] = {
+                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                fillColor = { alpha = 1, hex = "#000000" },
+                                type = "rectangle",
+                            }
 
-                        --------------------------------------------------------------------------------
-                        -- Icon - scaled to fit:
-                        --------------------------------------------------------------------------------
-                        v[2] = {
-                          type="image",
-                          image = result,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
-                        }
+                            --------------------------------------------------------------------------------
+                            -- Icon - scaled to fit:
+                            --------------------------------------------------------------------------------
+                            v[2] = {
+                              type="image",
+                              image = result,
+                              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                            }
 
-                        local fixedImage = v:imageFromCanvas()
+                            local fixedImage = v:imageFromCanvas()
 
-                        encodedIcon = fixedImage:encodeAsURLString(true)
-                        containsIconSnippets = true
+                            encodedIcon = fixedImage:encodeAsURLString(true)
+                            containsIconSnippets = true
+                        end
                     end
                 end
             end
-        end
 
-        --------------------------------------------------------------------------------
-        -- Only update if the screen has changed to save bandwidth:
-        --------------------------------------------------------------------------------
-        if not self.cachedWheelScreen[deviceNumber] then
-            self.cachedWheelScreen[deviceNumber] = {}
-        end
-        if encodedIcon and self.cachedWheelScreen[deviceNumber] == encodedIcon then
-            success = true
-        elseif encodedIcon and self.cachedWheelScreen[deviceNumber] ~= encodedIcon then
-            self.cachedWheelScreen[deviceNumber] = encodedIcon
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
-                success = true
+            --------------------------------------------------------------------------------
+            -- Only update if the screen has changed to save bandwidth:
+            --------------------------------------------------------------------------------
+            if not self.cachedWheelScreen[deviceNumber] then
+                self.cachedWheelScreen[deviceNumber] = {}
             end
-        end
-        if not success and self.cachedWheelScreen[deviceNumber] ~= defaultColor then
-            device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
-            self.cachedWheelScreen[deviceNumber] = defaultColor
+            if encodedIcon and self.cachedWheelScreen[deviceNumber] == encodedIcon then
+                success = true
+            elseif encodedIcon and self.cachedWheelScreen[deviceNumber] ~= encodedIcon then
+                self.cachedWheelScreen[deviceNumber] = encodedIcon
+                local decodedImage = imageFromURL(encodedIcon)
+                if decodedImage then
+                    device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
+                    success = true
+                end
+            end
+            if not success and self.cachedWheelScreen[deviceNumber] ~= defaultColor then
+                device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
+                self.cachedWheelScreen[deviceNumber] = defaultColor
+            end
         end
 
         --------------------------------------------------------------------------------
@@ -1669,7 +1701,24 @@ function mod.mt:clearCache(deviceNumber)
     self.hasLoaded[deviceNumber] = false
 end
 
---- plugins.core.loupedeckctandlive.manager:callback(data) -> none
+--- plugins.core.loupedeckctandlive.manager:updateBacklightLevel(deviceNumber, value) -> none
+--- Method
+--- Update the backlight level for a Loupedeck device.
+---
+--- Parameters:
+---  * deviceNumber - The device number.
+---  * value - The backlight level
+---
+--- Returns:
+---  * None
+function mod.mt:updateBacklightLevel(deviceNumber, value)
+    local device = self.devices and self.devices[deviceNumber]
+    if device then
+        device:updateBacklightLevel(value)
+    end
+end
+
+--- plugins.core.loupedeckctandlive.manager:callback(data, deviceNumber) -> none
 --- Method
 --- The Loupedeck callback.
 ---
@@ -2249,9 +2298,11 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup devices:
     --------------------------------------------------------------------------------
-    mod.devices         = {}
-    mod.devices.CT      = mod.new(loupedeck.deviceTypes.CT):refreshItems()
-    mod.devices.LIVE    = mod.new(loupedeck.deviceTypes.LIVE):refreshItems()
+    mod.devices                             = {}
+    mod.devices.CT                          = mod.new(loupedeck.deviceTypes.CT):refreshItems()
+    mod.devices.LIVE                        = mod.new(loupedeck.deviceTypes.LIVE):refreshItems()
+    mod.devices.LIVE_S                      = mod.new(loupedeck.deviceTypes.LIVE_S):refreshItems()
+    mod.devices.RAZER_STREAM_CONTROLLER     = mod.new(loupedeck.deviceTypes.RAZER_STREAM_CONTROLLER):refreshItems()
 
     return mod
 end
