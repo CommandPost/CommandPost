@@ -525,8 +525,8 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                     -- as well:
                     --------------------------------------------------------------------------------
                     elseif clipName == "spine" then
-                        local spineChildren = syncClipNode:children()
-                        for _, spineNode in ipairs(spineChildren) do
+                        local subSpineChildren = syncClipNode:children()
+                        for _, spineNode in ipairs(subSpineChildren) do
                             local spineClipName = spineNode:name()
                             if spineClipName == "asset-clip" then
                                 local syncClipAttributes = spineNode:attributes()
