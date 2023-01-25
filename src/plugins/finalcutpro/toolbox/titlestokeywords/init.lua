@@ -520,6 +520,19 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                     if clipName == "asset-clip" then
                         local syncClipAttributes = syncClipNode:attributes()
                         parentRef = syncClipAttributes and syncClipAttributes["ref"]
+                    --------------------------------------------------------------------------------
+                    -- If the 'sync-clip' contains a 'spine' iterate through all the children
+                    -- as well:
+                    --------------------------------------------------------------------------------
+                    elseif clipName == "spine" then
+                        local spineChildren = syncClipNode:children()
+                        for _, spineNode in ipairs(spineChildren) do
+                            local spineClipName = spineNode:name()
+                            if spineClipName == "asset-clip" then
+                                local syncClipAttributes = spineNode:attributes()
+                                parentRef = syncClipAttributes and syncClipAttributes["ref"]
+                            end
+                        end
                     end
                 end
             elseif parentClipType == "clip" then
@@ -941,7 +954,75 @@ local function processFCPXML(path)
             local syncClipNodes = eventNode:children()
             for _, syncClipNode in ipairs(syncClipNodes) do
                 local syncClipNodeName = syncClipNode:name()
-                if syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
+
+                --------------------------------------------------------------------------------
+                -- If the 'sync-clip' contains a 'spine' we should iterate through all the
+                -- children as well:
+                --------------------------------------------------------------------------------
+                if syncClipNodeName == "spine" then
+                    local spineNodes = syncClipNode:children()
+                    for _, spineNode in ipairs(spineNodes) do
+                        local spineNodeName = spineNode:name()
+                        if spineNodeName == "asset-clip" or spineNodeName == "mc-clip" then
+                            local attributes = spineNode:attributes()
+                            for _, v in ipairs(titlesToAdd) do
+                                if v.ref == attributes.ref and v.clipType == "sync-clip" then
+                                    --------------------------------------------------------------------------------
+                                    -- DTD v1.10:
+                                    --
+                                    -- <!-- A 'sync-clip' is a container for other story elements that are used as a synchronized clip. -->
+                                    -- <!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+                                    -- <!ELEMENT sync-clip (note?, %timing-params;, %intrinsic-params;, (spine | (%clip_item;) | caption)*, (%marker_item;)*, sync-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
+                                    --
+                                    -- <!ENTITY % video_filter_item "(filter-video | filter-video-mask)">
+                                    -- <!ENTITY % marker_item "(marker | chapter-marker | rating | keyword | analysis-marker)">
+                                    --------------------------------------------------------------------------------
+
+                                    --------------------------------------------------------------------------------
+                                    -- We need to insert our 'keyword' BEFORE markers, 'sync-source', 'filter-video',
+                                    -- 'filter-video-mask', 'filter-audio' and 'metadata'.
+                                    --------------------------------------------------------------------------------
+                                    local whereToInsert = eventNode:childCount() + 1
+                                    local eventNodeChildren = eventNode:children()  or {} -- Just incase there are no children!
+                                    local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                                    for i, vv in pairs(eventNodeChildren) do
+                                        local abortName = vv:name()
+                                        if tableContains(abortClipNames, abortName) then
+                                            whereToInsert = i
+                                            break
+                                        end
+                                    end
+
+                                    --------------------------------------------------------------------------------
+                                    -- Is it a keyword or a rating?
+                                    --------------------------------------------------------------------------------
+                                    local newNodeType = "keyword"
+                                    if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() and v.name == "FAVORITE" or v.name == "REJECT" then
+                                        newNodeType = "rating"
+                                    end
+
+                                    eventNode:addNode(newNodeType, whereToInsert)
+                                    local newNode = eventNode:children()[whereToInsert]
+                                    newNode:addAttribute("start", v.offset)
+                                    newNode:addAttribute("duration", v.duration)
+
+                                    --------------------------------------------------------------------------------
+                                    -- Replace Commas if we need to:
+                                    --------------------------------------------------------------------------------
+                                    local newClipName = v.name
+                                    if mod.replaceCommasWithAlternativeCommas() then
+                                        newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                                    end
+                                    if newNodeType == "rating" then
+                                        newClipName = string.lower(newClipName)
+                                    end
+                                    newNode:addAttribute("value", newClipName)
+                                end
+                            end
+                        end
+
+                    end
+                elseif syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
                     local attributes = syncClipNode:attributes()
                     for _, v in ipairs(titlesToAdd) do
                         if v.ref == attributes.ref and v.clipType == "sync-clip" then
@@ -1019,11 +1100,11 @@ local function processFCPXML(path)
                             --
                             -- <!ELEMENT clip (note?, %timing-params;, %intrinsic-params;, (spine | (%clip_item;) | caption)*, (%marker_item;)*, audio-channel-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
                             -- <!ATTLIST clip %clip_attrs;>
-                            -- <!ATTLIST clip format IDREF #IMPLIED>				<!-- default is same as parent -->
+                            -- <!ATTLIST clip format IDREF #IMPLIED>                <!-- default is same as parent -->
                             -- <!ATTLIST clip audioStart %time; #IMPLIED>
                             -- <!ATTLIST clip audioDuration %time; #IMPLIED>
-                            -- <!ATTLIST clip tcStart %time; #IMPLIED>				<!-- clip timecode origin -->
-                            -- <!ATTLIST clip tcFormat (DF | NDF) #IMPLIED>		<!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
+                            -- <!ATTLIST clip tcStart %time; #IMPLIED>              <!-- clip timecode origin -->
+                            -- <!ATTLIST clip tcFormat (DF | NDF) #IMPLIED>         <!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
                             -- <!ATTLIST clip modDate CDATA #IMPLIED>
                             --
                             --------------------------------------------------------------------------------
