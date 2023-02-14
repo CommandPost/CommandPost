@@ -356,9 +356,6 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication and frontmostApplication:bundleID() or "All Applications"
 
-    local activeBanks = mod.activeBanks()
-    local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
-
     --------------------------------------------------------------------------------
     -- Get layout from preferences file:
     --------------------------------------------------------------------------------
@@ -379,6 +376,12 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
     if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
         bundleID = "All Applications"
     end
+
+    --------------------------------------------------------------------------------
+    -- Get the active bank ID:
+    --------------------------------------------------------------------------------
+    local activeBanks = mod.activeBanks()
+    local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
 
     --------------------------------------------------------------------------------
     -- If not Automatically Switching Applications:
