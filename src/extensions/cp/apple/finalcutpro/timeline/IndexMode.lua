@@ -2,16 +2,12 @@
 ---
 --- Timeline Index Mode Radio Group Module.
 
-local axutils                   = require "cp.ui.axutils"
-local RadioButton               = require "cp.ui.RadioButton"
-local RadioGroup                = require "cp.ui.RadioGroup"
 local strings                   = require "cp.apple.finalcutpro.strings"
-local tools                     = require "cp.tools"
+local axutils                   = require "cp.ui.axutils"
+local RadioGroup                = require "cp.ui.RadioGroup"
+local RadioButton               = require "cp.ui.RadioButton"
 
-local semver                    = require "semver"
-
-local childMatching             = axutils.childMatching
-local cache                     = axutils.cache
+local childMatching, cache      = axutils.childMatching, axutils.cache
 
 local IndexMode = RadioGroup:subclass("cp.apple.finalcutpro.index.IndexMode")
 
@@ -31,17 +27,6 @@ local function captionsString()
     return strings:find("PEDataListCaptions")
 end
 
---------------------------------------------------------------------------------
--- macOS Ventura uses AXDescription for the AXRadioButton labels, whereas
--- earlier versions of macOS use AXDescription:
---------------------------------------------------------------------------------
-local macOSVersion = semver(tools.macOSVersion())
-local macOSVentura = semver("13.0.0")
-local attributeForLabel = "AXTitle"
-if macOSVersion >= macOSVentura then
-    attributeForLabel = "AXDescription"
-end
-
 --- cp.apple.finalcutpro.timeline.IndexMode.matches(element) -> boolean
 --- Function
 --- Checks if the element is the `IndexMode`.
@@ -52,7 +37,7 @@ end
 --- Returns:
 --- * `true` if it matches, otherwise `false`.
 function IndexMode.static.matches(element)
-    return RadioGroup.matches(element) and #element >= 3 and element[1]:attributeValue(attributeForLabel) == clipsString()
+    return RadioGroup.matches(element) and #element >= 3 and element[1]:attributeValue("AXTitle") == clipsString()
 end
 
 --- cp.apple.finalcutpro.timeline.IndexMode(index) -> cp.apple.finalcutpro.timeline.IndexMode
@@ -81,7 +66,7 @@ function IndexMode.lazy.value:clips()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_clips", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue(attributeForLabel) == clipsString() end)
+            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == clipsString() end)
         end, RadioButton.matches)
     end))
 end
@@ -93,7 +78,7 @@ function IndexMode.lazy.value:tags()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_tags", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue(attributeForLabel) == tagsString() end)
+            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == tagsString() end)
         end, RadioButton.matches)
     end))
 end
@@ -105,7 +90,7 @@ function IndexMode.lazy.value:roles()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_roles", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue(attributeForLabel) == rolesString() end)
+            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == rolesString() end)
         end, RadioButton.matches)
     end))
 end
@@ -117,7 +102,7 @@ function IndexMode.lazy.value:captions()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_captions", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue(attributeForLabel) == captionsString() end)
+            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == captionsString() end)
         end, RadioButton.matches)
     end))
 end
