@@ -8,29 +8,15 @@ local require           = require
 
 local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
+local Menu              = require "cp.ui.Menu"
 local go                = require "cp.rx.go"
 local just              = require "cp.just"
-local Menu              = require "cp.ui.Menu"
-local tools             = require "cp.tools"
-
-local semver            = require "semver"
 
 local find              = string.find
 local If                = go.If
 local WaitUntil         = go.WaitUntil
 
 local MenuButton = Element:subclass("cp.ui.MenuButton")
-
---------------------------------------------------------------------------------
- -- macOS Ventura uses AXDescription for the AXRadioButton labels, whereas
- -- earlier versions of macOS use AXTitle:
- --------------------------------------------------------------------------------
- local macOSVersion = semver(tools.macOSVersion())
- local macOSVentura = semver("13.0.0")
- local attributeForLabel = "AXTitle"
- if macOSVersion >= macOSVentura then
-     attributeForLabel = "AXDescription"
- end
 
 -- TIMEOUT_AFTER -> number
 -- Constant
@@ -209,7 +195,7 @@ end
 function MenuButton:selectItemMatching(pattern)
     local ui = self:UI()
     if ui then
-        local title = ui:attributeValue(attributeForLabel)
+        local title = ui:attributeValue("AXTitle")
         if string.match(title, pattern) then
             -- Don't bother selecting if it's already selected.
             return true
