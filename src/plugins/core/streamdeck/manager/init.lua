@@ -255,9 +255,6 @@ function mod.buttonCallback(object, buttonID, pressed)
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
-    local activeBanks = mod.activeBanks()
-    local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
-
     --------------------------------------------------------------------------------
     -- Get layout from preferences file:
     --------------------------------------------------------------------------------
@@ -285,6 +282,12 @@ function mod.buttonCallback(object, buttonID, pressed)
     if not mod.automaticallySwitchApplications() then
         bundleID = mod.lastBundleID()
     end
+
+    --------------------------------------------------------------------------------
+    -- Get the active bank ID:
+    --------------------------------------------------------------------------------
+    local activeBanks = mod.activeBanks()
+    local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
 
     --------------------------------------------------------------------------------
     -- Preview Selected Application & Bank on Hardware:
