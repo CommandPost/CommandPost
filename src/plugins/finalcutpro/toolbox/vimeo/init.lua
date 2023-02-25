@@ -172,6 +172,7 @@ local function sendVimeoCSVToFinalCutProX(path)
     --------------------------------------------------------------------------------
     -- Process the results:
     --------------------------------------------------------------------------------
+    local lastClip = 0
     for i, line in tools.spairs(results) do
         --------------------------------------------------------------------------------
         -- Handle Note:
@@ -254,6 +255,13 @@ local function sendVimeoCSVToFinalCutProX(path)
             totalSeconds = (tonumber(hours) * 3600) + (tonumber(minutes) * 60) + tonumber(seconds) + videoStartTime
 
             --------------------------------------------------------------------------------
+            -- Is this the last clip?
+            --------------------------------------------------------------------------------
+            if totalSeconds > lastClip then
+                lastClip = totalSeconds
+            end
+
+            --------------------------------------------------------------------------------
             -- Generate the Marker FCPXML:
             --------------------------------------------------------------------------------
             fcpxmlMiddle = fcpxmlMiddle .. [[                                <marker start="]] .. totalSeconds .. [[s" duration="100/2500s" value="]] .. escapeXML(note) .. [[" completed="]] .. completed .. [["/>]] .. "\n"
@@ -263,7 +271,7 @@ local function sendVimeoCSVToFinalCutProX(path)
     --------------------------------------------------------------------------------
     -- Calculate the total duration:
     --------------------------------------------------------------------------------
-    local duration = totalSeconds + numberOfSecondsAfterLastMarker - videoStartTime .. "s"
+    local duration = lastClip + numberOfSecondsAfterLastMarker - videoStartTime .. "s"
 
     --------------------------------------------------------------------------------
     -- Hard coded FCPXML Template:
