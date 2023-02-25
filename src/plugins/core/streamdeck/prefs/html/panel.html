@@ -637,6 +637,7 @@
 				<option value="Original" {{ lastDevice == "Original" and "selected" or ""}}>Stream Deck</option>
 				<option value="XL" {{ lastDevice == "XL" and "selected" or ""}}>Stream Deck XL</option>
 				<option value="Mini" {{ lastDevice == "Mini" and "selected" or ""}}>Stream Deck Mini</option>
+				<option value="Plus" {{ lastDevice == "Plus" and "selected" or ""}}>Stream Deck Plus</option>
 			</select>
 		</th>
 	</tr>
@@ -748,6 +749,41 @@
 					</tr>
 				</table>
 
+                <div id="streamdeckPlusUI">
+                    <table cellspacing="10">
+                        <tr class="streamdeckPlusButton">
+                            <td device="Plus" button="1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                        </tr>
+                        <tr class="streamdeckPlusButton">
+                            <td device="Plus" button="5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                        </tr>
+                    </table>
+
+                    <table width="234px" height="29px" cellspacing="0">
+                        <tr class="streamdeckPlusScreen">
+                            <td device="Plus" button="Screen 1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="Screen 2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="Screen 3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="Screen 4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                        </tr>
+                    </table>
+
+                    <table cellspacing="10">
+                        <tr class="streamdeckPlusEncoder">
+                            <td device="Plus" button="Encoder 1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="Encoder 2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="Encoder 3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                            <td device="Plus" button="Encoder 4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
+                        </tr>
+                    </table>
+				</div>
+
 				<table cellspacing="10" id="streamdeckMiniUI">
 					<tr>
 						<td device="Mini" button="1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" oncontextmenu="showContextMenu(event)"></td>
@@ -840,6 +876,20 @@
 							</td>
 						</tr>
 
+						<!-- KNOB LEFT & RIGHT: -->
+						<tr id="knobA">
+							<th width="229px">{{ i18n("turnLeftAction") }}:</th>
+							<th width="229px">{{ i18n("turnRightAction") }}:</th>
+						</tr>
+						<tr id="knobB">
+							<td width="229px"><input type="text" id="left_action" class="streamDeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="right_action" class="streamDeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="knobC">
+							<td width="229px"><a id="left_actionButton" href="#" class="button streamDeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button streamDeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a> <a href="#" class="button streamDeckActionButton" onclick="editSnippet('leftAction')">{{ i18n("editSnippet") }}</a></td>
+							<td width="229px"><a id="right_actionButton" href="#" class="button streamDeckActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button streamDeckActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a> <a href="#" class="button streamDeckActionButton" onclick="editSnippet('rightAction')">{{ i18n("editSnippet") }}</a></td>
+						</tr>
+
 						<!-- ICON: -->
 						<tr id="iconA">
 							<th width="229px">{{ i18n("imageDropZone") }}:</th>
@@ -882,13 +932,13 @@
 						</tr>
 
 						<!-- USE SNIPPET TO GENERATE ICON: -->
-						<tr>
+						<tr id="iconSnippetA">
 							<th width="229px">{{ i18n("useSnippetToGenerateIcon") }}:</th>
 						</tr>
-						<tr>
+						<tr id="iconSnippetB">
 							<td width="229px"><input type="text" id="snippet_action" class="streamDeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
-						<tr>
+						<tr id="iconSnippetC">
 							<td width="229px"><a href="#" class="button streamDeckActionButton" onclick="selectButton('snippetAction')">{{ i18n("select") }}</a> <a href="#" class="button streamDeckActionButton" onclick="clearButton('snippetAction')">{{ i18n("clear") }}</a> <a href="#" class="button streamDeckActionButton" onclick="editSnippet('snippetAction')">{{ i18n("editSnippet") }}</a> <a href="#" class="button streamDeckActionButton" onclick="examples()">{{ i18n("examples") }}</a></td>
 						</tr>
 

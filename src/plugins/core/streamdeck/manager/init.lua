@@ -85,6 +85,7 @@ mod.activeBanks = config.prop("streamDeck.activeBanks", {
     ["Mini"] = {},
     ["Original"] = {},
     ["XL"] = {},
+    ["Plus"] = {},
 })
 
 -- plugins.core.streamdeck.manager.devices -> table
@@ -94,6 +95,7 @@ mod.devices = {
     ["Mini"] = {},
     ["Original"] = {},
     ["XL"] = {},
+    ["Plus"] = {},
 }
 
 -- plugins.core.streamdeck.manager.deviceOrder -> table
@@ -103,6 +105,7 @@ mod.deviceOrder = {
     ["Mini"] = {},
     ["Original"] = {},
     ["XL"] = {},
+    ["Plus"] = {},
 }
 
 -- plugins.core.streamdeck.manager.numberOfButtons -> table
@@ -112,6 +115,17 @@ mod.numberOfButtons = {
     ["Mini"] = 6,
     ["Original"] = 15,
     ["XL"] = 32,
+    ["Plus"] = 8,
+}
+
+-- plugins.core.streamdeck.manager.numberOfEncoders -> table
+-- Variable
+-- Table of Stream Deck Device Encoder Count.
+mod.numberOfEncoders = {
+    ["Mini"] = 0,
+    ["Original"] = 0,
+    ["XL"] = 0,
+    ["Plus"] = 4,
 }
 
 -- plugins.core.streamdeck.manager.imageSize -> table
@@ -121,14 +135,15 @@ mod.imageSize = {
     ["Mini"] = 80,
     ["Original"] = 72,
     ["XL"] = 96,
+    ["Plus"] = 120,
 }
 
 -- imageHolder -> hs.canvas
 -- Constant
 -- Canvas used to store the blackIcon.
-local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
+local imageHolder = canvas.new{x = 0, y = 0, h = 120, w = 120}
 imageHolder[1] = {
-    frame = { h = 100, w = 100, x = 0, y = 0 },
+    frame = { h = 120, w = 120, x = 0, y = 0 },
     fillColor = { hex = "#000000" },
     type = "rectangle",
 }
@@ -230,6 +245,8 @@ function mod.getDeviceType(object)
         return "Original"
     elseif columns == 8 and rows == 4 then
         return "XL"
+    elseif columns == 4 and rows == 2 then
+        return "Plus"
     else
         log.ef("Unknown Stream Deck Model. Columns: %s, Rows: %s", columns, rows)
     end
@@ -246,8 +263,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.buttonCallback(object, buttonID, pressed)
-
+function mod.buttonCallback(object, buttonID, pressed, controlType, turningLeft, turningRight, eventType, startX, startY, endX, endY)
     local serialNumber = object:serialNumber()
     local deviceType = mod.getDeviceType(object)
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
@@ -305,6 +321,24 @@ function mod.buttonCallback(object, buttonID, pressed)
     local theBank = theApp and theApp[bankID]
     local theButton = theBank and theBank[buttonID]
 
+    if controlType == "screen" then
+        --------------------------------------------------------------------------------
+        -- It's a screen event!
+        --------------------------------------------------------------------------------
+        log.df("[SCREEN] object: %s, eventType: %s, startX: %s, startY: %s, endX: %s, endY: %s", object, eventType, startX, startY, endX, endY)
+    elseif controlType == "encoder" then
+        --------------------------------------------------------------------------------
+        -- It's a encoder event!
+        --------------------------------------------------------------------------------
+        if turningLeft then
+            log.df("[ENCODER] object: %s, buttonID: %s, turned: LEFT", object, buttonID)
+        elseif turningRight then
+            log.df("[ENCODER] object: %s, buttonID: %s, turned: RIGHT", object, buttonID)
+        else
+            log.df("[ENCODER] object: %s, buttonID: %s, pressed: %s", object, buttonID, pressed)
+        end
+    end
+
     if theButton then
         local repeatPressActionUntilReleased = theButton.repeatPressActionUntilReleased
         local repeatID = deviceType .. deviceID .. buttonID
@@ -354,7 +388,14 @@ function mod.buttonCallback(object, buttonID, pressed)
             end
         end
     end
+end
 
+function mod.encoderCallback(object, buttonID, pressed, turningLeft, turningRight)
+    mod.buttonCallback(object, "Encoder " .. buttonID, pressed, "encoder", turningLeft, turningRight)
+end
+
+function mod.screenCallback(object, eventType, startX, startY, endX, endY)
+    mod.buttonCallback(object, nil, nil, "screen", nil, nil, eventType, startX, startY, endX, endY)
 end
 
 --- plugins.core.streamdeck.manager.imageCache() -> none
@@ -382,7 +423,6 @@ function mod.update()
             --------------------------------------------------------------------------------
             local serialNumber = device:serialNumber()
 
-            local buttonCount = mod.numberOfButtons[deviceType]
             local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
             local frontmostApplication = application.frontmostApplication()
@@ -438,6 +478,7 @@ function mod.update()
             --------------------------------------------------------------------------------
             -- Update every button:
             --------------------------------------------------------------------------------
+            local buttonCount = mod.numberOfButtons[deviceType]
             for buttonID=1, buttonCount do
                 local success = false
                 local buttonData = bankData and bankData[tostring(buttonID)]
@@ -519,6 +560,93 @@ function mod.update()
                     mod.imageCache[cacheID] = imageToUse
                 end
             end
+
+            --------------------------------------------------------------------------------
+            -- Update every encoder screen:
+            --------------------------------------------------------------------------------
+            local encoderCount = mod.numberOfEncoders[deviceType]
+            for buttonID=1, encoderCount do
+                local success = false
+                local buttonData = bankData and bankData["Screen " .. tostring(buttonID)]
+
+                local imageToUse
+
+                if buttonData then
+                    local label                 = buttonData.label
+                    local icon                  = buttonData.icon
+                    local encodedIconLabel      = buttonData.encodedIconLabel
+
+                    local snippetImage = mod.getSnippetImage(deviceType, buttonData)
+                    if snippetImage then
+                        --------------------------------------------------------------------------------
+                        -- Generate an icon from a Snippet:
+                        --------------------------------------------------------------------------------
+                        local theImage = imageFromURL(snippetImage)
+                        if theImage then
+                            imageToUse = theImage
+                            success = true
+                            containsIconSnippets = true
+                        end
+                    elseif icon then
+                        --------------------------------------------------------------------------------
+                        -- Draw an icon:
+                        --------------------------------------------------------------------------------
+                        local theImage = imageFromURL(icon)
+                        if theImage then
+                            imageToUse = theImage
+                            success = true
+                        end
+                    elseif buttonData.encodedIconLabel then
+                        --------------------------------------------------------------------------------
+                        -- Draw an image from an icon label:
+                        --------------------------------------------------------------------------------
+                        local theImage = imageFromURL(encodedIconLabel)
+                        if theImage then
+                            imageToUse = theImage
+                            success = true
+                        end
+                    elseif label then
+                        --------------------------------------------------------------------------------
+                        -- Draw a label (only here for legacy reasons):
+                        --------------------------------------------------------------------------------
+                        local widthAndHeight = mod.imageSize[device]
+                        local c = canvas.new{x = 0, y = 0, h = widthAndHeight, w = widthAndHeight}
+                        c[1] = {
+                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
+                            fillColor = { hex = "#000000"  },
+                            type = "rectangle",
+                        }
+                        c[2] = {
+                            frame = { h = widthAndHeight, w = widthAndHeight, x = 0, y = 0 },
+                            text = label,
+                            textAlignment = "left",
+                            textColor = { white = 1.0 },
+                            textSize = 20,
+                            type = "text",
+                        }
+                        local textIcon = c:imageFromCanvas()
+
+                        imageToUse = textIcon
+                        success = true
+                    end
+                end
+                if not success then
+                    --------------------------------------------------------------------------------
+                    -- Default to black if no label or icon supplied:
+                    --------------------------------------------------------------------------------
+                    imageToUse = blackIcon
+                end
+
+                --------------------------------------------------------------------------------
+                -- Only update the image on the hardware if necessary:
+                --------------------------------------------------------------------------------
+                local cacheID = deviceType .. deviceID .. "screen" .. buttonID
+                if imageToUse ~= mod.imageCache[cacheID] then
+                    device:setScreenImage(buttonID, imageToUse)
+                    mod.imageCache[cacheID] = imageToUse
+                end
+            end
+
         end
     end
 
@@ -560,6 +688,14 @@ function mod.discoveryCallback(connected, object)
         if connected then
             --log.df("Stream Deck Connected: %s - %s", deviceType, serialNumber)
             mod.devices[deviceType][serialNumber] = object:buttonCallback(mod.buttonCallback)
+
+            --------------------------------------------------------------------------------
+            -- If it's a Stream Deck Plus we need to add an encoder and screen callback:
+            --------------------------------------------------------------------------------
+            if deviceType == "Plus" then
+                object:screenCallback(mod.screenCallback)
+                object:encoderCallback(mod.encoderCallback)
+            end
 
             --------------------------------------------------------------------------------
             -- Sort the devices alphabetically based on serial number:

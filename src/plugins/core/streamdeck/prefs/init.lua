@@ -273,7 +273,38 @@ local function updateUI(params)
         document.getElementById("streamdeckOriginalUI").style.display = "]] .. (device == "Original" and "inline-table" or "None") .. [[";
         document.getElementById("streamdeckMiniUI").style.display = "]] .. (device == "Mini" and "inline-table" or "None") .. [[";
         document.getElementById("streamdeckXLUI").style.display = "]] .. (device == "XL" and "inline-table" or "None") .. [[";
+        document.getElementById("streamdeckPlusUI").style.display = "]] .. (device == "Plus" and "inline-table" or "None") .. [[";
     ]] .. "\n"
+
+    --------------------------------------------------------------------------------
+    -- Show the correct UI for encoders:
+    --------------------------------------------------------------------------------
+    if button:sub(1, 7) == "Encoder" then
+        script = script .. [[
+            document.getElementById("knobA").style.display = "table";
+            document.getElementById("knobB").style.display = "table";
+            document.getElementById("knobC").style.display = "table";
+            document.getElementById("iconA").style.display = "none";
+            document.getElementById("iconB").style.display = "none";
+            document.getElementById("iconC").style.display = "none";
+            document.getElementById("iconSnippetA").style.display = "none";
+            document.getElementById("iconSnippetB").style.display = "none";
+            document.getElementById("iconSnippetC").style.display = "none";
+
+        ]] .. "\n"
+    else
+        script = script .. [[
+            document.getElementById("knobA").style.display = "none";
+            document.getElementById("knobB").style.display = "none";
+            document.getElementById("knobC").style.display = "none";
+            document.getElementById("iconA").style.display = "table";
+            document.getElementById("iconB").style.display = "table";
+            document.getElementById("iconC").style.display = "table";
+            document.getElementById("iconSnippetA").style.display = "table";
+            document.getElementById("iconSnippetB").style.display = "table";
+            document.getElementById("iconSnippetC").style.display = "table";
+        ]] .. "\n"
+    end
 
     --------------------------------------------------------------------------------
     -- Update the UI label:
@@ -349,6 +380,44 @@ local function updateUI(params)
             --------------------------------------------------------------------------------
             script = script .. [[
                 document.querySelector('[device="]] .. device .. [["][button="]] .. i .. [["]').style.backgroundImage = "";
+            ]] .. "\n"
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Update the images for all the encoder screens:
+    --------------------------------------------------------------------------------
+    local numberOfEncoders = mod._sd.numberOfEncoders[device]
+    for i=1, numberOfEncoders do
+        local buttonData = bankData and bankData["Screen " .. tostring(i)]
+        local snippetImage = mod._sd.getSnippetImage(device, buttonData)
+        if snippetImage then
+            --------------------------------------------------------------------------------
+            -- It's an image from a Snippet:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "url(']] .. snippetImage .. [[')";
+            ]] .. "\n"
+        elseif buttonData and buttonData.icon and buttonData.icon ~= "" then
+            --------------------------------------------------------------------------------
+            -- It's an image from a supplied icon:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
+            ]] .. "\n"
+        elseif buttonData and buttonData.encodedIconLabel and buttonData.encodedIconLabel ~= "" then
+            --------------------------------------------------------------------------------
+            -- It's an image from an icon label:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.encodedIconLabel .. [[')";
+            ]] .. "\n"
+        else
+            --------------------------------------------------------------------------------
+            -- There's no icon for this button:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "";
             ]] .. "\n"
         end
     end
@@ -475,6 +544,14 @@ function mod.buildIconFromLabel(params)
     local bank = params["bank"]
     local button = params["button"] or mod.lastButton()
 
+    --------------------------------------------------------------------------------
+    -- Adjust the width if it's a Stream Deck Plus Touch Screen:
+    --------------------------------------------------------------------------------
+    local width = 100
+    if button:sub(1, 6) == "Screen" then
+        width = 200
+    end
+
     local items = mod.items()
     local lastDevice = mod.lastDevice()
     local lastUnit = mod.lastUnit()
@@ -494,7 +571,7 @@ function mod.buildIconFromLabel(params)
     local font = selectedButton and selectedButton.font or DEFAULT_FONT
     local value = selectedButton and selectedButton.label or ""
 
-    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
+    local v = canvas.new{x = 0, y = 0, w = width, h = 100 }
     v[1] = {
         --------------------------------------------------------------------------------
         -- Force Black background:
@@ -505,7 +582,7 @@ function mod.buildIconFromLabel(params)
     }
 
     v[2] = {
-        frame = { h = 100, w = 100, x = 0, y = 0 },
+        frame = { h = 100, w = width, x = 0, y = 0 },
         text = value,
         textAlignment = "left",
         textColor = { hex = fontColor },
