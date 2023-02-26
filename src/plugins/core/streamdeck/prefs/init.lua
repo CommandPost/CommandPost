@@ -273,7 +273,91 @@ local function updateUI(params)
         document.getElementById("streamdeckOriginalUI").style.display = "]] .. (device == "Original" and "inline-table" or "None") .. [[";
         document.getElementById("streamdeckMiniUI").style.display = "]] .. (device == "Mini" and "inline-table" or "None") .. [[";
         document.getElementById("streamdeckXLUI").style.display = "]] .. (device == "XL" and "inline-table" or "None") .. [[";
+        document.getElementById("streamdeckPlusUI").style.display = "]] .. (device == "Plus" and "inline-table" or "None") .. [[";
     ]] .. "\n"
+
+    --------------------------------------------------------------------------------
+    -- Show the correct UI:
+    --------------------------------------------------------------------------------
+    if button:sub(1, 7) == "Encoder" then
+        --------------------------------------------------------------------------------
+        -- Encoder:
+        --------------------------------------------------------------------------------
+        script = script .. [[
+            document.getElementById("pressA").style.display = "table";
+            document.getElementById("pressB").style.display = "table";
+            document.getElementById("pressC").style.display = "table";
+            document.getElementById("pressD").style.display = "table";
+            document.getElementById("knobA").style.display = "table";
+            document.getElementById("knobB").style.display = "table";
+            document.getElementById("knobC").style.display = "table";
+            document.getElementById("iconA").style.display = "none";
+            document.getElementById("iconB").style.display = "none";
+            document.getElementById("iconC").style.display = "none";
+            document.getElementById("iconSnippetA").style.display = "none";
+            document.getElementById("iconSnippetB").style.display = "none";
+            document.getElementById("iconSnippetC").style.display = "none";
+            document.getElementById("screenA").style.display = "none";
+            document.getElementById("screenB").style.display = "none";
+            document.getElementById("screenC").style.display = "none";
+            document.getElementById("screenD").style.display = "none";
+            document.getElementById("screenE").style.display = "none";
+            document.getElementById("screenF").style.display = "none";
+            document.getElementById("screenG").style.display = "none";
+        ]] .. "\n"
+    elseif button:sub(1, 6) == "Screen" then
+        --------------------------------------------------------------------------------
+        -- Screen:
+        --------------------------------------------------------------------------------
+        script = script .. [[
+            document.getElementById("pressA").style.display = "none";
+            document.getElementById("pressB").style.display = "none";
+            document.getElementById("pressC").style.display = "none";
+            document.getElementById("pressD").style.display = "none";
+            document.getElementById("knobA").style.display = "none";
+            document.getElementById("knobB").style.display = "none";
+            document.getElementById("knobC").style.display = "none";
+            document.getElementById("iconA").style.display = "table";
+            document.getElementById("iconB").style.display = "table";
+            document.getElementById("iconC").style.display = "table";
+            document.getElementById("iconSnippetA").style.display = "table";
+            document.getElementById("iconSnippetB").style.display = "table";
+            document.getElementById("iconSnippetC").style.display = "table";
+            document.getElementById("screenA").style.display = "table";
+            document.getElementById("screenB").style.display = "table";
+            document.getElementById("screenC").style.display = "table";
+            document.getElementById("screenD").style.display = "table";
+            document.getElementById("screenE").style.display = "table";
+            document.getElementById("screenF").style.display = "table";
+            document.getElementById("screenG").style.display = "table";
+        ]] .. "\n"
+    else
+        --------------------------------------------------------------------------------
+        -- Button:
+        --------------------------------------------------------------------------------
+        script = script .. [[
+            document.getElementById("pressA").style.display = "table";
+            document.getElementById("pressB").style.display = "table";
+            document.getElementById("pressC").style.display = "table";
+            document.getElementById("pressD").style.display = "table";
+            document.getElementById("knobA").style.display = "none";
+            document.getElementById("knobB").style.display = "none";
+            document.getElementById("knobC").style.display = "none";
+            document.getElementById("iconA").style.display = "table";
+            document.getElementById("iconB").style.display = "table";
+            document.getElementById("iconC").style.display = "table";
+            document.getElementById("iconSnippetA").style.display = "table";
+            document.getElementById("iconSnippetB").style.display = "table";
+            document.getElementById("iconSnippetC").style.display = "table";
+            document.getElementById("screenA").style.display = "none";
+            document.getElementById("screenB").style.display = "none";
+            document.getElementById("screenC").style.display = "none";
+            document.getElementById("screenD").style.display = "none";
+            document.getElementById("screenE").style.display = "none";
+            document.getElementById("screenF").style.display = "none";
+            document.getElementById("screenG").style.display = "none";
+        ]] .. "\n"
+    end
 
     --------------------------------------------------------------------------------
     -- Update the UI label:
@@ -354,10 +438,56 @@ local function updateUI(params)
     end
 
     --------------------------------------------------------------------------------
+    -- Update the images for all the encoder screens:
+    --------------------------------------------------------------------------------
+    local numberOfEncoders = mod._sd.numberOfEncoders[device]
+    for i=1, numberOfEncoders do
+        local buttonData = bankData and bankData["Screen " .. tostring(i)]
+        local snippetImage = mod._sd.getSnippetImage(device, buttonData, "Screen")
+        if snippetImage then
+            --------------------------------------------------------------------------------
+            -- It's an image from a Snippet:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "url(']] .. snippetImage .. [[')";
+            ]] .. "\n"
+        elseif buttonData and buttonData.icon and buttonData.icon ~= "" then
+            --------------------------------------------------------------------------------
+            -- It's an image from a supplied icon:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.icon .. [[')";
+            ]] .. "\n"
+        elseif buttonData and buttonData.encodedIconLabel and buttonData.encodedIconLabel ~= "" then
+            --------------------------------------------------------------------------------
+            -- It's an image from an icon label:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "url(']] .. buttonData.encodedIconLabel .. [[')";
+            ]] .. "\n"
+        else
+            --------------------------------------------------------------------------------
+            -- There's no icon for this button:
+            --------------------------------------------------------------------------------
+            script = script .. [[
+                document.querySelector('[device="]] .. device .. [["][button="Screen ]] .. i .. [["]').style.backgroundImage = "";
+            ]] .. "\n"
+        end
+    end
+
+    --------------------------------------------------------------------------------
     -- Update the fields for the currently selected button:
     --------------------------------------------------------------------------------
     local pressAction = ""
     local releaseAction = ""
+    local leftAction = ""
+    local rightAction = ""
+
+    local shortPressAction = ""
+    local longPressAction = ""
+    local swipeLeftAction = ""
+    local swipeRightAction = ""
+
     local repeatPressActionUntilReleased = false
     local iconLabel = ""
     local snippetAction = ""
@@ -369,6 +499,16 @@ local function updateUI(params)
     if buttonData then
         pressAction                         = escapeTilda(buttonData.actionTitle)
         releaseAction                       = escapeTilda(buttonData.releaseAction and buttonData.releaseAction.actionTitle)
+
+        leftAction                          = escapeTilda(buttonData.leftAction and buttonData.leftAction.actionTitle)
+        rightAction                         = escapeTilda(buttonData.rightAction and buttonData.rightAction.actionTitle)
+
+        shortPressAction                    = escapeTilda(buttonData.shortPressAction and buttonData.shortPressAction.actionTitle)
+        longPressAction                     = escapeTilda(buttonData.longPressAction and buttonData.longPressAction.actionTitle)
+
+        swipeLeftAction                     = escapeTilda(buttonData.swipeLeftAction and buttonData.swipeLeftAction.actionTitle)
+        swipeRightAction                    = escapeTilda(buttonData.swipeRightAction and buttonData.swipeRightAction.actionTitle)
+
         repeatPressActionUntilReleased      = buttonData.repeatPressActionUntilReleased or false
         iconLabel                           = escapeTilda(buttonData.label)
         snippetAction                       = escapeTilda(buttonData.snippetAction and buttonData.snippetAction.actionTitle)
@@ -382,6 +522,16 @@ local function updateUI(params)
 
         changeValueByID('press_action', `]] .. pressAction .. [[`);
         changeValueByID('release_action', `]] .. releaseAction .. [[`);
+
+        changeValueByID('left_action', `]] .. leftAction .. [[`);
+        changeValueByID('right_action', `]] .. rightAction .. [[`);
+
+        changeValueByID('shortPress_action', `]] .. shortPressAction .. [[`);
+        changeValueByID('longPress_action', `]] .. longPressAction .. [[`);
+
+        changeValueByID('swipeLeft_action', `]] .. swipeLeftAction .. [[`);
+        changeValueByID('swipeRight_action', `]] .. swipeRightAction .. [[`);
+
         changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeValueByID('snippet_action', `]] .. snippetAction .. [[`);
         changeValueByID('fontSize', ']] .. fontSize .. [[');
@@ -475,6 +625,14 @@ function mod.buildIconFromLabel(params)
     local bank = params["bank"]
     local button = params["button"] or mod.lastButton()
 
+    --------------------------------------------------------------------------------
+    -- Adjust the width if it's a Stream Deck Plus Touch Screen:
+    --------------------------------------------------------------------------------
+    local width = 100
+    if button:sub(1, 6) == "Screen" then
+        width = 200
+    end
+
     local items = mod.items()
     local lastDevice = mod.lastDevice()
     local lastUnit = mod.lastUnit()
@@ -494,7 +652,7 @@ function mod.buildIconFromLabel(params)
     local font = selectedButton and selectedButton.font or DEFAULT_FONT
     local value = selectedButton and selectedButton.label or ""
 
-    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
+    local v = canvas.new{x = 0, y = 0, w = width, h = 100 }
     v[1] = {
         --------------------------------------------------------------------------------
         -- Force Black background:
@@ -505,7 +663,7 @@ function mod.buildIconFromLabel(params)
     }
 
     v[2] = {
-        frame = { h = 100, w = 100, x = 0, y = 0 },
+        frame = { h = 100, w = width, x = 0, y = 0 },
         text = value,
         textAlignment = "left",
         textColor = { hex = fontColor },
@@ -525,11 +683,26 @@ end
 ---
 --- Parameters:
 ---  * icon - The encoded icon as URL string or a hs.image object.
----  * controlType - The control type as string.
+---  * button - The button ID.
 ---
 --- Returns:
 ---  * A new encoded icon as URL string.
-function mod.processEncodedIcon(icon)
+function mod.processEncodedIcon(icon, button)
+
+    --------------------------------------------------------------------------------
+    -- If no button is supplied we'll use the last button:
+    --------------------------------------------------------------------------------
+    if not button then
+        button = mod.lastButton()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Adjust the width if it's a Stream Deck Plus Touch Screen:
+    --------------------------------------------------------------------------------
+    local width = 100
+    if button:sub(1, 6) == "Screen" then
+        width = 200
+    end
 
     local newImage
     if type(icon) == "userdata" then
@@ -542,7 +715,7 @@ function mod.processEncodedIcon(icon)
     local resizeImagesOnImport = mod.resizeImagesOnImport()
     local offset = tostring( (100 - tonumber(resizeImagesOnImport:sub(1, -2))) /2 ) .. "%"
 
-    local v = canvas.new{x = 0, y = 0, w = 100, h = 100 }
+    local v = canvas.new{x = 0, y = 0, w = width, h = 100 }
 
     --------------------------------------------------------------------------------
     -- Background:
@@ -759,7 +932,7 @@ local function streamDeckPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Write to file:
                         --------------------------------------------------------------------------------
-                        local encodedIcon = mod.processEncodedIcon(preSuppliedImage)
+                        local encodedIcon = mod.processEncodedIcon(preSuppliedImage, button)
                         mod.setItem(app, bank, button, "icon", encodedIcon)
                     end
                 end
@@ -1146,7 +1319,7 @@ local function streamDeckPanelCallback(id, params)
                                 local bank = params["bank"]
                                 local button = mod.lastButton()
 
-                                local encodedIcon = mod.processEncodedIcon(item[2])
+                                local encodedIcon = mod.processEncodedIcon(item[2], button)
                                 mod.setItem(app, bank, button, "icon", encodedIcon)
 
                                 --------------------------------------------------------------------------------
@@ -2005,7 +2178,7 @@ function plugin.init(deps, env)
         label           = i18n("streamdeckPanelLabel"),
         image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
-        height          = 1000,
+        height          = 1080,
     })
         :addHeading(1, i18n("streamDeck"))
         :addContent(2, [[
