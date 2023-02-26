@@ -284,7 +284,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.buttonCallback(object, buttonID, pressed, controlType, turningLeft, turningRight, eventType, startX, startY, endX, endY)
+function mod.buttonCallback(object, buttonID, pressed, controlType, turningLeft, turningRight, eventType, startX, startY, endX, endY) -- luacheck: ignore
     local serialNumber = object:serialNumber()
     local deviceType = mod.getDeviceType(object)
     local deviceID = mod.deviceOrder[deviceType][serialNumber]
