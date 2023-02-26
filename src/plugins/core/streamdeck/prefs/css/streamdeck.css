@@ -139,7 +139,7 @@ input[type="color"]::-webkit-color-swatch {
 
 .streamDeck tbody {
 	display:block;
-	height: 430px;
+	/* height: 430px; */
 	font-weight: normal;
 	font-size: 10px;
 	width: 100%;
@@ -236,56 +236,6 @@ input[type="color"]::-webkit-color-swatch {
 
 .streamDeckGroupSelect {
 	float: right;
-}
-
-/* ICON DROP ZONE: */
-
-.dropzone {
-  position: relative;
-  border: 2.5px dotted #FFF;
-  border-radius: 5px;
-  color: white;
-  font: bold 12px/50px arial;
-  height: 90px;
-  /* margin: 7.5px auto; */
-  text-align: center;
-  width: 90px;
-}
-
-.dropzone.hover {
-  border: 2.5px solid #5760e7;
-  color: #5760e7;
-}
-
-.dropzone.dropped {
-  background: #222;
-  border: 2.5px solid #444;
-}
-
-.dropzone div {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.dropzone img {
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
-  margin: 0 auto;
-  height: 90px;
-}
-
-.dropzone [type="file"] {
-  cursor: pointer;
-  position: absolute;
-  opacity: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
 }
 
 .touchButtonDropZone {
@@ -411,7 +361,7 @@ input[type="color"]::-webkit-color-swatch {
   max-height: 100%;
   display: block;
   margin: 0 auto;
-  height: 90px;
+  width: 90px;
 }
 
 .dropzone [type="file"] {
