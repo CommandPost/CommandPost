@@ -9,6 +9,34 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+            <h1>CommandPost 1.4.15</h1>
+
+            <h2>🎉 New Features</h2>
+			<ul>
+                <li>Added support for the Stream Deck Plus.</li>
+                <li>Added support for the latest Stream Deck Mini.</li>
+                <li>Added actions for controlling the Loupedeck Screen and LED brightness. Thanks for suggesting anarchy!</li>
+			</ul>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Updated csv2notion from v0.3.5 to v0.3.7. Thanks for your amazing work Vladilen Zhdanov!</li>
+                <li>In the Shot Data Toolbox, we now save and restore the "Export Destination" with the settings. Thanks for suggesting Vigneswaran Rajkumar!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug where the clip duration was incorrect when using the Vimeo Toolbox. Thanks for reporting Noah Leon!</li>
+                <li>Fixed a bug which prevented "Reveal in Keyword Collection" actions from working. Thanks for reporting Eric Lami!</li>
+                <li>Fixed a bug in the Titles to Keywords Toolbox where we never considered that a sync-clip might actually contain a spine, if there's a gap clip at the start of the sync-clip. Thanks Olivier Galliano & Sam Pluemacher!</li>
+                <li>Fixed Logic bug in Stream Deck Banks. Thanks aj752!</li>
+                <li>Fixed logic bug in Resolve Control Surface Banks. Thanks KotzendesEinhorn-rgb!</li>
+                <li>Reverted changes we made in v1.4.14 to fix macOS Ventura bugs, as Apple has seemed to fix them in a later Ventura update.</li>
+                <li>Fixed a nil error in the Keywords action within the Loupedeck Plugin if no existing Keyword Shortcuts are allocated.</li>
+			</ul>
+
+		    <hr />
+
 		    <h1>CommandPost 1.4.14</h1>
 
         	<h2>⚠️ Important Changes</h2>
