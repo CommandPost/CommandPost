@@ -1257,6 +1257,15 @@ local function callback(id, params)
             mod.automaticallyUploadCSV(setting["automaticallyUploadCSV"])
             mod.mergeData(setting["mergeData"])
             mod.ignoreColumns(setting["ignoreColumns"])
+
+            --------------------------------------------------------------------------------
+            -- Change Export Destination:
+            --------------------------------------------------------------------------------
+            local destinationPath = setting["destinationPath"]
+            if doesDirectoryExist(destinationPath) then
+                mod.destinationPath(destinationPath)
+            end
+
             updateUI()
         end
 
@@ -1304,6 +1313,7 @@ local function callback(id, params)
                 ["automaticallyUploadCSV"]          = mod.automaticallyUploadCSV(),
                 ["mergeData"]                       = mod.mergeData(),
                 ["ignoreColumns"]                   = mod.ignoreColumns(),
+                ["destinationPath"]                 = mod.destinationPath()
             }
 
             mod.settings(settings)
