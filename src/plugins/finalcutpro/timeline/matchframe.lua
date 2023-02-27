@@ -19,6 +19,7 @@ local just                      = require "cp.just"
 local tools                     = require "cp.tools"
 
 local childIndex                = axutils.childIndex
+local childWithRole             = axutils.childWithRole
 local displayErrorMessage       = dialog.displayErrorMessage
 local displayNotification       = dialog.displayNotification
 local playErrorSound            = tools.playErrorSound
@@ -382,8 +383,9 @@ local function selectKeywordCollection(keyword, solo)
                 --------------------------------------------------------------------------------
                 -- Check to see if we have a match:
                 --------------------------------------------------------------------------------
-                local children = selectedRow:attributeValue("AXChildren")
-                local selectedValue = children and children[1] and children[1]:attributeValue("AXValue")
+                local cell              = selectedRow and childWithRole(selectedRow, "AXCell")
+                local textField         = cell and childWithRole(cell, "AXTextField")
+                local selectedValue     = textField and textField:attributeValue("AXValue")
                 if selectedValue and string.lower(selectedValue) == keyword then -- All keywords in the Pasteboard are lowercase
                     --------------------------------------------------------------------------------
                     -- Select the keyword collection:
