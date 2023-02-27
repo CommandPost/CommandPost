@@ -11,6 +11,7 @@ local log                       = require "hs.logger".new "ldCT"
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
 local canvas                    = require "hs.canvas"
+local colorExtension            = require "hs.drawing.color"
 local eventtap                  = require "hs.eventtap"
 local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
@@ -500,10 +501,15 @@ function mod.new(deviceType)
     --- The last Bundle ID.
     o.lastBundleID = config.prop(o.id .. ".lastBundleID", "All Applications")
 
-    --- plugins.core.loupedeckctandlive.manager.screensBacklightLevel <cp.prop: number>
+    --- plugins.core.loupedeckctandlive.manager.screensBacklightLevel <cp.prop: string>
     --- Field
     --- Screens Backlight Level
     o.screensBacklightLevel = config.prop(o.id .. ".screensBacklightLevel", "9")
+
+    --- plugins.core.loupedeckctandlive.manager.screensBacklightLevel <cp.prop: number>
+    --- Field
+    --- LED Backlight Level
+    o.ledBacklightLevel = config.prop(o.id .. ".ledBacklightLevel", 10)
 
     --- plugins.core.loupedeckctandlive.manager.loadSettingsFromDevice <cp.prop: boolean>
     --- Field
@@ -725,6 +731,109 @@ function mod.new(deviceType)
         :groupedBy("commandPost")
         :titled(i18n("enable" .. o.commandID .. "SupportQuitLoupedeckApp"))
         :image(icon)
+
+    --------------------------------------------------------------------------------
+    -- Actions to Change Screens Backlight Level:
+    --------------------------------------------------------------------------------
+    for deviceNumber=1, mod.NUMBER_OF_DEVICES do
+        --------------------------------------------------------------------------------
+        -- Individual Screen Brightness - 1 to 10:
+        --------------------------------------------------------------------------------
+        for i=1, 10 do
+            global
+                :add("backlight_" .. o.commandID .. "_" .. deviceNumber .. "_" .. i)
+                :whenActivated(function()
+                    o.screensBacklightLevel(tostring(i))
+                    o:updateBacklightLevel(deviceNumber, i)
+                end)
+                :groupedBy("commandPost")
+                :titled(string.format("%s (%s %s) - %s %s", i18n(o.i18nID), i18n("unit"), deviceNumber, i18n("screensBacklightLevel"), i))
+                :image(icon)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Increase Screen Brightness:
+        --------------------------------------------------------------------------------
+        global
+            :add("backlight_" .. o.commandID .. "_" .. deviceNumber .. "_increase")
+            :whenActivated(function()
+                local currentBacklightLevel = tonumber(o.screensBacklightLevel())
+                if currentBacklightLevel < 10 then
+                    currentBacklightLevel = currentBacklightLevel + 1
+                    o.screensBacklightLevel(tostring(currentBacklightLevel))
+                    o:updateBacklightLevel(deviceNumber, currentBacklightLevel)
+                end
+            end)
+            :groupedBy("commandPost")
+            :titled(string.format("%s (%s %s) - %s %s", i18n(o.i18nID), i18n("unit"), deviceNumber, i18n("increase"), i18n("screensBacklightLevel")))
+            :image(icon)
+
+        --------------------------------------------------------------------------------
+        -- Decrease Screen Brightness:
+        --------------------------------------------------------------------------------
+        global
+            :add("backlight_" .. o.commandID .. "_" .. deviceNumber .. "_decrease")
+            :whenActivated(function()
+                local currentBacklightLevel = tonumber(o.screensBacklightLevel())
+                if currentBacklightLevel > 1 then
+                    currentBacklightLevel = currentBacklightLevel - 1
+                    o.screensBacklightLevel(tostring(currentBacklightLevel))
+                    o:updateBacklightLevel(deviceNumber, currentBacklightLevel)
+                end
+            end)
+            :groupedBy("commandPost")
+            :titled(string.format("%s (%s %s) - %s %s", i18n(o.i18nID), i18n("unit"), deviceNumber, i18n("decrease"), i18n("screensBacklightLevel")))
+            :image(icon)
+
+        --------------------------------------------------------------------------------
+        -- Individual LED Brightness - 1 to 10:
+        --------------------------------------------------------------------------------
+        for i=1, 10 do
+            global
+                :add("ledBrightness_" .. o.commandID .. "_" .. deviceNumber .. "_" .. i)
+                :whenActivated(function()
+                    o.ledBacklightLevel(i)
+                    o:refresh(deviceNumber)
+                end)
+                :groupedBy("commandPost")
+                :titled(string.format("%s (%s %s) - %s %s", i18n(o.i18nID), i18n("unit"), deviceNumber, i18n("ledBrightness"), i))
+                :image(icon)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Increase LED Brightness:
+        --------------------------------------------------------------------------------
+        global
+            :add("ledBrightness_" .. o.commandID .. "_" .. deviceNumber .. "_increase")
+            :whenActivated(function()
+                local currentBacklightLevel = o.ledBacklightLevel()
+                if currentBacklightLevel < 10 then
+                    currentBacklightLevel = currentBacklightLevel + 1
+                    o.ledBacklightLevel(currentBacklightLevel)
+                    o:refresh(deviceNumber)
+                end
+            end)
+            :groupedBy("commandPost")
+            :titled(string.format("%s (%s %s) - %s %s", i18n(o.i18nID), i18n("unit"), deviceNumber, i18n("increase"), i18n("ledBrightness")))
+            :image(icon)
+
+        --------------------------------------------------------------------------------
+        -- Decrease LED Brightness:
+        --------------------------------------------------------------------------------
+        global
+            :add("ledBrightness_" .. o.commandID .. "_" .. deviceNumber .. "_decrease")
+            :whenActivated(function()
+                local currentBacklightLevel = o.ledBacklightLevel()
+                if currentBacklightLevel > 1 then
+                    currentBacklightLevel = currentBacklightLevel - 1
+                    o.ledBacklightLevel(currentBacklightLevel)
+                    o:refresh(deviceNumber)
+                end
+            end)
+            :groupedBy("commandPost")
+            :titled(string.format("%s (%s %s) - %s %s", i18n(o.i18nID), i18n("unit"), deviceNumber, i18n("decrease"), i18n("ledBrightness")))
+            :image(icon)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Bank Actions:
@@ -1203,20 +1312,32 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
             local ledColor = snippetResult or (ledButton and ledButton[id] and ledButton[id].led) or defaultColor
 
+            --------------------------------------------------------------------------------
+            -- Set the LED brightness by adjusting the HSB values:
+            --------------------------------------------------------------------------------
+            local newLEDColor
+
+            if isColor(ledColor) then
+                newLEDColor = ledColor
+            else
+                newLEDColor = {hex="#" .. ledColor}
+            end
+
+            local hsbLEDColor = colorExtension.asHSB(newLEDColor)
+
+            hsbLEDColor.brightness = self.ledBacklightLevel() / 10
+
             if not self.cachedLEDButtonValues[deviceNumber] then
                 self.cachedLEDButtonValues[deviceNumber] = {}
             end
 
-            if self.cachedLEDButtonValues[deviceNumber][id] ~= ledColor then
+            local cacheID = tostring(hsbLEDColor.hue) .. tostring(hsbLEDColor.saturation) .. tostring(hsbLEDColor.brightness) .. tostring(hsbLEDColor.alpha)
+            if self.cachedLEDButtonValues[deviceNumber][id] ~= cacheID then
                 --------------------------------------------------------------------------------
                 -- Only update if the colour has changed to save bandwidth:
                 --------------------------------------------------------------------------------
-                if isColor(ledColor) then
-                    device:buttonColor(i, ledColor)
-                else
-                    device:buttonColor(i, {hex="#" .. ledColor})
-                end
-                self.cachedLEDButtonValues[deviceNumber][id] = ledColor
+                device:buttonColor(i, hsbLEDColor)
+                self.cachedLEDButtonValues[deviceNumber][id] = cacheID
             end
         end
 
