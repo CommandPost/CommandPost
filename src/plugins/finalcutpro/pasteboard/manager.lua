@@ -66,7 +66,7 @@ mod.WATCHER_FREQUENCY = 0.5
 --- plugins.finalcutpro.pasteboard.manager.NUMBER_OF_PASTEBOARD_BUFFERS -> number
 --- Constant
 --- Number of Pasteboard Buffers.
-mod.NUMBER_OF_PASTEBOARD_BUFFERS = 9
+mod.NUMBER_OF_PASTEBOARD_BUFFERS = 50
 
 --- plugins.finalcutpro.pasteboard.manager.RESTART_DELAY -> number
 --- Constant
