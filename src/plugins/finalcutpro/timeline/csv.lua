@@ -4,7 +4,7 @@
 
 local require           = require
 
---local log				= require "hs.logger".new "index"
+local log				= require "hs.logger".new "index"
 
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
