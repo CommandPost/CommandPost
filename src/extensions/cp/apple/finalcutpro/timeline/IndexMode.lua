@@ -37,7 +37,11 @@ end
 --- Returns:
 --- * `true` if it matches, otherwise `false`.
 function IndexMode.static.matches(element)
-    return RadioGroup.matches(element) and #element >= 3 and element[1]:attributeValue("AXTitle") == clipsString()
+    --------------------------------------------------------------------------------
+    -- macOS Ventura uses `AXDescription` for the `AXRadioButton` labels, whereas
+    -- earlier versions of macOS use `AXTitle`:
+    --------------------------------------------------------------------------------
+    return RadioGroup.matches(element) and #element >= 3 and (element[1]:attributeValue("AXTitle") == clipsString() or element[1]:attributeValue("AXDescription") == clipsString())
 end
 
 --- cp.apple.finalcutpro.timeline.IndexMode(index) -> cp.apple.finalcutpro.timeline.IndexMode
@@ -66,7 +70,13 @@ function IndexMode.lazy.value:clips()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_clips", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == clipsString() end)
+            return ui and childMatching(ui, function(child)
+                --------------------------------------------------------------------------------
+                -- macOS Ventura uses `AXDescription` for the `AXRadioButton` labels, whereas
+                -- earlier versions of macOS use `AXTitle`:
+                --------------------------------------------------------------------------------
+                return child:attributeValue("AXTitle") == clipsString() or child:attributeValue("AXDescription") == clipsString()
+            end)
         end, RadioButton.matches)
     end))
 end
@@ -78,7 +88,13 @@ function IndexMode.lazy.value:tags()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_tags", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == tagsString() end)
+            return ui and childMatching(ui, function(child)
+                --------------------------------------------------------------------------------
+                -- macOS Ventura uses `AXDescription` for the `AXRadioButton` labels, whereas
+                -- earlier versions of macOS use `AXTitle`:
+                --------------------------------------------------------------------------------
+                return child:attributeValue("AXTitle") == tagsString() or child:attributeValue("AXDescription") == tagsString()
+            end)
         end, RadioButton.matches)
     end))
 end
@@ -90,7 +106,13 @@ function IndexMode.lazy.value:roles()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_roles", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == rolesString() end)
+            return ui and childMatching(ui, function(child)
+                --------------------------------------------------------------------------------
+                -- macOS Ventura uses `AXDescription` for the `AXRadioButton` labels, whereas
+                -- earlier versions of macOS use `AXTitle`:
+                --------------------------------------------------------------------------------
+                return child:attributeValue("AXTitle") == rolesString() or child:attributeValue("AXDescription") == rolesString()
+            end)
         end, RadioButton.matches)
     end))
 end
@@ -102,7 +124,13 @@ function IndexMode.lazy.value:captions()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_captions", function()
             local ui = original()
-            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == captionsString() end)
+            return ui and childMatching(ui, function(child)
+                --------------------------------------------------------------------------------
+                -- macOS Ventura uses `AXDescription` for the `AXRadioButton` labels, whereas
+                -- earlier versions of macOS use `AXTitle`:
+                --------------------------------------------------------------------------------
+                return child:attributeValue("AXTitle") == captionsString() or child:attributeValue("AXDescription") == captionsString()
+            end)
         end, RadioButton.matches)
     end))
 end

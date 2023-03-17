@@ -48,6 +48,7 @@ function mod.saveTimelineIndexToCSV()
             end
         end
     end
+    log.ef("Failed to show the Timeline Index or get its contents when saving to a CSV.")
     playErrorSound()
 end
 
