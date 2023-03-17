@@ -4,7 +4,7 @@
 
 local require           = require
 
---local log				= require "hs.logger".new "index"
+local log				= require "hs.logger".new "index"
 
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
@@ -48,6 +48,7 @@ function mod.saveTimelineIndexToCSV()
             end
         end
     end
+    log.ef("Failed to show the Timeline Index or get its contents when saving to a CSV.")
     playErrorSound()
 end
 
