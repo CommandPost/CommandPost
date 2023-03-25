@@ -485,7 +485,7 @@ Viewer.static.BACKGROUND = {
 --- Notes:
 ---  * sets the background for all viewers.
 function Viewer.lazy.prop:background()
-    return self:app().preferences.prop("FFPlayerBackground")
+    return self:app().preferences:prop("FFPlayerBackground")
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer.getFormat <cp.prop: string; read-only>
