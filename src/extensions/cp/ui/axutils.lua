@@ -168,22 +168,20 @@ end
 ---  * a table of children
 function axutils.children(element, compareFn)
     local children = element
-    --------------------------------------------------------------------------------
-    -- Try to get the children array directly, if present, to optimise the loop.
-    --
-    -- NOTE: There seems to be some weirdness with some elements coming from
-    --       `axuielement` without the correct metatable.
-    --------------------------------------------------------------------------------
-    if element and element.attributeValue then
+
+    if element and is.callable(element.children) then
+        --------------------------------------------------------------------------------
+        -- There is a `children` function, priorise that.
+        --------------------------------------------------------------------------------
+        children = element:children()
+    elseif element and element.attributeValue then
         --------------------------------------------------------------------------------
         -- It's an AXUIElement:
         --------------------------------------------------------------------------------
         children = element:attributeValue("AXChildren") or element
-    elseif element and is.callable(element.children) then
-        children = element:children()
     end
 
-     if type(children) == "table" then
+    if type(children) == "table" then
         if type(compareFn) == "function" then
             sort(children, compareFn)
         end
