@@ -2,12 +2,10 @@
 ---
 --- Controls sections for the CommandPost menu.
 
-local require = require
+local require   = require
 
-local config = require("cp.config")
-
-local fnutils = require("hs.fnutils")
-
+local config    = require "cp.config"
+local fnutils   = require "hs.fnutils"
 
 local section = {}
 
