@@ -1464,7 +1464,10 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     -- The Razer Stream Controller only has one screen object, so we need to do
     -- a bit of processing to convert it back into left, middle and right screens:
     --------------------------------------------------------------------------------
-    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER then
+    if (
+      self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER or
+      self.deviceType == mod.deviceTypes.LIVE
+    ) then
         if not frame then
             frame = {}
         end
