@@ -18,6 +18,7 @@ local StaticText                        = require "cp.ui.StaticText"
 local delegator                         = require "cp.delegator"
 
 local Appearance				        = require "cp.apple.finalcutpro.timeline.Appearance"
+local Duration                          = require "cp.apple.finalcutpro.timeline.Duration"
 local ToolPalette                       = require "cp.apple.finalcutpro.timeline.ToolPalette"
 
 local chain                             = fn.chain
@@ -175,7 +176,7 @@ end
 --- Alternately, it may contain two timelines, separated by " / ", in which case it is the duration of the
 --- currently selected clips, then the current project/sequence duration.
 function Toolbar.lazy.value:duration()
-    return StaticText(self, self.UI:mutate(
+    return Duration(self, self.UI:mutate(
         cache(self, "_duration", StaticText.matches)(
             childMatching(StaticText.matches, 1, ax.leftToRight)
         )

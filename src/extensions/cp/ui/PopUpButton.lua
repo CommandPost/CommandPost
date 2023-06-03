@@ -6,10 +6,13 @@ local require           = require
 
 --local log				= require "hs.logger".new "PopUpButton"
 
+local just              = require "cp.just"
 local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
-local go                = require "cp.rx.go"
 
+local doUntil           = just.doUntil
+
+local go                = require "cp.rx.go"
 local Do                = go.Do
 local If                = go.If
 local WaitUntil         = go.WaitUntil
@@ -106,7 +109,8 @@ end
 function PopUpButton:selectItem(index)
     local ui = self:UI()
     if ui then
-        local items = ui:performAction("AXPress")[1]
+        ui:performAction("AXPress")
+        local items = doUntil(function() return ui[1] end, 0.5)
         if items then
             local item = items[index]
             if item then
@@ -114,7 +118,7 @@ function PopUpButton:selectItem(index)
                 item:performAction("AXPress")
             else
                 -- close the menu again
-                items:doAXCancel()
+                items:performAction("AXCancel")
             end
         end
     end
@@ -137,11 +141,9 @@ function PopUpButton:doSelectItem(index)
     :Then(function(menuUI)
         local item = menuUI[index]
         if item then
-            item:performAction("AXPress")
-            return true
+            return Do(item:doPerformAction("AXPress")):Then(true)
         else
-            item:performAction("AXCancel")
-            return false
+            return Do(item:doPerformAction("AXCancel")):Then(false)
         end
     end)
     :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
@@ -173,12 +175,10 @@ function PopUpButton:doSelectValue(value, overrideValue)
             :Then(function(menuUI)
                 for _,item in ipairs(menuUI) do
                     if item:attributeValue("AXTitle") == value and item:attributeValue("AXEnabled") then
-                        item:performAction("AXPress")
-                        return true
+                        return Do(item:doPerformAction("AXPress")):Then(true)
                     end
                 end
-                menuUI:doCancel()
-                return false
+                return Do(menuUI:doPerformAction("AXCancel")):Then(false)
             end)
             :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
             :Otherwise(false)
@@ -261,8 +261,8 @@ function PopUpButton:__call(parent, value)
     return self:value(value)
 end
 
-function PopUpButton:__tostring()
-    return string.format("cp.ui.PopUpButton: %s", self:value())
+function PopUpButton:__valuestring()
+    return self:value()
 end
 
 --- cp.ui.PopUpButton:saveLayout() -> table

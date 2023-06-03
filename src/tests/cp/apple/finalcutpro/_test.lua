@@ -148,7 +148,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(not fcp.commandEditor:isShowing())
             fcp.commandEditor:show()
             ok(fcp.commandEditor:isShowing())
-            ok(fcp.commandEditor.save:UI() ~= nil)
+            ok(fcp.commandEditor.saveButton:UI() ~= nil)
             fcp.commandEditor:hide()
             ok(not fcp.commandEditor:isShowing())
         end

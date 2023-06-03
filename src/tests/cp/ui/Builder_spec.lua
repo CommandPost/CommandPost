@@ -168,5 +168,5 @@ return describe "cp.ui.Builder" {
             expect(c.alpha2):is(nil)
             expect(c.beta):is("beta")
         end),
-    }
+    },
 }

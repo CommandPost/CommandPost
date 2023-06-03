@@ -1,6 +1,8 @@
 --- === cp.apple.finalcutpro.cmd.CommandEditor ===
 ---
 --- Command Editor Module.
+---
+--- Extends: [Dialog](cp.ui.Dialog.md)
 
 local require                       = require
 
@@ -8,11 +10,13 @@ local log                           = require "hs.logger" .new "CmdEditor"
 
 local just                          = require "cp.just"
 
+local has                           = require "cp.ui.has"
 local Button                        = require "cp.ui.Button"
 local CheckBox                      = require "cp.ui.CheckBox"
 local Dialog                        = require "cp.ui.Dialog"
 local Group                         = require "cp.ui.Group"
 local PopUpButton                   = require "cp.ui.PopUpButton"
+local StaticText                    = require "cp.ui.StaticText"
 local TextField                     = require "cp.ui.TextField"
 
 local CommandDetail                 = require "cp.apple.finalcutpro.cmd.CommandDetail"
@@ -29,7 +33,9 @@ local WaitUntil                     = require "cp.rx.go.WaitUntil"
 local fn                            = require "cp.fn"
 local ax                            = require "cp.fn.ax"
 local chain                         = fn.chain
-local get, sort                     = fn.table.get, fn.table.sort
+local get                           = fn.table.get
+
+local list, alias, oneOf            = has.list, has.alias, has.oneOf
 
 local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
 
@@ -48,7 +54,7 @@ CommandEditor.static.matches = ax.matchesIf(
     -- It's modal
     get "AXModal",
     -- It has the required children:
-    chain // ax.children >> sort(ax.topDown) >> fn.all(
+    chain // ax.childrenTopDown >> fn.all(
         -- The `commandSet` PopUpButton ...
         chain // get(5) >> PopUpButton.matches,
         -- The `keyboard` Group...
@@ -57,6 +63,33 @@ CommandEditor.static.matches = ax.matchesIf(
         chain // get(10) >> CommandList.matches
     )
 )
+
+CommandEditor.static.children = list {
+    alias "close" { Button }, alias "minimize" { Button }, alias "zoom" { Button },
+    alias "windowTitle" { StaticText },
+    alias "commandSet" { PopUpButton },
+    alias "modifiers" {
+        Group:containing {
+            alias "command" { CheckBox },
+            alias "shift" { CheckBox },
+            alias "option" { CheckBox },
+            alias "control" { CheckBox },
+        }
+    },
+    alias "keyboardToggle" { CheckBox },
+    alias "search" { TextField:forcingFocus(true) },
+    alias "keyboard" { Group },
+    alias "commandList" { CommandList },
+    alias "detail" {
+        oneOf {
+            alias "commandDetail" { CommandDetail },
+            alias "keyDetail" { KeyDetail },
+        },
+    },
+    Button, -- "Close"
+    alias "saveButton" { Button },
+    has.ended
+}
 
 --- cp.apple.finalcutpro.cmd.CommandEditor(app) -> CommandEditor
 --- Constructor
@@ -148,7 +181,7 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.cmd.CommandEditor` object for method chaining.
 function CommandEditor:hide()
-    self.close:press()
+    self.closeButton:press()
     return self
 end
 
@@ -214,114 +247,103 @@ function CommandEditor.lazy.method:doClose()
     return self.closeButton:doPress()
 end
 
--- ==== Command Editor UI ====
+-----------------------------------------------------------------------
+-- Command Editor UI
+-----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
+--- cp.apple.finalcutpro.cmd.CommandEditor.childrenUI <cp.prop: axuielement; read-only; live?>
 --- Field
---- The "Save" [Button](cp.ui.Button.md).
-function CommandEditor.lazy.value:save()
-    return Button(self, self.UI:mutate(
-        ax.childMatching(Button.matches, 1, ax.bottomUp)
-    ))
+--- The `axuielement` list for the children of the Command Editor.
+function CommandEditor.lazy.prop:childrenUI()
+    return ax.prop(self.UI, "AXChildren")
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor.closeButton <cp.ui.Button>
+--- cp.apple.finalcutpro.cmd.CommandEditor.childrenInNavigationOrderUI <cp.prop: axuielement; read-only; live?>
 --- Field
---- The "Close" [Button](cp.ui.Button.md).
-function CommandEditor.lazy.value:closeButton()
-    return Button(self, self.UI:mutate(
-        ax.childMatching(Button.matches, 2, ax.bottomUp)
-    ))
+--- The `axuielement` list for the children of the Command Editor, in navigation order.
+function CommandEditor.lazy.prop:childrenInNavigationOrderUI()
+    return ax.prop(self.UI, "AXChildrenInNavigationOrder")
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.children <cp.ui.has.ElementList>
+--- Field
+--- The [ElementList](cp.ui.ElementList.md) of the children of the Command Editor.
+function CommandEditor.lazy.value:children()
+    return self.class.children:build(self, self.childrenInNavigationOrderUI)
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.saveButton <cp.ui.Button>
+--- Field
+--- The "Save" [Button](cp.ui.Button.md).
+function CommandEditor.lazy.value:saveButton()
+    return self.children.saveButton
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.commandSet <cp.ui.PopUpButton>
 --- Field
 --- The "Command Set" [PopUpButton](cp.ui.PopUpButton.md).
-function CommandEditor.lazy.value:commandSet()
-    return PopUpButton(self, self.UI:mutate(
-        ax.childMatching(PopUpButton.matches)
-    ))
-end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.modifiers <cp.ui.Group>
 --- Field
 --- The [Group](cp.ui.Group.md) containing 'modifier' checkboxes (Cmd, Shift, etc).
 function CommandEditor.lazy.value:modifiers()
-    return Group(self, self.UI:mutate(
-        ax.childMatching(Group.matches, 1)
-    ))
+    return self.children.modifiers
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.command <cp.ui.CheckBox>
 --- Field
 --- The "Command" [CheckBox](cp.ui.CheckBox.md).
 function CommandEditor.lazy.value:command()
-    return CheckBox(self, self.modifiers.UI:mutate(
-        ax.childMatching(CheckBox.matches, 1)
-    ))
+    return self.modifiers.children.command
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.shift <cp.ui.CheckBox>
 --- Field
 --- The "Shift" [CheckBox](cp.ui.CheckBox.md).
 function CommandEditor.lazy.value:shift()
-    return CheckBox(self, self.modifiers.UI:mutate(
-        ax.childMatching(CheckBox.matches, 2)
-    ))
+    return self.modifiers.children.shift
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.option <cp.ui.CheckBox>
 --- Field
 --- The "Option" [CheckBox](cp.ui.CheckBox.md).
 function CommandEditor.lazy.value:option()
-    return CheckBox(self, self.modifiers.UI:mutate(
-        ax.childMatching(CheckBox.matches, 3)
-    ))
+    return self.modifiers.children.option
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.control <cp.ui.CheckBox>
 --- Field
 --- The "Control" [CheckBox](cp.ui.CheckBox.md).
 function CommandEditor.lazy.value:control()
-    return CheckBox(self, self.modifiers.UI:mutate(
-        ax.childMatching(CheckBox.matches, 4)
-    ))
+    return self.modifiers.children.control
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.keyboardToggle <cp.ui.CheckBox>
 --- Field
 --- The "Keyboard Toggle" [CheckBox](cp.ui.CheckBox.md) (next to the Search field).
 function CommandEditor.lazy.value:keyboardToggle()
-    return CheckBox(self, self.UI:mutate(
-        ax.childMatching(CheckBox.matches)
-    ))
+    return self.children.keyboardToggle
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.search <cp.ui.TextField>
 --- Field
 --- The "Search" [TextField](cp.ui.TextField.md).
 function CommandEditor.lazy.value:search()
-    return TextField(self, self.UI:mutate(
-        ax.childMatching(TextField.matches)
-    )):forceFocus()
+    return self.children.search
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.keyboard <cp.ui.Group>
 --- Field
 --- The [Group](cp.ui.Group.md) containing the keyboard shortcuts. Does not seem to expose the actual key buttons.
 function CommandEditor.lazy.value:keyboard()
-    return Group(self, self.UI:mutate(
-        ax.childMatching(Group.matches, 2)
-    ))
+    return self.children.keyboard
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.commandList <cp.apple.finalcutpro.cmd.CommandList>
 --- Field
 --- The [CommandList](cp.apple.finalcutpro.cmd.CommandList.md).
 function CommandEditor.lazy.value:commandList()
-    return CommandList(self, self.UI:mutate(
-        ax.childMatching(CommandList.matches)
-    ))
+    return self.children.commandList
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.commands <cp.apple.finalcutpro.cmd.Commands>
@@ -343,9 +365,7 @@ end
 --- The [KeyDetail](cp.apple.finalcutpro.cmd.KeyDetail.md) section.
 --- Either this or [commandDetail](#commandDetail) will be visible at any given time.
 function CommandEditor.lazy.value:keyDetail()
-    return KeyDetail(self, self.UI:mutate(
-        ax.childMatching(KeyDetail.matches)
-    ))
+    return self.children.detail.keyDetail
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.commandDetail <cp.apple.finalcutpro.cmd.CommandDetail>
@@ -353,9 +373,7 @@ end
 --- The [CommandDetail](cp.apple.finalcutpro.cmd.CommandDetail.md) section.
 --- Either this or [keyDetail](#keyDetail) will be visible at any given time.
 function CommandEditor.lazy.value:commandDetail()
-    return CommandDetail(self, self.UI:mutate(
-        ax.childMatching(CommandDetail.matches)
-    ))
+    return self.children.detail.commandDetail
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID, [highlight]) -> cp.rx.go.Statement

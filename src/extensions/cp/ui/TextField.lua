@@ -6,13 +6,14 @@ local require = require
 
 -- local log                       = require "hs.logger" .new "TextField"
 
+local inspect                   = require "hs.inspect"
 local go                        = require "cp.rx.go"
 local Element                   = require "cp.ui.Element"
 
 local If                        = go.If
 
 local TextField = Element:subclass("cp.ui.TextField")
-    :defineBuilder("convertingGet", "convertingSet")
+    :defineBuilder("forcingFocus", "convertingGet", "convertingSet")
 
 -----------------------------------------------------------------------
 -- TextField.Builder definitions.
@@ -21,6 +22,13 @@ local TextField = Element:subclass("cp.ui.TextField")
 --- === cp.ui.TextField.Builder ===
 ---
 --- Defines a `TextField` [Builder](cp.ui.Builder.md).
+
+--- cp.ui.TextField.Builder:forcingFocus(value) -> cp.ui.TextField.Builder
+--- Method
+--- If set to `true`, the TextField will be focused when it is created.
+---
+--- Parameters:
+---  * value - If `true`, the TextField will be focused when its value is set.
 
 --- cp.ui.TextField.Builder:convertingGet(getter) -> cp.ui.TextField.Builder
 --- Method
@@ -49,8 +57,18 @@ local TextField = Element:subclass("cp.ui.TextField")
 ---  * The `setter` will be called with the input value from a `TextField:value(...)` call as its only parameter.
 ---    It should return a `string` to be saved into the `TextField`.
 
+--- cp.ui.TextField:forcingFocus(value) -> cp.ui.TextField.Builder
+--- Function
+--- If `true`, the `TextField` will be focused when its value is set.
+---
+--- Parameters:
+---  * value - If `true`, the `TextField` will be focused when its value is set.
+---
+--- Returns:
+---  * The `TextField.Builder`
+
 --- cp.ui.TextField:convertingGet(getter) -> cp.ui.TextField.Builder
---- Field
+--- Function
 --- Creates a `Builder` that will convert the result of the `TextField:value()` getter to a different type.
 ---
 --- Parameters:
@@ -64,7 +82,7 @@ local TextField = Element:subclass("cp.ui.TextField")
 ---  * For example, `TextField:convertGet(tonumber)` will use the standard `tonumber` function to convert the value to a number.
 
 --- cp.ui.TextField:convertingSet(setter) -> cp.ui.TextField.Builder
---- Field
+--- Function
 --- Creates a `Builder` that will convert the value before setting it in the `TextField`.
 ---
 --- Parameters:
@@ -97,7 +115,7 @@ function TextField.static.matches(element, subrole)
         (subrole == nil or element:attributeValue("AXSubrole") == subrole)
 end
 
---- cp.ui.TextField(parent, uiFinder[, convertFn]) -> TextField
+--- cp.ui.TextField(parent, uiFinder, [forceFocus], [getConvertFn], [setConvertFn]) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -116,13 +134,19 @@ end
 --- Parameters:
 ---  * parent   - The parent object.
 ---  * uiFinder - The function will return the `axuielement` for the TextField.
+---  * forceFocus - (optional) If `true`, the TextField will be forced to be focused. Defaults to `false`.
 ---  * getConvertFn    - (optional) If provided, will be passed the `string` value when returning.
 ---  * setConvertFn    - (optional) If provided, will be passed the `number` value when setting.
 ---
 --- Returns:
 ---  * The new `TextField`.
-function TextField:initialize(parent, uiFinder, getConvertFn, setConvertFn)
+function TextField:initialize(parent, uiFinder, forceFocus, getConvertFn, setConvertFn)
     Element.initialize(self, parent, uiFinder)
+    if type(forceFocus) == "function" then
+        getConvertFn, setConvertFn = forceFocus, getConvertFn
+        forceFocus = nil
+    end
+    self._forceFocus = forceFocus
     self._getConvertFn = getConvertFn
     self._setConvertFn = setConvertFn
 end
@@ -288,6 +312,10 @@ function TextField.__call(self, parent, value)
         value = parent
     end
     return self:value(value)
+end
+
+function TextField:__valuestring()
+    return inspect(self:value())
 end
 
 return TextField

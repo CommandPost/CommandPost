@@ -244,4 +244,8 @@ function CheckBox:__call(parent, value)
     return self:checked(value)
 end
 
+function CheckBox:__valuestring()
+    return self:checked() and " ✔ " or " ✘ "
+end
+
 return CheckBox

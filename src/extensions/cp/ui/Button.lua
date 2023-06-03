@@ -129,8 +129,8 @@ function Button:__call()
     return self:press()
 end
 
-function Button:__tostring()
-    return string.format("cp.ui.Button: %q (parent: %s)", self:title(), self:parent())
+function Button:__valuestring()
+    return self:title()
 end
 
 return Button

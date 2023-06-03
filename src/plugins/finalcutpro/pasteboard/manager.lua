@@ -339,7 +339,7 @@ function mod.unarchiveFCPXData(fcpxData)
     return nil
 end
 
---- plugins.finalcutpro.pasteboard.manager.writeFCPXData(fcpxData, quiet) -> boolean
+--- plugins.finalcutpro.pasteboard.manager.writeFCPXData(fcpxData, [quiet]) -> boolean
 --- Function
 --- Write Final Cut Pro data to Pasteboard.
 ---
@@ -355,6 +355,25 @@ function mod.writeFCPXData(fcpxData, quiet)
     --------------------------------------------------------------------------------
     if quiet then mod.stopWatching() end
     local result = pasteboard.writeDataForUTI(PASTEBOARD.UTI, fcpxData)
+    if quiet then mod.startWatching() end
+    return result
+end
+
+--- plugins.finalcutpro.pasteboard.manager.clearFCPXData([quiet]) -> boolean
+--- Function
+--- Clear Final Cut Pro data from Pasteboard.
+---
+--- Parameters:
+---  * quiet - Whether or not we should stop/start the watcher.
+---
+--- Returns:
+---  * `true` if the operation succeeded, otherwise `false` (which most likely means ownership of the pasteboard has changed).
+function mod.clearFCPXData(quiet)
+    --------------------------------------------------------------------------------
+    -- Clear data from Pasteboard:
+    --------------------------------------------------------------------------------
+    if quiet then mod.stopWatching() end
+    local result = pasteboard.clearContents(PASTEBOARD.UTI)
     if quiet then mod.startWatching() end
     return result
 end

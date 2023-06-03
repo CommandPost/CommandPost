@@ -9,6 +9,7 @@ local require           = require
 local cpfn              = require "cp.fn"
 local cpfnargs          = require "cp.fn.args"
 local is                = require "cp.is"
+local slice             = require "cp.slice"
 
 local LazyList          = require "cp.collect.LazyList"
 
@@ -196,7 +197,7 @@ function mod.ifilter(predicate)
     end
 end
 
---- cp.fn.table.imap(fn, values | ...) -> table of any | ...
+--- cp.fn.table.imap(fn) -> function(values | ...) -> table of any | ...
 --- Function
 --- Maps a function over a table using `ipairs`. The function is passed the current `value` and the `key`.
 ---
@@ -209,16 +210,18 @@ end
 ---
 --- Notes:
 ---  * If the values are a table, the results will be a table. Otherwise, the results will be a vararg list.
-function mod.imap(fn, ...)
-    local args, packed = packArgs(...)
-    local results = LazyList(
-        function() return #args end,
-        function(i)
-            local value = args[i]
-            return fn(value, i)
-        end
-    )
-    return unpackArgs(results, packed)
+function mod.imap(fn)
+    return function(...)
+        local args, packed = packArgs(...)
+        local results = LazyList(
+            function() return #args end,
+            function(i)
+                local value = args[i]
+                return fn(value, i)
+            end
+        )
+        return unpackArgs(results, packed)
+    end
 end
 
 --- cp.fn.table.last(table) -> any | nil
@@ -259,7 +262,7 @@ function mod.matchesExactItems(...)
     end
 end
 
---- cp.fn.table.map(fn, t) -> table of any
+--- cp.fn.table.map(fn) -> function(t) -> table of any
 --- Function
 --- Maps a function over a table using `pairs`. The function is passed the current `value` and the `key`.
 ---
@@ -269,12 +272,14 @@ end
 ---
 --- Returns:
 ---  * A table with the values updated via the function.
-function mod.map(fn, t)
-    local results = {}
-    for i,arg in pairs(t) do
-        results[i] = fn(arg, i)
+function mod.map(fn)
+    return function(t)
+        local results = {}
+        for i,arg in pairs(t) do
+            results[i] = fn(arg, i)
+        end
+        return results
     end
-    return results
 end
 
 --- cp.fn.table.mutate(key) -> function(fn) -> function(table) -> table
@@ -331,6 +336,26 @@ function mod.size(t)
     return #t
 end
 
+--- cp.fn.table.slice(start, [count]) -> function(table) -> table
+--- Function
+--- Returns a function that accepts a table and returns a slice of the table.
+---
+--- Parameters:
+---  * start - The starting index of the slice.
+---  * count - The number of items to include in the slice. If not provided, the slice will include all items from the start index.
+---
+--- Returns:
+---  * A function.
+---
+--- Notes:
+---  * The returned function will wrap the table passed in, and updates to the original table will affect the slice.
+---  * Example usage: `fn.table.slice(2, 3)({1,2,3,4,5})` -- returns `{2,3,4}`
+function mod.slice(start, count)
+    return function(t)
+        return slice.new(t, start, count)
+    end
+end
+
 --- cp.fn.table.sort(...) -> function(table) -> table
 --- Function
 --- A combinator that returns a function that accepts a table and returns a new table, sorted with the compare functions.
@@ -366,6 +391,9 @@ end
 --- Returns:
 ---  * A function that accepts a table to split and returns a table of tables, followed by a table of splitter values
 function mod.split(predicate)
+    if type(predicate) ~= "function" then
+        error("predicate must be a function", 2)
+    end
     return function(t)
         local results = {}
         local current = {}

@@ -94,7 +94,7 @@ end)
 ---
 --- A `Statement.Modifier` that defines what value to set a `cp.prop` to.
 
---- cp.rx.go.If.Then <cp.rx.go.Statement.Modifier>
+--- cp.rx.go.SetProp.To <cp.rx.go.Statement.Modifier>
 --- Constant
 --- This is a configuration of `SetProp`, which should be created via `SetProp:To(value)`
 

@@ -4,14 +4,16 @@
 
 local require = require
 
-local axutils                       = require("cp.ui.axutils")
-local Button                        = require("cp.ui.Button")
-local Element                       = require("cp.ui.Element")
+local ax                            = require "cp.fn.ax"
+local axutils                       = require "cp.ui.axutils"
+local Button                        = require "cp.ui.Button"
+local Element                       = require "cp.ui.Element"
+local HasExactChildren              = require "cp.ui.HasExactChildren"
 
-local If                            = require("cp.rx.go.If")
-local WaitUntil                     = require("cp.rx.go.WaitUntil")
+local If                            = require "cp.rx.go.If"
+local WaitUntil                     = require "cp.rx.go.WaitUntil"
 
-local Sheet = Element:subclass("cp.ui.Sheet")
+local Sheet = Element:subclass("cp.ui.Sheet"):include(HasExactChildren)
 
 --- cp.ui.Sheet.matches(element) -> boolean
 --- Function
@@ -22,43 +24,43 @@ local Sheet = Element:subclass("cp.ui.Sheet")
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Sheet.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXSheet"
-end
+Sheet.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXSheet")
 
---- cp.ui.Sheet(parent, uiFinder) -> Sheet
+--- cp.ui.Sheet(parent, uiFinder, [childrenHandler]) -> Sheet
 --- Constructor
 --- Creates a new `Sheet` instance.
 ---
 --- Parameters:
 ---  * parent - The parent object.
 ---  * uiFinder     - The UI, either a `cp.prop` or a `function`.
+---  * childrenHandler - An optional [UIHandler](cp.ui.has.UIHandler.md) to use to convert children `hs.axuielement`s into [Element](cp.ui.Element.md) values.
 ---
 --- Returns:
----  * A new `Browser` object.
-function Sheet:initialize(parent, UI)
+---  * A new `Sheet` object.
+function Sheet:initialize(parent, UI, childrenHandler)
     Element.initialize(self, parent, UI)
+    self:childrenHandler(childrenHandler)
 end
 
 --- cp.ui.Sheet.title <cp.prop: string>
 --- Field
 --- Gets the title of the sheet.
 function Sheet.lazy.prop:title()
-    return axutils.prop(self.UI, "AXTitle")
+    return ax.prop(self.UI, "AXTitle")
 end
 
 --- cp.ui.Sheet.default <cp.ui.Button>
 --- Field
 --- The default [Button](cp.ui.Button.md) for the `Sheet`.
 function Sheet.lazy.value:default()
-    return Button(self, axutils.prop(self.UI, "AXDefaultButton"))
+    return Button(self, ax.prop(self.UI, "AXDefaultButton"))
 end
 
 --- cp.ui.Sheet.cancel <cp.ui.Button>
 --- Field
 --- The cancel [Button](cp.ui.Button.md) for the `Sheet`.
 function Sheet.lazy.value:cancel()
-    return Button(self, axutils.prop(self.UI, "AXCancelButton"))
+    return Button(self, ax.prop(self.UI, "AXCancelButton"))
 end
 
 --- cp.ui.Sheet:hide() -> none

@@ -939,20 +939,19 @@ end
 --- The `getFn` is a function with the following signature:
 ---
 --- ```lua
---- function(original, owner, prop) --> mutantValue
+--- function(original, owner, mutantProp) --> mutantValue
 --- ```
 ---
 ---  * `originalProp`   - The original `cp.prop` being mutated.
 ---  * `owner`          - The owner of the mutator property, if it has been bound.
 ---  * `mutantProp`     - The mutant property.
----  * `mutantValue`    - The new value based off the original.
 ---
 --- You can ignore any parameters that you don't need. Most simply use the `original` prop.
 ---
 --- The `setFn` is optional, and is a function with the following signature:
 ---
 --- ```lua
---- function(mutantValue, original, owner, prop) --> nil
+--- function(mutantValue, originalProp, owner, mutantProp) --> nil
 --- ```
 ---
 ---  * `mutantValue`    - The new value being sent in.

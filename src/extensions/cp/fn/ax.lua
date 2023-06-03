@@ -124,6 +124,8 @@ end
 ---
 --- Returns:
 ---  * A function which will return the `AX` value of the given `name` from the given `uivalue`.
+---
+--- Notes:
 ---  * This is safe to use as a [cp.prop:mutate](cp.prop.md#mutate) getter, since it will resolve the `original` value before getting the named attribute.
 function mod.attribute(name)
     return function(uivalue)
@@ -144,6 +146,8 @@ end
 ---
 --- Returns:
 ---  * A function which will set the `AX` value of the given `name` from the given `uivalue`.
+---
+--- Notes:
 ---  * The `newValue` will be passed to the `setAttributeValue` method of the `uivalue`.
 ---  * The `uivalue` will attempt to be resolved via [uielement](#uielement).
 ---  * This is safe to use as a [cp.prop:mutate](cp.prop.md#mutate) setter, since it will take the `newValue` and `uivalue` in the correct order and resolve the `uivalue`.
@@ -468,7 +472,36 @@ function mod.topToBottomBaseAligned(a, b)
 
     local aBottom = aFrame and aFrame.y + aFrame.h
     local bBottom = bFrame and bFrame.y + bFrame.h
+
     return aBottom and bBottom and aBottom < bBottom
+end
+
+--- cp.fn.ax.bottomToTopBaseAligned(a, b) -> boolean
+--- Function
+--- Returns `true` if the base of element `a` is below the base of element `b`, based on linear vertical alignment.
+--- May be used with `table.sort`.
+---
+--- Parameters:
+---  * a - The first element
+---  * b - The second element
+---
+--- Returns:
+---  * `true` if `a` is below `b`.
+---
+--- Notes:
+---  * Two elements are considered to be aligned if the intersection of the height is at least 50% of the height of both elements.
+function mod.bottomToTopBaseAligned(a, b)
+    if mod.areAligned(a, b) then
+        return false
+    end
+
+    local aFrame = a and a:attributeValue("AXFrame")
+    local bFrame = b and b:attributeValue("AXFrame")
+
+    local aBottom = aFrame.y + aFrame.h
+    local bBottom = bFrame and bFrame.y + bFrame.h
+
+    return aBottom and bBottom and aBottom > bBottom
 end
 
 --- cp.fn.ax.narrowToWide(a, b) -> boolean
@@ -533,9 +566,7 @@ mod.topDown = fn.compare(mod.topToBottomBaseAligned, mod.leftToRight, mod.shortT
 ---
 --- Returns:
 ---  * `true` if `a` is below or to the right of `b` in the UI, `false` otherwise.
-function mod.bottomUp(a, b)
-    return not mod.topDown(a, b)
-end
+mod.bottomUp = fn.compare(mod.bottomToTopBaseAligned, mod.rightToLeft, mod.shortToTall, mod.narrowToWide)
 
 --- cp.fn.ax.init(elementType, ...) -> function(parent, uiFinder) -> cp.ui.Element
 --- Function
@@ -588,7 +619,7 @@ function mod.initElements(parent, elementsUiFinder, elementInits)
     if not elementInits or #elementInits == 0 then return nil end
     return imap(function(init, index)
         return init(parent, elementsUiFinder:mutate(chain // fn.call >> get(index)))
-    end, elementInits)
+    end)(elementInits)
 end
 
 --- cp.fn.ax.prop(uiFinder, attributeName[, settable]) -> cp.prop

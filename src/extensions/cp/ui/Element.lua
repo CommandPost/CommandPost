@@ -1,6 +1,10 @@
 --- === cp.ui.Element ===
 ---
---- A support class for `hs.axuielement` management.
+--- The base class for `hs.axuielement` management.
+---
+--- Includes:
+---  * [cp.lazy](cp.lazy.md)
+---  * [cp.delegator](cp.delegator.md)
 ---
 --- See:
 ---  * [Button](cp.ui.Button.md)
@@ -10,25 +14,35 @@
 local require           = require
 
 --local log               = require "hs.logger".new("Element")
+local inspect           = require "cp.dev" .inspect
 
 local drawing           = require "hs.drawing"
+local window            = require "hs.window"
 
+local deferred          = require "cp.deferred"
+local is                = require "cp.is"
+local just              = require "cp.just"
+local prop              = require "cp.prop"
 local axutils           = require "cp.ui.axutils"
 local Builder           = require "cp.ui.Builder"
-local go	            = require "cp.rx.go"
-local is                = require "cp.is"
-local lazy              = require "cp.lazy"
-local prop              = require "cp.prop"
+local notifier          = require "cp.ui.notifier"
 
 local class             = require "middleclass"
+local lazy              = require "cp.lazy"
+local delegator         = require "cp.delegator"
+
+local go	            = require "cp.rx.go"
+local Do, Given, If     = go.Do, go.Given, go.If
+local WaitUntil         = go.WaitUntil
 
 local cache             = axutils.cache
-local Do, Given, If     = go.Do, go.Given, go.If
+local doUntil           = just.doUntil
 local isFunction        = is.fn
 local isCallable        = is.callable
 local pack, unpack      = table.pack, table.unpack
+local format            = string.format
 
-local Element = class("cp.ui.Element"):include(lazy)
+local Element = class("cp.ui.Element"):include(lazy):include(delegator)
 
 --- cp.ui.Element:defineBuilder(...) -> cp.ui.Element
 --- Method
@@ -83,24 +97,6 @@ function Element.static:defineBuilder(...)
     return self
 end
 
---- cp.ui.Element:isTypeOf(thing) -> boolean
---- Function
---- Checks if the `thing` is an `Element`. If called on subclasses, it will check
---- if the `thing` is an instance of the subclass.
----
---- Parameters:
----  * `thing`		- The thing to check
----
---- Returns:
----  * `true` if the thing is a `Element` instance.
----
---- Notes:
----  * This is a type method, not an instance method or a type function. It is called with `:` on the type itself,
----    not an instance. For example `Element:isTypeOf(value)`
-function Element.static:isTypeOf(thing)
-    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(self)
-end
-
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
 --- Matches to any valid `hs.axuielement`. Sub-types should provide their own `matches` method.
@@ -114,9 +110,29 @@ function Element.static.matches(element)
     return element ~= nil and isFunction(element.isValid) and element:isValid()
 end
 
+--- cp.ui.Element:__valuestring() -> string
+--- Method
+--- Returns a string representation of current `Element`,
+--- or `nil` if no extra detail is available. Defaults to returning `nil`.
+---
+--- Returns:
+---  * A string representation of the `Element`.
+---
+--- Notes:
+---  * This will be called by `__tostring` and added to the class name.
+---  * If you want to change the whole string, you can override `__tostring()` instead.
+function Element:__valuestring() -- luacheck:ignore
+    return nil
+end
+
 -- Defaults to describing the class by it's class name
 function Element:__tostring()
-    return self.class.name
+    local className = self.class.name
+    local valueString = self:__valuestring()
+    if valueString then
+        return format("%s <%s>", className, valueString)
+    end
+    return className
 end
 
 --- cp.ui.Element(parent, uiFinder) -> cp.ui.Element
@@ -219,6 +235,23 @@ function Element.lazy.method:doShow()
     return If(function() return self:parent() end)
     :Then(function(parent) return parent.doShow and parent:doShow() end)
     :Otherwise(false)
+    :Label("Element:doShow()")
+end
+
+--- cp.ui.Element:doShowContentsAt(frame) -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the Element is showing its contents
+--- at the provided frame/rectangle.
+--- Does nothing by default - subclasses that have variable contents should override this.
+---
+--- Parameters:
+---  * frame - The frame to show the contents at.
+---
+--- Returns:
+---  * A Statement
+function Element.lazy.method:doShowContentsAt(frame)
+    return Do(function() self:showContentsAt(frame) end)
+    :Label("Element:doShowContentsAt(frame)")
 end
 
 --- cp.ui.Element:show() -> self
@@ -234,6 +267,24 @@ function Element:show()
     local parent = self:parent()
     if parent then
         parent:show()
+    end
+    return self
+end
+
+--- cp.ui.Element:showContentsAt(frame) -> self
+--- Method
+--- Shows the Element's contents at the provided frame/rectangle.
+--- Does nothing by default - subclasses that have variable contents should override this.
+---
+--- Parameters:
+---  * frame - The frame to show the contents at.
+---
+--- Returns:
+---  * self
+function Element:showContentsAt(frame)
+    local parent = self:parent()
+    if parent then
+        parent:showContentsAt(frame)
     end
     return self
 end
@@ -365,6 +416,13 @@ function Element.lazy.prop:role()
     return axutils.prop(self.UI, "AXRole")
 end
 
+--- cp.ui.Element.roleDescription <cp.prop: string; read-only>
+--- Field
+--- Returns the `AX` role description for the element.
+function Element.lazy.prop:roleDescription()
+    return axutils.prop(self.UI, "AXRoleDescription")
+end
+
 --- cp.ui.Element.subrole <cp.prop: string; read-only>
 --- Field
 --- Returns the `AX` subrole name for the element.
@@ -441,6 +499,125 @@ end
 function Element:app()
     local parent = self:parent()
     return parent and parent:app()
+end
+
+--- cp.ui.Element.windowUI <cp.prop: hs.axuielement; read-only; live?>
+--- Field
+--- The `AXWindow` instance.
+function Element.lazy.prop:windowUI()
+    return axutils.prop(self.UI, "AXWindow")
+end
+
+--- cp.ui.Element.hsWindow <cp.prop: hs.window; read-only; live?>
+--- Method
+--- The `hs.window` instance.
+function Element.lazy.prop:hsWindow()
+    return self.windowUI:mutate(function(original)
+        local windowUI = original()
+        return windowUI and windowUI:asHSWindow()
+    end)
+end
+
+--- cp.ui.Element:doFocusOnWindow() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` which will attempt to the OS on the `Element`'s window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will attempt to focus the window.
+function Element.lazy.method:doFocusOnWindow()
+    return If(self.hsWindow)
+    :Then(function(hsWindow)
+        hsWindow:focus()
+        return WaitUntil(function()
+            return hsWindow == window.focusedWindow()
+        end)
+        :TimeoutAfter(1000)
+    end)
+end
+
+--- cp.ui.Element:focusOnWindow() -> boolean
+--- Method
+--- Attempts to focus the `Element`'s window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the window was focused, otherwise `false`.
+function Element:focusOnWindow()
+    local hsWindow = self:hsWindow()
+    if hsWindow then
+        hsWindow:focus()
+        return doUntil(function()
+            return hsWindow == window.focusedWindow()
+        end, 1)
+    end
+end
+
+--- cp.ui.Element:notifier() -> cp.ui.notifier
+--- Method
+--- Returns the [notifier](cp.ui.notifier.lua) instance for this `Element`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * cp.ui.notifier
+function Element.lazy.method:notifier()
+    return notifier.new(self:app():bundleID(), self.UI)
+end
+
+--- cp.ui.Element:watchFor(eventList, callback[, deferBy]) -> function | cp.prop
+--- Method
+--- Watches for the specified `AX` events and calls the callback when they occur.
+--- If the `callback` is a `cp.prop`, the `cp.prop:update()` method will be called instead.
+---
+--- Parameters:
+---  * eventList - The list of events to watch for.
+---  * callback   - The callback or `cp.prop` to call when the event occurs.
+---  * deferBy    - The number of seconds to defer the callback. Defaults to instantaneous.
+---
+--- Returns:
+---  * The original callback value
+---
+--- Notes:
+---  * Common events:
+---    * `AXFocusedWindowChanged` - The focused window has changed.
+---    * `AXFocusedUIElementChanged` - The focused element has changed.
+---    * `AXLiveRegionChanged` - The live region has changed.
+---    * `AXMenuClosedNotification` - The menu has been closed.
+---    * `AXMenuItemSelectedNotification` - The menu item has been selected.
+---    * `AXMenuOpenedNotification` - The menu has been opened.
+---    * `AXSelectedChildrenChanged` - The selected children have changed.
+---    * `AXUIElementCreated` - The element has been created.
+---    * `AXUIElementDestroyed` - The element has been destroyed.
+---    * `AXValidationErrorChanged` - The validation error has changed.
+---    * `AXValueChanged` - The value of the element has changed.
+---    * `AXWindowCreated` - The window has been created.
+---    * `AXWindowDestroyed` - The window has been destroyed.
+function Element:watchFor(eventList, callback, deferBy)
+    local originalCallback = callback
+    if prop.is(callback) then
+        local propToUpdate = callback
+        callback = function()
+            propToUpdate:update()
+        end
+    elseif not isCallable(callback) then
+        error("The callback must be a function or a cp.prop.", 2)
+    end
+
+    if deferBy then
+        local deferredFn = callback
+        local d = deferred.new(deferBy):action(deferredFn)
+        callback = function() d:run() end
+    end
+
+    self:notifier():start():watchFor(eventList, callback)
+
+    return originalCallback
 end
 
 --- cp.ui.Element:snapshot([path]) -> hs.image | nil
@@ -523,6 +700,33 @@ function Element:highlight(color, duration)
     return self
 end
 
+-- cp.ui.Element:inspect([options]) -> string
+-- Method
+-- Returns a string representation of the `Element`.
+--
+-- Parameters:
+--  * options	- (optional) The options table.
+--
+-- Returns:
+--  * The string representation.
+function Element:inspect(options)
+    options = options or {depth=1}
+    return inspect(self, options)
+end
+
+--- cp.ui.Element:inspectUI([options]) -> string
+--- Method
+--- Returns a string representation of the `Element`'s `UI`.
+---
+--- Parameters:
+---  * options	- (optional) The options table.
+---
+-- Returns:
+---  * The string representation.
+function Element:inspectUI(options)
+    options = options or {depth=1}
+    return cp.dev.inspect(self:UI(), options)
+end
 
 --- cp.ui.Element:saveLayout() -> table
 --- Method
@@ -610,6 +814,16 @@ function Element:doLayout(layout)
     :Label("cp.ui.Element:doLayout(layout)")
 end
 
+--- cp.ui.Element:doStoreLayout(id) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to store the layout based on the parameters
+--- provided by the `id` key value. This can then be restored via the [doRecallLayout](#doRecallLayout) method.
+---
+--- Parameters:
+---  * id - a `string` key to store the layout under.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 function Element:doStoreLayout(id)
     return Given(self:doSaveLayout())
     :Then(function(layout)
@@ -621,6 +835,16 @@ function Element:doStoreLayout(id)
     :Label("cp.ui.Element:doStoreLayout(id)")
 end
 
+--- cp.ui.Element:doForgetLayout(id) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to forget the layout based on the parameters
+--- provided by the `id` key value.
+---
+--- Parameters:
+---  * id - a `string` key to forget the layout under.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 function Element:doForgetLayout(id)
     return Do(function()
         local layouts = self.__storedLayouts
@@ -635,6 +859,17 @@ function Element:doForgetLayout(id)
     :Label("cp.ui.Element:doForgetLayout(id)")
 end
 
+--- cp.ui.Element:doRecallLayout(id, [preserve]) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to recall the layout based on the parameters
+--- provided by the `id` key value.
+---
+--- Parameters:
+---  * id - a `string` key to recall the layout under.
+---  * preserve - (optional) a `boolean` indicating whether to preserve the current layout. Defaults to forgetting it after restoring.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md) to execute.
 function Element:doRecallLayout(id, preserve)
     local doForget = preserve and nil or self:doForgetLayout(id)
 
@@ -657,6 +892,53 @@ end
 -- in the FCPX API.
 function Element:__call()
     return self
+end
+
+--- cp.ui.Element:extension(name) -> table
+--- Function
+--- Returns the extension table for the specified `name`.
+---
+--- Parameters:
+---  * name - The name of the extension.
+---
+--- Returns:
+---  * The extension table.
+---
+--- Notes:
+---  * Extensions are intended to compose additional shared functionality across multiple
+---    [Element](cp.ui.Element.md) classes.
+---  * They have `lazy` values, so can be used to define additional `value`/`method`/`prop` properties,
+---    like a standard Element.
+---  * They have a `static` value, so can be used to define additional class/static properties.
+
+-- TODO: @randomeizer to review the below code:
+
+function Element.static:extension(name) -- luacheck:ignore
+    local extension = {
+        lazy = { value = {}, method = {}, prop = {} },
+        static = {},
+    }
+
+    function extension:included(klass) -- luacheck:ignore
+        for key, value in pairs(self.static) do
+            klass[key] = value
+        end
+
+        if not klass.lazy then
+            error(string.format("extension requires that %s has already included cp.lazy", klass.name), 2)
+        end
+        for key, value in pairs(self.lazy.value) do
+            klass.lazy.value[key] = value
+        end
+        for key, value in pairs(self.lazy.prop) do
+            klass.lazy.prop[key] = value
+        end
+        for key, value in pairs(self.lazy.method) do
+            klass.lazy.method[key] = value
+        end
+    end
+
+    return extension
 end
 
 return Element

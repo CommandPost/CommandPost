@@ -40,12 +40,14 @@
 --- ```lua
 --- audio:stabilization():smoothing():show():value(1.5)
 --- ```
+---
+--- Extends: [BasePanel](cp.apple.finalcutpro.inspector.BasePanel.md)
+--- Delegates To: [content](#content)
 
 local require                                       = require
 
 -- local log                                           = require("hs.logger").new("AudioInspector")
 
-local fn                                            = require "cp.fn"
 local ax                                            = require "cp.fn.ax"
 
 local axutils                                       = require "cp.ui.axutils"
@@ -53,8 +55,8 @@ local axutils                                       = require "cp.ui.axutils"
 local Group                                         = require "cp.ui.Group"
 local ScrollArea                                    = require "cp.ui.ScrollArea"
 local SplitGroup                                    = require "cp.ui.SplitGroup"
-local Splitter                                      = require "cp.ui.Splitter"
 local TextArea                                      = require "cp.ui.TextArea"
+local has                                           = require "cp.ui.has"
 
 local BasePanel                                     = require "cp.apple.finalcutpro.inspector.BasePanel"
 local AudioConfiguration                            = require "cp.apple.finalcutpro.inspector.audio.AudioConfiguration"
@@ -63,11 +65,10 @@ local MainProperties                                = require "cp.apple.finalcut
 
 local childMatching                                 = axutils.childMatching
 
-local chain                                         = fn.chain
-local get                                           = fn.table.get
-local filter                                        = fn.value.filter
+local alias                                         = has.alias
 
 local AudioInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.audio.AudioInspector")
+                        :delegateTo("content")
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector.matches(element)
 --- Function
@@ -84,18 +85,6 @@ function AudioInspector.static.matches(element)
     return split and #split > 5 or false
 end
 
-AudioInspector.static.matches2 = ax.matchesIf(
-    chain //
-    -- it a BasePanel that is also a Group...
-    filter(BasePanel.matches, Group.matches) >>
-    -- with exactly one child...
-    ax.children >> filter(fn.table.hasExactly(1)) >>
-    -- which is a SplitGroup...
-    get(1) >> filter(SplitGroup.matches) >>
-    -- who has more than 5 children.
-    ax.children >> fn.table.hasAtLeast(5)
-)
-
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector(parent) -> cp.apple.finalcutpro.audio.AudioInspector
 --- Constructor
 --- Creates a new `AudioInspector` object
@@ -111,22 +100,25 @@ end
 
 function AudioInspector.lazy.value:content()
     local ui = self.UI:mutate(ax.childMatching(SplitGroup.matches))
-    return SplitGroup(self, ui, {
-        TopProperties,
-        MainProperties,
-        Group,
-        Splitter,
-        TextArea,
-        ScrollArea
-    })
+    return SplitGroup(self, ui,
+        {
+            alias "topProperties" { TopProperties },
+            Group,
+            alias "mainProperties" { MainProperties },
+        },
+        {
+            TextArea,
+            ScrollArea,
+        }
+    )
 end
 
 function AudioInspector.lazy.value:topProperties()
-    return self.content.children[1]
+    return self.content.sections[1].topProperties
 end
 
 function AudioInspector.lazy.value:mainProperties()
-    return self.content.children[2]
+    return self.content.sections[1].mainProperties
 end
 
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.volume <cp.prop: PropertyRow>

@@ -409,7 +409,7 @@ function GridElement:selectRows(rows)
     local rowsUI = {}
     for _,row in ipairs(rows) do
         -- check it's a supported row type
-        if not self._rowInit:isTypeOf(row) then
+        if not self._rowInit:isClassFor(row) then
             error("Unsupported row type: " .. tostring(row))
         end
         local rowUI = row:UI()
@@ -432,7 +432,7 @@ end
 ---  * `nil`
 function GridElement:selectRow(row)
     -- check it's a supported row type
-    if not self._rowInit:isTypeOf(row) then
+    if not self._rowInit:isClassFor(row) then
         error("Unsupported row type: " .. tostring(row))
     end
     -- select the row
@@ -465,6 +465,36 @@ function GridElement:doSelectRowAt(path)
     return Do(function()
         return self:visitRow(path, function(row) row:selected(true) end)
     end)
+end
+
+--- cp.ui.GridElement:saveLayout() -> table
+--- Method
+--- Saves the current layout of the grid.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current layout of the grid.
+function GridElement:saveLayout()
+    local layout = {}
+    layout.selectedRowsUI = self:selectedRowsUI()
+    return layout
+end
+
+--- cp.ui.GridElement:loadLayout(layout) -> nil
+--- Method
+--- Loads the layout of the grid.
+---
+--- Parameters:
+---  * layout - A table containing the layout to load.
+---
+--- Returns:
+---  * `nil`
+function GridElement:loadLayout(layout)
+    if layout.selectedRowsUI then
+        self:selectedRowsUI(layout.selectedRowsUI)
+    end
 end
 
 -- === cp.ui.GridElement.Factory ===

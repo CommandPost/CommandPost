@@ -71,12 +71,13 @@ function mod.success(value)
     return setmetatable({success = true, value = value}, mod.mt)
 end
 
---- cp.result.failure(message) -> result
+--- cp.result.failure(message, [...]) -> result
 --- Constructor
 --- Creates a new `failure` result, with the specified error `message`.
 ---
 --- Parameters:
 ---  * message - Error message
+---  * ...     - Optional arguments to be formatted into the message
 ---
 --- Returns:
 ---  * A new result
@@ -129,7 +130,7 @@ end
 --- cp.result.okValue(ok, value) -> result
 --- Constructor
 --- Provides a simple wrapper for the common `ok, value|err` pattern of function error handling in Lua.
---- If `ok` is true, `value` is the successful result, otherwise `value` is the error message.
+--- If `ok` is `true`, `value` is the successful result, otherwise `value` is the error message.
 ---
 --- Parameters:
 ---  * ok - if `true`, the operation was successful.
