@@ -693,6 +693,9 @@ local NOTHING = {}
 --- Notes:
 ---  * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:watch(watchFn, notifyNow, uncloned)
+    if watchFn == nil then
+        error("the watchFn was nil", 2)
+    end
     if not self._watchers then
         self._watchers = {}
     end

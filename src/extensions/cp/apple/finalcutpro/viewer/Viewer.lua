@@ -19,6 +19,7 @@ local notifier                          = require "cp.ui.notifier"
 local prop                              = require "cp.prop"
 
 local ControlBar                        = require "cp.apple.finalcutpro.viewer.ControlBar"
+local CustomOverlay                     = require "cp.apple.finalcutpro.viewer.CustomOverlay"
 local InfoBar                           = require "cp.apple.finalcutpro.viewer.InfoBar"
 local PrimaryWindow                     = require "cp.apple.finalcutpro.main.PrimaryWindow"
 local SecondaryWindow                   = require "cp.apple.finalcutpro.main.SecondaryWindow"
@@ -281,7 +282,9 @@ end
 --- Field
 --- The `Image` for the video content.
 function Viewer.lazy.value:videoImage()
-    return Image(self, self.videoImageUI)
+    local videoImage = Image(self, self.videoImageUI)
+    videoImage.frame:monitor(self.frame)
+    return videoImage
 end
 
 --- cp.apple.finalcutpro.viewer.Viewer.infoBar <cp.apple.finalcutpro.viewer.InfoBar>
@@ -500,6 +503,42 @@ end
 --- Provides the framerate as a number, or nil if not available.
 function Viewer.lazy.prop:framerate()
     return self.infoBar.framerate
+end
+
+-----------------------------------------------------------------------
+--
+-- OVERLAYS:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.viewer.Viewer.isOverlayEnabled <cp.prop: boolean; live>
+--- Field
+--- Specifies if the custom overlay is enabled.
+function Viewer.lazy.prop:isOverlayEnabled()
+    if self:isEventViewer() then
+        return CustomOverlay.isEnabledOnEventViewer
+    else
+        return CustomOverlay.isEnabledOnViewer
+    end
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.overlay <cp.prop: CustomOverlay; live>
+--- Field
+--- The current `CustomOverlay` instance. May be `nil` if none is specified.
+--- May also be specified even if the overlay for the `Viewer` isn't enabled.
+function Viewer.lazy.prop:overlay()
+    if self:isEventViewer() then
+        return CustomOverlay.eventViewerOverlay
+    else
+        return CustomOverlay.viewerOverlay
+    end
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.userOverlays <cp.prop: table of CustomOverlay; read-only>
+--- Constant
+--- Contains the current list of `CustomOverlay`s available.
+function Viewer.lazy.prop.userOverlays()
+    return CustomOverlay.userOverlays
 end
 
 -----------------------------------------------------------------------

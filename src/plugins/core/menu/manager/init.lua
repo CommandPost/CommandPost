@@ -185,6 +185,9 @@ function mod.generateMenuTable()
     return mod.rootSection:generateMenuTable()
 end
 
+-- Makes the `section` API accessible outside the menu manger.
+mod.section = section
+
 local plugin = {
     id          = "core.menu.manager",
     group       = "core",

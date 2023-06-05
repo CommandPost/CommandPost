@@ -1927,6 +1927,20 @@ function tools.getFileExtensionFromPath(path)
     end
 end
 
+--- cp.tools.getNameAndExtensionFromFile(file) -> string, string | nil
+--- Function
+--- Extracts the name and the extension for the provided file name (eg. "foo.bar" -> "foo", "bar").
+--- Does not remove any preceding path values from the string first.
+---
+--- Parameters:
+---  * file - The `string` for the file name (eg. "image.jpg").
+---
+--- Returns:
+---  * The name and extension strings, or `nil` if the file has no extension.
+function tools.getNameAndExtensionFromFile(file)
+    return string.match(file, "^(.*)%.([^%.]+)$")
+end
+
 --- cp.tools.removeFilenameFromPath(string) -> string
 --- Function
 --- Removes the filename from a path.
