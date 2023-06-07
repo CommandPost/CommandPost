@@ -41,11 +41,11 @@ local COMMANDPOST_ICON = imageFromPath(processInfo.bundlePath .. "/Contents/Reso
 --- Initialises the module.
 ---
 --- Parameters:
---- * `actionmanager` - The Action Manager Plugin
---- * `cmds` - The Commands Plugin.
+---  * `actionmanager` - The Action Manager Plugin
+---  * `cmds` - The Commands Plugin.
 ---
 --- Returns:
---- * None
+---  * None
 function mod.init(actionmanager, cmds)
     mod._cmds = cmds
 
@@ -69,10 +69,10 @@ end
 --- Adds available choices to the  selection.
 ---
 --- Parameters:
---- * `choices`     - The `cp.choices` to add choices to.
+---  * `choices`     - The `cp.choices` to add choices to.
 ---
 --- Returns:
---- * None
+---  * None
 function mod.onChoices(choices)
     for _,cmd in pairs(mod._cmds:getAll()) do
         local title = cmd:getTitle()
@@ -102,10 +102,10 @@ end
 --- Gets an ID from an action table
 ---
 --- Parameters:
---- * `action`      - The action table.
+---  * `action`      - The action table.
 ---
 --- Returns:
---- * The ID as a string.
+---  * The ID as a string.
 function mod.getId(action)
     return format("%s:%s", ID, action.id)
 end
@@ -156,10 +156,10 @@ end
 --- Resets the set of choices.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function mod.reset()
     mod._handler:reset()
 end

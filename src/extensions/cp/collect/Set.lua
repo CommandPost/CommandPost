@@ -23,11 +23,11 @@
 ---
 --- As indicated above, you can use operators for common set operations. Specifically:
 ---
---- * [union](#union) (A ⋃ B):                          `a | b` or `a + b`
---- * [intersection](#intersection) (A ∩ B):            `a & b`
---- * [complement](#complement) (A<sup>c</sup>):        `-a`
---- * [difference](#diference) (A - B):                 `a - b`
---- * [symetric difference](#symetricDifference) (A ⊕ B)  `a ~ b`
+---  * [union](#union) (A ⋃ B):                          `a | b` or `a + b`
+---  * [intersection](#intersection) (A ∩ B):            `a & b`
+---  * [complement](#complement) (A<sup>c</sup>):        `-a`
+---  * [difference](#diference) (A - B):                 `a - b`
+---  * [symetric difference](#symetricDifference) (A ⊕ B)  `a ~ b`
 ---
 --- Keep in mind that Lua's operator precedence may be different to that of standard set operations, so it's probably best to group operations in brackets if you combine more than one in a single statement. For example:
 ---
@@ -215,10 +215,10 @@ end
 --- Checks if the `thing` is a `Set`.
 ---
 --- Parameters:
---- * thing     - The thing to check.
+---  * thing     - The thing to check.
 ---
 --- Returns:
---- * `true` if it is a `Set`.
+---  * `true` if it is a `Set`.
 function Set.is(thing)
     if type(thing) == "table" and thing == Set.mt then
         return true
@@ -233,24 +233,23 @@ end
 --- Creates a new `Set` instance, containing the items in the parameter list.
 ---
 --- Parameters:
---- * The set items.
+---  * The set items.
 ---
 --- Returns:
---- * The new `Set` instance.
+---  * The new `Set` instance.
 function Set.of(...)
     return Set.fromList(table.pack(...))
 end
 
 --- cp.collect.Set.fromList(list) -> cp.collect.Set
 --- Constructor
---- Creates a new `Set` instance, containing the unique items in the table collected as a list from `1` to `n`.
---- Any duplicate items will only occur in the `Set` once.
+--- Creates a new `Set` instance, containing the unique items in the table collected as a list from `1` to `n`. Any duplicate items will only occur in the `Set` once.
 ---
 --- Parameters:
---- * list      - The table that contains items as a list to add to the `Set`. E.g. `{"foo", "bar"}
+---  * list      - The table that contains items as a list to add to the `Set`. E.g. `{"foo", "bar"}
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 function Set.fromList(list)
     local data = {}
     local size = 0
@@ -268,14 +267,13 @@ end
 
 --- cp.collect.Set.fromMap(map) -> cp.collect.Set
 --- Constructor
---- Creates a new `Set` instance, containing the items in the provided `table` who's key value is `true`.
---- Keys with values other than `true` will be ignored.
+--- Creates a new `Set` instance, containing the items in the provided `table` who's key value is `true`. Keys with values other than `true` will be ignored.
 ---
 --- Parameters:
---- * map      - The table that contains key/value items to add to the set. E.g. `{foo = true, bar = true}`
+---  * map      - The table that contains key/value items to add to the set. E.g. `{foo = true, bar = true}`
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 function Set.fromMap(map)
     local data = {}
     local size = 0
@@ -296,10 +294,10 @@ end
 --- Creates a new `Set` which is a clone of the provided `Set`.
 ---
 --- Parameters:
---- * set       - The set to clone.
+---  * set       - The set to clone.
 ---
 --- Returns:
---- * The new `Set` instance.
+---  * The new `Set` instance.
 function Set.clone(set)
     assert(Set.is(set), "Parameter #1 must be a cp.collect.Set.")
     return setmetatable({
@@ -314,11 +312,11 @@ end
 --- Checks if the set has the specified value.
 ---
 --- Parameters:
---- * set   - The `Set` to check.
---- * value - The value to check for.
+---  * set   - The `Set` to check.
+---  * value - The value to check for.
 ---
 --- Returns:
---- * `true` if the value is contained in the `Set`.
+---  * `true` if the value is contained in the `Set`.
 function Set.has(set, value)
     return hasValue(set, value)
 end
@@ -328,11 +326,11 @@ end
 --- Returns a new `Set` which is a union of the `left` and `right`
 ---
 --- Parameters:
---- * left      - The left `Set`.
---- * right     - The right `Set`.
+---  * left      - The left `Set`.
+---  * right     - The right `Set`.
 ---
 --- Returns:
---- * A new `Set` which contains a union of the `left` and `right` `Set`s.
+---  * A new `Set` which contains a union of the `left` and `right` `Set`s.
 function Set.union(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
@@ -363,11 +361,11 @@ end
 --- Function
 ---
 --- Parameters:
---- * left      - The left `Set`
---- * right     - The right `Set`.
+---  * left      - The left `Set`
+---  * right     - The right `Set`.
 ---
 --- Returns:
---- * A new `Set` which contains an intersection `left` and `right`.
+---  * A new `Set` which contains an intersection `left` and `right`.
 function Set.intersection(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
@@ -396,11 +394,11 @@ end
 --- Returns a new `Set` which is the set of values in `left` that are not in `right`.
 ---
 --- Parameters:
---- * left      - The left `Set`.
---- * right     - The right `Set`.
+---  * left      - The left `Set`.
+---  * right     - The right `Set`.
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 function Set.difference(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
@@ -426,15 +424,14 @@ end
 
 --- cp.collect.Set.symetricDifference(left, right) -> cp.collect.Set
 --- Function
---- Performs a symetric difference of keys with a value of `true` in the left and right table into a new table.
---- The resulting table will contain items that only occur in the `left` or `right` set, but not both.
+--- Performs a symetric difference of keys with a value of `true` in the left and right table into a new table. The resulting table will contain items that only occur in the `left` or `right` set, but not both.
 ---
 --- Parameters:
---- * left      - The left `Set`.
---- * right     - The right `Set`.
+---  * left      - The left `Set`.
+---  * right     - The right `Set`.
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 function Set.symetricDifference(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
@@ -460,10 +457,10 @@ end
 --- Returns a `Set` which is the complement of the provided set.
 ---
 --- Parameters:
---- * set       - The `Set` to complement.
+---  * set       - The `Set` to complement.
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 function Set.complement(set)
     assert(Set.is(set), "parameter #1 must be a Set.")
 
@@ -481,15 +478,15 @@ end
 --- Returns the size of the set.
 ---
 --- Parameters:
---- * set   - The set to find the size of.
+---  * set   - The set to find the size of.
 ---
 --- Returns:
---- * the number of values in the set, or the number of values removed from a complement set.
+---  * the number of values in the set, or the number of values removed from a complement set.
 ---
 --- Notes:
---- * If the set is empty, `0` is returned.
---- * If the set is a complement, this will return a negative number indicating how many values have been removed from the universal set of all things.
---- * If the set is a complement of an empty set, `nil` is returned to indicate the size is infinite.
+---  * If the set is empty, `0` is returned.
+---  * If the set is a complement, this will return a negative number indicating how many values have been removed from the universal set of all things.
+---  * If the set is a complement of an empty set, `nil` is returned to indicate the size is infinite.
 function Set.size(set)
     assert(Set.is(set), "parameter #1 must be a Set.")
 
@@ -501,10 +498,10 @@ end
 --- Checks if the set is a complement set.
 ---
 --- Parameters:
---- * set       - The set to check.
+---  * set       - The set to check.
 ---
 --- Returns:
---- * `true` if the set is a complement.
+---  * `true` if the set is a complement.
 function Set.isComplement(set)
     assert(Set.is(set), "parameter #1 must be a Set.")
     return isComplement(set)
@@ -516,13 +513,13 @@ Set.mt = {
 --- Checks if this set has the specified value.
 ---
 --- Parameters:
---- * value     - The value to check for.
+---  * value     - The value to check for.
 ---
 --- Returns:
---- * `true` if the `Set` contains the `value`.
+---  * `true` if the `Set` contains the `value`.
 ---
 --- Notes:
---- * You can also check for specific values via `mySet['key']` or `mySet.key`.
+---  * You can also check for specific values via `mySet['key']` or `mySet.key`.
     has = Set.has,
 
 --- cp.collect.Set:union(...) -> cp.collect.Set
@@ -530,13 +527,13 @@ Set.mt = {
 --- Creates a new set which is a union of the current set plus other `Set`s passed in.
 ---
 --- Parameters:
---- * ...       - The list of `Set`s to create a union from.
+---  * ...       - The list of `Set`s to create a union from.
 ---
 --- Returns:
---- * The new `Set` which is a union.
+---  * The new `Set` which is a union.
 ---
 --- Notes:
---- * You can also use the `\|` or `+` operator. E.g. `a \| b` or `a + b`.
+---  * You can also use the `\|` or `+` operator. E.g. `a \| b` or `a + b`.
     union = Set.union,
 
 --- cp.collect.Set:intersection(...) -> cp.collect.Set
@@ -544,13 +541,13 @@ Set.mt = {
 --- Creates a new `Set` which is an intersection of the current values plus other `Set`s passed in.
 ---
 --- Parameters:
---- * ...       - The list of `Set`s to create an intersection from.
+---  * ...       - The list of `Set`s to create an intersection from.
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 ---
 --- Notes:
---- * You can also use the `&` operator. E.g. `a & b`.
+---  * You can also use the `&` operator. E.g. `a & b`.
     intersection = Set.intersection,
 
 --- cp.collect.Set:difference(right) -> cp.collect.Set
@@ -558,13 +555,13 @@ Set.mt = {
 --- Returns a new `Set` which is the set of values in this `Set` that are not in `right`.
 ---
 --- Parameters:
---- * right     - The right `Set`.
+---  * right     - The right `Set`.
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 ---
 --- Notes:
---- * You can also use the `-` operator. E.g. `a - b`.
+---  * You can also use the `-` operator. E.g. `a - b`.
     difference = Set.difference,
 
 --- cp.collect.Set:complement() -> cp.collect.Set
@@ -572,28 +569,27 @@ Set.mt = {
 --- Returns a new `Set` which is the complement of the current `Set`.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 ---
 --- Notes:
---- * You can also use the `-` or `~` prefix operators. E.g. `-a` or `~a`.
+---  * You can also use the `-` or `~` prefix operators. E.g. `-a` or `~a`.
     complement = Set.complement,
 
 --- cp.collect.Set:symetricDifference(right) -> cp.collect.Set
 --- Method
---- Performs a symetric difference of keys with a value of `true` in the left and right table into a new table.
---- The resulting table will contain items that only occur in the `left` or `right` set, but not both.
+--- Performs a symetric difference of keys with a value of `true` in the left and right table into a new table. The resulting table will contain items that only occur in the `left` or `right` set, but not both.
 ---
 --- Parameters:
---- * right     - The right `Set`.
+---  * right     - The right `Set`.
 ---
 --- Returns:
---- * The new `Set`.
+---  * The new `Set`.
 ---
 --- Notes:
---- * You can also use the `~` operator. E.g. `a ~ b`.
+---  * You can also use the `~` operator. E.g. `a ~ b`.
     symetricDifference = Set.symetricDifference,
 
 --- cp.collect.Set:isComplement() -> boolean
@@ -601,27 +597,26 @@ Set.mt = {
 --- Checks if the set is a complement set.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the set is a complement.
+---  * `true` if the set is a complement.
     isComplement = isComplement,
 
 --- cp.collect.Set:size() -> number
 --- Method
---- Returns the size of the `Set`. If the set is a complement, this will return a negative number indicating
---- how many values have been removed from the universal set of all things.
+--- Returns the size of the `Set`. If the set is a complement, this will return a negative number indicating how many values have been removed from the universal set of all things.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * the number of values in the set, or the number of values removed from a complement set.
+---  * the number of values in the set, or the number of values removed from a complement set.
 ---
 --- Notes:
---- * If the set is empty, `0` is returned.
---- * If the set is a complement, this will return a negative number indicating how many values have been removed from the universal set of all things.
---- * If the set is a complement of an empty set, `nil` is returned to indicate the size is infinite.
+---  * If the set is empty, `0` is returned.
+---  * If the set is a complement, this will return a negative number indicating how many values have been removed from the universal set of all things.
+---  * If the set is a complement of an empty set, `nil` is returned to indicate the size is infinite.
     size = Set.size,
 
     -- `-foo`

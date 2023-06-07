@@ -34,7 +34,7 @@ function FindAndReplace.static.matches(element)
     return Dialog.matches(element) and element:attributeValue("AXTitle") == strings:find("FFFindAndReplaceWindowTitle")
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText(cpApp, upProp)
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText(cpApp)
 --- Constructor
 --- Creates a new "Find and Replace Title Text" [Dialog](cp.ui.Dialog.md)
 ---
@@ -250,7 +250,8 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to find all titles containing `find` and replace them with `replace`.
 ---
 --- Parameters:
----  * None
+---  * find - what to find
+---  * replace - what to replace
 ---
 --- Returns:
 ---  * None

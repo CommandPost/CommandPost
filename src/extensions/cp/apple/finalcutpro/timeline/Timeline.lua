@@ -341,8 +341,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Timeline:doHide() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will hide the Timeline (regardless of whether it
---- was on the Primary or Secondary window).
+--- Returns a `Statement` that will hide the Timeline (regardless of whether it was on the Primary or Secondary window).
 ---
 --- Parameters:
 ---  * None

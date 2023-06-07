@@ -2,7 +2,7 @@
 ---
 --- Tangent Control Surface Extension
 ---
---- **API Version:** TUBE Version 3.8 - TIPC Rev 6 (1st March 2019)
+---  **API Version:** TUBE Version 3.8 - TIPC Rev 6 (1st March 2019)
 ---
 --- This plugin allows Hammerspoon to communicate with Tangent's range of panels, such as their Element, Virtual Element Apps, Wave, Ripple and any future panels.
 ---
@@ -1540,10 +1540,10 @@ end
 --- Checks if the Tangent Hub supports a `sendFocusRequest()` call.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if focus request be requested, otherwise `false`.
+---  * `true` if focus request be requested, otherwise `false`.
 function mod.supportsFocusRequest()
     local info = infoForBundleID(TANGENT_MAPPER_BUNDLE_ID)
     local version = info and info.CFBundleShortVersionString

@@ -60,8 +60,7 @@ end
 
 --- cp.ui.OldRow:disclosedRows() -> table of cp.ui.OldRow or nil
 --- Method
---- If available, returns a table of [Row](cp.ui.OldRow.md)s that are disclosed by this `Row`.
---- If this row is currently unavailable, `nil` is returned.
+--- If available, returns a table of [Row](cp.ui.OldRow.md)s that are disclosed by this `Row`. If this row is currently unavailable, `nil` is returned.
 ---
 --- Parameters:
 ---  * None

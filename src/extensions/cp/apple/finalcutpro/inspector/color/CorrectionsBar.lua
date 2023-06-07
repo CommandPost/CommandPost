@@ -28,10 +28,10 @@ local CorrectionsBar = Element:subclass("cp.apple.finalcutpro.inspector.color.Co
 --- Constant
 --- Table of Correction Types:
 ---
---- * "Color Board"
---- * "Color Wheels"
---- * "Color Curves"
---- * "Hue/Saturation Curves"
+---  * "Color Board"
+---  * "Color Wheels"
+---  * "Color Curves"
+---  * "Hue/Saturation Curves"
 CorrectionsBar.static.CORRECTION_TYPES = {
     ["Color Board"]             = "FFCorrectorColorBoard",
     ["Color Wheels"]            = "PAECorrectorEffectDisplayName",
@@ -104,10 +104,10 @@ end
 --- Attempts to show the bar.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `CorrectionsBar` instance.
+---  * The `CorrectionsBar` instance.
 function CorrectionsBar:show()
     self:parent():show()
     just.doUntil(self.isShowing, 5)

@@ -22,8 +22,7 @@ local mod = {}
 
 --- cp.fn.table.call(name, ...) -> function(table) -> ...
 --- Function
---- Calls a function on a table with the specified `name`.
---- Any additional arguments are passed to the function.
+--- Calls a function on a table with the specified `name`. Any additional arguments are passed to the function.
 ---
 --- Parameters:
 ---  * name - The name of the function to call.
@@ -63,8 +62,7 @@ end
 
 --- cp.fn.table.filter([predicate]) -> function(table) -> table
 --- Function
---- Returns a function that filters a table using the given predicate.
---- If the predicate is not provided, the original table will be returned unchanged.
+--- Returns a function that filters a table using the given predicate. If the predicate is not provided, the original table will be returned unchanged.
 ---
 --- Parameters:
 ---  * predicate - A function that takes a value and returns true if the value should be included in the filtered table.
@@ -165,8 +163,7 @@ end
 
 --- cp.fn.table.this -> table
 --- Constant
---- A `table` which can have any named property key, which will be a function combinator that expects to receive a `table`
---- and returns the value at the specified key. These are essentially equivalent statements: `cp.fn.table.this.key` and `cp.fn.table.get "key"`.
+--- A `table` which can have any named property key, which will be a function combinator that expects to receive a `table` and returns the value at the specified key. These are essentially equivalent statements: `cp.fn.table.this.key` and `cp.fn.table.get "key"`.
 mod.this = setmetatable({}, {
     __index = function(_, key)
         return mod.get(key)
@@ -175,8 +172,7 @@ mod.this = setmetatable({}, {
 
 --- cp.fn.ifilter([predicate]) -> function(table) -> table
 --- Function
---- Returns a function that filters a table using the given predicate, in index order.
---- If the predicate is not provided, the original table will be returned unchanged.
+--- Returns a function that filters a table using the given predicate, in index order. If the predicate is not provided, the original table will be returned unchanged.
 ---
 --- Parameters:
 ---  * predicate - A function that takes a value and returns true if the value should be included in the filtered table.
@@ -196,13 +192,13 @@ function mod.ifilter(predicate)
     end
 end
 
---- cp.fn.table.imap(fn, values | ...) -> table of any | ...
+--- cp.fn.table.imap(fn, values) -> table of any | ...
 --- Function
 --- Maps a function over a table using `ipairs`. The function is passed the current `value` and the `key`.
 ---
 --- Parameters:
 ---  * fn - The function to map.
----  * values | ... - The table or list of arguments to map over.
+---  * values - The table or list of arguments to map over.
 ---
 --- Returns:
 ---  * A table or list of the results of the function.
@@ -236,8 +232,7 @@ end
 
 --- cp.fn.table.matchesExactItems(...) -> function(table) -> boolean
 --- Function
---- Returns a function that will return `true` if the table exactly the number of items that match
---- the provided list of predicates.
+--- Returns a function that will return `true` if the table exactly the number of items that match the provided list of predicates.
 ---
 --- Parameters:
 ---  * ... - A list of predicates.
@@ -279,9 +274,7 @@ end
 
 --- cp.fn.table.mutate(key) -> function(fn) -> function(table) -> table
 --- Function
---- Returns a function that accepts an immutible transformer function, which
---- returns another function that accepts a table. When called, it will apply
---- the transformation to the named `key` in the table.
+--- Returns a function that accepts an immutible transformer function, which returns another function that accepts a table. When called, it will apply the transformation to the named `key` in the table.
 ---
 --- Parameters:
 ---  * key - The key to set.
@@ -357,8 +350,7 @@ end
 
 --- cp.fn.table.split(predicate) -> function(table) -> table of tables, table
 --- Function
---- Returns a function that accepts a table and splits it into multiple tables whenever it encounters a value that matches the `predicate`.
---- The final table is a list containing each table that was split, followed by a table containing the splitter values.
+--- Returns a function that accepts a table and splits it into multiple tables whenever it encounters a value that matches the `predicate`. The final table is a list containing each table that was split, followed by a table containing the splitter values.
 ---
 --- Parameters:
 ---  * predicate - A function that will be passed each value in the table. If it returns `true`, the value will be returned.
@@ -418,14 +410,12 @@ local function _maxListSize(lists)
     return max
 end
 
---- cp.fn.table.zip(lists | ...) -> table | ...
+--- cp.fn.table.zip(lists) -> table | ...
 --- Function
---- Zips a series of lists together, returning a list combining the values from the provided lists.
---- The returned list will have the same length as the shortest list.
---- Each sub-list will contain the values from the corresponding list in the argument list.
+--- Zips a series of lists together, returning a list combining the values from the provided lists. The returned list will have the same length as the shortest list. Each sub-list will contain the values from the corresponding list in the argument list.
 ---
 --- Parameters:
----  * lists | ... - A table or list of lists.
+---  * lists - A table or list of lists.
 ---
 --- Returns:
 ---  * A function which returns a list combining the values from the provided lists.
@@ -451,14 +441,12 @@ function mod.zip(...)
     return results
 end
 
---- cp.fn.table.zipAll(lists | ...) -> function
+--- cp.fn.table.zipAll(lists) -> function
 --- Function
---- Zips a series of lists together, returning a list of lists.
---- The returned list will have the same length as the longest list.
---- Each sub-list will contain the values from the corresponding list in the argument list.
+--- Zips a series of lists together, returning a list of lists. The returned list will have the same length as the longest list. Each sub-list will contain the values from the corresponding list in the argument list.
 ---
 --- Parameters:
----  * lists | ... - A table or list of lists.
+---  * lists - A table or list of lists.
 ---
 --- Returns:
 ---  * A list of lists.
@@ -588,8 +576,7 @@ end
 
 --- cp.fn.table.hasValue(key[, predicate]) -> function(table) -> boolean
 --- Function
---- Returns a function that checks if the table has a value at the specified `key`.
---- If a predicate is provided, the value is checked using the predicate.
+--- Returns a function that checks if the table has a value at the specified `key`. If a predicate is provided, the value is checked using the predicate.
 ---
 --- Parameters:
 ---  * key - The value to check for.

@@ -32,10 +32,10 @@ end
 --- Checks if the element is the `IndexMode`.
 ---
 --- Parameters:
---- * element - The `axuielement` to check.
+---  * element - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function IndexMode.static.matches(element)
     --------------------------------------------------------------------------------
     -- macOS Ventura uses `AXDescription` for the `AXRadioButton` labels, whereas
@@ -49,10 +49,10 @@ end
 --- Creates a new `IndexMode` instance.
 ---
 --- Parameters:
---- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) that contains the `mode`.
+---  * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) that contains the `mode`.
 ---
 --- Returns:
---- * The new `IndexMode` instance.
+---  * The new `IndexMode` instance.
 function IndexMode:initialize(index)
     local UI = index.UI:mutate(function(original)
         return cache(self, "_ui", function()

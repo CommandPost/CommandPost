@@ -60,10 +60,10 @@ end
 --- Creates a new FCPX `FullScreenPlayer` instance.
 ---
 --- Parameters:
---- * app       - The FCP app instance.
+---  * app       - The FCP app instance.
 ---
 --- Returns:
---- * The new `FullScreenPlayer`.
+---  * The new `FullScreenPlayer`.
 function FullScreenPlayer:initialize(app)
     local UI = app.windowsUI:mutate(function(original)
         return cache(self, "_ui", function()
@@ -143,10 +143,10 @@ end
 --- Attempts to show the full screen window.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The window instance.
+---  * The window instance.
 function FullScreenPlayer:show()
     self:app().menu:selectMenu({"View", "Playback", "Play Full Screen"})
     return self
@@ -157,10 +157,10 @@ end
 --- A `Statement` that attempts to show the full screen window.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement` to execute.
+---  * The `Statement` to execute.
 function FullScreenPlayer.lazy.method:doShow()
     return self:app().menu:doSelectMenu({"View", "Playback", "Play Full Screen"})
 end

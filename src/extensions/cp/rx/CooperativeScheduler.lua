@@ -35,14 +35,11 @@ end
 
 --- cp.rx.CooperativeScheduler:schedule(action[, delay]) -> cp.rx.Reference
 --- Method
---- Schedules a `function` to be run after an optional delay.  Returns a [Reference](cp.rx.Reference.md) that will stop
---- the action from running.
+--- Schedules a `function` to be run after an optional delay.  Returns a [Reference](cp.rx.Reference.md) that will stop the action from running.
 ---
 --- Parameters:
----  * action      - The `function` to execute. Will be converted into a coroutine. The
----                 coroutine may yield execution back to the scheduler with an optional
----                 number, which will put it to sleep for a time period.
----  * delay       - Delay execution of the action by a virtual time period. Defaults to `0`.
+---  * action - The `function` to execute. Will be converted into a coroutine. The coroutine may yield execution back to the scheduler with an optional number, which will put it to sleep for a time period.
+---  * delay - Delay execution of the action by a virtual time period. Defaults to `0`.
 ---
 --- Returns:
 ---  * The [Reference](cp.rx.Reference.md).
@@ -69,13 +66,13 @@ end
 
 --- cp.rx.CooperativeScheduler:update(delta) -> nil
 --- Method
---- Triggers an update of the `CooperativeScheduler`. The clock will be advanced and the scheduler
---- will run any coroutines that are due to be run.
+--- Triggers an update of the `CooperativeScheduler`. The clock will be advanced and the scheduler will run any coroutines that are due to be run.
 ---
 --- Parameters:
----  * delta     - An amount of time to advance the clock by. It is common to pass in the
---                time in seconds or milliseconds elapsed since this function was last
---                called. Defaults to `0`.
+---  * delta - An amount of time to advance the clock by. It is common to pass in the time in seconds or milliseconds elapsed since this function was last called. Defaults to `0`.
+---
+--- Returns:
+---  * None
 function CooperativeScheduler:update(delta)
   self.currentTime = self.currentTime + (delta or 0)
 

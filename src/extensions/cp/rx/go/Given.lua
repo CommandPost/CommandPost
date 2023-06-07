@@ -19,6 +19,13 @@ local unpack            = table.unpack
 --- Constructor
 --- Begins the definition of a `Given` `Statement`.
 ---
+--- Parameters:
+---  * ...      - the list of `resolvable` values to evaluate.
+---
+--- Returns:
+---  * A new `Given` `Statement` instance.
+---
+--- Notes:
 --- This will resolve the provided values into `Observable`s and pass on the
 --- first result of each to the next stage as individual parameters.
 --- This will continue until one of the `Observables` has completed, at which
@@ -40,12 +47,6 @@ local unpack            = table.unpack
 ---
 --- For more power, you can add a `Then` to futher modify the results, or chain other operations.
 --- See the `Given.Then` documentation for details.
----
---- Parameters:
----  * ...      - the list of `resolvable` values to evaluate.
----
---- Returns:
----  * A new `Given` `Statement` instance.
 local Given = Statement.named("Given")
 :onInit(function(context, ...)
     context.requirements = pack(...)
@@ -76,6 +77,14 @@ end)
 --- cp.rx.go.Given:Then(...) -> Given.Then
 --- Method
 --- Call this to define what will happen once the `Given` values resolve successfully.
+---
+--- Parameters:
+---  * ...  - The list of `resolveable` values to process for each `Given` result.
+---
+--- Returns:
+---  * The [Then](cp.rx.go.Given.Then.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
+---
+--- Notes:
 --- The parameters can be any 'resolvable' type.
 ---
 --- If a parameter is a `function`, it will be passed the results of the previous `Given` or `Then` parameters.
@@ -88,12 +97,6 @@ end)
 ---     return true
 --- end)
 --- ```
----
---- Parameters:
----  * ...  - The list of `resolveable` values to process for each `Given` result.
----
---- Returns:
----  * The [Then](cp.rx.go.Given.Then.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 Given.modifier("Then")
 :onInit(function(context, ...)
     insert(context.thens, pack(...))

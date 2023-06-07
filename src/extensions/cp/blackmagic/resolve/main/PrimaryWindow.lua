@@ -94,7 +94,7 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that attempts to show the Primary Window.
 ---
 --- Returns:
---- * The `Statement`, which resolves as either `true` or sends an error.
+---  * The `Statement`, which resolves as either `true` or sends an error.
 function PrimaryWindow.lazy.method:doShow()
     return Do(self.resolve:doShow())
     :Then(

@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.Role ===
 ---
---- *Extends [Row](cp.ui.OldRow.md)*
+---  *Extends [Row](cp.ui.OldRow.md)*
 ---
 --- Represents a Role in the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md).
 
@@ -27,12 +27,12 @@ local Role = Row:subclass("cp.apple.finalcutpro.timeline.Role")
 --- Contains the list of [strings](cp.apple.finalcutpro.strings.md) used for default roles.
 ---
 --- Notes:
---- * CAPTIONS - "Captions"
---- * VIDEO - "Video"
---- * TITLES - "Titles"
---- * DIALOGUE - "Dialogue"
---- * MUSIC - "Music"
---- * EFFECTS - "Effects"
+---  * CAPTIONS - "Captions"
+---  * VIDEO - "Video"
+---  * TITLES - "Titles"
+---  * DIALOGUE - "Dialogue"
+---  * MUSIC - "Music"
+---  * EFFECTS - "Effects"
 Role.static.TITLE_KEY = {
     CAPTIONS	= "FFTimelineIndexCaptions",
     VIDEO       = "v.video",
@@ -47,9 +47,9 @@ Role.static.TITLE_KEY = {
 --- Contains the set of role types.
 ---
 --- Notes:
---- * VIDEO - A Video Role
---- * AUDIO - An Audio Role
---- * CAPTION - A Caption Role
+---  * VIDEO - A Video Role
+---  * AUDIO - An Audio Role
+---  * CAPTION - A Caption Role
 Role.static.TYPE = {
     VIDEO = "VIDEO",
     AUDIO = "AUDIO",
@@ -61,10 +61,10 @@ Role.static.TYPE = {
 --- Checks if the `element` is a `Role`.
 ---
 --- Parameters:
---- * element - the `axuielement` to check.
+---  * element - the `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function Role.static.matches(element)
     return Row.matches(element)
     and CheckBox.matches(childFromLeft(element[1], 1))
@@ -86,9 +86,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Role.findTitle(title) -> string
 --- Function
---- Checks if FCPX is not currently running in English, it will check if the title is one
---- of the default English Role titles, and return the current language instead. If it's not found,
---- unmodified `title` is returned.
+--- Checks if FCPX is not currently running in English, it will check if the title is one of the default English Role titles, and return the current language instead. If it's not found, unmodified `title` is returned.
 ---
 --- Parameters:
 ---  * title - A string to find.
@@ -110,17 +108,15 @@ end
 
 --- cp.apple.finalcutpro.timeline.Role(parent, uiFinder, type)
 --- Constructor
---- Creates the new Role. Typically this is not called directly, but rather by one of the
---- subclass roles, such as [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md) or
---- [VideoRole](cp.apple.finalcutpro.timeline.VideoRole.md).
+--- Creates the new Role. Typically this is not called directly, but rather by one of the subclass roles, such as [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md) or [VideoRole](cp.apple.finalcutpro.timeline.VideoRole.md).
 ---
 --- Parameters:
---- * parent - The parent [Element](cp.ui.Element.md)
---- * uiFinder - The `function` or `cp.prop` that provides the `axuielement`.
---- * type - The [#TYPE] of Role.
+---  * parent - The parent [Element](cp.ui.Element.md)
+---  * uiFinder - The `function` or `cp.prop` that provides the `axuielement`.
+---  * type - The [#TYPE] of Role.
 ---
 --- Returns:
---- * The new `Role` instance.
+---  * The new `Role` instance.
 function Role:initialize(parent, uiFinder, type)
     Row.initialize(self, parent, uiFinder)
     self._type = type

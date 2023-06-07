@@ -24,10 +24,10 @@ Splitter.static.HORIZONTAL_ORIENTATION = "AXHorizontalOrientation"
 --- Checks to see if an element matches what we think it should be.
 ---
 --- Parameters:
---- * value - The value to check.
+---  * value - The value to check.
 ---
 --- Returns:
---- * `true` if the value matches, `false` otherwise.
+---  * `true` if the value matches, `false` otherwise.
 Splitter.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXSplitter")
 
 --- cp.ui.Splitter.maxValue <cp.prop: number, read-only>

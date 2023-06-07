@@ -15,7 +15,11 @@ local Definition = class("cp.spec.Definition")
 --- Creates a new test definition.
 ---
 --- Parameters:
---- * name      - The name
+---  * name - The name
+---  * doing - doing
+---
+--- Returns:
+---  * cp.spec.Definition object
 function Definition:initialize(name)
     if type(name) ~= "string" or #name == 0 then
         error "The name must be at least one character long."
@@ -28,24 +32,23 @@ end
 --- Called as a method, this will check if the provided object is an instance of this class.
 ---
 --- Parameters:
---- * instance - The instance to check.
+---  * instance - The instance to check.
 ---
 --- Returns:
---- * `true` if the instance is an instance of this class.
+---  * `true` if the instance is an instance of this class.
 function Definition.static.is(instance)
     return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(Definition)
 end
 
 --- cp.spec.Definition:run([...]) -> cp.spec.Run
 --- Method
---- Runs the definition with the specified filter `string`, `function` or `table` of `string`s and `function`s.
---- The [Run](cp.spec.Run.md) will have already started with the provided `filter`.
+--- Runs the definition with the specified filter `string`, `function` or `table` of `string`s and `function`s. The [Run](cp.spec.Run.md) will have already started with the provided `filter`.
 ---
 --- Parameters:
---- * ...    - (optional) The list of filters to apply to any child definitions.
+---  * ... - (optional) The list of filters to apply to any child definitions.
 ---
 --- Returns:
---- * The [Run](cp.spec.Run.md).
+---  * The [Run](cp.spec.Run.md).
 function Definition.run()
     error "Undefined."
 end

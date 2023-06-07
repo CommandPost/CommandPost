@@ -16,7 +16,7 @@ local Image = Element:subclass("cp.ui.Image")
 ---  * element  - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it is an `AXImage`, otherwise `false`.
+---  * `true` if it is an `AXImage`, otherwise `false`.
 function Image.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXImage"
 end

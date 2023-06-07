@@ -123,11 +123,11 @@ end
 --- Creates a new `Viewer` instance.
 ---
 --- Parameters:
---- * app           - The FCP application.
---- * eventViewer   - If `true`, the viewer is the Event Viewer.
+---  * app           - The FCP application.
+---  * eventViewer   - If `true`, the viewer is the Event Viewer.
 ---
 --- Returns:
---- * The new `Viewer` instance.
+---  * The new `Viewer` instance.
 function Viewer:initialize(app, eventViewer)
     -- The UI finder
     local UI = prop(function()
@@ -211,10 +211,10 @@ end
 --- Returns the application.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The application.
+---  * The application.
 function Viewer:app()
     return self:parent()
 end
@@ -346,10 +346,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will play the `Viewer`.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function Viewer.lazy.method:doPlay()
     return If(self.isPlaying):Is(false)
     :Then(function() self:isPlaying(true) end)
@@ -445,7 +445,7 @@ end
 --- Indicates if the viewer is using Proxies (`true`) or Optimized/Original media (`false`).
 ---
 --- Notes:
---- * Use `playbackMode` to change modes between original/proxy/quality/performance.
+---  * Use `playbackMode` to change modes between original/proxy/quality/performance.
 function Viewer.lazy.prop:usingProxies()
     return self.playerQuality:mutate(
         function(original)
@@ -460,7 +460,7 @@ end
 --- If we are `usingProxies` then it will always be `false`.
 ---
 --- Notes:
---- * Use `playbackMode` to change modes between original/proxy/quality/performance.
+---  * Use `playbackMode` to change modes between original/proxy/quality/performance.
 function Viewer.lazy.prop:betterQuality()
     return self.playerQuality:mutate(
         function(original)
@@ -533,10 +533,10 @@ end
 --- Gets the current window object.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `PrimaryWindow` or the `SecondaryWindow`.
+---  * The `PrimaryWindow` or the `SecondaryWindow`.
 function Viewer:currentWindow()
     if self:isOnSecondary() then
         return self:app().secondaryWindow
@@ -550,10 +550,10 @@ end
 --- Shows the Viewer on the Primary display.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Self
+---  * Self
 function Viewer:showOnPrimary()
     local menuBar = self:app().menu
 
@@ -580,10 +580,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that shows the Viewer on the Primary display.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, which resolves to `true`, or sends an error message.
+---  * The `Statement`, which resolves to `true`, or sends an error message.
 function Viewer.lazy.method:doShowOnPrimary()
     local menuBar = self:app().menu
 
@@ -606,10 +606,10 @@ end
 --- Shows the Viewer on the Seconary display.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Self
+---  * Self
 function Viewer:showOnSecondary()
     local menuBar = self:app().menu
 
@@ -632,10 +632,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that shows the Viewer on the Secondary display.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, resolving to `true`, or sending an error message.
+---  * The `Statement`, resolving to `true`, or sending an error message.
 function Viewer.lazy.method:doShowOnSecondary()
     local menuBar = self:app().menu
 
@@ -658,10 +658,10 @@ end
 --- Hides the Viewer.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Self
+---  * Self
 function Viewer:hide()
     local menuBar = self:app().menu
 
@@ -686,10 +686,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that hides the Viewer.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, resolving to `true`, or sends an error.
+---  * The `Statement`, resolving to `true`, or sends an error.
 function Viewer.lazy.method:doHide()
     local menuBar = self:app().menu
 
@@ -715,10 +715,10 @@ end
 --- The Play [Button](cp.ui.Button.md) object.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A Button
+---  * A Button
 function Viewer.lazy.value:playButton()
     return self.controlBar.playButton
 end

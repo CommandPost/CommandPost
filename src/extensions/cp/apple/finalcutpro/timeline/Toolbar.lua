@@ -32,10 +32,10 @@ local Toolbar = Group:subclass("cp.apple.finalcutpro.timeline.Toolbar")
 --- Checks if the element is a Toolbar.
 ---
 --- Parameters:
---- * element - the `axuielement` to check.
+---  * element - the `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function Toolbar.static.matches(element)
     return Group.matches(element)
 end
@@ -45,10 +45,10 @@ end
 --- Creates a new Toolbar with the specified parent.
 ---
 --- Parameters:
---- * timeline - The [Timeline](cp.apple.finalcutpro.timeline.Timeline.md).
+---  * timeline - The [Timeline](cp.apple.finalcutpro.timeline.Timeline.md).
 ---
 --- Returns:
---- * The new Toolbar instance.
+---  * The new Toolbar instance.
 function Toolbar:initialize(timeline)
     local UI = timeline.UI:mutate(
         cache(self, "_ui", Toolbar.matches)(
@@ -209,8 +209,8 @@ end
 --- The [CheckBox](cp.ui.CheckBox.md) which allows the user to trim the edges of the selected clips.
 ---
 --- Notes:
---- * As of FCP 10.6.3, this is currently always hidden, and cannot have its value changed.
---- * Uncertain in exactly which version this turned up.
+---  * As of FCP 10.6.3, this is currently always hidden, and cannot have its value changed.
+---  * Uncertain in exactly which version this turned up.
 
 --- cp.apple.finalcutpro.timeline.Toolbar.skimming <cp.ui.CheckBox>
 --- Field
@@ -294,8 +294,8 @@ end
 --- The [CheckBox](cp.ui.CheckBox.md) which allows the user to trim the edges of the selected clips.
 ---
 --- Notes:
---- * As of FCP 10.6.3, this is currently always hidden, and cannot have its value changed.
---- * Uncertain in exactly which version this turned up.
+---  * As of FCP 10.6.3, this is currently always hidden, and cannot have its value changed.
+---  * Uncertain in exactly which version this turned up.
 function Toolbar.Clip.lazy.value:trimAlignedEdges()
     return CheckBox(self, self.UI:mutate(
         cache(self, "_trimAlignedEdges", CheckBox.matches)(

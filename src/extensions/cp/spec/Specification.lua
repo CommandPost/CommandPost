@@ -57,8 +57,7 @@ end
 
 --- cp.spec.Specification:onBeforeEach(beforeEachFn) -> cp.spec.Specification
 --- Method
---- Specifies a function to execute before each of the contained specifications is run.
---- The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
+--- Specifies a function to execute before each of the contained specifications is run. The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
 ---
 --- Parameters:
 ---  * beforeEachFn - The function to run before each child runs.
@@ -72,8 +71,7 @@ end
 
 --- cp.spec.Specification:onAfterEach(afterEachFn) -> cp.spec.Specification
 --- Method
---- Specifies a function to execute after each of the contained specifications is run.
---- The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
+--- Specifies a function to execute after each of the contained specifications is run. The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
 ---
 --- Parameters:
 ---  * afterEachFn - The function to run after each child runs.
@@ -136,11 +134,10 @@ end
 
 --- cp.spec.Specification:with(...) -> self
 --- Method
---- Adds the provided [definitions](cp.spec.Definition.md) to the suite.
---- May also pass a single `table` containing a list of definitions.
+--- Adds the provided [definitions](cp.spec.Definition.md) to the suite. May also pass a single `table` containing a list of definitions.
 ---
 --- Parameters:
----  * ...           - the [definitions](cp.spec.Definition.md) to add.
+---  * ... - the [definitions](cp.spec.Definition.md) to add.
 ---
 --- Returns:
 ---  * The same `Specification` instance, with the definitions added.

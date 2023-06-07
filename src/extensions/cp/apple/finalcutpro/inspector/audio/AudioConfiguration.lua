@@ -97,10 +97,10 @@ end
 --- Attempts to show the bar.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `AudioConfiguration` instance.
+---  * The `AudioConfiguration` instance.
 function AudioConfiguration:show()
     self:parent():show()
     just.doUntil(self.isShowing, 5)

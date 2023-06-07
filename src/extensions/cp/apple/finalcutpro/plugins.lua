@@ -753,15 +753,7 @@ mod._getPluginName = getPluginName
 
 --- cp.apple.finalcutpro.plugins:scanPluginsDirectory(locale, path, filter) -> boolean
 --- Method
---- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
----
----   1. <type>/<plugin name>/<plugin name>.<ext>
----   2. <type>/<group>/<plugin name>/<plugin name>.<ext>
----   3. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
----
---- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of locales.
----
---- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `locale` provided. Other locales are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
+--- Scans a root plugins directory.
 ---
 --- Parameters:
 ---  * `locale`   - The locale code to scan for (e.g. "en" or "fr").
@@ -770,6 +762,14 @@ mod._getPluginName = getPluginName
 ---
 --- Returns:
 ---  * `true` if the plugin directory was successfully scanned.
+---
+--- Notes:
+---  * Plugins directories have a standard structure which comes in two flavours:
+---   ** <type>/<plugin name>/<plugin name>.<ext>
+---   ** <type>/<group>/<plugin name>/<plugin name>.<ext>
+---   ** <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
+---  * This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of locales.
+---  * This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `locale` provided. Other locales are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
 function mod.mt:scanPluginsDirectory(locale, path, checkFn)
     locale = localeID(locale)
     --------------------------------------------------------------------------------
@@ -1423,10 +1423,10 @@ end
 --- Finds the 'transitions' plugins.
 ---
 --- Parameters:
---- * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available plugins.
+---  * A table of the available plugins.
 function mod.mt:transitions(locale)
     locale = localeID(locale)
     return self:ofType(PLUGIN_TYPES.transition, locale)

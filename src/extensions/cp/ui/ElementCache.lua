@@ -11,9 +11,7 @@ local ElementCache = class("cp.ui.ElementCache")
 
 --- cp.ui.ElementCache(parent[, createFn])
 --- Constructor
---- Creates and returns a new `ElementCache`, with the specified parent and function which
---- will create new elements on demand. The `createFn` has the signature of `function(parent, ui) -> cp.ui.Element`,
---- and should take the parent provided here and the `axuielement` and return a new `Element` subclass.
+--- Creates and returns a new `ElementCache`, with the specified parent and function which will create new elements on demand. The `createFn` has the signature of `function(parent, ui) -> cp.ui.Element`, and should take the parent provided here and the `axuielement` and return a new `Element` subclass.
 ---
 --- Parameters:
 ---  * parent - the parent [Element](cp.ui.Element.md) that contains the cached items.
@@ -60,7 +58,7 @@ function ElementCache:reset()
     self.items = {}
 end
 
---- cp.ui.ElementCache:cachedElement(cache, ui) -> cp.ui.Element or nil
+--- cp.ui.ElementCache:cachedElement(ui) -> cp.ui.Element or nil
 --- Method
 --- Returns the cached [Element](cp.ui.Element.md), if it is present.
 ---
@@ -100,9 +98,7 @@ end
 
 --- cp.ui.ElementCache:fetchElement(ui) -> cp.ui.Element or nil
 --- Method
---- Retrieves the matching [Element](cp.ui.Element.md) instance from the cache.
---- If none exists and the `createFn` was provided in the constructor,
---- it will be used to create a new one, which is automatically cached for future reference.
+--- Retrieves the matching [Element](cp.ui.Element.md) instance from the cache. If none exists and the `createFn` was provided in the constructor, it will be used to create a new one, which is automatically cached for future reference.
 ---
 --- Parameters:
 ---  * ui - The `axuielement` being fetched for.

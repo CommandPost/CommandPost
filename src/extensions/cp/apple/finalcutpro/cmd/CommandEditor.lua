@@ -119,10 +119,10 @@ end
 --- Creates a [Statement](cp.rx.go.Statement.md) that will attempt to show the Command Editor, if FCPX is running.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
+---  * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
 function CommandEditor.lazy.method:doShow()
     return If(self:app().isRunning)
     :Then(self:app():doShow())
@@ -154,14 +154,13 @@ end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doShow() -> cp.rx.go.Statement <boolean>
 --- Method
---- Creates a [Statement](cp.rx.go.Statement.md) that will attempt to hide the Command Editor, if FCPX is running.
---- If the changes have not been saved, they will be lost.
+--- Creates a [Statement](cp.rx.go.Statement.md) that will attempt to hide the Command Editor, if FCPX is running. If the changes have not been saved, they will be lost.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, which will resolve to `true` if the CommandEditor is not showing or `false` if not.
+---  * The `Statement`, which will resolve to `true` if the CommandEditor is not showing or `false` if not.
 function CommandEditor.lazy.method:doHide()
     local alert = self:alert()
     local isHidden = self.isShowing:NOT()
@@ -383,8 +382,7 @@ end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doFindCommandID(commandID, [highlight]) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID,
---- revealing it at the top of the [commands](#commands) list.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will find the command with the given ID, revealing it at the top of the [commands](#commands) list.
 ---
 --- Parameters:
 ---  * commandID - The locale-neutral ID of the command to find. Eg. "NextEdit" (ID), not "Go To Next Edit" (English)

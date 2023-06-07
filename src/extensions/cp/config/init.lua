@@ -193,19 +193,20 @@ end
 ---
 --- Parameters:
 ---  * `key`		- A string containing the name of the setting
----  * `value`		- An optional value for the setting. Valid datatypes are:
----    * string
----    * number
----    * boolean
----    * nil
----    * table (which may contain any of the same valid datatypes)
----  * if no value is provided, it is assumed to be nil
+---  * `value`		- An optional value for the setting.
 ---
 --- Returns:
 ---  * None
 ---
 --- Notes:
 ---  * This function cannot set dates or raw data types
+---  * Valid datatypes are:
+---    ** string
+---    ** number
+---    ** boolean
+---    ** nil
+---    ** table (which may contain any of the same valid datatypes)
+---  * if no value is provided, it is assumed to be nil
 function mod.set(key, value)
     if type(key) ~= "string" then
         error("The key must be a string: %s", hs.inspect(key))
@@ -224,11 +225,11 @@ end
 --- Returns a `cp.prop` instance connected to the value of the specified key. When the value is modified, it will be notified.
 ---
 --- Parameters:
---- * `key`				- The configuration setting key.
---- * `defaultValue`	- The default value if the key has not been set.
+---  * `key`				- The configuration setting key.
+---  * `defaultValue`	- The default value if the key has not been set.
 ---
 --- Returns:
---- * A `cp.prop` instance for the key.
+---  * A `cp.prop` instance for the key.
 function mod.prop(key, defaultValue)
     local propValue = nil
     if not mod._propCache then
@@ -338,7 +339,8 @@ mod.shutdownCallback = shutdownCallback
 --- Creates a new Shutdown Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for this callback.
+---  * `id`	- The unique ID for this callback.
+---  * `callbackFn` - The callback function
 ---
 --- Returns:
 ---  * table that has been created
@@ -364,7 +366,7 @@ end
 --- Creates a new Shutdown Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for the callback you want to return.
+---  * `id`		- The unique ID for the callback you want to return.
 ---
 --- Returns:
 ---  * table containing the callback
@@ -377,7 +379,7 @@ end
 --- Returns all of the created Shutdown Callbacks
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * table containing all of the created callbacks
@@ -390,7 +392,7 @@ end
 --- Returns the ID of the current Shutdown Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The ID of the current Shutdown Callback as a `string`
@@ -403,7 +405,7 @@ end
 --- Returns the callbackFn of the current Shutdown Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
@@ -431,7 +433,8 @@ mod.textDroppedToDockIconCallback = textDroppedToDockIconCallback
 --- Creates a new Text Dropped to Dock Icon Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for this callback.
+---  * `id` - The unique ID for this callback.
+---  * `callbackFn` - The callback function
 ---
 --- Returns:
 ---  * table that has been created
@@ -457,7 +460,7 @@ end
 --- Creates a new Text Dropped to Dock Icon Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for the callback you want to return.
+---  * `id`		- The unique ID for the callback you want to return.
 ---
 --- Returns:
 ---  * table containing the callback
@@ -470,7 +473,7 @@ end
 --- Returns all of the created Text Dropped to Dock Icon Callbacks
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * table containing all of the created callbacks
@@ -483,7 +486,7 @@ end
 --- Returns the ID of the current Text Dropped to Dock Icon Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The ID of the current Shutdown Callback as a `string`
@@ -496,7 +499,7 @@ end
 --- Returns the callbackFn of the current Text Dropped to Dock Icon Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
@@ -524,7 +527,8 @@ mod.fileDroppedToDockIconCallback = fileDroppedToDockIconCallback
 --- Creates a new File Dropped to Dock Icon Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for this callback.
+---  * `id` - The unique ID for this callback.
+---  * `callbackFn` - The callback function
 ---
 --- Returns:
 ---  * table that has been created
@@ -550,7 +554,7 @@ end
 --- Creates a new File Dropped to Dock Icon Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for the callback you want to return.
+---  * `id`		- The unique ID for the callback you want to return.
 ---
 --- Returns:
 ---  * table containing the callback
@@ -563,7 +567,7 @@ end
 --- Returns all of the created File Dropped to Dock Icon Callbacks
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * table containing all of the created callbacks
@@ -576,7 +580,7 @@ end
 --- Returns the ID of the current Text Dropped to Dock Icon Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
@@ -589,7 +593,7 @@ end
 --- Returns the callbackFn of the current File Dropped to Dock Icon Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
@@ -617,7 +621,8 @@ mod.dockIconClickCallback = dockIconClickCallback
 --- Creates a new File Dropped to Dock Icon Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for this callback.
+---  * `id` - The unique ID for this callback.
+---  * `callbackFn` - The callback function
 ---
 --- Returns:
 ---  * table that has been created
@@ -643,7 +648,7 @@ end
 --- Creates a new Dock Icon Click Callback.
 ---
 --- Parameters:
---- * `id`		- The unique ID for the callback you want to return.
+---  * `id`		- The unique ID for the callback you want to return.
 ---
 --- Returns:
 ---  * table containing the callback
@@ -656,7 +661,7 @@ end
 --- Returns all of the created Dock Icon Click Callbacks
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * table containing all of the created callbacks
@@ -669,7 +674,7 @@ end
 --- Returns the ID of the current Dock Icon Click Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
@@ -682,7 +687,7 @@ end
 --- Returns the callbackFn of the current Dock Icon Click Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback

@@ -121,9 +121,7 @@ end
 
 --- cp.dev.which(cmd) -> none
 --- Function
---- The which utility takes a list of command names and searches the path for
---- each executable file that would be run had these commands actually been
---- invoked.
+--- The which utility takes a list of command names and searches the path for each executable file that would be run had these commands actually been invoked.
 ---
 --- Parameters:
 ---  * cmd - The parameters to pass along to the `which` executable.
@@ -160,8 +158,7 @@ end
 
 --- cp.dev.inspectAtMouse(options) -> none
 --- Function
---- Inspects an AX element under the current mouse position.
---- Writes results to Debug Console.
+--- Inspects an AX element under the current mouse position. Writes results to Debug Console.
 ---
 --- Parameters:
 ---  * options - Any additional options to pass along to `cp.dev.inspectElement`.
@@ -408,28 +405,29 @@ end
 
 --- cp.dev.test(id) -> cp.test
 --- Function
---- This function will return a [cp.test](cp.test.md) with either the
---- name `<id>_test` or `<id>._test` if the `<id>` is pointing at a folder.
----
---- For example, you have an extensions called
---- `foo.bar`, and you want to create a test for it.
----
---- Option 1: `<id>_test`
---- * File: `/src/tests/foo/bar_test.lua`
----
---- Option 2: `<id>._test`
---- * File: `/src/tests/foo/bar/_test.lua`
----
---- You could then run all the contained tests like so:
---- ```lua
---- _test("foo.bar")()
---- ```
+---  This function will return a [cp.test](cp.test.md).
 ---
 --- Parameters:
 ---  * id - the `id` to test.
 ---
 --- Returns:
 ---  * A [cp.test] to execute.
+---
+--- Notes:
+--- This function will return a [cp.test](cp.test.md) with either the name `<id>_test` or `<id>._test` if the `<id>` is pointing at a folder.
+---
+--- For example, you have an extensions called `foo.bar`, and you want to create a test for it.
+---
+--- Option 1: `<id>_test`
+---  * File: `/src/tests/foo/bar_test.lua`
+---
+--- Option 2: `<id>._test`
+---  * File: `/src/tests/foo/bar/_test.lua`
+---
+--- You could then run all the contained tests like so:
+--- ```lua
+--- _test("foo.bar")()
+--- ```
 function mod.test(id)
     id = id or ""
     local testsRoot = config.testsPath

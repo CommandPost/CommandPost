@@ -1,7 +1,7 @@
 --- === cp.is ===
 ---
 --- A simple class that lets you test if a value `is` a particular type.
---- Note: for best performance, assign the specific checks you want to use to local functions. Eg:
+--- Notes: for best performance, assign the specific checks you want to use to local functions. Eg:
 ---
 --- ```lua
 --- local is_nothing = require("cp.is").nothing
@@ -30,10 +30,10 @@ local type = type
 --- Check if the value is `nil`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_nothing(value)
     return value == nil
 end
@@ -43,10 +43,10 @@ end
 --- Check if the value is not `nil`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_something(value)
     return value ~= nil
 end
@@ -56,10 +56,10 @@ end
 --- Check if the value is a string.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_string(value)
     return type(value) == "string"
 end
@@ -69,10 +69,10 @@ end
 --- Check if the value is a `function`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_fn(value)
     return type(value) == "function"
 end
@@ -82,10 +82,10 @@ end
 --- Check if the value is a `number`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_number(value)
     return type(value) == "number"
 end
@@ -95,10 +95,10 @@ end
 --- Check if the value is a `function`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_boolean(value)
     return type(value) == "boolean"
 end
@@ -108,10 +108,10 @@ end
 --- Check if the value is a `table`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_table(value)
     return type(value) == "table"
 end
@@ -121,10 +121,10 @@ end
 --- Check if the value is a `userdata` object.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_userdata(value)
     return type(value) == "userdata"
 end
@@ -134,10 +134,10 @@ end
 --- Check if the value is a `object`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_object(value)
     return is_table(value) or is_userdata(value)
 end
@@ -147,38 +147,36 @@ end
 --- Check if the value is a `list`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_list(value)
     return is_object(value) and #value > 0
 end
 
 --- cp.is.truthy(value) -> boolean
 --- Function
---- Check if the value is a `truthy` value.
---- A value is considered to be truthy if it is not `nil` nor `false`.
+--- Check if the value is a `truthy` value. A value is considered to be truthy if it is not `nil` nor `false`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_truthy(value)
     return value ~= nil and value ~= false
 end
 
 --- cp.is.falsey(value) -> boolean
 --- Function
---- Check if the value is a `falsey` value.
---- A value is considered to be `falsey` if it is `nil` or `false`.
+--- Check if the value is a `falsey` value. A value is considered to be `falsey` if it is `nil` or `false`.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_falsey(value)
     return not is_truthy(value)
 end
@@ -213,10 +211,10 @@ end
 --- Check if the value is a callable - either a `function` or a `table` with `__call` in it's metatable hierarchy.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_callable(value)
     return is_fn(value) or is_table(value) and has_callable(getmetatable(value))
 end
@@ -226,26 +224,24 @@ end
 --- Check if the value is a blank string value - either `nil` or `tostring(value) == ""`.
 ---
 --- Parameters:
---- * value     - the value to check.
+---  * value     - the value to check.
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 local function is_blank(value)
     return value == nil or tostring(value) == ""
 end
 
 --- cp.is.instance(value, class) -> boolean
 --- Function
---- Check if the value is an instance of the provided class `table`. It is considered
---- an instance if the `class` is either the value itself, or is the `__index` or `__class` field
---- of the `metatable`.
+--- Check if the value is an instance of the provided class `table`. It is considered an instance if the `class` is either the value itself, or is the `__index` or `__class` field of the `metatable`.
 ---
 --- Parameters:
---- * value     - the value to check
---- * class     - the class table to check
+---  * value     - the value to check
+---  * class     - the class table to check
 ---
 --- Returns:
---- * `true` if it is an instance.
+---  * `true` if it is an instance.
 local function is_instance(value, class)
     if type(value) == "table" then
         if value == class then

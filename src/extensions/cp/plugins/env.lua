@@ -23,10 +23,10 @@ template.caching(false)
 --- Creates a new `env` pointing at the specified root folder path.
 ---
 --- Parameters:
---- * `rootPath` the path to the plugin's root folder.
+---  * `rootPath` the path to the plugin's root folder.
 ---
 --- Returns:
---- * The new `env` instance.
+---  * The new `env` instance.
 function env.new(rootPath)
     local o = {
         rootPath = rootPath,
@@ -39,10 +39,10 @@ end
 --- Returns the absolute path to the file referred to by the relative resource path. If an image is stored as `images/my.jpg` in the plugin, the resource path will be `"images/my.jpg"`. The result will be the full path to that file. If the file cannot be found in the plugin, it will look in the `cp/resources/assets` folder for globally-shared resources.
 ---
 --- Parameters:
---- * `resourcePath`	- The local path to the resource inside the plugin.
+---  * `resourcePath` - The local path to the resource inside the plugin.
 ---
 --- Returns:
---- * The absolute path to the resource, or `nil` if it does not exist.
+---  * The absolute path to the resource, or `nil` if it does not exist.
 function env:pathToAbsolute(resourcePath)
     local path = nil
     if self.rootPath then
@@ -62,10 +62,10 @@ end
 --- Returns an absolute `file://` URL to the file referred to by the relative resource path. If an image is stored as `images/my.jpg` in the plugin, the resource path will be `"images/my.jpg"`. The result will be a URL to that file. If the file cannot be found in the plugin, it will look in the `cp/resources/assets` folder for globally-shared resources.
 ---
 --- Parameters:
---- * `resourcePath`	- The local path to the resource inside the plugin.
+---  * `resourcePath` - The local path to the resource inside the plugin.
 ---
 --- Returns:
---- * The absolute URL to the resource, or `nil` if it does not exist.
+---  * The absolute URL to the resource, or `nil` if it does not exist.
 function env:pathToURL(resourcePath)
     local path = self:pathToAbsolute(resourcePath)
     if path then
@@ -80,10 +80,10 @@ end
 --- Reads the contents of the resource at the specified resource path. This is returned as a string of data (which may or may not be an actual readable string, depending on the source content).
 ---
 --- Parameters:
---- * `resourcePath`	- The local path to the resource inside the plugin.
+---  * `resourcePath`	- The local path to the resource inside the plugin.
 ---
 --- Returns:
---- * The contents of the resouce, or `nil` if the file does not exist.
+---  * The contents of the resouce, or `nil` if the file does not exist.
 function env:readResource(resourcePath)
     local name = self:pathToAbsolute(resourcePath)
     if not name then
@@ -103,14 +103,15 @@ end
 --- Method
 --- Compiles a Resty Template within the context of the plugin. The `view` may be a resource path pointing at a template file in the plugin, or may be raw template markup. The `layout` is an optional path/template for a layout template. See the [Resty Template](https://github.com/bungle/lua-resty-template) documentation for details.
 ---
---- It returns a function which can have a `model` table passed in which will provide variables/functions/etc that the template can access while rendering. The function can be reused multiple times with different context values.
----
 --- Parameters:
---- * `view`	- The local path inside the plugin to the template file, or raw template markup.
---- * `layout`	- The local path inside the plugin to the layout file.
+---  * `view`	- The local path inside the plugin to the template file, or raw template markup.
+---  * `layout`	- The local path inside the plugin to the layout file.
 ---
 --- Returns:
---- * A function which will render the template.
+---  * A function which will render the template.
+---
+--- Notes:
+---  * It returns a function which can have a `model` table passed in which will provide variables/functions/etc that the template can access while rendering. The function can be reused multiple times with different context values.
 function env:compileTemplate(view, layout)
     -- replace the load function to allow loading from the plugin
     local oldLoader = template.load
@@ -146,15 +147,16 @@ end
 --- Method
 --- Renders a Resty Template within the context of the plugin. The `view` may be a resource path pointing at a template file in the plugin, or may be raw template markup. The `layout` is an optional path/template for a layout template. See the [Resty Template](https://github.com/bungle/lua-resty-template) documentation for details.
 ---
---- The `model` is a table which will provide variables/functions/etc that the template can access while rendering.
----
 --- Parameters:
---- * `view`	- The local path inside the plugin to the template file, or raw template markup.
---- * `model`	- The model which provides variables/functions/etc to the template.
---- * `layout`	- The local path inside the plugin to the layout file.
+---  * `view`	- The local path inside the plugin to the template file, or raw template markup.
+---  * `model`	- The model which provides variables/functions/etc to the template.
+---  * `layout`	- The local path inside the plugin to the layout file.
 ---
 --- Returns:
---- * A function which will render the template.
+---  * A function which will render the template.
+---
+--- Notes:
+---  * The `model` is a table which will provide variables/functions/etc that the template can access while rendering.
 function env:renderTemplate(view, model, layout)
     return self:compileTemplate(view, layout)(model)
 end

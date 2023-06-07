@@ -44,10 +44,10 @@ end
 --- Checks if the element is the `TransitionInspector`
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if the element is a match, otherwise `false`.
+---  * `true` if the element is a match, otherwise `false`.
 function TransitionInspector.static.matches(element)
     local contentUI = findContentUI(element)
     return findAudioCrossfade(contentUI) ~= nil

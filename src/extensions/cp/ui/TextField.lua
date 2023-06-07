@@ -97,21 +97,9 @@ function TextField.static.matches(element, subrole)
         (subrole == nil or element:attributeValue("AXSubrole") == subrole)
 end
 
---- cp.ui.TextField(parent, uiFinder[, convertFn]) -> TextField
+--- cp.ui.TextField(parent, uiFinder, getConvertFn, setConvertFn) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
---- Additionally, an optional `convert` function can be provided, with the following signature:
----
---- `function(textValue) -> anything`
----
---- The `value` will be passed to the function before being returned, if present. All values
---- passed into `value(x)` will be converted to a `string` first via `tostring`.
----
---- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
----
---- ```lua
---- local numberField = TextField(parent, function() return ... end, tonumber, tostring)
---- ```
 ---
 --- Parameters:
 ---  * parent   - The parent object.
@@ -121,6 +109,19 @@ end
 ---
 --- Returns:
 ---  * The new `TextField`.
+---
+--- Notes:
+---  * Additionally, an optional `convert` function can be provided, with the following signature:
+---
+--- `function(textValue) -> anything`
+---
+---  * The `value` will be passed to the function before being returned, if present. All values passed into `value(x)` will be converted to a `string` first via `tostring`.
+---
+---   * For example, to have the value be converted into a `number`, simply use `tonumber` like this:
+---
+--- ```lua
+--- local numberField = TextField(parent, function() return ... end, tonumber, tostring)
+--- ```
 function TextField:initialize(parent, uiFinder, getConvertFn, setConvertFn)
     Element.initialize(self, parent, uiFinder)
     self._getConvertFn = getConvertFn
@@ -161,8 +162,7 @@ end
 
 --- cp.ui.TextField:forceFocus()
 --- Method
---- Configures the TextField to force a focus on the field before editing.
---- Some fields seem to require this to actually update the text value.
+--- Configures the TextField to force a focus on the field before editing. Some fields seem to require this to actually update the text value.
 ---
 --- Parameters:
 ---  * None

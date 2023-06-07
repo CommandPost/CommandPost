@@ -157,7 +157,7 @@ end
 --- Parameters:
 ---  * filterFn - The function which checks if the child matches the requirements.
 ---
---- Return:
+--- Returns:
 ---  * The `axuielement` or `nil`.
 function ScrollArea:childrenUI(filterFn)
     local finder = chain //
@@ -199,7 +199,7 @@ end
 --- Parameters:
 ---  * childUI - The `hs.axuielement` object of the child you want to show.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:showChild(childUI)
     local ui = self:UI()
@@ -237,7 +237,7 @@ end
 --- Parameters:
 ---  * index - The index of the child you want to show.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:showChildAt(index)
     local ui = self:childrenUI()
@@ -254,7 +254,7 @@ end
 --- Parameters:
 ---  * childUI - The `hs.axuielement` object of the child you want to select.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:selectChild(childUI)
     if childUI then
@@ -273,7 +273,7 @@ end
 --- Parameters:
 ---  * index - The index of the child you want to select.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:selectChildAt(index)
     local ui = self:childrenUI()
@@ -290,7 +290,7 @@ end
 --- Parameters:
 ---  * childrenUI - A table of `hs.axuielement` objects.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:selectAll(childrenUI)
     childrenUI = childrenUI or self:childrenUI()
@@ -309,7 +309,7 @@ end
 --- Parameters:
 ---  * None
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:deselectAll()
     local contents = self:contentsUI()

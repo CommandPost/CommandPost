@@ -21,6 +21,10 @@ Subject.__tostring = util.constant('Subject')
 --- cp.rx.Subject.create() -> cp.rx.Subject
 --- Constructor
 --- Creates a new Subject.
+---
+--- Parameters:
+---  * None
+---
 --- Returns:
 ---  * The `Subject`.
 function Subject.create()
@@ -32,15 +36,14 @@ function Subject.create()
   return setmetatable(self, Subject)
 end
 
---- cp.rx.Subject:subscribe(onNext[, onError[, onCompleted]]) -> cp.rx.Reference
+--- cp.rx.Subject:subscribe(observer[, onError[, onCompleted]]) -> cp.rx.Reference
 --- Method
 --- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the Subject.
 ---
 --- Parameters:
----  * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a `function` called
----                           when the `Subject` produces a value.
----  * onError               - A `function` called when the `Subject` terminates due to an error.
----  * onCompleted           - A `function` called when the `Subject` completes normally.
+---  * observer - Either an [Observer](cp.rx.Observer.md), or a `function` called when the `Subject` produces a value.
+---  * onError - A `function` called when the `Subject` terminates due to an error.
+---  * onCompleted - A `function` called when the `Subject` completes normally.
 ---
 --- Returns:
 ---  * The [Reference](cp.rx.Reference.md)
@@ -85,7 +88,10 @@ end
 --- Pushes zero or more values to the `Subject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
 ---
 --- Parameters:
----  * ...       - The values to send.
+---  * ... - The values to send.
+---
+--- Returns:
+---  * None
 function Subject:onNext(...)
   if not self.stopped then
     local observer
@@ -101,7 +107,10 @@ end
 --- Signal to all `Observers` that an error has occurred.
 ---
 --- Parameters:
----  * message     - A string describing what went wrong.
+---  * message - A string describing what went wrong.
+---
+--- Returns:
+---  * None
 function Subject:onError(message)
   if not self.stopped then
     self.stopping = true

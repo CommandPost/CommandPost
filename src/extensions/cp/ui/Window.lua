@@ -132,7 +132,7 @@ end
 --- cp.ui.Window.focused <cp.prop: boolean>
 --- Field
 --- Is `true` if the window has mouse/keyboard focused.
---- Note: Setting to `false` has no effect, since 'defocusing' isn't definable.
+--- Notes: Setting to `false` has no effect, since 'defocusing' isn't definable.
 function Window.lazy.prop:focused()
     return notifyWatch(
         self.hsWindow:mutate(
@@ -301,10 +301,10 @@ end
 --- Attempts to close the window.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the window was successfully closed.
+---  * `true` if the window was successfully closed.
 function Window:close()
     local hsWindow = self:hsWindow()
     return hsWindow ~= nil and hsWindow:close()
@@ -315,10 +315,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will attempt to close the window, if it is visible.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement` to execute, resolving to `true` if the window is closed successfully, or `false` if not.
+---  * The `Statement` to execute, resolving to `true` if the window is closed successfully, or `false` if not.
 function Window.lazy.method:doClose()
     return If(self.hsWindow):Then(function(hsWindow)
         return hsWindow:close()
@@ -333,10 +333,10 @@ end
 --- Attempts to focus the window.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the window was successfully focused.
+---  * `true` if the window was successfully focused.
 function Window:focus()
     local hsWindow = self:hsWindow()
     return hsWindow ~= nil and hsWindow:focus()
@@ -347,10 +347,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) will attempt to focus on the window, if it is visible.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement` to execute, which resolves to `true` if the window was successfully focused, or `false` if not.
+---  * The `Statement` to execute, which resolves to `true` if the window was successfully focused, or `false` if not.
 function Window.lazy.method:doFocus()
     return If(self.hsWindow):Then(function(hsWindow)
         return hsWindow:focus()
@@ -383,11 +383,11 @@ end
 --- Finds the `axuielement` for the specified `sectionID`, if present in the provided `axuielement` `windowUI`.
 ---
 --- Parameters:
---- * windowUI - The `AXWindow` `axuielement` to search in.
---- * sectionID - The string value for the `SectionUniqueID`.
+---  * windowUI - The `AXWindow` `axuielement` to search in.
+---  * sectionID - The string value for the `SectionUniqueID`.
 ---
 --- Returns:
---- * The matching `axuielement`, or `nil`.
+---  * The matching `axuielement`, or `nil`.
 function Window.static.findSectionUI(windowUI, sectionID)
     if windowUI then
         local sections = windowUI:attributeValue("AXSections")
@@ -406,10 +406,10 @@ end
 --- Looks for th section with the specified `SectionUniqueID` value and returns the matching `axuielement` value.
 ---
 --- Parameters:
---- * sectionID - The string for the section ID.
+---  * sectionID - The string for the section ID.
 ---
 --- Returns:
---- * The matching `axuielement`, or `nil`.
+---  * The matching `axuielement`, or `nil`.
 function Window:findSectionUI(sectionID)
     return Window.findSectionUI(self:UI(), sectionID)
 end
@@ -429,14 +429,13 @@ end
 
 --- cp.ui.Window:snapshot([path]) -> hs.image | nil
 --- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
+--- Takes a snapshot of the UI in its current state as a PNG and returns it. If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
---- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+--- Returns:
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function Window:snapshot(path)
     local ui = self:UI()
     if ui then

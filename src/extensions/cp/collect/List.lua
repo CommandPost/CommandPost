@@ -11,11 +11,11 @@ List.mt.__index = List.mt
 --- Creates a new `List` with the specified size.
 ---
 --- Parameters:
---- * size          - The size of the list. Defaults to `0`.
---- * defaultValue  - If specified, all items in the list will be initialised to the default value.
+---  * size          - The size of the list. Defaults to `0`.
+---  * defaultValue  - If specified, all items in the list will be initialised to the default value.
 ---
 --- Returns:
---- * The new `List` instance.
+---  * The new `List` instance.
 function List.sized(size, defaultValue)
     size = size or 0
     assert(type(size) == "number", "parameter #1 must be a number.")
@@ -37,10 +37,10 @@ end
 --- Creates a new `List` with the specified items init.
 ---
 --- Parameters:
---- * ...       - The items to put in the list, in order.
+---  * ...       - The items to put in the list, in order.
 ---
 --- Returns:
---- * The new `List` instance.
+---  * The new `List` instance.
 function List.of(...)
     local size = select("#", ...)
     local result = List.sized(size)
@@ -68,10 +68,10 @@ end
 --- Trims the current `List` to only contain trailing values that are not `nil`.
 ---
 --- Parameters:
---- * minSize   - If provided, the minimum size to trim down to. Defaults to `0`.
+---  * minSize   - If provided, the minimum size to trim down to. Defaults to `0`.
 ---
 --- Returns:
---- * The same `List` instance.
+---  * The same `List` instance.
 function List.mt:trim(minSize)
     minSize = minSize or 0
     local len = self.n
@@ -90,10 +90,10 @@ end
 --- Returns and/or sets the current size of the list.
 ---
 --- Parameters:
---- * newSize       - if provided, sets the new size of the list. Any values contained above the new size are set to `nil`.
+---  * newSize       - if provided, sets the new size of the list. Any values contained above the new size are set to `nil`.
 ---
 --- Returns:
---- * The size of the list.
+---  * The size of the list.
 function List.mt:size(newSize)
     local len = self.n
     if newSize ~= nil then

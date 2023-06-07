@@ -77,7 +77,7 @@ end
 ---  * `shortcut.builder` which can be used to create the shortcut.
 ---
 --- Notes:
---- * If provided, the receiver function will be called when the shortcut has been configured, and passed the new
+---  * If provided, the receiver function will be called when the shortcut has been configured, and passed the new
 ---   shortcut. The result of that function will be returned to the next stage.
 ---   If no `receiverFn` is provided, the shortcut will be returned directly.
 ---
@@ -241,7 +241,7 @@ function shortcut.mt:delete()
     return self:unbind()
 end
 
---- cp.commands.shortcut:trigger() -> shortcut
+--- cp.commands.shortcut:trigger([app]) -> shortcut
 --- Method
 --- This will trigger the keystroke specified in the shortcut.
 ---
@@ -268,16 +268,17 @@ end
 
 --- cp.commands.shortcut.builder.new([receiverFn]) -> builder
 --- Method
---- Creates a new shortcut builder. If provided, the receiver function
---- will be called when the shortcut has been configured, and passed the new
---- shortcut. The result of that function will be returned to the next stage.
---- If no `receiverFn` is provided, the shortcut will be returned directly.
+--- Creates a new shortcut builder.
 ---
 --- Parameters:
----  * `receiverFn` - The function which will be called with the new shortcut, when built.
+---  * `receiverFn` - An optional function which will be called with the new shortcut, when built.
 ---
 --- Returns:
 ---  * The builder instance
+---
+--- Notes:
+---  * If provided, the receiver function will be called when the shortcut has been configured, and passed the new shortcut. The result of that function will be returned to the next stage.
+---  * If no `receiverFn` is provided, the shortcut will be returned directly.
 function builder.new(receiverFn)
     local o = {
         _receiver   = receiverFn,
@@ -289,9 +290,7 @@ end
 
 --- cp.commands.shortcut.builder:add(modifier, [keyCode]) -> shortcut/command
 --- Method
---- Adds the specified modifier to the set. If a `keyCode` is provided,
---- no more modifiers can be added and the original `command` is returned instead.
---- Otherwise, `self` is returned and further modifiers can be added.
+--- Adds the specified modifier to the set. If a `keyCode` is provided, no more modifiers can be added and the original `command` is returned instead. Otherwise, `self` is returned and further modifiers can be added.
 ---
 --- Parameters:
 ---  * modifier - (optional) The modifier that was added.

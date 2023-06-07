@@ -248,26 +248,25 @@ end
 --- Checks if the specified element is a Color Well.
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if the element is a Color Well.
+---  * `true` if the element is a Color Well.
 function ColorWell.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXColorWell"
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell(parent, uiFinder[, hueShift]) -> ColorWell
 --- Constructor
---- Creates a new `ColorWell` instance, with the specified parent and finder function.
---- The finder function should return the specific color well UI element that this instance represents.
+--- Creates a new `ColorWell` instance, with the specified parent and finder function. The finder function should return the specific color well UI element that this instance represents.
 ---
 --- Parameters:
---- * parent    - The parent object
---- * uiFinder  - Returns the `axuielement` that represents the color well.
---- * hueShift  - The amount to shift the hue.
+---  * parent    - The parent object
+---  * uiFinder  - Returns the `axuielement` that represents the color well.
+---  * hueShift  - The amount to shift the hue.
 ---
 --- Returns:
---- * A new `ColorWell` instance.
+---  * A new `ColorWell` instance.
 function ColorWell:initialize(parent, uiFinder, hueShift)
     Element.initialize(self, parent, uiFinder)
     self._hueShift = hueShift or 0
@@ -428,8 +427,7 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell:nudge(right, up) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that nudges the `colorPosition` by `right`/`up` values.
---- Negative `right` values shift left, negative `up` values shift down. You may have decimal shift values.
+--- A [Statement](cp.rx.go.Statement.md) that nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left, negative `up` values shift down. You may have decimal shift values.
 ---
 --- Parameters:
 ---  * `right` - The number of steps to shift right. May be negative to shift left.
@@ -448,10 +446,10 @@ end
 --- Resets the color wheel.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `ColorWell` instance.
+---  * The `ColorWell` instance.
 function ColorWell:reset()
     self:value({})
 end

@@ -18,9 +18,9 @@ local panel = {}
 --- Constructs a new panel with the specified priority and ID.
 ---
 --- Parameters:
---- * priority  - Defines the order in which the panel appears.
---- * id        - The unique ID for the panel.
---- * webview   - The webview the panel is attached to.
+---  * priority  - Defines the order in which the panel appears.
+---  * id        - The unique ID for the panel.
+---  * webview   - The webview the panel is attached to.
 function panel.new(params, manager)
     local o = {
         id          =   params.id,
@@ -107,12 +107,12 @@ end
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
 --- Parameters:
---- * `priority`        - the priority order of the content.
---- * `content`         - a value that can be converted to a string.
---- * `escaped`         - if `true`, the content will be escaped.
+---  * `priority`        - the priority order of the content.
+---  * `content`         - a value that can be converted to a string.
+---  * `escaped`         - if `true`, the content will be escaped.
 ---
 --- Returns:
---- * The panel.
+---  * The panel.
 function panel:addContent(priority, content, escaped)
     -- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
     priority = priority or 0
@@ -188,7 +188,7 @@ end
 ---  * class - The class as a string
 ---
 --- Returns:
---- * The panel object.
+---  * The panel object.
 function panel:addParagraph(priority, content, escaped, class)
     return self:addContent(priority, html.p { class=getClass({class=class}) } (content, escaped))
 end
@@ -202,7 +202,7 @@ end
 ---  * default - The default value to display if the `content` is `nil`. It will be displayed with a different style.
 ---
 --- Returns:
---- * The panel object.
+---  * The panel object.
 function panel:addStatus(priority, content, default)
     return self:addParagraph(priority, function()
         return content or html.span {class = "default"} (default)
@@ -255,7 +255,7 @@ end
 ---  * text - The text of the heading as a string
 ---
 --- Returns:
---- * The panel object.
+---  * The panel object.
 function panel:addHeading(priority, text, level)
     return self:addContent(priority, ui.heading({text=text, level=level, class="uiItem"}))
 end
@@ -268,7 +268,7 @@ end
 ---  * params - A table of parameters
 ---
 --- Returns:
---- * The panel object.
+---  * The panel object.
 function panel:addTextbox(priority, params)
     params.id = params.id or uuid()
 
@@ -295,7 +295,7 @@ end
 ---  * params - A table of parameters
 ---
 --- Returns:
---- * The panel object.
+---  * The panel object.
 function panel:addPassword(priority, params)
     params.id = params.id or uuid()
 

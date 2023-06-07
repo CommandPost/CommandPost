@@ -143,8 +143,7 @@ end
 
 --- cp.ui.OldOutline:createColumn(columnUI) -> cp.ui.OldColumn
 --- Method
---- Attempts to create a new [Column](cp.ui.OldColumn.md) with the provided `columnUI` `axuielement`.
---- If there is a problem, an `error` is thrown.
+--- Attempts to create a new [Column](cp.ui.OldColumn.md) with the provided `columnUI` `axuielement`. If there is a problem, an `error` is thrown.
 ---
 --- Parameters:
 ---  * columnUI - the `AXColumn` `axuielement` to create a [Column](cp.ui.OldColumn.md) for.
@@ -175,8 +174,7 @@ end
 
 --- cp.ui.OldOutline:fetchColumn(columnUI) -> cp.ui.OldColumn or nil
 --- Method
---- Returns the [Column](cp.ui.OldColumn.md) that represents the provided `columnUI`, if it is actually present
---- in the `Outline`.
+--- Returns the [Column](cp.ui.OldColumn.md) that represents the provided `columnUI`, if it is actually present in the `Outline`.
 ---
 --- Parameters:
 ---  * columnUI - The `axuielement` for the `AXColumn` to find a [Column](cp.ui.OldColumn.md) for.
@@ -190,14 +188,16 @@ end
 --- cp.ui.OldOutline:fetchColumn(columnsUI) -> table of cp.ui.Columns
 --- Method
 --- Returns a `table` of the same length as `columnsUI`.
---- If provided items in the table are not valid columns in this table, then `nil` will be put in the matching index.
---- Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
 ---  * columnsUI - The list of `AXColumn` `axuielement`s to find.
 ---
 --- Returns:
 ---  * A `table` with the same number of elements, containing the matching [Column](cp.ui.OldColumn.md) instances.
+---
+--- Notes:
+---  * If provided items in the table are not valid columns in this table, then `nil` will be put in the matching index.
+---  * Note that this will break the standard `#`/looping behaviour for tables at that point.
 function Outline:fetchColumns(columnsUI)
     return _fetchElements(self._columnCache, columnsUI, self, self.createColumn)
 end
@@ -217,8 +217,7 @@ end
 
 --- cp.ui.OldOutline:createRow(rowUI) -> cp.ui.OldRow
 --- Method
---- Attempts to create a new [Row](cp.ui.OldRow.md) with the provided `rowUI` `axuielement`.
---- If there is a problem, an `error` is thrown.
+--- Attempts to create a new [Row](cp.ui.OldRow.md) with the provided `rowUI` `axuielement`. If there is a problem, an `error` is thrown.
 ---
 --- Parameters:
 ---  * rowUI - the `AXRow` `axuielement` to create a [Row](cp.ui.OldRow.md) for.
@@ -248,8 +247,7 @@ end
 
 --- cp.ui.OldOutline:fetchRow(rowUI) -> cp.ui.OldRow or nil
 --- Method
---- Returns the [Row](cp.ui.OldRow.md) that represents the provided `rowUI`, if it is actually present
---- in the `Outline`.
+--- Returns the [Row](cp.ui.OldRow.md) that represents the provided `rowUI`, if it is actually present in the `Outline`.
 ---
 --- Parameters:
 ---  * rowUI - The `axuielement` for the `AXRow` to find a [Row](cp.ui.OldRow.md) for.
@@ -263,22 +261,23 @@ end
 --- cp.ui.OldOutline:fetchRows(rowsUI) -> table of cp.ui.OldRows
 --- Method
 --- Returns a `table` of the same length as `rowsUI`.
---- If provided items in the table are not valid rows in this table, then `nil` will be put in the matching index.
---- Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
 ---  * rowsUI - The list of `AXRow` `axuielement`s to find.
 ---
 --- Returns:
 ---  * A `table` with the same number of elements, containing the matching [Row](cp.ui.OldRow.md) instances.
+---
+--- Notes:
+---  * If provided items in the table are not valid rows in this table, then `nil` will be put in the matching index.
+---  * Note that this will break the standard `#`/looping behaviour for tables at that point.
 function Outline:fetchRows(rowsUI)
     return _fetchElements(self._rowCache, rowsUI, self, self.createRow)
 end
 
 --- cp.ui.OldOutline:filterRows(matcherFn) -> table of cp.ui.OldRows or nil
 --- Method
---- Returns a table only containing [Row](cp.ui.OldRow.md)s which pass the predicate `matcherFn`.
---- The function is passed the row and returns a boolean.
+--- Returns a table only containing [Row](cp.ui.OldRow.md)s which pass the predicate `matcherFn`. The function is passed the row and returns a boolean.
 ---
 --- Parameters:
 ---  * matcherFn	- the `function` that will accept a [Row](cp.ui.OldRow.md) and return a `boolean`.

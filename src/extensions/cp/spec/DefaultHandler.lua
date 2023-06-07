@@ -37,12 +37,11 @@ end
 
 --- cp.spec.DefaultHandler:printf(test, ...)
 --- Method
---- Prints a spacer (if not the first line), followed by the text,
---- optionally formatted with the provided parameters.
+--- Prints a spacer (if not the first line), followed by the text, optionally formatted with the provided parameters.
 ---
 --- Parameters:
----  * text      - The message to print.
----  * ...       - The parameters to interpolate into the text message.
+---  * text - The message to print.
+---  * ... - The parameters to interpolate into the text message.
 ---
 --- Returns:
 ---  * None
@@ -56,7 +55,7 @@ end
 --- If the handler or run is verbose, prints a "[START]" message.
 ---
 --- Parameters:
----  * run      - the [run](cp.spec.Run.md)
+---  * run - the [run](cp.spec.Run.md)
 ---
 --- Returns:
 ---  * None
@@ -69,7 +68,7 @@ end
 --- If the handler or run is verbose, prints a "[STOP]" message.
 ---
 --- Parameters:
----  * run      - the [run](cp.spec.Run.md)
+---  * run - the [run](cp.spec.Run.md)
 ---
 --- Returns:
 ---  * None
@@ -82,8 +81,8 @@ end
 --- If the handler or run is verbose, prints a "[PASS]" message.
 ---
 --- Parameters:
----  * run      - the [run](cp.spec.Run.md)
----  * msg       - the message string.
+---  * run - the [run](cp.spec.Run.md)
+---  * msg - the message string.
 ---
 --- Returns:
 ---  * None
@@ -94,13 +93,16 @@ function DefaultHandler:passed(run, msg)
     end
 end
 
---- cp.spec.DefaultHandler:failed(run, msg)
+--- cp.spec.DefaultHandler:failed(run, msg) -> none
 --- Method
 --- Prints a "[FAIL]" message.
 ---
 --- Parameters:
 ---  * run      - the [run](cp.spec.Run.md)
 ---  * msg       - the message string.
+---
+--- Returns:
+---  * None
 function DefaultHandler:failed(run, msg)
     self:printf("  [FAIL] %s: %s", run, msg)
 end
@@ -119,12 +121,13 @@ function DefaultHandler:aborted(run, msg)
     self:printf(" [ABORT] %s: %s", run, msg)
 end
 
---- cp.spec.DefaultHandler:waiting(run, timeout)
+--- cp.spec.DefaultHandler:waiting(run, timeout) -> none
 --- Method
 --- Prints a "[WAIT]" message with the timeout value..
 ---
 --- Parameters:
----  * None
+---  * run - run
+---  * timeout - timeout
 ---
 --- Returns:
 ---  * None
@@ -135,7 +138,7 @@ function DefaultHandler:waiting(run, timeout)
     end
 end
 
---- cp.spec.DefaultHandler:filter(run, msg)
+--- cp.spec.DefaultHandler:filter(run, msg) -> none
 --- Method
 --- Prints a "[FILTER]" message.
 ---
@@ -149,7 +152,7 @@ function DefaultHandler:filter(run, msg)
     self:printf("[FILTER] %s: %s", run, msg)
 end
 
---- cp.spec.DefaultHandler:summary(run, report)
+--- cp.spec.DefaultHandler:summary(run, report) -> none
 --- Method
 --- If the handler or run is verbose, prints a "[RESULT]" message.
 ---

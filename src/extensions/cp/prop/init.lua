@@ -374,14 +374,13 @@ end
 
 --- cp.prop:label([newLabel]) -> string | cp.prop
 --- Method
---- Gets and sets the property label. This is human-readable text describing the `cp.prop`.
---- It is used when converting the prop to a string, for example.
+--- Gets and sets the property label. This is human-readable text describing the `cp.prop`. It is used when converting the prop to a string, for example.
 ---
 --- Parameters:
---- * newLabel      - (optional) if provided, this will be the new label.
+---  * newLabel - (optional) if provided, this will be the new label.
 ---
 --- Returns:
---- * Either the existing label, or the `cp.prop` itself if a new label was provided.
+---  * Either the existing label, or the `cp.prop` itself if a new label was provided.
 function prop.mt:label(newLabel)
     if newLabel then
         self._label = newLabel
@@ -393,12 +392,10 @@ end
 
 --- cp.prop:deepTable([skipMetatable]) -> prop
 --- Method
---- This can be called once to enable deep copying of `table` values. By default,
---- `table`s are simply passed in and out. If a sub-key of a table changes, no change
---- will be registered when setting.
+--- This can be called once to enable deep copying of `table` values. By default, `table`s are simply passed in and out. If a sub-key of a table changes, no change will be registered when setting.
 ---
 --- Parameters:
----  * `skipMetatable`  - If set to `true`, copies will _not_ copy the metatable into the new tables.
+---  * `skipMetatable` - If set to `true`, copies will _not_ copy the metatable into the new tables.
 ---
 --- Returns:
 ---  * The `cp.prop` instance.
@@ -421,9 +418,7 @@ end
 
 --- cp.prop:shallowTable(skipMetatable) -> prop
 --- Method
---- This can be called once to enable shallow cloning of `table` values. By default,
---- `table`s are simply passed in and out. If a sub-key of a table changes, no change
---- will be registered when setting.
+--- This can be called once to enable shallow cloning of `table` values. By default, `table`s are simply passed in and out. If a sub-key of a table changes, no change will be registered when setting.
 ---
 --- Parameters:
 ---  * None
@@ -451,16 +446,16 @@ local UNCACHED = {}
 --- cp.prop:cached() -> prop
 --- Method
 --- This can be called once to enable caching of the result inside the `prop`.
---- This can help with performance, but if there are other ways of modifying
---- the original value outside the prop, it will potentially return stale values.
----
---- You can force a reload via the [update](#update) method.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `cp.prop` instance.
+---
+--- Notes:
+---  * This can help with performance, but if there are other ways of modifying the original value outside the prop, it will potentially return stale values.
+---  * You can force a reload via the [update](#update) method.
 function prop.mt:cached()
     self._cached = true
     self._cachedValue = UNCACHED
@@ -471,13 +466,6 @@ end
 --- Method
 --- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
 ---
---- This method can also be called directly on the property, like so:
----
---- ```lua
---- local foo = prop.TRUE()
---- foo() == foo:value()
---- ```
----
 --- Parameters:
 ---  * `newValue`   - The new value to set the instance to.
 ---
@@ -486,6 +474,12 @@ end
 ---
 --- Notes:
 ---  * If you need to set the property to `nil`, use the [set method](#set), otherwise it will be ignored.
+---  * This method can also be called directly on the property, like so:
+---
+--- ```lua
+--- local foo = prop.TRUE()
+--- foo() == foo:value()
+--- ```
 function prop.mt:value(newValue)
     if newValue ~= nil then
         return self:set(newValue)
@@ -501,7 +495,7 @@ end
 --- Parameters:
 ---  * None
 ---
---- Returns
+--- Returns:
 ---  * The current value.
 function prop.mt:get()
     local value = self._cachedValue
@@ -557,8 +551,6 @@ end
 --- cp.prop:bind(owner, [key]) -> cp.prop
 --- Method
 --- Binds the property to the specified owner. Once bound, it cannot be changed.
---- Optionally, a key can be provided which will assign the `cp.prop` to the owner using that key.
---- If the `cp.prop` does not have a label, the key will be used as the label.
 ---
 --- Parameters:
 ---  * `owner`  - The owner to attach to.
@@ -571,6 +563,8 @@ end
 ---  * Throws an `error` if the new owner is `nil`.
 ---  * Throws an `error` if the owner already has a property with the name provided in `key`.
 ---  * Throws an `error` if the `key` is not a string value.
+---  * Optionally, a key can be provided which will assign the `cp.prop` to the owner using that key.
+---  * If the `cp.prop` does not have a label, the key will be used as the label.
 function prop.mt:bind(owner, key)
     assert(owner ~= nil, "The owner must not be nil.")
     self._owner = owner
@@ -648,11 +642,7 @@ end
 
 --- cp.prop:toggle() -> boolean | nil
 --- Method
---- Toggles the current value. Values are modified as follows:
----
----  * `boolean`    - Switch between `true` and `false`
----  * `nil`        - Switches to `true`
----  * <other>  - Switches to `nil`.
+--- Toggles the current value.
 ---
 --- Parameters:
 ---  * None
@@ -663,6 +653,10 @@ end
 --- Notes:
 ---  * If the value is immutable, an error will be thrown.
 ---  * If you toggle a non-boolean parameter twice, it will end up set to `true`.
+---  * Values are modified as follows:
+---   ** `boolean`    - Switch between `true` and `false`
+---   ** `nil`        - Switches to `true`
+---   ** <other>  - Switches to `nil`.
 function prop.mt:toggle()
     return self:set(negate(self:get()))
 end
@@ -670,9 +664,22 @@ end
 -- private unique marker for the 'lastValue' of new watchers.
 local NOTHING = {}
 
---- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop, function
+--- cp.prop:watch(watchFn, notifyNow, uncloned) -> cp.prop, function
 --- Method
---- Adds the watch function to the value. When the value changes, watchers are notified by calling the function. The function should have the following signature:
+--- Adds the watch function to the value. When the value changes, watchers are notified by calling the function.
+---
+--- Parameters:
+---  * `watchFn` - The watch function, with the signature `function(newValue, owner)`.
+---  * `notifyNow` - The function will be triggered immediately with the current state.  Defaults to `false`.
+---  * `uncloned` - If `true`, the watch function will not be attached to any clones of this prop.
+---
+--- Returns:
+---  * `cp.prop` - The same `cp.prop` instance
+---  * `function` - The watch function, which can be passed to [unwatch](#unwatch) to stop watching.
+---
+--- Notes:
+---  * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
+---  * The function should have the following signature:
 ---
 --- ```lua
 --- function(value, owner, prop)
@@ -680,18 +687,6 @@ local NOTHING = {}
 ---  * `value`  - The new value of the property
 ---  * `owner`  - The property owner. May be `nil`.
 ---  * `prop`   - The property itself.
----
---- Parameters:
----  * `watchFn`        - The watch function, with the signature `function(newValue, owner)`.
----  * `notifyNow`  - The function will be triggered immediately with the current state.  Defaults to `false`.
----  * `uncloned`   - If `true`, the watch function will not be attached to any clones of this prop.
----
---- Returns:
----  * `cp.prop`        - The same `cp.prop` instance
----  * `function`   - The watch function, which can be passed to [unwatch](#unwatch) to stop watching.
----
---- Notes:
----  * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
 function prop.mt:watch(watchFn, notifyNow, uncloned)
     if not self._watchers then
         self._watchers = {}
@@ -726,16 +721,16 @@ end
 --- cp.prop:preWatch(preWatchFn) -> cp.prop
 --- Method
 --- Adds a function which will be called once if any watchers are added to this prop.
---- This allows configuration, typically for watching other events, but only if
---- anything is actually watching this property value.
----
---- If the prop already has watchers, this function will be called imediately.
 ---
 --- Parameters:
 ---  * `preWatchFn`     - The function to call once when the prop is watched. Has the signature `function(owner, prop)`.
 ---
 --- Returns:
 ---  * Nothing
+---
+--- Notes:
+---  * This allows configuration, typically for watching other events, but only if anything is actually watching this property value.
+---  * If the prop already has watchers, this function will be called imediately.
 function prop.mt:preWatch(preWatchFn)
     if self:hasWatchers() then -- already watchers - just run it
         preWatchFn(self:owner())
@@ -762,27 +757,28 @@ end
 
 --- cp.prop:unwatch(watchFn) -> boolean
 --- Method
---- Removes the specified watch method as a watcher, if present. An example of adding and removing a watch:
----
---- ```lua
---- local prop, watcher = prop.TRUE():watch(function(value) print tostring(value) end)
---- prop:unwatch(watcher) == true
---- ```
+--- Removes the specified watch method as a watcher, if present.
 ---
 --- Parameters:
 ---  * `watchFn`        - The original watch function to remove. Must be the same instance that was added.
 ---
 --- Returns:
 ---  * `true` if the function was watching and successfully removed, otherwise `false`.
+---
+--- Notes:
+---  * An example of adding and removing a watch:
+---
+--- ```lua
+--- local prop, watcher = prop.TRUE():watch(function(value) print tostring(value) end)
+--- prop:unwatch(watcher) == true
+--- ```
 function prop.mt:unwatch(watchFn)
     return _unwatch(self._watchers, watchFn)
 end
 
 --- cp.prop:toObservable() -> cp.rx.Observable
 --- Method
---- Returns the `cp.rx.Observable` for the property. This will emit
---- `onNext()` events with the current value whenever the `cp.prop` is updated.
---- Any new subscriptions will receive the most recent value immediately.
+--- Returns the `cp.rx.Observable` for the property. This will emit `onNext()` events with the current value whenever the `cp.prop` is updated. Any new subscriptions will receive the most recent value immediately.
 ---
 --- Parameters:
 ---  * None
@@ -872,7 +868,7 @@ end
 --- Parameters:
 ---  * None
 ---
---- Returns
+--- Returns:
 ---  * The current value of the property.
 function prop.mt:update()
     self._cachedValue = UNCACHED
@@ -930,9 +926,18 @@ local function evaluate(something)
     end
 end
 
---- cp.prop:mutate(getFn[, setFn]) -> cp.prop <anything; read-only>, function
+--- cp.prop:mutate(getFn, [setFn]) -> cp.prop <anything; read-only>
 --- Method
 --- Returns a new property that is a mutation of the current one.
+---
+--- Parameters:
+---  * `getFn` - Get function
+---  * `setFn` - An optional set function
+---
+--- Returns:
+---  * A new `cp.prop` which will return a mutation of the property value.
+---
+--- Notes:
 --- Watchers of the mutant will be if a change in the current prop causes
 --- the mutation to be a new value.
 ---
@@ -981,12 +986,6 @@ end
 --- anyNumber(10)       -- prints "even"
 --- isEven() == true    -- no printing
 --- ```
----
---- Parameters:
----  * `mutateFn`   - The function which will mutate the value of the current property.
----
---- Returns:
----  * A new `cp.prop` which will return a mutation of the property value.
 function prop.mt:mutate(getFn, setFn)
     -- create the mutant, which will pull from the original.
     local mutantGetFn = function(owner, mutant)
@@ -1011,8 +1010,7 @@ end
 
 --- cp.prop:wrap([owner[, key]]) -> cp.prop <anything>
 --- Method
---- Returns a new property that wraps this one. It will be able to get and set the same as this, and changes
---- to this property will trigger updates in the wrapper.
+--- Returns a new property that wraps this one. It will be able to get and set the same as this, and changes to this property will trigger updates in the wrapper.
 ---
 --- Parameters:
 ---  * `owner`  -    (optional) If provided, the wrapper will be bound to the specified owner.
@@ -1047,11 +1045,10 @@ end
 
 --- cp.prop:mirror(otherProp) -> self
 --- Method
---- Configures this prop and the other prop to mirror each other's values.
---- When one changes the other will change with it. Only one prop needs to mirror.
+--- Configures this prop and the other prop to mirror each other's values. When one changes the other will change with it. Only one prop needs to mirror.
 ---
 --- Parameters:
---- * `otherProp`   - The other prop to mirror.
+---  * `otherProp`   - The other prop to mirror.
 ---
 --- Returns:
 --- The same property.
@@ -1341,15 +1338,17 @@ end
 --- cp.prop.FROM(value) --> cp.prop
 --- Constructor
 --- Creates a new `prop` value, with the provided `value`.
---- If it's already a `cp.prop`, it will be returned directly.
---- If it's a function, it will be treated as a `get` function.
---- Otherwise, it will be returned as [THIS](#THIS)
 ---
 --- Parameters:
 ---  * `value`      - The value to use.
 ---
 --- Returns:
 ---  * The new `cp.prop` instance.
+---
+--- Notes:
+---  * If it's already a `cp.prop`, it will be returned directly.
+---  * If it's a function, it will be treated as a `get` function.
+---  * Otherwise, it will be returned as [THIS](#THIS)
 function prop.FROM(value)
     if prop.is(value) then
         return value
@@ -1365,7 +1364,7 @@ end
 --- Returns a new `cp.prop` instance which will cache a value internally. It will default to the value of the `initialValue`, if provided.
 ---
 --- Parameters:
----  * `initialValue`   - The initial value to set it to (optional).
+---  * `initialValue` - The initial value to set it to (optional).
 ---
 --- Returns:
 ---  * a new `cp.prop` instance.
@@ -1387,12 +1386,12 @@ end
 --- Returns a new `cp.prop` instance which will not allow the wrapped value to be modified.
 ---
 --- Parameters:
----  * `propValue`      - The `cp.prop` value to wrap.
+---  * `propValue` - The `cp.prop` value to wrap.
 ---
 --- Returns:
 ---  * a new `cp.prop` instance which cannot be modified.
 ---
---- Note:
+--- Notes:
 ---  * The original `propValue` can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
 function prop.IMMUTABLE(propValue)
     assert(prop.is(propValue), "The 'propValue' must be a 'cp.prop' instance.")
@@ -1421,7 +1420,7 @@ prop.NIL = prop.new(function() return nil end)
 --- Returns:
 ---  * a new `cp.prop` instance which cannot be modified.
 ---
---- Note:
+--- Notes:
 ---  * The original property can still be modified (if appropriate) and watchers of the immutable value will be notified when it changes.
 prop.mt.IMMUTABLE = prop.IMMUTABLE
 
@@ -1494,11 +1493,7 @@ end
 
 --- cp.prop:NOT() -> cp.prop
 --- Method
---- Returns a new `cp.prop` which negates the current value. Values are negated as follows:
----
----  * `boolean`    - Switch between `true` and `false`
----  * `nil`        - Switches to `true`
----  * <other>  - Switches to `nil`.
+--- Returns a new `cp.prop` which negates the current value.
 ---
 --- Parameters:
 ---  * None
@@ -1508,6 +1503,10 @@ end
 ---
 --- Notes:
 ---  * If this property is mutable, you can set the `NOT` property value and this property will be set to the negated value. Be aware that the same negation rules apply when setting as when getting.
+---  * Values are negated as follows:
+---   ** `boolean`    - Switch between `true` and `false`
+---   ** `nil`        - Switches to `true`
+---   ** <other>  - Switches to `nil`.
 prop.mt.NOT = prop.NOT
 
 -- cp.prop._watchAndOr(andOrProp, props) -> cp.prop
@@ -1714,8 +1713,20 @@ end
 
 --- cp.prop.bind(owner[, relaxed]) -> function
 --- Function
---- This provides a utility function for binding multiple properties to a single owner in
---- a simple way. To use, do something like this:
+--- This provides a utility function for binding multiple properties to a single owner in a simple way.
+---
+--- Parameters:
+---  * owner     - The owner table to bind the properties to.
+---  * relaxed   - If `true`, then non-`cp.prop` fields will be ignored. Otherwise they generate an error.
+---
+--- Returns:
+---  * A function which should be called, passing in a table of key/value pairs which are `string`/`cp.prop` value.
+---
+--- Notes:
+---  * If you are binding multiple `cp.prop` values that are dependent on other `cp.prop` values on the same owner (e.g. via `mutate` or a boolean join), you
+---   will have to break it up into multiple `prop.bind(...) {...}` calls, so that the dependent property can access the bound property.
+---  * If a `cp.prop` provided as bindings already has a bound owner, it will be wrapped instead of bound directly.
+---  * To use, do something like this:
 ---
 --- ```lua
 --- local o = {}
@@ -1734,20 +1745,7 @@ end
 --- prop.THIS("Hello world"):bind(o, "bar")
 --- ```
 ---
---- It has the added benefit of checking that the target properties ('foo' and 'bar' in this case)
---- have not already been assigned a value.
----
---- Parameters:
---- * owner     - The owner table to bind the properties to.
---- * relaxed   - If `true`, then non-`cp.prop` fields will be ignored. Otherwise they generate an error.
----
---- Returns:
---- * A function which should be called, passing in a table of key/value pairs which are `string`/`cp.prop` value.
----
---- Notes:
---- * If you are binding multiple `cp.prop` values that are dependent on other `cp.prop` values on the same owner (e.g. via `mutate` or a boolean join), you
----   will have to break it up into multiple `prop.bind(...) {...}` calls, so that the dependent property can access the bound property.
---- * If a `cp.prop` provided as bindings already has a bound owner, it will be wrapped instead of bound directly.
+---  * It has the added benefit of checking that the target properties ('foo' and 'bar' in this case) have not already been assigned a value.
 function prop.bind(owner, relaxed)
     return function(bindings)
         for k,v in pairs(bindings) do

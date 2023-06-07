@@ -9,7 +9,7 @@
 --- ```
 ---
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
---- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
+--- Notes: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
 local require = require
 
@@ -28,21 +28,20 @@ mod.mt = {
 
 --- cp.strings.source.table:context([context]) -> table | self
 --- Method
---- Gets or sets a context to be set for the source. This typically includes a `language`, which
---- provides the default language code, but may have other source-specific properties.
---- Calling this method may may clear caches, etc.
+--- Gets or sets a context to be set for the source. This typically includes a `language`, which provides the default language code, but may have other source-specific properties. Calling this method may may clear caches, etc.
 ---
---- Eg:
+--- Parameters:
+---  * context   - A table with values which may be used by the source.
+---
+--- Returns:
+---  * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
+---
+--- Notes:
+---  * For example:
 ---
 --- ```lua
 --- mySource:context({language = "fr"}) -- set the default language to French.
 --- ```
----
---- Parameters:
---- * context   - A table with values which may be used by the source.
----
---- Returns:
---- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
 function mod.mt:context(context)
     if context ~= nil then
         self._context = extend({}, context)
@@ -68,12 +67,10 @@ end
 
 --- cp.strings.source.table:find(key) -> string
 --- Method
---- Finds the specified `key` value in the plist file for the specified optional `context`,
---- if the plist can be found, and contains matching key value.
+--- Finds the specified `key` value in the plist file for the specified optional `context`, if the plist can be found, and contains matching key value.
 ---
 --- Parameters:
 ---  * `key`        - The key to retrieve the value for.
----  * `context`    - An optional table with additional context.
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
@@ -91,7 +88,6 @@ end
 ---
 --- Parameters:
 ---  * `pattern     - The string pattern to match.
----  * `context`    - An optional additional context for the source.
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround

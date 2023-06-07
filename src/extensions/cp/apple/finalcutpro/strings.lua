@@ -141,8 +141,7 @@ end
 
 --- cp.apple.finalcutpro.strings:find(key[, locale][, quiet]]) -> string
 --- Method
---- Looks up an application string with the specified `key`.
---- If no `context` value is provided, the [current context](#context) is used.
+--- Looks up an application string with the specified `key`. If no `context` value is provided, the [current context](#context) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.

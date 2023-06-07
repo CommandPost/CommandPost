@@ -71,14 +71,13 @@ local function clipType(element)
     end
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioComponent(parent) -> AudioComponent
+--- cp.apple.finalcutpro.inspector.audio.AudioComponent(parent, subcomponent, index) -> AudioComponent
 --- Function
 --- Creates a new Audio Component object.
 ---
 --- Parameters:
 ---  * parent - The parent object.
 ---  * subcomponent - A boolean that defines whether or not this is a subcomponent.
----  * componentType - "multicam", "compound" or "standard"
 ---  * index - The index of the component
 ---
 --- Returns:
@@ -191,10 +190,10 @@ end
 --- Gets the enable/disable button for the component.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Button` instance.
+---  * The `Button` instance.
 function AudioComponent:enabled()
     return Button(self, function()
         local ui                = self:UI()
@@ -286,10 +285,10 @@ end
 --- Attempts to show the bar.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `AudioComponent` instance.
+---  * The `AudioComponent` instance.
 function AudioComponent:show()
     self:parent():show()
     just.doUntil(self.isShowing, 5)

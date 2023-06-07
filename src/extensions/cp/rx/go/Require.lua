@@ -16,11 +16,17 @@ end
 --- cp.rx.go.Require(requirement) -> Require
 --- Function
 --- Creates a new `Require` `Statement` with the specified `requirement`.
---- By default, it will require that all items in the requirement are not `nil` and completed.
 ---
---- This is most useful with `Given`, allowing retrieval and checking of values before continuing.
+--- Parameters:
+---  * requirement  - a `resolvable` value that will be checked.
 ---
---- Example:
+--- Returns:
+---  * The `Statement` instance which will check if the `requirement` matches the requirement.
+---
+--- Notes:
+---  * By default, it will require that all items in the requirement are not `nil` and completed.
+---  * This is most useful with `Given`, allowing retrieval and checking of values before continuing.
+---  * Example:
 ---
 --- ```lua
 --- Given(
@@ -29,12 +35,6 @@ end
 ---     -- do stuff with `someValue`
 --- ):Now()
 --- ```
----
---- Parameters:
----  * requirement  - a `resolvable` value that will be checked.
----
---- Returns:
----  * The `Statement` instance which will check if the `requirement` matches the requirement.
 local Require = Statement.named("Require")
 :onInit(function(context, requirement)
     context.requirement = requirement
@@ -218,15 +218,17 @@ Require.AreNot.allow(Require.OrThrow)
 --- Method
 --- Specifies the predicate to check.
 ---
---- ```lua
---- Require(someObservable):Matches(function(value) return value % 2 == 0 end)
---- ```
----
 --- Parameters:
 ---  * value  - The value that all results from the `requirement` must not match.
 ---
 --- Returns:
 ---  * The `Matches` `Statement.Modifier`.
+---
+--- Notes:
+---  * Example:
+--- ```lua
+--- Require(someObservable):Matches(function(value) return value % 2 == 0 end)
+--- ```
 Require.modifier("Matches")
 :onInit(function(context, predicate)
     context.predicate = function(observable)

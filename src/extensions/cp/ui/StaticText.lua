@@ -30,18 +30,6 @@ end
 --- cp.ui.StaticText(parent, uiFinder[, convertFn]) -> StaticText
 --- Method
 --- Creates a new StaticText. They have a parent and a finder function.
---- Additionally, an optional `convert` function can be provided, with the following signature:
----
---- `function(textValue) -> anything`
----
---- The `value` will be passed to the function before being returned, if present. All values
---- passed into `value(x)` will be converted to a `string` first via `tostring`.
----
---- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
----
---- ```lua
---- local numberField = StaticText(parent, function() return ... end, tonumber)
---- ```
 ---
 --- Parameters:
 ---  * parent   - The parent object.
@@ -50,6 +38,18 @@ end
 ---
 --- Returns:
 ---  * The new `StaticText`.
+---
+--- Notes:
+---  * Additionally, an optional `convert` function can be provided, with the following signature:
+---
+--- `function(textValue) -> anything`
+---
+---  * The `value` will be passed to the function before being returned, if present. All values passed into `value(x)` will be converted to a `string` first via `tostring`.
+---  * For example, to have the value be converted into a `number`, simply use `tonumber` like this:
+---
+--- ```lua
+--- local numberField = StaticText(parent, function() return ... end, tonumber)
+--- ```
 function StaticText:initialize(parent, uiFinder, convertFn)
     Element.initialize(self, parent, uiFinder)
 

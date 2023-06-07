@@ -38,12 +38,12 @@ function Index.static.matches(element)
        and hasChild(element, IndexMode.matches)
 end
 
---- cp.apple.finalcutpro.timeline.Index(parent, uiFinder) -> cp.apple.finalcutpro.timeline.Index
+--- cp.apple.finalcutpro.timeline.Index(timeline) -> cp.apple.finalcutpro.timeline.Index
 --- Constructor
 --- Creates a new Timeline Index.
 ---
 --- Parameters:
----  * timeline		- [Timeline](cp.apple.finalcutpro.timeline.Timeline.md).
+---  * timeline - [Timeline](cp.apple.finalcutpro.timeline.Timeline.md).
 ---
 --- Returns:
 ---  * A new `Index` instance.

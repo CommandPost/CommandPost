@@ -4,11 +4,11 @@
 ---
 --- This plugin creates two different types of actions:
 ---
---- **Save/Restore Browser Layout to Memory**
+---  **Save/Restore Browser Layout to Memory**
 --- This feature allows you save and restore five custom browser layouts, which can be
 --- easily triggered by a CommandPost action, such as a keyboard shortcut.
 ---
---- *Save/Restore/Set Browser Layout for Selected Collection**
+---  *Save/Restore/Set Browser Layout for Selected Collection**
 --- This feature allows you to save a browser layout for the currently selected
 --- collection. This feature will only work if a single collection (either Keyword
 --- Collection or Smart Collection) is selected - if more than one is selected then
@@ -19,7 +19,7 @@
 --- using keyboard shortcuts. You can also temporarily prevent a browser layout from
 --- automatically loading by holding down the OPTION key.
 ---
---- **Developer Note:**
+---  **Developer Note:**
 --- This plugin currently uses a `hs.eventtap` rather than AX Notifications, because in
 --- testing we found the AX Notifications to be too unreliable. We also opted to just
 --- use the collection name as the reference point, rather than the path to the

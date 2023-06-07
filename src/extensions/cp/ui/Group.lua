@@ -48,6 +48,7 @@ end
 --- Parameters:
 ---  * parent - The parent object.
 ---  * uiFinder - A function which will return the `hs.axuielement` when available.
+---  * --- - Anything else
 ---
 --- Returns:
 ---  * A new `Group` object.

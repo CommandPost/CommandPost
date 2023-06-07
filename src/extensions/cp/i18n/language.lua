@@ -17,14 +17,14 @@
 --- ```
 ---
 --- This will return a table containing the following:
---- * `alpha2`       - The 2-character language code (eg. "en", "fr").
---- * `alpha3`       - The 3-character language code (eg. "eng", "fra").
---- * `alpha3B`      - The 3-character English-derived language code (eg. "eng", "fre").
---- * `alpha3T`      - The 3-character local-language-derived code (eg. "eng", "fra").
---- * `localName`   - The name in the local language (eg. "English", "Français").
---- * `name`        - The name in English (eg. "English", "French").
+---  * `alpha2`       - The 2-character language code (eg. "en", "fr").
+---  * `alpha3`       - The 3-character language code (eg. "eng", "fra").
+---  * `alpha3B`      - The 3-character English-derived language code (eg. "eng", "fre").
+---  * `alpha3T`      - The 3-character local-language-derived code (eg. "eng", "fra").
+---  * `localName`   - The name in the local language (eg. "English", "Français").
+---  * `name`        - The name in English (eg. "English", "French").
 ---
---- Note: This data was adapted from [arnubol's code](https://github.com/anurbol/languages-iso-639-1-2-3-json)
+--- Notes: This data was adapted from [arnubol's code](https://github.com/anurbol/languages-iso-639-1-2-3-json)
 --- under an [MIT license](https://raw.githubusercontent.com/anurbol/languages-iso-639-1-2-3-json/master/LICENSE).
 
 -- local log           = require("hs.logger").new("language")

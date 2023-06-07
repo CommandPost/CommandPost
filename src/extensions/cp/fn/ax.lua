@@ -30,15 +30,15 @@ local mod = {}
 --- Checks to see if the `value` is an `axuielement`
 ---
 --- Parameters:
---- * value - The value to check
+---  * value - The value to check
 ---
 --- Returns:
---- * `true` if the value is an `axuielement`
+---  * `true` if the value is an `axuielement`
 local function isUIElement(value)
     return isUserdata(value) and isCallable(value.attributeValue)
 end
 
---- fn.ax.uielement(uivalue) -> axuielement | nil
+--- cp.fn.ax.uielement(uivalue) -> axuielement | nil
 --- Function
 --- Returns the axuielement for the given `uivalue`.
 ---
@@ -66,7 +66,7 @@ local function uielement(uivalue)
     return isUIElement(uivalue) and uivalue or nil
 end
 
---- fn.ax.uielementList(value) -> table of axuielement | nil
+--- cp.fn.ax.uielementList(value) -> table of axuielement | nil
 --- Function
 --- Returns the `axuielement` list for the given `value`, if available.
 ---
@@ -136,8 +136,7 @@ end
 
 --- cp.fn.ax.setAttribute(name) -> function(newValue, uivalue) -> nil
 --- Function
---- Returns a function which will set the `AX` value of `uivalue` (if present) the given `name` from the given `value`.
---- If the `uivalue` is not present, it will not attempt to set the new value.
+--- Returns a function which will set the `AX` value of `uivalue` (if present) the given `name` from the given `value`. If the `uivalue` is not present, it will not attempt to set the new value.
 ---
 --- Parameters:
 ---  * name - The name of the attribute to set. Eg. `"AXValue"`.
@@ -156,14 +155,9 @@ function mod.setAttribute(name)
     end
 end
 
---- cp.fn.ax.cache(source, key[, verifyFn]) -> function(finderFn) -> function(...) -> axuielement
+--- cp.fn.ax.cache(source, key, finderFn, [verifyFn]) -> cachedValue
 --- Function
---- A combinator which checks if the cached value at the `source[key]` is a valid axuielement. If not
---- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
----
---- If the optional `verifyFn` is provided, it will be called to check that the cached
---- value is still valid. It is passed a single parameter (the axuielement) and is expected
---- to return `true` or `false`.
+--- A combinator which checks if the cached value at the `source[key]` is a valid axuielement. If not it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
 ---
 --- Parameters:
 ---  * source       - the table containing the cache
@@ -183,6 +177,7 @@ end
 ---    ax.cache(self, "_ui", MyElement.matches)(
 ---        fn.table.get(1) -- return the first child of the element.
 ---    )
+---  * If the optional `verifyFn` is provided, it will be called to check that the cached value is still valid. It is passed a single parameter (the axuielement) and is expected to return `true` or `false`.
 function mod.cache(source, key, verifyFn)
     return function(finderFn)
         return function(...)
@@ -446,8 +441,7 @@ end
 
 --- cp.fn.ax.topToBottomBaseAligned(a, b) -> boolean
 --- Function
---- Returns `true` if the base of element `a` is above the base of element `b`, based on linear vertical alignment.
---- May be used with `table.sort`.
+--- Returns `true` if the base of element `a` is above the base of element `b`, based on linear vertical alignment. May be used with `table.sort`.
 ---
 --- Parameters:
 ---  * a - The first element
@@ -505,8 +499,7 @@ end
 
 --- cp.fn.ax.topDown(a, b) -> boolean
 --- Function
---- Compares two `axuielement` values, ordering them linearly, from top-to-bottom, left-to-right.
---- See the Notes section for more information.
+--- Compares two `axuielement` values, ordering them linearly, from top-to-bottom, left-to-right. See the Notes section for more information.
 ---
 --- Parameters:
 ---  * a - The first `axuielement` to compare.
@@ -540,9 +533,6 @@ end
 --- cp.fn.ax.init(elementType, ...) -> function(parent, uiFinder) -> cp.ui.Element
 --- Function
 --- Creates a function that will create a new `cp.ui.Element` of the given `elementType` with the given `parent` and `uiFinder`.
---- Any additional arguments will be passed to the `elementType` constructor after the `parent` and `uiFinder`.
---- If any of the additional arguments are a `function`, they will be called with the `parent` and `uiFinder` as the first two arguments
---- when being passed into the constructor.
 ---
 --- Parameters:
 ---  * elementType - The type of `cp.ui.Element` to create.
@@ -550,6 +540,10 @@ end
 ---
 --- Returns:
 ---  * A function that will create a new `cp.ui.Element` of the given `elementType` with the given `parent` and `uiFinder`.
+---
+--- Notes:
+---  * Any additional arguments will be passed to the `elementType` constructor after the `parent` and `uiFinder`.
+---  * If any of the additional arguments are a `function`, they will be called with the `parent` and `uiFinder` as the first two arguments when being passed into the constructor.
 function mod.init(elementType, ...)
     -- map the arguments and convert any which are not functions to constant functions
     local args = map(pack(...), function(arg)
@@ -573,8 +567,7 @@ end
 
 --- cp.fn.ax.initElements(parent, elementsUiFinder, elementInits) -> table of cp.ui.Element
 --- Function
---- Creates a table of `cp.ui.Element`s of the given `elementInits` with the given `parent` and `uiFinder`.
---- Any additional elements provided by `elementsUiFinder` which don't have a matching `elementInits` will be ignored.
+--- Creates a table of `cp.ui.Element`s of the given `elementInits` with the given `parent` and `uiFinder`. Any additional elements provided by `elementsUiFinder` which don't have a matching `elementInits` will be ignored.
 ---
 --- Parameters:
 ---  * parent - The parent `cp.ui.Element` to use for the created `cp.ui.Element`s.
@@ -593,13 +586,12 @@ end
 
 --- cp.fn.ax.prop(uiFinder, attributeName[, settable]) -> cp.prop
 --- Function
---- Creates a new `cp.prop` which will find the `hs.axuielement` via the `uiFinder` and
---- get/set the value (if settable is `true`).
+--- Creates a new `cp.prop` which will find the `hs.axuielement` via the `uiFinder` and get/set the value (if settable is `true`).
 ---
 --- Parameters:
----  * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs.axuielement`.
+---  * uiFinder - the `cp.prop` or `function` which will retrieve the current `hs.axuielement`.
 ---  * attributeName - the `AX` atrribute name the property links to.
----  * settable      - Defaults to `false`. If `true`, the property will also be settable.
+---  * settable - Defaults to `false`. If `true`, the property will also be settable.
 ---
 --- Returns:
 ---  * The `cp.prop` for the attribute.
@@ -616,8 +608,7 @@ end
 
 --- cp.fn.ax.matchesIf(...) -> function(value) -> boolean
 --- Function
---- Creates a `function` which will return `true` if the `value` is either an `axuielement`,
---- an [Element](cp.ui.Element.md), or a `callable` (function) that returns an `axuielement` that matches the predicate.
+--- Creates a `function` which will return `true` if the `value` is either an `axuielement`, an [Element](cp.ui.Element.md), or a `callable` (function) that returns an `axuielement` that matches the predicate.
 ---
 --- Parameters:
 ---  * ... - Any number of predicates, all of which must return a `truthy` value for the `value` to match.

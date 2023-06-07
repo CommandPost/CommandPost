@@ -38,10 +38,10 @@ local ColorWheels = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorWh
 --- Checks if the specified element is the Color Wheels element.
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if the element is the Color Wheels.
+---  * `true` if the element is the Color Wheels.
 function ColorWheels.static.matches(element)
     if Group.matches(element) and #element == 1 and Group.matches(element[1])
     and #element[1] == 1 and ScrollArea.matches(element[1][1]) then

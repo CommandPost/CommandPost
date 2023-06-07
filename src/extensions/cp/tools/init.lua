@@ -139,7 +139,7 @@ function tools.urlToFilename(url)
     return path:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
 end
 
---- cp.tools.fileLinesBackward() -> function
+--- cp.tools.fileLinesBackward(filename) -> function
 --- Function
 --- An iterator function that reads a file backwards.
 ---
@@ -185,7 +185,7 @@ function tools.fileLinesBackward(filename)
     end
 end
 
---- cp.tools.between() -> boolean
+--- cp.tools.between(value, min, max) -> boolean
 --- Function
 --- Is a value between the minimum and the maximum value?
 ---
@@ -200,7 +200,7 @@ function tools.between(value, min, max)
   return value >= min and value <= max
 end
 
---- cp.tools.appleScriptViaTask() -> none
+--- cp.tools.appleScriptViaTask(script) -> none
 --- Function
 --- Triggers an AppleScript command via `hs.task` to avoid potential memory leaks in `hs.osascript.applescript`.
 ---
@@ -265,10 +265,9 @@ function tools.escapeTilda(i)
     return i and string.gsub(i, "`", [[\`]]) or ""
 end
 
---- cp.tools.keyStroke(modifiers, character, app) -> none
+--- cp.tools.keyStroke(modifiers, character, app, proper) -> none
 --- Function
---- Generates and emits a single keystroke event pair for the supplied keyboard
---- modifiers and character to the application.
+--- Generates and emits a single keystroke event pair for the supplied keyboard modifiers and character to the application.
 ---
 --- Parameters:
 ---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
@@ -441,8 +440,7 @@ end
 
 --- cp.tools.toRegionalNumber(value) -> number | nil
 --- Function
---- Takes a string and converts it into a number, with the correct
---- regional decimal separator.
+--- Takes a string and converts it into a number, with the correct regional decimal separator.
 ---
 --- Parameters:
 ---  * value - The value you want to process as a string.
@@ -461,8 +459,7 @@ end
 
 --- cp.tools.toRegionalNumberString(value) -> string | nil
 --- Function
---- Takes a number and converts it into a string, with the correct
---- regional decimal separator.
+--- Takes a number and converts it into a string, with the correct regional decimal separator.
 ---
 --- Parameters:
 ---  * value - The value you want to process as a number.
@@ -1841,14 +1838,16 @@ end
 --- cp.tools.tableFilter(t, matchFn) -> table
 --- Function
 --- Efficiently filters out all elements from the table `t` which to not match the `matchFn`.
---- Note: This will modify the original table.
 ---
 --- Parameters:
---- * t          - The `table` to filter.
---- * matchFn    - A function which will receive the table, the current index, and the target index.
+---  * t - The `table` to filter.
+---  * matchFn - A function which will receive the table, the current index, and the target index.
 ---
 --- Returns:
---- * The same table, updated.
+---  * The same table, updated.
+---
+--- Notes:
+---  * This will modify the original table.
 function tools.tableFilter(t, matchFn)
     local j, n = 1, #t;
 
@@ -1945,6 +1944,7 @@ end
 --- Trims a string based on a maximum length.
 ---
 --- Parameters:
+---  * string - The string
 ---  * maxLength - The length of the string as a number
 ---  * optionalEnd - A string that is applied to the end of the input string if the input string is larger than the maximum length.
 ---
@@ -2068,8 +2068,7 @@ end
 
 --- cp.tools.rmdir(path[, recursive]) -> true | nil, err
 --- Function
---- Attempts to remove the directory at the specified path, optionally removing
---- any contents recursively.
+--- Attempts to remove the directory at the specified path, optionally removing any contents recursively.
 ---
 --- Parameters:
 ---  * `path`        - The absolute path to remove
@@ -2229,8 +2228,7 @@ end
 
 --- cp.tools.ensureDirectoryExists(rootPath, ...) -> string | nil
 --- Function
---- Ensures all steps on a provided path exist. If not, attempts to create them.
---- If it fails, `nil` is returned.
+--- Ensures all steps on a provided path exist. If not, attempts to create them. If it fails, `nil` is returned.
 ---
 --- Parameters:
 ---  * `rootPath` - The root path
@@ -2365,7 +2363,7 @@ function tools.startsWith(value, startValue)
     return false
 end
 
---- cp.tools.exactMatch(value, pattern, plain) -> boolean
+--- cp.tools.exactMatch(value, pattern, plain, ignoreCase) -> boolean
 --- Function
 --- Compares two strings to see if they're an exact match.
 ---

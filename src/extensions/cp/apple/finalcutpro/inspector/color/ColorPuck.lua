@@ -188,24 +188,23 @@ end
 --- Returns the puck number (1 through 4).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The puck number.
+---  * The puck number.
 function ColorPuck:index()
     return self._puckNumber
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:hasAngle() -> boolean
 --- Method
---- Indicates if the puck has an `angle` parameter. The `angle` `cp.prop` will always
---- exist regardless, but if this is `false`, it will never return a result.
+--- Indicates if the puck has an `angle` parameter. The `angle` `cp.prop` will always exist regardless, but if this is `false`, it will never return a result.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the puck has an `angle`.
+---  * `true` if the puck has an `angle`.
 function ColorPuck:hasAngle()
     return self._hasAngle
 end
@@ -321,10 +320,10 @@ end
 --- Shifts the angle value by the provide amount.
 ---
 --- Parameters:
---- * amount - The amount to shift the angle value.
+---  * amount - The amount to shift the angle value.
 ---
 --- Returns:
---- * The `ColorPuck` instance.
+---  * The `ColorPuck` instance.
 function ColorPuck:shiftAngle(amount)
     local value = self:angle()
     if value ~= nil then
@@ -346,10 +345,10 @@ end
 --- Resets the puck to its default settings.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `ColorPuck` instance.
+---  * The `ColorPuck` instance.
 function ColorPuck:reset()
     self:percent(0)
     self:angle(ColorPuck.DEFAULT_ANGLES[self:index()])
@@ -361,10 +360,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that resets the puck to its default settings.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, resolving to `true` if successful, or throwing an error if not.
+---  * The `Statement`, resolving to `true` if successful, or throwing an error if not.
 function ColorPuck.lazy.method:doReset()
     return Do(self:doShow())
     :Then(function()
@@ -378,10 +377,10 @@ end
 --- Starts a Color ColorPuck.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `ColorPuck` instance.
+---  * The `ColorPuck` instance.
 function ColorPuck:start()
     --------------------------------------------------------------------------------
     -- Stop any running pucks when starting a new one:
@@ -503,7 +502,7 @@ end
 ---
 --- Parameters:
 ---  * pct - Percentage
----- * angle - Angle
+---  * angle - Angle
 ---
 --- Returns:
 ---  * None
@@ -541,10 +540,10 @@ end
 --- Stops a Color ColorPuck.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * None
+---  * None
 function ColorPuck:stop()
     self.running = false
 end
@@ -554,10 +553,10 @@ end
 --- Cleans up the Color ColorPuck drawings.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * None
+---  * None
 function ColorPuck:cleanup()
     self.running = false
     if self.circle then
@@ -580,17 +579,17 @@ function ColorPuck:cleanup()
     ColorPuck._active = nil
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorPuck:accumulate() -> none
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:accumulate(xShift, yShift) -> none
 --- Method
 --- Accumulate's the Shift Values.
 ---
 --- Parameters:
---- * `xShift` - `x` value as number
---- * `yShift` - `y` value as number
+---  * `xShift` - `x` value as number
+---  * `yShift` - `y` value as number
 ---
 --- Returns:
---- * `x` - Accumulated `x` value as number
---- * `y` - Accumulated `y` value as number
+---  * `x` - Accumulated `x` value as number
+---  * `y` - Accumulated `y` value as number
 function ColorPuck:accumulate(xShift, yShift)
     if xShift < 1 and xShift > -1 then
         self.xShift = self.xShift + xShift
@@ -618,10 +617,10 @@ end
 --- Loops the Color ColorPuck function.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * None
+---  * None
 function ColorPuck:loop()
     if not self.running then
         self:cleanup()

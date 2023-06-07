@@ -824,7 +824,7 @@ end
 ---  * `pattern`	- The pattern to parse
 ---  * `plain`		- If `true`, the pattern is not parsed and the provided text must match exactly.
 --- Returns:
---- * New `cp.text.matcher` for the pattern.
+---  * New `cp.text.matcher` for the pattern.
 local function newMatcher(pattern, plain)
     pattern = text.is(pattern) and pattern or text(tostring(pattern))
     local m = plain and cachePlain[pattern] or cache[pattern]

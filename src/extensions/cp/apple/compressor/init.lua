@@ -94,7 +94,7 @@ prop.bind(compressor) {
     --- Field
     --- Is a supported version of Final Cut Pro installed?
     ---
-    --- Note:
+    --- Notes:
     ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.compressor.EARLIEST_SUPPORTED_VERSION`
     isSupported = app.version:mutate(function(original)
         local version = original()
@@ -140,10 +140,10 @@ end
 --- Returns a notifier that is tracking the application UI element. It has already been started.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The notifier.
+---  * The notifier.
 function compressor:notifier()
     return self.app:notifier()
 end

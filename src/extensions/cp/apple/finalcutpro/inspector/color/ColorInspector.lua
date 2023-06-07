@@ -30,10 +30,10 @@ local ColorInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.color.
 --- Checks if the specified element is the Color Inspector element.
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if the element is the Color Inspector.
+---  * `true` if the element is the Color Inspector.
 function ColorInspector.static.matches(element)
     if BasePanel.matches(element) then
         local root = #element == 1 and withRole(element, "AXGroup")
@@ -167,8 +167,7 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:doActivateCorrection(correctionType[, number]) -> cp.rx.go.Statement<boolean>
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that activates the named correction type and number, if present.
---- If no corrector with the type/number combination exists, a new one is added.
+--- Returns a [Statement](cp.rx.go.Statement.md) that activates the named correction type and number, if present. If no corrector with the type/number combination exists, a new one is added.
 ---
 --- Parameters:
 ---  * correctionType   - The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.

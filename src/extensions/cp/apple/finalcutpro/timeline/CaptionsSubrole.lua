@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.CaptionsSubrole ==
 ---
---- *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
+---  *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
 ---
 --- A [Role](cp.apple.finalcutpro.timeline.Role.md) representing Captions.
 

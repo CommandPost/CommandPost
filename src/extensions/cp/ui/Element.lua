@@ -85,8 +85,7 @@ end
 
 --- cp.ui.Element:isTypeOf(thing) -> boolean
 --- Function
---- Checks if the `thing` is an `Element`. If called on subclasses, it will check
---- if the `thing` is an instance of the subclass.
+--- Checks if the `thing` is an `Element`. If called on subclasses, it will check if the `thing` is an instance of the subclass.
 ---
 --- Parameters:
 ---  * `thing`		- The thing to check
@@ -121,8 +120,7 @@ end
 
 --- cp.ui.Element(parent, uiFinder) -> cp.ui.Element
 --- Constructor
---- Creates a new `Element` with the specified `parent` and `uiFinder`.
---- The `uiFinder` may be either a `function` that returns an `axuielement`, or a [cp.prop](cp.prop.md).
+--- Creates a new `Element` with the specified `parent` and `uiFinder`. The `uiFinder` may be either a `function` that returns an `axuielement`, or a [cp.prop](cp.prop.md).
 ---
 --- Parameters:
 ---  * parent - The parent Element (may be `nil`)
@@ -207,8 +205,7 @@ end
 
 --- cp.ui.Element:doShow() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will ensure the Element is showing.
---- By default, will ask the `parent` to show, if the `parent` is available.
+--- Returns a `Statement` that will ensure the Element is showing. By default, will ask the `parent` to show, if the `parent` is available.
 ---
 --- Parameters:
 ---  * None
@@ -445,13 +442,12 @@ end
 
 --- cp.ui.Element:snapshot([path]) -> hs.image | nil
 --- Method
---- Takes a snapshot of the button in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
+--- Takes a snapshot of the button in its current state as a PNG and returns it. If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
 ---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
---- Return:
+--- Returns:
 ---  * The `hs.image` that was created.
 function Element:snapshot(path)
     local ui = self:UI()
@@ -550,8 +546,7 @@ end
 
 --- cp.ui.Element:loadLayout(layout) -> nil
 --- Method
---- When called, the Element (or subclass) will attempt to load the layout based on the parameters
---- provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
+--- When called, the Element (or subclass) will attempt to load the layout based on the parameters provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
 ---
 --- Parameters:
 ---  * layout - a `table` of parameters that will be used to layout the element.
@@ -578,8 +573,7 @@ end
 
 --- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to load the layout based on the parameters
---- provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to load the layout based on the parameters provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
 ---
 --- Parameters:
 ---  * layout - a `table` of parameters that will be used to layout the element.

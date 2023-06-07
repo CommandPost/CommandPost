@@ -512,10 +512,10 @@ end
 --- Ensures the sidebar is showing and that the selected 'Audio' category is selected, if available.
 ---
 --- Parameters:
---- * `name`		- The category name, in the current language.
+---  * `name`		- The category name, in the current language.
 ---
 --- Returns:
---- * The browser.
+---  * The browser.
 function EffectsBrowser:showAudioCategory(name)
     self:showSidebar()
     Table.selectRow(self:audioCategoryRowsUI(), {name})

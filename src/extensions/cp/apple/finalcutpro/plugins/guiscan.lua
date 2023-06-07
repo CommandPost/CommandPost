@@ -2,7 +2,7 @@
 ---
 --- Final Cut Pro GUI Plugin Scanner.
 ---
---- **Usage:**
+---  **Usage:**
 --- ```lua
 --- require("cp.apple.finalcutpro.plugins.guiscan").checkAllPlugins()
 --- require("cp.apple.finalcutpro.plugins.guiscan").checkAllPluginsInAllLanguages()

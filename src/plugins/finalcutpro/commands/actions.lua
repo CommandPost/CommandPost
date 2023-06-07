@@ -62,10 +62,10 @@ end
 --- Adds available choices to the  selection.
 ---
 --- Parameters:
---- * `choices` - The `cp.choices` to add choices to.
+---  * `choices` - The `cp.choices` to add choices to.
 ---
 --- Returns:
---- * None
+---  * None
 function mod.onChoices(choices)
     local icon = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns"))
     for _,cmd in pairs(mod._cmds:getAll()) do
@@ -99,10 +99,10 @@ end
 --- Gets the ID from an action.
 ---
 --- Parameters:
---- * action - The action table.
+---  * action - The action table.
 ---
 --- Returns:
---- * The ID as a string.
+---  * The ID as a string.
 function mod.getId(action)
     return format("%s:%s", ID, action.id)
 end
@@ -112,10 +112,10 @@ end
 --- Executes the action with the provided parameters.
 ---
 --- Parameters:
---- * `action`  - A table representing the action, matching the following:
+---  * `action`  - A table representing the action, matching the following:
 ---     * `id`      - The specific Command ID within the group.
 ---
---- * `true` if the action was executed successfully.
+---  * `true` if the action was executed successfully.
 function mod.onExecute(action)
     local group = mod._cmds
     if group then
@@ -152,10 +152,10 @@ end
 --- Resets the set of choices.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function mod.reset()
     mod._handler:reset()
 end

@@ -20,7 +20,7 @@ local IndexSection = class("cp.apple.finalcutpro.timeline.IndexSection"):include
 --- Creates the `IndexSection` instance.
 ---
 --- Parameters:
---- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
+---  * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
 function IndexSection:initialize(index)
 
 --- cp.apple.finalcutpro.timeline.IndexSection.index <cp.apple.finalcutpro.timeline.Index>
@@ -67,7 +67,7 @@ end
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the section.
 ---
 --- Notes:
---- * Must be overridden in subclasses to provide the actual RadioButton.
+---  * Must be overridden in subclasses to provide the actual RadioButton.
 function IndexSection.lazy.value.activate()
     error("Subclasses must override the lazy `activate` method to return the correct RadioButton.")
 end
@@ -97,7 +97,7 @@ end
 ---  * None
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 function IndexSection.lazy.method:doShow()
     local index = self.index
     return Do(index:doShow())

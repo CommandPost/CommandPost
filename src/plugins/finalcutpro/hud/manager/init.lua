@@ -181,10 +181,10 @@ end
 --- Returns the panel ID with the highest priority.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The panel ID as a string
+---  * The panel ID as a string
 function mod.currentPanelID()
     local id = mod.lastTab()
     if id and isPanelIDValid(id) then

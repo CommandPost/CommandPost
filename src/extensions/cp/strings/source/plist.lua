@@ -8,7 +8,7 @@
 --- ```
 ---
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
---- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
+--- Notes: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
 local require = require
 
@@ -38,21 +38,20 @@ mod.defaultCacheSeconds = 60.0
 
 --- cp.strings.source.plist:context([context]) -> table | self
 --- Method
---- Gets or sets a context to be set for the source. This typically includes a `language`, which
---- provides the default language code, but may have other source-specific properties.
---- Calling this method may may clear caches, etc.
+--- Gets or sets a context to be set for the source. This typically includes a `language`, which provides the default language code, but may have other source-specific properties. Calling this method may may clear caches, etc.
 ---
---- Eg:
+--- Parameters:
+---  * context   - A table with values which may be used by the source.
+---
+--- Returns:
+---  * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
+---
+--- Notes:
+---  * For example:
 ---
 --- ```lua
 --- mySource:context({language = "fr"}) -- set the default language to French.
 --- ```
----
---- Parameters:
---- * context   - A table with values which may be used by the source.
----
---- Returns:
---- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
 function mod.mt:context(context)
     if context ~= nil then
         self._context = extend({}, context)
@@ -68,7 +67,7 @@ end
 --- Finds the abolute path to the `plist` represented by this source for the specified langauge, or `nil` if it does not exist.
 ---
 --- Parameters:
----  * `context`    - The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
+---  * `context` - The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
 ---
 --- Returns:
 ---  * The path to the file, or `nil` if not found.

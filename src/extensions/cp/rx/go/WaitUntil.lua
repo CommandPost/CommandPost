@@ -15,19 +15,20 @@ end
 --- cp.rx.go.WaitUntil(requirement) -> WaitUntil
 --- Constructor
 --- Creates a new `WaitUntil` `Statement` with the specified `requirement`.
---- By default, it will wait until the value is `truthy` - not `nil` and not `false`.
----
---- Example:
----
---- ```lua
---- WaitUntil(someObservable):Is(true)
---- ```
 ---
 --- Parameters:
 ---  * requirement  - a `resolvable` value that will be checked.
 ---
 --- Returns:
 ---  * The `Statement` instance which will check if the `resolvable` matches the requirement.
+---
+--- Notes:
+---  * By default, it will wait until the value is `truthy` - not `nil` and not `false`.
+---  * Example:
+---
+--- ```lua
+--- WaitUntil(someObservable):Is(true)
+--- ```
 local WaitUntil = Statement.named("WaitUntil")
 :onInit(function(context, requirement)
     assert(requirement ~= nil, "The WaitUntil requirement may not be `nil`.")
@@ -117,16 +118,17 @@ end)
 --- Method
 --- Specifies the predicate function that will check the `requirement` results.
 ---
---- Example:
---- ```lua
---- WaitUntil(someObservable):Matches(function(value) return value % 2 == 0 end)
---- ```
----
 --- Parameters:
 ---  * predicate  - The function that will get called to determine if it has been found.
 ---
 --- Returns:
 ---  * The `Matches` `Statement.Modifier`.
+---
+--- Notes:
+--- * Example:
+--- ```lua
+--- WaitUntil(someObservable):Matches(function(value) return value % 2 == 0 end)
+--- ```
 WaitUntil.modifier("Matches")
 :onInit(function(context, predicate)
     context.predicate = predicate

@@ -24,12 +24,12 @@ local axutils = {}
 --- Returns the named `AX` attribute value, or the `default` if it is empty.
 ---
 --- Parameters:
---- * element - the `axuielement` to retrieve the attribute value for.
---- * attribute - The attribute name (e.g. "AXValue")
---- * default - (optional) if provided, this will be returned if the attribute is `nil`.
+---  * element - the `axuielement` to retrieve the attribute value for.
+---  * attribute - The attribute name (e.g. "AXValue")
+---  * default - (optional) if provided, this will be returned if the attribute is `nil`.
 ---
 --- Returns:
---- * The attribute value, or the `default` if none is found.
+---  * The attribute value, or the `default` if none is found.
 function axutils.valueOf(element, attribute, default)
     if axutils.isValid(element) then
         return element:attributeValue(attribute) or default
@@ -38,8 +38,7 @@ end
 
 --- cp.ui.axutils.childrenInLine(element) -> table | nil
 --- Function
---- Gets a table of children that are all in the same family and line as the
---- supplied element.
+--- Gets a table of children that are all in the same family and line as the supplied element.
 ---
 --- Parameters:
 ---  * element     - The base element.
@@ -65,8 +64,7 @@ end
 
 --- cp.ui.axutils.childrenInNextLine(element) -> table | nil
 --- Function
---- Gets a table of children that are in the next line in relation to the supplied
---- element. Scrollbars will be ignored.
+--- Gets a table of children that are in the next line in relation to the supplied element. Scrollbars will be ignored.
 ---
 --- Parameters:
 ---  * element - The base element.
@@ -94,10 +92,7 @@ end
 
 --- cp.ui.axutils.childrenInColumn(element, role, startIndex) -> table | nil
 --- Function
---- Finds the children for an element, then checks to see if they match the supplied
---- role. It then compares the vertical position data of all matching children
---- and returns a table with only the elements that line up to the element defined
---- by the startIndex.
+--- Finds the children for an element, then checks to see if they match the supplied role. It then compares the vertical position data of all matching children and returns a table with only the elements that line up to the element defined by the startIndex.
 ---
 --- Parameters:
 ---  * element     - The element to retrieve the children from.
@@ -137,10 +132,7 @@ end
 
 --- cp.ui.axutils.childInColumn(element, role, startIndex, childIndex) -> table | nil
 --- Function
---- Finds the children for an element, then checks to see if they match the supplied
---- role. It then compares the vertical position data of all matching children
---- and returns an element defined by the `childIndex`, which lines up vertially
---- with the element defined by the `startIndex`.
+--- Finds the children for an element, then checks to see if they match the supplied role. It then compares the vertical position data of all matching children and returns an element defined by the `childIndex`, which lines up vertially with the element defined by the `startIndex`.
 ---
 --- Parameters:
 ---  * element     - The element to retrieve the children from.
@@ -156,9 +148,7 @@ end
 
 --- cp.ui.axutils.children(element[, compareFn]) -> table
 --- Function
---- Finds the children for the element. If it is an `hs.axuielement`, it will
---- attempt to get the `AXChildren` attribute. If it is a table with a `children` function,
---- that will get called. If no children exist, an empty table will be returned.
+--- Finds the children for the element. If it is an `hs.axuielement`, it will attempt to get the `AXChildren` attribute. If it is a table with a `children` function, that will get called. If no children exist, an empty table will be returned.
 ---
 --- Parameters:
 ---  * element      - The element to retrieve the children of.
@@ -192,30 +182,28 @@ end
 
 --- cp.ui.axutils.childrenBelow(element, topElement) -> table of axuielement or nil
 --- Function
---- Finds the list of `axuielement` children from the `element` which are below the specified `topElement`.
---- If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
+--- Finds the list of `axuielement` children from the `element` which are below the specified `topElement`. If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
 ---
 --- Parameters:
---- * element - The `axuielement` to find the children of.
---- * topElement - The `axuielement` that the other children must be below.
+---  * element - The `axuielement` to find the children of.
+---  * topElement - The `axuielement` that the other children must be below.
 ---
 --- Returns:
---- * The table of `axuielements` that are below, or `nil` if the element is not available.
+---  * The table of `axuielements` that are below, or `nil` if the element is not available.
 function axutils.childrenBelow(element, topElement)
     return element and axutils.childrenMatching(element, axutils.match.isBelow(topElement))
 end
 
 --- cp.ui.axutils.childrenAbove(element, bottomElement) -> table of axuielement or nil
 --- Function
---- Finds the list of `axuielement` children from the `element` which are above the specified `bottomElement`.
---- If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
+--- Finds the list of `axuielement` children from the `element` which are above the specified `bottomElement`. If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
 ---
 --- Parameters:
---- * element - The `axuielement` to find the children of.
---- * topElement - The `axuielement` that the other children must be above.
+---  * element - The `axuielement` to find the children of.
+---  * topElement - The `axuielement` that the other children must be above.
 ---
 --- Returns:
---- * The table of `axuielements` that are above, or `nil` if the element is not available.
+---  * The table of `axuielements` that are above, or `nil` if the element is not available.
 function axutils.childrenAbove(element, bottomElement)
     return element and axutils.childrenMatching(element, axutils.match.isAbove(bottomElement))
 end
@@ -237,8 +225,7 @@ end
 
 --- cp.ui.axutils.withAttributeValue(element, name, value) -> hs.axuielement | nil
 --- Function
---- Checks if the element has an attribute value with the specified `name` and `value`.
---- If so, the element is returned, otherwise `nil`.
+--- Checks if the element has an attribute value with the specified `name` and `value`. If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
 ---  * element       - The element to check
@@ -253,8 +240,7 @@ end
 
 --- cp.ui.axutils.withRole(element, role) -> hs.axuielement | nil
 --- Function
---- Checks if the element has an "AXRole" attribute with the specified `role`.
---- If so, the element is returned, otherwise `nil`.
+--- Checks if the element has an "AXRole" attribute with the specified `role`. If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
 ---  * element       - The element to check
@@ -268,8 +254,7 @@ end
 
 --- cp.ui.axutils.withValue(element, value) -> hs.axuielement | nil
 --- Function
---- Checks if the element has an "AXValue" attribute with the specified `value`.
---- If so, the element is returned, otherwise `nil`.
+--- Checks if the element has an "AXValue" attribute with the specified `value`. If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
 ---  * element       - The element to check
@@ -283,8 +268,7 @@ end
 
 --- cp.ui.axutils.withTitle(element, title) -> hs.axuielement | nil
 --- Function
---- Checks if the element has an "AXTitle" attribute with the specified `title`.
---- If so, the element is returned, otherwise `nil`.
+--- Checks if the element has an "AXTitle" attribute with the specified `title`. If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
 ---  * element       - The element to check
@@ -369,8 +353,7 @@ end
 
 --- cp.ui.axutils.childMatching(element, matcherFn[, index]) -> axuielement
 --- Function
---- This searches for the first child of the specified element for which the provided function returns `true`.
---- The function will receive one parameter - the current child.
+--- This searches for the first child of the specified element for which the provided function returns `true`. The function will receive one parameter - the current child.
 ---
 --- Parameters:
 ---  * element      - the axuielement
@@ -542,7 +525,7 @@ function axutils.childFromTop(element, index, matcherFn)
     return axutils.childAtIndex(element, index, axutils.compare.topToBottom, matcherFn)
 end
 
---- cp.ui.axutils.childFromBottom(element, index) -> axuielement
+--- cp.ui.axutils.childFromBottom(element, index, matcherFn) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted bottom-to-top.
 ---
@@ -588,8 +571,7 @@ end
 
 --- cp.ui.axutils.childrenMatching(element, matcherFn) -> { axuielement }
 --- Function
---- This searches for all children of the specified element for which the provided
---- function returns `true`. The function will receive one parameter - the current child.
+--- This searches for all children of the specified element for which the provided function returns `true`. The function will receive one parameter - the current child.
 ---
 --- Parameters:
 ---  * element  - the axuielement
@@ -609,11 +591,11 @@ end
 --- Checks if the axuielement has a child that passes the `matcherFn`.
 ---
 --- Parameters:
---- * element - the `axuielement` to check.
---- * matcherFn - the `function` that accepts an `axuielement` and returns a `boolean`
+---  * element - the `axuielement` to check.
+---  * matcherFn - the `function` that accepts an `axuielement` and returns a `boolean`
 ---
 --- Returns:
---- * `true` if any child matches, otherwise `false`.
+---  * `true` if any child matches, otherwise `false`.
 function axutils.hasChild(element, matcherFn)
     return axutils.childMatching(element, matcherFn) ~= nil
 end
@@ -623,10 +605,10 @@ end
 --- Finds the index of the specified child element, if it is present. If not, `nil` is returned.
 ---
 --- Parameters:
---- * element - The `axuielement` to find the index of.
+---  * element - The `axuielement` to find the index of.
 ---
 --- Returns:
---- * The index (`1` or higher) of the `element`, or `nil` if it was not found.
+---  * The index (`1` or higher) of the `element`, or `nil` if it was not found.
 function axutils.childIndex(element)
     local parent = element:attributeValue("AXParent")
     local children = parent and axutils.children(parent)
@@ -671,12 +653,7 @@ end
 
 --- cp.ui.axutils.cache(source, key, finderFn[, verifyFn]) -> axuielement
 --- Function
---- Checks if the cached value at the `source[key]` is a valid axuielement. If not
---- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
----
---- If the optional `verifyFn` is provided, it will be called to check that the cached
---- value is still valid. It is passed a single parameter (the axuielement) and is expected
---- to return `true` or `false`.
+--- Checks if the cached value at the `source[key]` is a valid axuielement. If not it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
 ---
 --- Parameters:
 ---  * source       - the table containing the cache
@@ -686,6 +663,9 @@ end
 ---
 --- Returns:
 ---  * The valid cached value.
+---
+--- Notes:
+---  * If the optional `verifyFn` is provided, it will be called to check that the cached value is still valid. It is passed a single parameter (the axuielement) and is expected to return `true` or `false`.
 function axutils.cache(source, key, finderFn, verifyFn)
     local value
     if source then
@@ -706,10 +686,9 @@ function axutils.cache(source, key, finderFn, verifyFn)
     return value
 end
 
---- cp.ui.axutils.snapshot(element[, filename]) -> hs.image
+--- cp.ui.axutils.snapshot(element, filename, elementFrame) -> hs.image
 --- Function
---- Takes a snapshot of the specified `axuielement` and returns it.
---- If the `filename` is provided it also saves the file to the specified location.
+--- Takes a snapshot of the specified `axuielement` and returns it. If the `filename` is provided it also saves the file to the specified location.
 ---
 --- Parameters:
 ---  * element      - The `axuielement` to snap.
@@ -781,8 +760,7 @@ end
 
 --- cp.ui.axutils.prop(uiFinder, attributeName[, settable]) -> cp.prop
 --- Function
---- Creates a new `cp.prop` which will find the `hs.axuielement` via the `uiFinder` and
---- get/set the value (if settable is `true`).
+--- Creates a new `cp.prop` which will find the `hs.axuielement` via the `uiFinder` and get/set the value (if settable is `true`).
 ---
 --- Parameters:
 ---  * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs.axuielement`.
@@ -856,7 +834,6 @@ end
 function axutils.match.emptyList(element)
     return element and #element == 0
 end
-
 
 -- cp.ui.axutils.match.containsOnly(values) -> function
 -- Function

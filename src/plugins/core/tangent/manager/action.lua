@@ -19,13 +19,13 @@ local action = named:subclass "core.tangent.manager.action"
 --- Creates a new `Action` instance.
 ---
 --- Parameters:
---- * id        - The ID number of the action.
---- * name      - The name of the action.
---- * parent    - The parent group. (optional)
---- * localActive - If set to `true`, the parent's `active` state will be ignored when determining if this action is active. Defaults to `false`.
+---  * id        - The ID number of the action.
+---  * name      - The name of the action.
+---  * parent    - The parent group. (optional)
+---  * localActive - If set to `true`, the parent's `active` state will be ignored when determining if this action is active. Defaults to `false`.
 ---
 --- Returns:
---- * the new `action`.
+---  * the new `action`.
 function action:initialize(id, name, parent, localActive)
     named.initialize(self, id, name, parent)
     self._localActive = localActive
@@ -52,10 +52,10 @@ end
 --- Is an object an action?
 ---
 --- Parameters:
---- * otherThing - Object to test.
+---  * otherThing - Object to test.
 ---
 --- Returns:
---- * `true` if the object is an action otherwise `false`.
+---  * `true` if the object is an action otherwise `false`.
 function action.static.is(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(action)
 end
@@ -68,10 +68,10 @@ end
 --- `function() -> nil`
 ---
 --- Parameters:
---- * pressFn     - The function to call when the Tangent requests the action on.
+---  * pressFn     - The function to call when the Tangent requests the action on.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function action:onPress(pressFn)
     if pressFn and is.nt.callable(pressFn) then
         error(format("Please provide a function: %s", type(pressFn)), 2)
@@ -85,10 +85,10 @@ end
 --- Executes the `press` function, if present.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `nil`
+---  * `nil`
 function action:press()
     if self._press and self:active() then
         self._press()
@@ -103,10 +103,10 @@ end
 --- `function() -> nil`
 ---
 --- Parameters:
---- * releaseFn     - The function to call when the Tangent requests the action off.
+---  * releaseFn     - The function to call when the Tangent requests the action off.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function action:onRelease(releaseFn)
     if releaseFn and is.nt.fn(releaseFn) then
         error(format("Please provide a function: %s", type(releaseFn)), 2)
@@ -120,10 +120,10 @@ end
 --- Executes the `release` function, if present.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `nil`
+---  * `nil`
 function action:release()
     if self._release and self:active() then
         self._release()
@@ -135,10 +135,10 @@ end
 --- Returns the `xml` configuration for the Action.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `xml` for the Action.
+---  * The `xml` for the Action.
 function action:xml()
     return x.Action { id=format("%#010x", self.id) } (
         named.xml(self)

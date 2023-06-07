@@ -40,15 +40,14 @@ end
 
 --- cp.ids.new(path[, currentVersionFn]) -> cp.ids
 --- Function
---- Creates a new `ids` instance with the specified path to the version files and
---- a function to find the current version, if appropriate.
+--- Creates a new `ids` instance with the specified path to the version files and a function to find the current version, if appropriate.
 ---
 --- Parameters:
---- * `path`				- The path to the version files.
---- * `currentVersionFn`	- An optional function that will return the current version as a string or `semver`.
+---  * `path`				- The path to the version files.
+---  * `currentVersionFn`	- An optional function that will return the current version as a string or `semver`.
 ---
 --- Returns:
---- * A new `cp.ids` instance.
+---  * A new `cp.ids` instance.
 function mod.new(path, currentVersionFn)
     local o = {
         cache = {},
@@ -135,8 +134,7 @@ end
 
 --- cp.ids:load([version]) -> table
 --- Method
---- Loads and caches IDs for the given version. It will search through previous versions,
---- with each subsequent version file overriding the previous version's value, if present.
+--- Loads and caches IDs for the given version. It will search through previous versions, with each subsequent version file overriding the previous version's value, if present.
 ---
 --- Parameters:
 ---  * version - The version number you want to load as a string (i.e. "10.4.0"). If not provided, the current version is loaded.
@@ -190,18 +188,20 @@ end
 --- Method
 --- Returns a function which can be called to retrieve a specific value for the specified version.
 ---
---- Eg:
---- ```lua
---- local id = ids:of("10.4.0", "CommandEditor")
---- print "bar = "..id("bar")
---- ```
----
 --- Parameters:
 ---  * version - The version number you want to load as a string (i.e. "10.4.0")
 ---  * subset - A string containing the subset of data you want to load
 ---
 --- Returns:
 ---  * A function that will return the value of the specified `subset` ID for the specified version.
+---
+--- Notes:
+---  * For example:
+---
+--- ```lua
+--- local id = ids:of("10.4.0", "CommandEditor")
+--- print "bar = "..id("bar")
+--- ```
 function mod.mt:of(version, subset)
     local data = self:load(version)
     local subsetData = data[subset] or {}

@@ -342,10 +342,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to open the named clip in the Libraries Browser in the Timeline.
 ---
 --- Parameters:
---- * title      - The title of the clip to open.
+---  * title      - The title of the clip to open.
 ---
 --- Returns:
---- * The `Statement` to execute.
+---  * The `Statement` to execute.
 function LibrariesBrowser:doOpenClipTitled(title)
     local menuBar = self:app().menu
 
@@ -530,10 +530,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will send each clip in the Libraries Browser matching the `filter` as an `onNext` signal.
 ---
 --- Parameters:
---- * filter    - a function which receives the [Clip](cp.apple.finalcutpro.content.Clip.md) to check and returns `true` or `false`.
+---  * filter    - a function which receives the [Clip](cp.apple.finalcutpro.content.Clip.md) to check and returns `true` or `false`.
 ---
 --- Returns:
---- * The `Statement`.
+---  * The `Statement`.
 function LibrariesBrowser:doFindClips(filter)
     return Do(function() return Observable.fromTable(self:clips(filter)) end)
 end
@@ -543,10 +543,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will send each clip in the Libraries Browser with the specified `title` as an `onNext` signal.
 ---
 --- Parameters:
---- * title    - The title string to check for.
+---  * title    - The title string to check for.
 ---
 --- Returns:
---- * The `Statement`.
+---  * The `Statement`.
 function LibrariesBrowser:doFindClipsTitled(title)
     return self:doFindClips(function(clip) return clip and clip:getTitle() == title end)
 end
@@ -556,10 +556,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will select the first clip with a matching `title`.
 ---
 --- Parameters:
---- * title     - The title to select.
+---  * title     - The title to select.
 ---
 --- Returns:
---- * The `Statement` ready to execute.
+---  * The `Statement` ready to execute.
 function LibrariesBrowser:doSelectClipTitled(title)
     return If(
         First(self:doFindClipsTitled(title))

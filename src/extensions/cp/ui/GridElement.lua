@@ -114,8 +114,7 @@ GridElement.static.matches = ax.matchesIf(
 
 --- cp.ui.GridElement:withRowsOf(...) -> function(parent, uiFinder) -> GridElement
 --- Function
---- A combinator that returns a function expecting a `parent` and `uiFinder` and returns a `GridElement` instance, with
---- the arguments defining the [Cell](cp.ui.Cell.md.html) instances that make up the rows of the table.
+--- A combinator that returns a function expecting a `parent` and `uiFinder` and returns a `GridElement` instance, with the arguments defining the [Cell](cp.ui.Cell.md.html) instances that make up the rows of the table.
 ---
 --- Parameters:
 ---  * ... - One or more arguments to pass to the constructor.
@@ -308,9 +307,7 @@ end
 
 --- cp.ui.GridElement:fetchColumn(columnsUI) -> table of cp.ui.Columns
 --- Method
---- Returns a `table` of the same length as `columnsUI`.
---- If provided items in the table are not valid columns in this table, then `nil` will be put in the matching index.
---- Note that this will break the standard `#`/looping behaviour for tables at that point.
+--- Returns a `table` of the same length as `columnsUI`. If provided items in the table are not valid columns in this table, then `nil` will be put in the matching index. Note that this will break the standard `#`/looping behaviour for tables at that point.
 ---
 --- Parameters:
 ---  * columnsUI - The list of `AXColumn` `axuielement`s to find.

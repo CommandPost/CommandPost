@@ -22,7 +22,7 @@ mod._items = {}
 --- Creates a new Touch Bar Widget.
 ---
 --- Parameters:
---- * `id`      - The unique ID for this widget.
+---  * `id`      - The unique ID for this widget.
 ---
 --- Returns:
 ---  * table that has been created
@@ -45,7 +45,7 @@ end
 --- Gets a Touch Bar widget
 ---
 --- Parameters:
---- * `id`      - The unique ID for the widget you want to return.
+---  * `id`      - The unique ID for the widget you want to return.
 ---
 --- Returns:
 ---  * table containing the widget
@@ -58,7 +58,7 @@ end
 --- Returns all of the created widgets
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * table containing all of the created callbacks
@@ -71,7 +71,7 @@ end
 --- Returns the ID of the widget
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The ID of the widget as a `string`
@@ -84,7 +84,7 @@ end
 --- Returns the paramaters of the widget
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The paramaters of the widget
@@ -97,7 +97,7 @@ end
 --- Returns a table containing all of the widget groups.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * Table

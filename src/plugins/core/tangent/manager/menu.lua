@@ -20,12 +20,12 @@ local menu = named:subclass "core.tangent.manager.menu"
 --- Creates a new `Action` instance.
 ---
 --- Parameters:
---- * id        - The ID number of the menu.
---- * name      - The name of the menu.
---- * parent    - The parent of the menu.
+---  * id        - The ID number of the menu.
+---  * name      - The name of the menu.
+---  * parent    - The parent of the menu.
 ---
 --- Returns:
---- * the new `menu`.
+---  * the new `menu`.
 function menu:initialize(id, name, parent)
     named.initialize(self, id, name, parent)
 end
@@ -35,10 +35,10 @@ end
 --- Checks if the `thing` is a `menu` instance.
 ---
 --- Parameters:
---- * thing     - The other object to test.
+---  * thing     - The other object to test.
 ---
 --- Returns:
---- * `true` if it is a `menu`, `false` if not.
+---  * `true` if it is a `menu`, `false` if not.
 function menu.static.is(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(named)
 end
@@ -51,10 +51,10 @@ end
 --- `function() -> string`
 ---
 --- Parameters:
---- * getFn     - The function to call when the Tangent requests the `menu string`.
+---  * getFn     - The function to call when the Tangent requests the `menu string`.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function menu:onGet(getFn)
     if is.nt.fn(getFn) then
         error("Please provide a function: %s", type(getFn))
@@ -68,10 +68,10 @@ end
 --- Executes the `get` function, if present, returning the string value for the current menu.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `nil`
+---  * `nil`
 function menu:get()
     if self._get and self:active() then
         return self._get()
@@ -90,10 +90,10 @@ end
 --- two options.
 ---
 --- Parameters:
---- * nextFn     - The function to call when the Tangent requests the `menu change +1`.
+---  * nextFn     - The function to call when the Tangent requests the `menu change +1`.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function menu:onNext(nextFn)
     if is.nt.fn(nextFn) then
         error("Please provide a function: %s", type(nextFn))
@@ -144,10 +144,10 @@ end
 --- Executes the `next` function, if present.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `nil`
+---  * `nil`
 function menu:next()
     if self._next and self:active() then
         self._next()
@@ -166,10 +166,10 @@ end
 --- two options.
 ---
 --- Parameters:
---- * prevFn     - The function to call when the Tangent requests the `menu change -1`.
+---  * prevFn     - The function to call when the Tangent requests the `menu change -1`.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function menu:onPrev(prevFn)
     if is.nt.fn(prevFn) then
         error("Please provide a function: %s", type(prevFn))
@@ -183,10 +183,10 @@ end
 --- Executes the `prev` function, if present.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `nil`
+---  * `nil`
 function menu:prev()
     if self._prev and self:active() then
         self._prev()
@@ -198,10 +198,10 @@ end
 --- Updates the Tangent panel with the current value.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the update was sent.
+---  * `true` if the update was sent.
 function menu:update()
     if self:active() then
         return self:tangent():sendMenuString(self.id, self:get())
@@ -214,10 +214,10 @@ end
 --- Returns the `xml` configuration for the Action.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `xml` for the Action.
+---  * The `xml` for the Action.
 function menu:xml()
     return x.Menu { id=format("%#010x", self.id) } (
         named.xml(self)

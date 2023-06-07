@@ -17,10 +17,10 @@ local IndexRolesArea = ScrollArea:subclass("cp.apple.finalcutpro.timeline.IndexR
 --- Checks if the `element` matches an `IndexRolesArea`.
 ---
 --- Parameters:
---- * element	- The `axuielement` to check.
+---  * element	- The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
+---  * `true` if it matches, otherwise `false`.
 function IndexRolesArea.static.matches(element)
     if ScrollArea.matches(element) then
         local contents = element:attributeValue("AXContents")

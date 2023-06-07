@@ -56,7 +56,7 @@ function mod.setWebviewLabel(value)
     mod._webviewLabel = value
 end
 
---- cp.web.generate.checkbox() -> string
+--- cp.web.generate.checkbox(data, customTrigger, customID) -> string
 --- Function
 --- Generates a HTML Checkbox
 ---
@@ -101,10 +101,10 @@ end
 ---
 --- Parameters:
 ---  * data - Table containing the data you want to display on the Checkbox
+---  * context - The context
 ---
 --- Returns:
 ---  * String containing the HTML
----
 function mod.javascript(script, context)
     local t = compile(script, "no-cache", true)
     return html.script { type = "text/javascript" } (
@@ -112,7 +112,7 @@ function mod.javascript(script, context)
     )
 end
 
---- cp.web.generate.heading() -> string
+--- cp.web.generate.heading(data) -> string
 --- Function
 --- Generates a HTML Heading
 ---
@@ -125,7 +125,7 @@ function mod.heading(data)
     return html.h3 {} ( data.title )
 end
 
---- cp.web.generate.text() -> string
+--- cp.web.generate.text(data) -> string
 --- Function
 --- Generates a blank HTML
 ---
@@ -135,12 +135,10 @@ end
 --- Returns:
 ---  * String containing the HTML
 function mod.text(data)
-
     return html(data.title) .. "\n"
-
 end
 
---- cp.web.generate.button() -> string
+--- cp.web.generate.button(data, customTrigger, customWidth, customID) -> string
 --- Function
 --- Generates a HTML Button
 ---
@@ -182,7 +180,7 @@ function mod.button(data, customTrigger, customWidth, customID)
 
 end
 
---- cp.web.generate.dropdown() -> string
+--- cp.web.generate.dropdown(title, data, customTrigger) -> string
 --- Function
 --- Generates a HTML Dropdown
 ---
@@ -229,6 +227,15 @@ function mod.dropdown(title, data, customTrigger)
 
 end
 
+--- cp.web.imageBase64(pathToImage) -> string
+--- Function
+--- Creates a base65 image string.
+---
+--- Parameters:
+---  * pathToImage - path to the image
+---
+--- Returns:
+---  * A string
 function mod.imageBase64(pathToImage)
     local type = mimetypes.guess(pathToImage)
     if type and type:sub(1,6) == "image/" then

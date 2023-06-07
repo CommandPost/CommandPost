@@ -15,8 +15,7 @@ local just = {}
 
 --- cp.just.doWhile(actionFn[, timeout[, frequency]]) -> value
 --- Function
---- Performs an 'action' function, looping while the result of the function evaluates to `true`.
---- It will halt after `timeout` seconds, checking with the specified `frequency`.
+--- Performs an 'action' function, looping while the result of the function evaluates to `true`. It will halt after `timeout` seconds, checking with the specified `frequency`.
 ---
 --- Parameters:
 ---  * `actionFn`	- a fuction which is called on each loop. It should return a 'truthy' value.
@@ -42,8 +41,7 @@ end
 
 --- cp.just.doUntil(actionFn[, timeout[, frequency]]) -> value
 --- Function
---- Performs an `action` function, looping until the result of the function evaluates to `true` (or a non-nil value).
---- It will halt after the `timeout` in seconds after checking every `frequency` seconds.
+--- Performs an `action` function, looping until the result of the function evaluates to `true` (or a non-nil value). It will halt after the `timeout` in seconds after checking every `frequency` seconds.
 ---
 --- Parameters:
 ---  * `actionFn`	- a fuction which is called on each loop. It should return a 'truthy' value.
@@ -67,7 +65,7 @@ function just.doUntil(actionFn, timeout, frequency)
     return result
 end
 
---- cp.just.wait(integer) -> nil
+--- cp.just.wait(periodInSeconds) -> nil
 --- Function
 --- Pauses the application for the specified number of seconds.
 ---

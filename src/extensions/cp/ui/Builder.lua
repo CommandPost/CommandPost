@@ -104,8 +104,7 @@ end
 
 --- cp.ui.Builder:build(parent, uiFinder) -> cp.ui.Element
 --- Method
---- Builds a new [Element](cp.ui.Element.md) instance, passing in the `parent` and `uiFinder` parameters,
---- followed by any extra arguments that have been set, in the order passed to the constructor.
+--- Builds a new [Element](cp.ui.Element.md) instance, passing in the `parent` and `uiFinder` parameters, followed by any extra arguments that have been set, in the order passed to the constructor.
 ---
 --- Parameters:
 ---  * parent - The parent `Element`.

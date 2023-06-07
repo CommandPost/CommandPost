@@ -17,13 +17,13 @@
 --- ```
 ---
 --- This will return a table containing the following:
---- * `alpha4`      - The 4-character script code (eg. "Hani", "Arab").
---- * `date`        - The `YYYY-MM-DD` date the script was added.
---- * `name`        - The name in English (eg. "Arabic", "Afaka").
---- * `numeric3`    - The 3-character language code (eg. "500", "050").
---- * `pva`         - The Property Value Alias. Not available on all scripts.
+---  * `alpha4`      - The 4-character script code (eg. "Hani", "Arab").
+---  * `date`        - The `YYYY-MM-DD` date the script was added.
+---  * `name`        - The name in English (eg. "Arabic", "Afaka").
+---  * `numeric3`    - The 3-character language code (eg. "500", "050").
+---  * `pva`         - The Property Value Alias. Not available on all scripts.
 ---
---- Note: This data was adapted from [wooorm's code](https://github.com/wooorm/iso-15924)
+--- Notes: This data was adapted from [wooorm's code](https://github.com/wooorm/iso-15924)
 --- under an [MIT license](https://raw.githubusercontent.com/wooorm/iso-15924/master/LICENSE).
 
 local script = {

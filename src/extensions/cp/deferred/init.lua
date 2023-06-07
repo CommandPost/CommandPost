@@ -32,14 +32,13 @@ mod.mt.__index = mod.mt
 
 --- cp.deferred.new(delay) -> cp.deferred
 --- Constructor
---- Creates a new `defer` instance, which will trigger any added `action`s by a set delay after
---- the initial call to `run()`.
+--- Creates a new `defer` instance, which will trigger any added `action`s by a set delay after the initial call to `run()`.
 ---
 --- Parameters:
---- * delay     - The number of seconds to delay when `run()` is initally called.
+---  * delay - The number of seconds to delay when `run()` is initally called.
 ---
 --- Returns:
---- * The new `cp.deferred` instance.
+---  * The new `cp.deferred` instance.
 function mod.new(delay)
     local o ={
         _actions = {},
@@ -58,17 +57,21 @@ end
 --- cp.deferred:action(actionFn) -> self
 --- Method
 --- Adds the `action` the the list that will be called when the timer goes off.
---- It must be a `function` (or callable `table`) with the following signature:
+---
+--- Parameters:
+---  * The callable action.
+---
+--- Returns:
+---  * Self
+---
+--- Notes:
+---  * It must be a `function` (or callable `table`) with the following signature:
 ---
 --- ```lua
 --- function() -> nil
 --- ```
 ---
---- Multiple actions can be added and they will all be called when the delay timer
---- goes off.
----
---- Parameters:
---- * The callable action.
+--- * Multiple actions can be added and they will all be called when the delay timer goes off.
 function mod.mt:action(actionFn)
     if isntCallable(actionFn) then
         error("The action must be callable: %s", type(actionFn))
@@ -79,14 +82,13 @@ end
 
 --- cp.deferred:run() -> self
 --- Method
---- Ensures that the actions will run after the `delay`.
---- Multiple calls will not increase the delay from the initial call.
+--- Ensures that the actions will run after the `delay`. Multiple calls will not increase the delay from the initial call.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.deferred` instance.
+---  * The `cp.deferred` instance.
 function mod.mt:run()
     local timer = self._timer
     if not timer:running() then
@@ -99,10 +101,10 @@ end
 --- Checks if the defer is currently waiting to run.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the deferred action is waiting to execute.
+---  * `true` if the deferred action is waiting to execute.
 function mod.mt:waiting()
     return self._timer:running()
 end
@@ -112,10 +114,10 @@ end
 --- Returns the number of seconds until the next execution, or `nil` if it's not running.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The number of seconds until execution.
+---  * The number of seconds until execution.
 function mod.mt:secondsRemaining()
     return self._timer:nextTrigger()
 end
@@ -125,10 +127,10 @@ end
 --- Stops any execution of any deferred actions, if it is currently running.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The deferred timer.
+---  * The deferred timer.
 function mod.mt:stop()
     self._timer:stop()
     return self
@@ -137,14 +139,15 @@ end
 --- cp.deferred:delay([value]) -> self | number
 --- Method
 --- Sets/gets the delay period. If no `value` is provided, the current delay is returned.
---- If it is provided, then the new delay will be set. If it is currently waiting, then
---- the wait will be restarted with the new delay.
 ---
 --- Parameters:
---- * value     - the new delay value.
+---  * value     - the new delay value.
 ---
 --- Returns:
---- * The `cp.deferred` instance if a new value is provided, or the current delay if not.
+---  * The `cp.deferred` instance if a new value is provided, or the current delay if not.
+---
+--- Notes:
+---  * If it is provided, then the new delay will be set. If it is currently waiting, then the wait will be restarted with the new delay.
 function mod.mt:delay(value)
     if value ~= nil then
         self._delay = value

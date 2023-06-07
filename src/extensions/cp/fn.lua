@@ -49,14 +49,12 @@ setmetatable(mod, {
 -- Functions
 -- ============================================================================
 
---- cp.fn.all(fns | ...) -> function(...) -> any | nil
+--- cp.fn.all(...) -> function
 --- Function
---- A combinator that returns a function that passes its arguments to all the functions in `fns` and
---- returns the last result, if all functions return a `truthy` value.
---- Otherwise, it returns `nil`.
+--- A combinator that returns a function that passes its arguments to all the functions in `fns` and returns the last result, if all functions return a `truthy` value. Otherwise, it returns `nil`.
 ---
 --- Parameters:
----  * fns | ... - A table or list of functions to call.
+---  * ... - A table or list of functions to call.
 ---
 --- Returns:
 ---  * A function that passes its arguments to all the functions in `fns` and returns the last result, if all functions return a `truthy` value.
@@ -81,13 +79,12 @@ function mod.all(...)
     end
 end
 
---- cp.fn.any(fns | ...) -> function(...) -> any | nil
+--- cp.fn.any(...) -> function
 --- Function
---- A combinator that returns a function that passes its arguments to all the functions in
---- `fns` and returns the first `truthy` result, or `nil` if all functions return a `falsy` value.
+--- A combinator that returns a function that passes its arguments to all the functions in `fns` and returns the first `truthy` result, or `nil` if all functions return a `falsy` value.
 ---
 --- Parameters:
----  * fns | ... - A table or list of functions to call.
+---  * ... - A table or list of functions to call.
 ---
 --- Returns:
 ---  * A function that passes its arguments to all the functions in `fns` and returns the first `truthy` result,
@@ -113,13 +110,12 @@ function mod.any(...)
     end
 end
 
---- cp.fn.none(fns | ...) -> function(...) -> any | nil
+--- cp.fn.none(...) -> function
 --- Function
---- A combinator that returns a function that passes its arguments to all the functions in `fns` and
---- returns `true` if the first return value from each is `falsey`, otherwise it returns `false`.
+--- A combinator that returns a function that passes its arguments to all the functions in `fns` and returns `true` if the first return value from each is `falsey`, otherwise it returns `false`.
 ---
 --- Parameters:
----  * fns | ... - A table or list of functions to call.
+---  * ... - A table or list of functions to call.
 ---
 --- Returns:
 ---  * A function which will be `true` if all of the functions in `fns` are `falsy`.
@@ -141,10 +137,9 @@ function mod.none(...)
     end
 end
 
---- cp.fn.fork(...) -> function(value) -> ...
+--- cp.fn.fork(...) -> function
 --- Function
---- A combinator that returns a function that returns the result of calling `...` with the functions passed in.
---- This can be used to split an input into multiple outputs.
+--- A combinator that returns a function that returns the result of calling `...` with the functions passed in. This can be used to split an input into multiple outputs.
 ---
 --- Parameters:
 ---  * ... - A table or list of functions to call.
@@ -177,7 +172,6 @@ end
 ---
 --- Parameters:
 ---  * fn - The function to call.
----  * ... - The arguments to pass to the function.
 ---
 --- Returns:
 ---  * The results of the function call.
@@ -185,11 +179,9 @@ function mod.call(fn)
     return fn()
 end
 
---- cp.fn.compare(...) -> function(...) -> boolean
+--- cp.fn.compare(...) -> function
 --- Function
---- A combinator that returns a function that checks each provided comparator in turn,
---- returning `true` if the given comparator returns `true`, otherwise if the values are equal,
---- checks the next comparator, and so on.
+--- A combinator that returns a function that checks each provided comparator in turn, returning `true` if the given comparator returns `true`, otherwise if the values are equal, checks the next comparator, and so on.
 ---
 --- Parameters:
 ---  * ... - A list of comparators.
@@ -226,10 +218,9 @@ function mod.compare(...)
     end
 end
 
---- cp.fn.compose(fns | ...) -> function(...) -> ...
+--- cp.fn.compose(...) -> function
 --- Function
---- A combinator that performs backwards composition of functions, returning a function that
---- is the composition of a list of functions processed from last to first.
+--- A combinator that performs backwards composition of functions, returning a function that is the composition of a list of functions processed from last to first.
 ---
 --- Parameters:
 ---  * fns | ... - A table or a list of functions.
@@ -247,7 +238,7 @@ function mod.compose(...)
     end
 end
 
---- cp.fn.constant(value) -> function(...) -> value
+--- cp.fn.constant(value) -> function
 --- Function
 --- A combinator that returns a function that always returns the `value`.
 ---
@@ -286,11 +277,9 @@ local function _curryWith(fn, argCount, ...)
     end
 end
 
---- cp.fn.curry(fn(a1, a2, ..., an), argCount) -> function(a1) -> function(a2) -> ... -> function(an) -> any
+--- cp.fn.curry(function, argCount) -> function
 --- Function
---- Curries a function with the specified number of arguments, returning a function that accepts the first
---- argument. It will return other functions that accept the second argument, and so on, until the final argument is collected,
---- and the values are passed to the original function.
+--- Curries a function with the specified number of arguments, returning a function that accepts the first argument. It will return other functions that accept the second argument, and so on, until the final argument is collected, and the values are passed to the original function.
 ---
 --- Parameters:
 ---  * fn - The function to curry.
@@ -304,7 +293,7 @@ function mod.curry(fn, argCount)
     return _curryWith(fn, argCount)
 end
 
---- cp.fn.flip(fn) -> function(...) -> function(...) -> any
+--- cp.fn.flip(fn) -> function
 --- Function
 --- A combinator that flips the order of the next two arguments to a curried function.
 ---
@@ -353,11 +342,9 @@ function mod.over(setter, tx)
     return setter(tx)
 end
 
---- cp.fn.pipe(fns | ...) -> function(...) -> ...
+--- cp.fn.pipe(...) -> function
 --- Function
---- A combinator that pipes a series of functions together, passing the results of each function on to the next one.
---- The returned function takes any number of inputs and may return any number of inputs,
---- depending on the results of the final function.
+--- A combinator that pipes a series of functions together, passing the results of each function on to the next one. The returned function takes any number of inputs and may return any number of inputs, depending on the results of the final function.
 ---
 --- Parameters:
 ---  * fns |... - A table or list of functions.
@@ -380,7 +367,7 @@ end
 
 -- TODO: Figure out the common name for `prefix` in functional programming. Similar to `with`.
 
---- cp.fn.prefix(fn, ...) -> function(...) -> ...
+--- cp.fn.prefix(fn, ...) -> function
 --- Function
 --- Prefixes the provided values as the first arguments to the function.
 ---
@@ -406,14 +393,14 @@ function mod.prefix(fn, ...)
     end
 end
 
---- cp.fn.reduce(fn, initial, values | ...) -> any
+--- cp.fn.reduce(fn, initial, ...) -> any
 --- Function
 --- Reduces a list of values into a single value.
 ---
 --- Parameters:
 ---  * fn - The function to reduce with.
 ---  * initial - The initial value to start with.
----  * values | ... - The table or list of values to reduce.
+---  * ... - The table or list of values to reduce.
 ---
 --- Returns:
 ---  * The reduced value.
@@ -459,8 +446,7 @@ end
 
 -- _uncurryWith(fn, argCount) -> function
 -- Function
--- Returns a function that accepts the specified number of arguments, passing them to the original
--- curried function and the subsequently returned functions.
+-- Returns a function that accepts the specified number of arguments, passing them to the original curried function and the subsequently returned functions.
 --
 -- Parameters:
 --  * fn - The function to uncurry.
@@ -492,7 +478,7 @@ function mod.uncurry(fn, argCount)
     return _uncurryWith(fn, argCount)
 end
 
---- cp.fn.with(value, fn) -> function(...) -> ...
+--- cp.fn.with(value, fn) -> function
 --- Function
 --- A combinator that returns a function that will call the provided function with the provided value as the first argument.
 ---
@@ -645,10 +631,9 @@ local chain = setmetatable({}, {
     end
 })
 
---- cp.fn.chain(...) -> function(...) -> ...
+--- cp.fn.chain(...) -> function
 --- Function
---- Chain a series of functions together, passing the results of each function on to the next one, returning the last result,
---- or returning `nil` immediately after all results of a function are `nil`.
+--- Chain a series of functions together, passing the results of each function on to the next one, returning the last result, or returning `nil` immediately after all results of a function are `nil`.
 ---
 --- Parameters:
 ---  * ... - A list of functions.
@@ -666,12 +651,9 @@ mod.chain = chain
 -- Debugging
 -- ============================================================================
 
---- cp.fn.debug(message, ...) -> function(...) -> ...
+--- cp.fn.debug(message, ...) -> function
 --- Function
 --- Returns a function that will print the provided message to the console.
---- Optional functions can be passed in, which will be provided the values passed to the returned function.
---- If not provided, the values will be passed into the message for formatting directly.
---- The returned function will always return the values passed in.
 ---
 --- Parameters:
 ---  * message - The message to print to the console.
@@ -684,6 +666,9 @@ mod.chain = chain
 ---  * This is useful for debugging, but is not recommended for production code.
 ---  * For example, the following will return "b" and also print `"table: 0xXXXXXXXXX"` and `"b"` to the console:
 ---    `fn.chain // fn.constant({"a", "b", "c"}) >> fn.debug("%d") >> fn.table.get(2) >> fn.debug("%d")`
+---  * Optional functions can be passed in, which will be provided the values passed to the returned function.
+---  * If not provided, the values will be passed into the message for formatting directly.
+---  * The returned function will always return the values passed in.
 function mod.debug(message, ...)
     local args = pack(...)
     return function(...)

@@ -94,7 +94,7 @@ end
 --- Records a pass, with the specified message.
 ---
 --- Parameters:
----  * message       - an optional additional message to output.
+---  * message - an optional additional message to output.
 ---
 --- Returns:
 ---  * None
@@ -108,7 +108,7 @@ end
 --- Records a fail, with the specified message.
 ---
 --- Parameters:
----  * message       - The related message to output.
+---  * message - The related message to output.
 ---
 --- Returns:
 ---  * None
@@ -122,7 +122,7 @@ end
 --- Records an abort, with the specified message.
 ---
 --- Parameters:
----  * message       - The related message to output.
+---  * message - The related message to output.
 ---
 --- Returns:
 ---  * None
@@ -136,7 +136,7 @@ end
 --- Records that a run is waiting for up to the specified amount of time.
 ---
 --- Parameters:
----  * timeout   - The timeout to wait for, in seconds.
+---  * timeout - The timeout to wait for, in seconds.
 ---
 --- Returns:
 ---  * None

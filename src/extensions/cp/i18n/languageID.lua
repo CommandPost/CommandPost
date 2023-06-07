@@ -44,31 +44,31 @@ end
 
 --- cp.i18n.languageID.parse(code) -> string, string, string
 --- Function
---- Parses a `language ID` into three possible string components:
---- 1. The ISO 693-1 language code
---- 2. The ISO 15924 script code
---- 3. The ISO 3166-1 region code
+--- Parses a `language ID`. into three possible string components
 ---
---- This is one of the following patterns:
+--- Parameters:
+---  * code - The `language ID` code. Eg. "en-AU".
 ---
----  * `[language]` - eg. `"en"`, or `"fr"`. The covers the language across all languages and scripts.
----  * `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
----  * `[language]-[region]` - eg. "en-AU" for Australian English, "fr-CA" for Canadian French, etc.
+--- Returns:
+---  * language - The two-character lower-case alpha language code.
+---  * script - the four-character mixed-case alpha script code.
+---  * region - The two-character upper-case alpha region code.
 ---
---- It will then return the matched component in three return values: language, script, region.
---- If a script is specified, the `region` will be `nil`. Eg.:
+--- Notes:
+---  * Parses a `language ID` into three possible string components:
+---   ** The ISO 693-1 language code
+---   ** The ISO 15924 script code
+---   ** The ISO 3166-1 region code
+---  * This is one of the following patterns:
+---   ** `[language]` - eg. `"en"`, or `"fr"`. The covers the language across all languages and scripts.
+---   ** `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
+---   ** `[language]-[region]` - eg. "en-AU" for Australian English, "fr-CA" for Canadian French, etc.
+---  * It will then return the matched component in three return values: language, script, region.
+---  * If a script is specified, the `region` will be `nil`. Eg.:
 ---
 --- ```lua
 --- local lang, scrpt, rgn, scrpt = languageID.parse("en-AU") -- results in "en", nil, "AU"
 --- ```
----
---- Parameters:
----  * code      - The `language ID` code. Eg. "en-AU".
----
---- Returns:
----  * language  - The two-character lower-case alpha language code.
----  * script    - the four-character mixed-case alpha script code.
----  * region    - The two-character upper-case alpha region code.
 function mod.parse(code)
     local l, s, r
     l = match(code, LANG_PATTERN)
@@ -149,15 +149,15 @@ end
 --- Constructor
 --- Creates, or retrieves from the cache, a `languageID` instance for the specified `code`.
 ---
---- If the code can't be parsed, or if the actual language/region/script codes don't exist,
---- `nil` is returned.
----
 --- Parameters:
 ---  * code      - The language ID code.
 ---
 --- Returns:
 ---  * The matching `languageID`, or `nil` if the language ID couldn't be found.
 ---  * The error message, or `nil` if there was no problem.
+---
+--- Notes:
+--- If the code can't be parsed, or if the actual language/region/script codes don't exist, `nil` is returned.
 function mod.forCode(code)
     return mod.forParts(mod.parse(code))
 end
@@ -165,9 +165,6 @@ end
 --- cp.i18n.languageID.forLocaleID(code[, prioritiseScript]) -> cp.i18n.languageID, string
 --- Constructor
 --- Creates, or retrieves from the cache, a `languageID` instance for the specified `cp.i18n.localeID`.
---- Language IDs can only have either a script or a region, so if the locale has both, this will
---- priortise the `region` by default. You can set `prioritiseScript` to `true` to use script instead.
---- If only one or the other is set in the locale, `prioritiseScript` is ignored.
 ---
 --- Parameters:
 ---  * locale            - The `localeID` to convert
@@ -176,6 +173,10 @@ end
 --- Returns:
 ---  * The `languageID` for the `locale`, or `nil`
 ---  * The error message if there was a problem.
+---
+--- Notes:
+---  * Language IDs can only have either a script or a region, so if the locale has both, this will priortise the `region` by default. You can set `prioritiseScript` to `true` to use script instead.
+---  * If only one or the other is set in the locale, `prioritiseScript` is ignored.
 function mod.forLocaleID(locale, prioritiseScript)
     local languageCode = locale.language.alpha2
     local scriptCode = locale.script and locale.script.alpha4

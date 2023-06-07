@@ -9,17 +9,18 @@ local toObservable      = Statement.toObservable
 --- Constructor
 --- Creates a new `Last` `Statement` that will return the first value from the `resolvable` and complete.
 ---
---- Example:
----
---- ```lua
---- Last(someObservable)
---- ```
----
 --- Parameters:
 ---  * resolvable  - a `resolvable` value, of which the first result will be returned.
 ---
 --- Returns:
 ---  * The `Statement` which will return the first value when executed.
+---
+--- Notes:
+---  * Example:
+---
+--- ```lua
+--- Last(someObservable)
+--- ```
 local Last = Statement.named("Last")
 :onInit(function(context, resolvable)
     assert(resolvable ~= nil, "The Last `resolvable` may not be `nil`.")

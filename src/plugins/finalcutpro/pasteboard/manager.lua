@@ -611,10 +611,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which decodes the buffer with the specified ID.
 ---
 --- Parameters:
---- * id        - The ID to decode
+---  * id        - The ID to decode
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) that sends the decoded buffer, or throws an error if not available.
+---  * A [Statement](cp.rx.go.Statement.md) that sends the decoded buffer, or throws an error if not available.
 function mod.doDecodeBuffer(id)
     return Do(function()
         local buffer = mod.buffer()

@@ -27,10 +27,10 @@ ColorCurve.static.TYPE ={
 --- Checks if the specified value is a `ColorCurve`.
 ---
 --- Parameters:
---- * element       - The `axuielement` to check.
+---  * element       - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches a ColorCurve element.
+---  * `true` if it matches a ColorCurve element.
 function ColorCurve.static.matches(element)
     return Group.matches(element)
         and #element == 4 and childMatching(element, List.matches) ~= nil
@@ -42,11 +42,11 @@ end
 --- Creates a new `ColorCurve` [Element](cp.ui.Element.md).
 ---
 --- Parameters:
---- * parent    - The parent `Element`.
---- * type     - The [TYPE](#TYPE) of curve.
+---  * parent    - The parent `Element`.
+---  * type     - The [TYPE](#TYPE) of curve.
 ---
 --- Returns:
---- * The new `ColorCurve`.
+---  * The new `ColorCurve`.
 function ColorCurve:initialize(parent, type)
     local UI = parent.contentUI:mutate(function(original)
         return cache(self, "_ui", function()

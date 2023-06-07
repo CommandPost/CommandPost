@@ -30,10 +30,10 @@ HueSaturationCurve.static.TYPE = {
 --- Checks if the specified value is a `HueSaturationCurve`.
 ---
 --- Parameters:
---- * element       - The `axuielement` to check.
+---  * element       - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches a HueSaturationCurve element.
+---  * `true` if it matches a HueSaturationCurve element.
 function HueSaturationCurve.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
         and #element == 5 and childWithRole(element, "AXList") ~= nil
@@ -45,11 +45,11 @@ end
 --- Creates a new `HueSaturationCurve` [Element](cp.ui.Element.md).
 ---
 --- Parameters:
---- * parent    - The parent `Element`.
---- * type     - The [TYPE](#TYPE) of curve.
+---  * parent    - The parent `Element`.
+---  * type     - The [TYPE](#TYPE) of curve.
 ---
 --- Returns:
---- * The new `HueSaturationCurve`.
+---  * The new `HueSaturationCurve`.
 function HueSaturationCurve:initialize(parent, type)
     local UI = parent.contentUI:mutate(function(original)
         return cache(self, "_ui", function()

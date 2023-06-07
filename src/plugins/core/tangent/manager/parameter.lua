@@ -219,10 +219,10 @@ end
 --- Updates the Tangent with the current value of the parameter.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function parameter:update()
     if self:active() and self:tangent():connected() then
         local value = self:get()

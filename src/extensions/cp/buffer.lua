@@ -109,8 +109,7 @@ end
 
 --- cp.buffer.clone(otherBuffer) -> buffer
 --- Constructor
---- Creates a copy of the provided buffer. It shares data with the original, but can be modified
---- via `pop`/`push`, etc without affecting the original.
+--- Creates a copy of the provided buffer. It shares data with the original, but can be modified via `pop`/`push`, etc without affecting the original.
 ---
 --- Parameters:
 ---  * otherBuffer - The `buffer` to clone.

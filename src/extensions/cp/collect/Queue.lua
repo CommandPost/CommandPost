@@ -54,8 +54,6 @@ end
 --- cp.collect.Queue.pushLeft(queue, ...) -> cp.collect.Queue
 --- Function
 --- Pushes the values to the left side of the `queue`.
---- If there are multiple values, then they will be added from right to left.
---- That is to say, the left-most of the new values will be the left-most value of the queue.
 ---
 --- Parameters:
 ---  * queue        - The queue to push into.
@@ -63,6 +61,11 @@ end
 ---
 --- Returns:
 ---  * The same `Queue` instance.
+---
+--- Notes:
+---  * If there are multiple values, then they will be added from right to left.
+---  * That is to say, the left-most of the new values will be the left-most value of the queue.
+
 function Queue.pushLeft(queue, ...)
     local data = getdata(queue)
     for i = select("#", ...), 1, -1 do
@@ -77,8 +80,6 @@ end
 --- cp.collect.Queue.pushRight(queue, ...) -> cp.collect.Queue
 --- Function
 --- Pushes the values to the right side of the `queue`.
---- If there are multiple values, then they will be added from left to right.
---- That is to say, the right-most of the new values will be the right-most value of the queue.
 ---
 --- Parameters:
 ---  * queue        - The queue to push into.
@@ -86,6 +87,10 @@ end
 ---
 --- Returns:
 ---  * The same `Queue` instance.
+---
+--- Notes:
+---  * If there are multiple values, then they will be added from left to right.
+---  * That is to say, the right-most of the new values will be the right-most value of the queue.
 function Queue.pushRight(queue, ...)
     local data = getdata(queue)
     for i = 1, select("#", ...) do
@@ -196,8 +201,6 @@ end
 --- cp.collect.Queue.removeItem(queue, item) -> number
 --- Function
 --- Attempts to remove the specified item from the queue.
---- If the item was found, the index it was found at is returned.
---- If not, `nil` is returned.
 ---
 --- Parameters:
 ---  * queue        - The queue to modify.
@@ -206,8 +209,10 @@ end
 --- Returns:
 ---  * The index of the item, or `nil` if not found.
 ---
---- Note:
+--- Notes:
 ---  * This call may be very expensive if there are many items in the queue after the specified item.
+---  * If the item was found, the index it was found at is returned.
+---  * If not, `nil` is returned.
 function Queue.removeItem(queue, item)
     local data = getdata(queue)
     local index = nil
@@ -255,27 +260,33 @@ Queue.mt = {
 --- cp.collect.Queue:pushLeft(...) -> cp.collect.Queue
 --- Method
 --- Pushes the values to the left side of the `queue`.
---- If there are multiple values, then they will be added from right to left.
---- That is to say, the left-most of the new values will be the left-most value of the queue.
 ---
 --- Parameters:
 ---  * ...          - The values to push.
 ---
 --- Returns:
 ---  * The same `Queue` instance.
+---
+--- Notes:
+---  * If there are multiple values, then they will be added from right to left.
+---  * That is to say, the left-most of the new values will be the left-most value of the queue.
+
     pushLeft = Queue.pushLeft,
 
 --- cp.collect.Queue:pushRight(...) -> cp.collect.Queue
 --- Method
 --- Pushes the values to the right side of the `queue`.
---- If there are multiple values, then they will be added from left to right.
---- That is to say, the right-most of the new values will be the right-most value of the queue.
 ---
 --- Parameters:
 ---  * ...          - The values to push.
 ---
 --- Returns:
 ---  * The same `Queue` instance.
+---
+--- Notes:
+---  * If there are multiple values, then they will be added from left to right.
+---  * That is to say, the right-most of the new values will be the right-most value of the queue.
+
     pushRight = Queue.pushRight,
 
 --- cp.collect.Queue:popLeft() -> anything
@@ -336,8 +347,6 @@ Queue.mt = {
 --- cp.collect.Queue:removeItem(item) -> number
 --- Function
 --- Attempts to remove the specified item from the queue.
---- If the item was found, the index it was found at is returned.
---- If not, `nil` is returned.
 ---
 --- Parameters:
 ---  * item         - The item to remove, if present.
@@ -345,8 +354,11 @@ Queue.mt = {
 --- Returns:
 ---  * The index of the item, or `nil` if not found.
 ---
---- Note:
+--- Notes:
 ---  * This call may be very expensive if there are many items in the queue after the specified item.
+---  * If the item was found, the index it was found at is returned.
+---  * If not, `nil` is returned.
+
     removeItem = Queue.removeItem,
 
 --- cp.collect.Queue:len(queue) -> anything

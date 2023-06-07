@@ -34,16 +34,14 @@ function BehaviorSubject.create(...)
   return setmetatable(self, BehaviorSubject)
 end
 
---- cp.rx.BehaviorSubject:subscribe(observer | onNext, onError, onCompleted) -> cp.rx.Reference
+--- cp.rx.BehaviorSubject:subscribe(observer, onError, onCompleted) -> cp.rx.Reference
 --- Method
---- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `BehaviorSubject`. Immediately broadcasts the most
---- recent value to the [Observer](cp.rx.Observer.md).
+--- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `BehaviorSubject`. Immediately broadcasts the most recent value to the [Observer](cp.rx.Observer.md).
 ---
 --- Parameters:
----  * observer | onNext       - The [Observer](cp.rx.Observer.md) subscribing, or the `function` called when the
----                             `BehaviorSubject` produces a value.
----  * onError                 - A `function` called when the `BehaviorSubject` terminates due to an error.
----  * onCompleted             - A `function` called when the `BehaviorSubject` completes normally.
+---  * observer - The [Observer](cp.rx.Observer.md) subscribing, or the `function` called when the `BehaviorSubject` produces a value.
+---  * onError - A `function` called when the `BehaviorSubject` terminates due to an error.
+---  * onCompleted - A `function` called when the `BehaviorSubject` completes normally.
 ---
 --- Returns:
 ---  * The [Reference](cp.rx.Reference.md)
@@ -71,6 +69,9 @@ end
 ---
 --- Parameters:
 ---  * ...     - The values to send.
+---
+--- Returns:
+---  * None
 function BehaviorSubject:onNext(...)
   self.value = util.pack(...)
   return Subject.onNext(self, ...)
@@ -78,8 +79,7 @@ end
 
 --- cp.rx.BehaviorSubject:getValue() -> anything
 --- Method
---- Returns the last value emitted by the `BehaviorSubject`, or the initial value passed to the
---- constructor if nothing has been emitted yet.
+--- Returns the last value emitted by the `BehaviorSubject`, or the initial value passed to the constructor if nothing has been emitted yet.
 ---
 --- Parameters:
 ---  * None
@@ -87,7 +87,7 @@ end
 --- Returns:
 ---  * The last value.
 ---
---- Note:
+--- Notes:
 ---  * You can also call the `BehaviorSubject` as a function to retrieve the value. E.g. `mySubject()`.
 function BehaviorSubject:getValue()
   if self.value ~= nil then

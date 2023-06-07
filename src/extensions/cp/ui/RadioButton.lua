@@ -58,8 +58,7 @@ end
 
 --- cp.ui.RadioButton.checked <cp.prop: boolean>
 --- Field
---- Indicates if the checkbox is currently checked.
---- May be set by calling as a function with `true` or `false` to the function.
+--- Indicates if the checkbox is currently checked. May be set by calling as a function with `true` or `false` to the function.
 function RadioButton.lazy.prop:checked()
     return self.UI:mutate(
         function(original) -- get
@@ -91,8 +90,7 @@ end
 
 --- cp.ui.RadioButton:doToggle() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will toggle the button value when executed, if available at the time.
---- If not an `error` is sent.
+--- Returns a `Statement` that will toggle the button value when executed, if available at the time. If not an `error` is sent.
 ---
 --- Parameters:
 ---  * None
@@ -111,8 +109,7 @@ end
 
 --- cp.ui.RadioButton:doCheck() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will check the button value when executed, if available at the time.
---- If not an `error` is sent.
+--- Returns a `Statement` that will check the button value when executed, if available at the time. If not an `error` is sent.
 ---
 --- Parameters:
 ---  * None
@@ -127,8 +124,7 @@ end
 
 --- cp.ui.RadioButton:doUncheck() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will uncheck the button value when executed, if available at the time.
---- If not an `error` is sent.
+--- Returns a `Statement` that will uncheck the button value when executed, if available at the time. If not an `error` is sent.
 ---
 --- Parameters:
 ---  * None
@@ -160,8 +156,7 @@ end
 
 --- cp.ui.RadioButton:doPress() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will press the button when executed, if available at the time.
---- If not an `error` is sent.
+--- Returns a `Statement` that will press the button when executed, if available at the time. If not an `error` is sent.
 ---
 --- Parameters:
 ---  * None
@@ -175,8 +170,7 @@ end
 
 --- cp.ui.RadioButton:saveLayout() -> table
 --- Method
---- Returns a `table` with the button's current state. This can be passed to [#loadLayout]
---- later to restore the original state.
+--- Returns a `table` with the button's current state. This can be passed to [#loadLayout] later to restore the original state.
 ---
 --- Parameters:
 ---  * None
@@ -195,6 +189,9 @@ end
 ---
 --- Parameters:
 ---  * layout - the table of state values to restore to.
+---
+--- Returns:
+---  * None
 function RadioButton:loadLayout(layout)
     Element.loadLayout(self, layout)
     if layout then

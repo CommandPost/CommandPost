@@ -41,8 +41,8 @@ end
 --- Creates a new MenuButton.
 ---
 --- Parameters:
---- * parent        - The parent object. Should have an `isShowing` property.
---- * uiFinder      - A `cp.prop` or function which will return a `hs.axuielement`, or `nil` if it's not available.
+---  * parent        - The parent object. Should have an `isShowing` property.
+---  * uiFinder      - A `cp.prop` or function which will return a `hs.axuielement`, or `nil` if it's not available.
 
 --- cp.ui.MenuButton.value <cp.prop: anything>
 --- Field

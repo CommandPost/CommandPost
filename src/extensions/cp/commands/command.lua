@@ -13,17 +13,16 @@ local command = {}
 command.mt = {}
 command.mt.__index = command.mt
 
---- cp.commands.command.new() -> command
+--- cp.commands.command.new(id, parent) -> command
 --- Method
 --- Creates a new command, which can have keyboard shortcuts assigned to it.
 ---
 --- Parameters:
----  * `id`		- the unique identifier for the command. E.g. 'cpCustomCommand'
----  * `parent`	- The parent group.
+---  * `id` - the unique identifier for the command. E.g. 'cpCustomCommand'
+---  * `parent` - The parent group.
 ---
 --- Returns:
 ---  * command - The command that was created.
----
 function command.new(id, parent)
     local o = prop.extend({
         _id = id,
@@ -73,7 +72,7 @@ end
 --- Parameters:
 ---  * None
 ---
---- Returns
+--- Returns:
 ---  * The parent `cp.commands`.
 function command.mt:parent()
     return self._parent
@@ -149,7 +148,7 @@ end
 --- Parameters:
 ---  * None
 ---
---- Returns
+--- Returns:
 ---  * The human-readable command title.
 function command.mt:getTitle()
     if self._title then
@@ -163,14 +162,15 @@ end
 --- Method
 --- Sets the specified subtitle and returns the `cp.commands.command` instance.
 ---
---- Note: By default, it will look up the `<ID>_subtitle` value.
---- Anything set here will override it in all langauges.
----
 --- Parameters:
 ---  * `subtitle`	- The new subtitle.
 ---
 --- Returns:
 ---  * The `cp.commands.command` instance.
+---
+--- Notes:
+---  * By default, it will look up the `<ID>_subtitle` value.
+---  * Anything set here will override it in all langauges.
 function command.mt:subtitled(subtitle)
     self._subtitle = subtitle
     return self
@@ -178,8 +178,7 @@ end
 
 --- cp.commands.command:getSubtitle() -> string
 --- Method
---- Returns the current subtitle, based on either the set subtitle, or the "<ID>_subtitle" value in the I18N files.
---- If nothing is available, it will return `nil`.
+--- Returns the current subtitle, based on either the set subtitle, or the "<ID>_subtitle" value in the I18N files. If nothing is available, it will return `nil`.
 ---
 --- Parameters:
 ---  * None
@@ -224,13 +223,15 @@ end
 --- cp.commands.command:groupedBy(group) -> cp.commands.command
 --- Method
 --- Specifies that the command is grouped by a specific value.
---- Note: This is different to the command group/parent value.
 ---
 --- Parameters:
 ---  * `group`	- The group ID.
 ---
 --- Returns:
 ---  * The `cp.commands.command` instance.
+---
+--- Notes:
+---  * This is different to the command group/parent value.
 function command.mt:groupedBy(group)
     self._group = group
     return self
@@ -252,14 +253,21 @@ end
 --- cp.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
 --- Method
 --- Specifies that the command is activated by pressing a key combination.
---- This method can be called multiple times, and multiple key combinations will be registered for the command.
---- To remove existing key combinations, call the `command:deleteShortcuts()` method.
 ---
----  * If the `keyCode` is provided, no modifiers need to be pressed to activate and the `command` is returned.
----  * If the `modifiers` and `keyCode` are provided, the combination is created and the `command` is returned.
----  * If no `keyCode` is provided, a `modifier` is returned, which lets you specify keyboard combinations.
+--- Parameters:
+---  * `modifiers`	- (optional) The table containing names of required modifiers.
+---  * `keyCode`	- (optional) The key code that will activate the command, with no modifiers.
 ---
---- For example:
+--- Returns:
+---  * `command` if a `keyCode` was provided, or `modifier` if not.
+---
+--- Notes:
+---  * This method can be called multiple times, and multiple key combinations will be registered for the command.
+---  * To remove existing key combinations, call the `command:deleteShortcuts()` method.
+---   ** If the `keyCode` is provided, no modifiers need to be pressed to activate and the `command` is returned.
+---   ** If the `modifiers` and `keyCode` are provided, the combination is created and the `command` is returned.
+---   ** If no `keyCode` is provided, a `modifier` is returned, which lets you specify keyboard combinations.
+---  * For example:
 ---
 --- ```
 --- local global    	= commands.collection("global")
@@ -269,13 +277,6 @@ end
 --- local pressOptCmdA	= global:add("commandOptCmdA"):activatedBy():option():command("a")
 --- global:enable()
 --- ```
----
---- Parameters:
----  * `modifiers`	- (optional) The table containing names of required modifiers.
----  * `keyCode`	- (optional) The key code that will activate the command, with no modifiers.
----
---- Returns:
----  * `command` if a `keyCode` was provided, or `modifier` if not.
 function command.mt:activatedBy(modifiers, keyCode)
     if keyCode and not modifiers then
         modifiers = {}
@@ -305,7 +306,6 @@ end
 ---
 --- Returns:
 ---  * command - The current command
----
 function command.mt:deleteShortcuts()
     for _,sc in ipairs(self._shortcuts) do
         sc:delete()
@@ -319,7 +319,7 @@ end
 --- Deletes any existing shortcuts and applies the new set of shortcuts in the table.
 ---
 --- Parameters:
----  * shortcuts		- The set of `cp.commands.shortcuts` to apply to this command.
+---  * shortcuts - The set of `cp.commands.shortcuts` to apply to this command.
 ---
 --- Returns:
 ---  * The `cp.commands.command` instance.
@@ -333,8 +333,7 @@ end
 
 --- cp.commands.command:addShortcut(newShortcut) -> command
 --- Method
---- Adds the specified shortcut to the command.
---- If the command is enabled, the shortcut will also be enabled.
+--- Adds the specified shortcut to the command. If the command is enabled, the shortcut will also be enabled.
 ---
 --- Parameters:
 ---  * `newShortcut`	- the shortcut to add.
@@ -387,14 +386,14 @@ end
 --- Method
 --- Sets the function that will be called when the command is activated.
 ---
---- NOTE: This is a shortcut for calling `whenPressed(...)`
----
 --- Parameters:
 ---  * `activatedFn`	- the function to call when activated.
 ---
 --- Returns:
 ---  * command - The current command
 ---
+--- Notes:
+---  * This is a shortcut for calling `whenPressed(...)`
 function command.mt:whenActivated(activatedFn)
     return self:whenPressed(activatedFn)
 end
@@ -408,7 +407,6 @@ end
 ---
 --- Returns:
 ---  * command - The current command
----
 function command.mt:whenPressed(pressedFn)
     self.pressedFn = pressedFn
     return self
@@ -423,7 +421,6 @@ end
 ---
 --- Returns:
 ---  * command - The current command
----
 function command.mt:whenReleased(releasedFn)
     self.releasedFn = releasedFn
     return self
@@ -438,7 +435,6 @@ end
 ---
 --- Returns:
 ---  * command - The current command
----
 function command.mt:whenRepeated(repeatedFn)
     self.repeatedFn = repeatedFn
     return self
@@ -453,7 +449,6 @@ end
 ---
 --- Returns:
 ---  * the result of the function, or `nil` if none is present.
----
 function command.mt:pressed()
     if self:isActive() and self.pressedFn then return self.pressedFn() end
     return nil
@@ -468,7 +463,6 @@ end
 ---
 --- Returns:
 ---  * the result of the function, or `nil` if none is present.
----
 function command.mt:released()
     if self:isActive() and self.releasedFn then return self.releasedFn() end
     return nil
@@ -479,11 +473,10 @@ end
 --- Executes the 'repeated' function, if present.
 ---
 --- Parameters:
----  * `repeats`	- the number of times to repeat. Defaults to 1.
+---  * `repeats` - the number of times to repeat. Defaults to 1.
 ---
 --- Returns:
 ---  * the last result.
----
 function command.mt:repeated(repeats)
     if not self:isActive() then return nil end
 
@@ -502,11 +495,10 @@ end
 --- Executes the 'pressed', then 'repeated', then 'released' functions, if present.
 ---
 --- Parameters:
----  * `repeats`	- the number of times to repeat the 'repeated' function. Defaults to 1.
+---  * `repeats` - the number of times to repeat the 'repeated' function. Defaults to 1.
 ---
 --- Returns:
 ---  * the last 'truthy' result (non-nil/false).
----
 function command.mt:activated(repeats)
     if not self:isActive() then return nil end
 
