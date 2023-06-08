@@ -13,14 +13,16 @@ local uuid      = host.uuid
 
 local panel = {}
 
---- plugins.finalcutpro.export.batch.manager.panel.new(priority, id) -> cp.core.preferences.manager.panel
+--- plugins.finalcutpro.export.batch.manager.panel.new(params, manager) -> cp.core.preferences.manager.panel
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
 --- Parameters:
----  * priority  - Defines the order in which the panel appears.
----  * id        - The unique ID for the panel.
----  * webview   - The webview the panel is attached to.
+---  * params - Table of parameters
+---  * manager - The manager
+---
+--- Returns:
+---  * Self
 function panel.new(params, manager)
     local o = {
         id          =   params.id,
@@ -198,6 +200,7 @@ end
 --- Adds a Paragraph to the panel
 ---
 --- Parameters:
+---  * priority - Priority
 ---  * content - The content value
 ---  * default - The default value to display if the `content` is `nil`. It will be displayed with a different style.
 ---
@@ -343,7 +346,7 @@ function panel:addButton(priority, params)
     return self:addContent( priority, content )
 end
 
---- plugins.finalcutpro.export.batch.manager.panel:addSelect(params) -> panel
+--- plugins.finalcutpro.export.batch.manager.panel:addSelect(priority, params) -> panel
 --- Method
 --- Adds a select to the panel.
 ---

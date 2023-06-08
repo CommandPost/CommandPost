@@ -45,17 +45,19 @@ end
 --- plugins.core.tangent.manager.mode:onActivate(activateFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'mode change' request.
---- This function should have this signature:
----
---- ```lua
---- function() -> nil
---- ```
 ---
 --- Parameters:
 ---  * activateFn     - The function to call when the Tangent requests the mode change.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- ```lua
+--- function() -> nil
+--- ```
 function mode:onActivate(activateFn)
     if is.nt.fn(activateFn) then
         error("Please provide a function: %s", type(activateFn))
@@ -80,15 +82,17 @@ end
 --- plugins.core.tangent.manager.mode:onDeactivate(deactivateFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'mode change' request and switche to a different mode.
---- This function should have this signature:
----
---- `function() -> nil`
 ---
 --- Parameters:
 ---  * deactivateFn     - The function to call when the Tangent requests the mode change.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
 function mode:onDeactivate(deactivateFn)
     if is.nt.fn(deactivateFn) then
         error("Please provide a function: %s", type(deactivateFn))

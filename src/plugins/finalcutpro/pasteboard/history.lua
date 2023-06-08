@@ -65,7 +65,8 @@ end
 --- Adds an item to the Pasteboard history.
 ---
 --- Parameters:
----  * None
+---  * data - The data
+---  * label - The label
 ---
 --- Returns:
 ---  * None

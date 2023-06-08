@@ -24,14 +24,13 @@ local DEFAULT_PRIORITY = 0
 -- The default priority for handler scripts.
 local HANDLER_PRIORITY = 1000000
 
---- plugins.core.watchfolders.manager.panel.new(priority, id) -> panel object
+--- plugins.core.watchfolders.manager.panel.new(params, manager) -> panel object
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
 --- Parameters:
----  * priority - Defines the order in which the panel appears.
----  * id       - The unique ID for the panel.
----  * webview  - The webview the panel is attached to.
+---  * params - Table of parameters
+---  * manager - The manager
 ---
 --- Returns:
 ---  * A panel object
@@ -287,8 +286,8 @@ end
 --- Adds a password textbox to the panel with the specified `priority` and `params`.
 ---
 --- Parameters:
----  * `priority`   - The priority number for the password.
----  * `params`     - The set of parameters for the password.
+---  * `priority` - The priority number for the password.
+---  * `params` - The set of parameters for the password.
 ---
 --- Returns:
 ---  * The panel.
@@ -310,7 +309,7 @@ function panel:addPassword(priority, params)
     return self:addContent(priority, content)
 end
 
---- plugins.core.watchfolders.manager.panel:addButton(priority, params, itemFn, customWidth) -> panel
+--- plugins.core.watchfolders.manager.panel:addButton(priority, params) -> panel
 --- Method
 --- Adds a button to the panel with the specified `priority` and `params`.
 ---

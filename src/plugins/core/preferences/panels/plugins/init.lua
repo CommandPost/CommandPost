@@ -245,7 +245,7 @@ local function generateContent()
     return mod.renderPanel(env)
 end
 
---- plugins.core.preferences.panels.plugins.init() -> none
+--- plugins.core.preferences.panels.plugins.init(deps, env) -> none
 --- Function
 --- Initialises the module.
 ---

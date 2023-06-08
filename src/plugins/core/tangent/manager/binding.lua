@@ -11,16 +11,14 @@ local parameter         = require "parameter"
 local format            = string.format
 local insert            = table.insert
 
-
 local binding = class "core.tangent.manager.binding"
 
---- plugins.core.tangent.manager.binding(id[, name]) -> binding
+--- plugins.core.tangent.manager.binding(name) -> binding
 --- Constructor
 --- Creates a new `Binding` instance.
 ---
 --- Parameters:
----  * id        - The ID number of the binding.
----  * name      - The name of the binding.
+---  * name - The name of the binding.
 ---
 --- Returns:
 ---  * the new `binding`.
@@ -34,7 +32,7 @@ end
 --- Returns the `name` of this binding.
 ---
 --- Parameters:
----   * None
+---  * None
 ---
 --- Returns:
 ---  * The name.
@@ -44,8 +42,7 @@ end
 
 --- plugins.core.tangent.manager.binding:member(parameter) -> self
 --- Method
---- Adds a `parameter` as a member of the Binding group. The order is significant
---- - it will determine the order the parameters are applied to group controls in the Mapper.
+--- Adds a `parameter` as a member of the Binding group. The order is significant - it will determine the order the parameters are applied to group controls in the Mapper.
 ---
 --- Parameters:
 ---  * param     - The `parameter` to add to the binding.

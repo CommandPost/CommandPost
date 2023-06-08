@@ -181,10 +181,9 @@ end
 
 --- plugins.core.setup.panel:addCheckbox(params) -> panel
 --- Method
---- Adds a checkbox to the panel with the specified `priority` and `params`.
+--- Adds a checkbox to the panel with the specified `params`.
 ---
 --- Parameters:
----  * `priority`   - The priority number for the checkbox.
 ---  * `params`     - The set of parameters for the checkbox.
 ---
 --- Returns:

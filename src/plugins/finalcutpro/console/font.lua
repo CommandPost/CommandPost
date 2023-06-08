@@ -103,14 +103,13 @@ local function loadFinalCutProFonts()
     end
 end
 
---- plugins.finalcutpro.console.font.onActivate() -> none
+--- plugins.finalcutpro.console.font.onActivate(_, action) -> none
 --- Function
 --- Handles Console Activations.
 ---
 --- Parameters:
----  * handler - Handler instance.
+---  * _ - Placeholder
 ---  * action - Action table.
----  * text - Selected text from the Console.
 ---
 --- Returns:
 ---  * None

@@ -29,7 +29,16 @@ mod._cache = json.prop(config.cachePath, "Final Cut Pro", "Titles.cpCache", {})
 
 --- plugins.finalcutpro.timeline.titles.apply(action) -> boolean
 --- Function
---- Applies the specified action as a title. Expects action to be a table with the following structure:
+--- Applies the specified action as a title.
+---
+--- Parameters:
+---  * `action`      - A table with the name/category/theme for the title to apply, or a string with just the name.
+---
+--- Returns:
+---  * `true` if a matching title was found and applied to the timeline.
+---
+--- Notes:
+---  * Expects action to be a table with the following structure:
 ---
 --- ```lua
 --- { name = "XXX", category = "YYY", theme = "ZZZ" }
@@ -42,12 +51,6 @@ mod._cache = json.prop(config.cachePath, "Final Cut Pro", "Titles.cpCache", {})
 ---
 --- Actions will be cached each session, so that if the user applies the effect multiple times, only the first time will require
 --- GUI scripting - subsequent uses will just use the Pasteboard.
----
---- Parameters:
----  * `action`      - A table with the name/category/theme for the title to apply, or a string with just the name.
----
---- Returns:
----  * `true` if a matching title was found and applied to the timeline.
 function mod.apply(action)
 
     --------------------------------------------------------------------------------

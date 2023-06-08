@@ -22,7 +22,8 @@ mod._items = {}
 --- Creates a new Touch Bar Widget.
 ---
 --- Parameters:
----  * `id`      - The unique ID for this widget.
+---  * `id` - The unique ID for this widget.
+---  * `params` - A table of parameters
 ---
 --- Returns:
 ---  * table that has been created

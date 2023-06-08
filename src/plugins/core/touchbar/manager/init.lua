@@ -211,7 +211,7 @@ function mod.updateIcon(button, group, icon)
     mod.update()
 end
 
---- plugins.core.touchbar.manager.updateAction(button, group, action) -> boolean
+--- plugins.core.touchbar.manager.updateAction(button, group, actionTitle, handlerID, action) -> boolean
 --- Function
 --- Updates a Touch Bar action.
 ---

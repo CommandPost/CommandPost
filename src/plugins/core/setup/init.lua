@@ -146,8 +146,7 @@ end
 
 --- plugins.core.setup.panelCount() -> number
 --- Function
---- The number of panels currently being processed in this session.
---- This includes panels already processed, the current panel, and remaining panels.
+--- The number of panels currently being processed in this session. This includes panels already processed, the current panel, and remaining panels.
 ---
 --- Parameters:
 ---  * None
@@ -173,8 +172,7 @@ end
 
 --- plugins.core.setup.panelQueue() -> table of panels
 --- Function
---- The table of panels remaining to be processed. Panels are removed from the queue
---- one at a time and idisplayed in the window via the `nextPanel()` function.
+--- The table of panels remaining to be processed. Panels are removed from the queue one at a time and displayed in the window via the `nextPanel()` function.
 ---
 --- Parameters:
 ---  * None
@@ -394,8 +392,7 @@ end
 
 --- plugins.core.setup.nextPanel() -> boolean
 --- Function
---- Moves to the next panel. If the window is visible, the panel will be updated.
---- If no panels are left in the queue, the window will be closed.
+--- Moves to the next panel. If the window is visible, the panel will be updated. If no panels are left in the queue, the window will be closed.
 ---
 --- Parameters:
 ---  * None
@@ -417,17 +414,16 @@ end
 
 --- plugins.core.setup.addPanel(newPanel) -> panel
 --- Function
---- Adds the new panel to the manager. Panels are created via the
---- `plugins.core.setup.panel.new(...)` function.
----
---- If the Setup Manager is `enabled`, the window will be displayed
---- immediately when a panel is added.
+--- Adds the new panel to the manager. Panels are created via the `plugins.core.setup.panel.new(...)` function.
 ---
 --- Parameters:
 ---  * `newPanel`   - The panel to add.
 ---
 --- Returns:
 ---  * The manager.
+---
+--- Notes:
+---  * If the Setup Manager is `enabled`, the window will be displayed immediately when a panel is added.
 function mod.addPanel(newPanel)
     mod._panelQueue[#mod._panelQueue + 1] = newPanel
     --------------------------------------------------------------------------------

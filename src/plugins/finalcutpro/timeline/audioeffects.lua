@@ -18,7 +18,16 @@ local mod = {}
 
 --- plugins.finalcutpro.timeline.audioeffects(action) -> boolean
 --- Function
---- Applies the specified action as a audio effect. Expects action to be a table with the following structure:
+--- Applies the specified action as a audio effect.
+---
+--- Parameters:
+---  * `action`		- A table with the name/category/theme for the audio effect to apply, or a string with just the name.
+---
+--- Returns:
+---  * `true` if a matching audio effect was found and applied to the timeline.
+---
+--- Notes:
+---  * Expects action to be a table with the following structure:
 ---
 --- ```lua
 --- { name = "XXX", category = "YYY", theme = "ZZZ" }
@@ -28,12 +37,6 @@ local mod = {}
 --- but if they are known it's recommended to use them, or it will simply execute the first matching audio effect with that name.
 ---
 --- Alternatively, you can also supply a string with just the name.
----
---- Parameters:
----  * `action`		- A table with the name/category/theme for the audio effect to apply, or a string with just the name.
----
---- Returns:
----  * `true` if a matching audio effect was found and applied to the timeline.
 function mod.apply(action)
 
     --------------------------------------------------------------------------------

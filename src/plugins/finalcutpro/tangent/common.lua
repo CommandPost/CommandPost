@@ -673,6 +673,9 @@ end
 ---  * group - The Tangent Group
 ---  * param - The Parameter
 ---  * id - The Tangent ID
+---  * minValue - The minimum value
+---  * maxValue - The maximum value
+---  * stepSize - The step size
 ---
 --- Returns:
 ---  * An updated ID

@@ -112,10 +112,10 @@ end
 --- Executes the action with the provided parameters.
 ---
 --- Parameters:
----  * `action`  - A table representing the action, matching the following:
----     * `id`      - The specific Command ID within the group.
+---  * `action`  - A table representing the action
 ---
----  * `true` if the action was executed successfully.
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.onExecute(action)
     local group = mod._cmds
     if group then

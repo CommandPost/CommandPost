@@ -487,7 +487,7 @@ function connection:updateControls()
     end
 end
 
---- plugins.core.tangent.manager.connection(bundleID, manager) -> Connection object
+--- plugins.core.tangent.manager.connection(applicationName, displayName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, manager) -> Connection object
 --- Constructor
 --- Creates a new `Connection` object.
 ---
@@ -497,10 +497,6 @@ end
 ---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 ---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
 ---  * task - An optional string containing the name of the task associated with the application.
----           This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
----           This parameter should only be required if the string passed in appStr does not match the Task name that the OS
----           identifies as your application. Typically, this is only usually required for Plugins which run within a parent
----           Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
 ---  * pluginPath - A string containing the absolute path of the directory that contains the built-in Default Map XML files.
 ---  * addDefaultModes - A boolean which indicates whether or not CommandPost should add any default modes.
 ---  * setupFn - Setup function.
@@ -509,6 +505,11 @@ end
 ---
 --- Returns:
 ---  * A new Connection object.
+---
+--- Notes:
+---  * Notes for the `task` parameter:
+---   ** This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
+---   ** This parameter should only be required if the string passed in appStr does not match the Task name that the OS identifies as your application. Typically, this is only usually required for Plugins which run within a parent Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
 function connection:initialize(applicationName, displayName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, manager)
     self._applicationName       = applicationName
     self._displayName           = displayName

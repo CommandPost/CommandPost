@@ -131,7 +131,7 @@ function mod.getURL(handlerId, action)
     end
 end
 
---- plugins.core.action.manager.addHandler(id) -> handler
+--- plugins.core.action.manager.addHandler(id, group, label) -> handler
 --- Function
 --- Adds a new action handler with the specified unique ID and returns it for further configuration.
 ---
@@ -204,8 +204,7 @@ end
 
 --- plugins.core.action.manager.getActivator(id) -> activator
 --- Function
---- Returns an activator with the specified ID. If it doesn't exist, it will be created.
---- Future calls to get the same ID, and it will return the same instance each time.
+--- Returns an activator with the specified ID. If it doesn't exist, it will be created. Future calls to get the same ID, and it will return the same instance each time.
 ---
 --- Parameters:
 ---  * `activatorId`		- The unique ID of the activator.

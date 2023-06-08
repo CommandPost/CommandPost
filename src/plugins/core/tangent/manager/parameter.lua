@@ -100,15 +100,17 @@ end
 --- plugins.core.tangent.manager.parameter:onGet(getFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'parameter value' request.
---- This function should have this signature:
----
---- `function() -> number`
 ---
 --- Parameters:
 ---  * getFn     - The function to call when the Tangent requests the parameter value.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> number`
 function parameter:onGet(getFn)
     if is.nt.callable(getFn) then
         error("Please provide a `get` function: %s", type(getFn))
@@ -119,8 +121,7 @@ end
 
 --- plugins.core.tangent.manager.parameter:get() -> number
 --- Method
---- Executes the `get` function if present, and returns the result. If
---- none has been set, `nil` is returned.
+--- Executes the `get` function if present, and returns the result. If none has been set, `nil` is returned.
 ---
 --- Parameters:
 ---  * None
@@ -137,17 +138,19 @@ end
 --- plugins.core.tangent.manager.parameter:onChange(changeFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'parameter change' request.
---- This function should have this signature:
----
---- `function(amount) -> number`
----
---- The return value should be the new value of the parameter.
 ---
 --- Parameters:
 ---  * getFn     - The function to call when the Tangent requests the parameter change.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function(amount) -> number`
+---
+---  * The return value should be the new value of the parameter.
 function parameter:onChange(changeFn)
     if is.nt.callable(changeFn) then
         error("Please provide a `change` function: %s", type(changeFn))
@@ -158,8 +161,7 @@ end
 
 --- plugins.core.tangent.manager.parameter:change(amount) -> number
 --- Method
---- Executes the `change` function if present, and returns the new result. If
---- none has been set, `nil` is returned.
+--- Executes the `change` function if present, and returns the new result. If none has been set, `nil` is returned.
 ---
 --- Parameters:
 ---  * amount    - The amount to change the parameter.
@@ -181,15 +183,17 @@ end
 --- plugins.core.tangent.manager.parameter:onReset(resetFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'parameter reset' request.
---- This function should have this signature:
----
---- `function() -> nil`
 ---
 --- Parameters:
 ---  * resetFn     - The function to call when the Tangent requests the parameter reset.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
 function parameter:onReset(resetFn)
     if is.nt.callable(resetFn) then
         error(format("Please provide a `reset` function: %s", type(resetFn)))

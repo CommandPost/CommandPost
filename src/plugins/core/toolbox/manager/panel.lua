@@ -13,14 +13,16 @@ local uuid    = host.uuid
 
 local panel = {}
 
---- plugins.core.utilities.manager.panel.new(priority, id) -> cp.core.utilities.manager.panel
+--- plugins.core.utilities.manager.panel.new(params, manager) -> cp.core.utilities.manager.panel
 --- Constructor
 --- Constructs a new panel with the specified priority and ID.
 ---
 --- Parameters:
----  * priority  - Defines the order in which the panel appears.
----  * id        - The unique ID for the panel.
----  * webview   - The webview the panel is attached to.
+---  * params - Table of parameters
+---  * manager - The manager
+---
+--- Returns:
+---  * A cp.core.utilities.manager.panel object
 function panel.new(params, manager)
     local o = {
         id          =   params.id,
@@ -327,7 +329,7 @@ function panel:addButton(priority, params)
     return self:addContent( priority, content )
 end
 
---- plugins.core.utilities.manager.panel:addSelect(params) -> panel
+--- plugins.core.utilities.manager.panel:addSelect(priority, params) -> panel
 --- Method
 --- Adds a select to the panel.
 ---

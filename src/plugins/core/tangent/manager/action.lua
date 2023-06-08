@@ -63,15 +63,17 @@ end
 --- plugins.core.tangent.manager.action:onPress(pressFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'action on' request.
---- This function should have this signature:
----
---- `function() -> nil`
 ---
 --- Parameters:
 ---  * pressFn     - The function to call when the Tangent requests the action on.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
 function action:onPress(pressFn)
     if pressFn and is.nt.callable(pressFn) then
         error(format("Please provide a function: %s", type(pressFn)), 2)
@@ -98,15 +100,17 @@ end
 --- plugins.core.tangent.manager.action:onRelease(releaseFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'action off' request.
---- This function should have this signature:
----
---- `function() -> nil`
 ---
 --- Parameters:
 ---  * releaseFn     - The function to call when the Tangent requests the action off.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
 function action:onRelease(releaseFn)
     if releaseFn and is.nt.fn(releaseFn) then
         error(format("Please provide a function: %s", type(releaseFn)), 2)

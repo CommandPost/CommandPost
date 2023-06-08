@@ -331,7 +331,7 @@ function panel:addButton(priority, params)
     return self:addContent( priority, content )
 end
 
---- plugins.core.controlsurfaces.manager.panel:addSelect(params) -> panel
+--- plugins.core.controlsurfaces.manager.panel:addSelect(priority, params) -> panel
 --- Method
 --- Adds a select to the panel.
 ---

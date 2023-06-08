@@ -46,15 +46,17 @@ end
 --- plugins.core.tangent.manager.menu:onGet(getFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a `menu string request`.
---- This function should have this signature:
----
---- `function() -> string`
 ---
 --- Parameters:
 ---  * getFn     - The function to call when the Tangent requests the `menu string`.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * --- This function should have this signature:
+---
+--- `function() -> string`
 function menu:onGet(getFn)
     if is.nt.fn(getFn) then
         error("Please provide a function: %s", type(getFn))
@@ -81,19 +83,19 @@ end
 --- plugins.core.tangent.manager.menu:onNext(nextFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a `menu change +1` request.
---- This function should have this signature:
----
---- `function() -> nil`
----
---- It is suggested that when arriving at the end of the list of options a subsequent `next` call
---- will cycle back to the beginning of the options. This is particularly useful for menus with
---- two options.
 ---
 --- Parameters:
 ---  * nextFn     - The function to call when the Tangent requests the `menu change +1`.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
+---
+---  * It is suggested that when arriving at the end of the list of options a subsequent `next` call will cycle back to the beginning of the options. This is particularly useful for menus with two options.
 function menu:onNext(nextFn)
     if is.nt.fn(nextFn) then
         error("Please provide a function: %s", type(nextFn))
@@ -105,15 +107,17 @@ end
 --- plugins.core.tangent.manager.menu:onReset(resetFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a 'parameter reset' request.
---- This function should have this signature:
----
---- `function() -> nil`
 ---
 --- Parameters:
 ---  * resetFn     - The function to call when the Tangent requests the parameter reset.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
 function menu:onReset(resetFn)
     if is.nt.callable(resetFn) then
         error(format("Please provide a `reset` function: %s", type(resetFn)))
@@ -157,19 +161,19 @@ end
 --- plugins.core.tangent.manager.menu:onPrev(prevFn) -> self
 --- Method
 --- Sets the function that will be called when the Tangent sends a `menu change -1` request.
---- This function should have this signature:
----
---- `function() -> nil`
----
---- It is suggested that when arriving at the start of the list of options a subsequent `prev` call
---- will cycle to the end of the options. This is particularly useful for menus with
---- two options.
 ---
 --- Parameters:
 ---  * prevFn     - The function to call when the Tangent requests the `menu change -1`.
 ---
 --- Returns:
 ---  * The `parameter` instance.
+---
+--- Notes:
+---  * This function should have this signature:
+---
+--- `function() -> nil`
+---
+---  * It is suggested that when arriving at the start of the list of options a subsequent `prev` call will cycle to the end of the options. This is particularly useful for menus with two options.
 function menu:onPrev(prevFn)
     if is.nt.fn(prevFn) then
         error("Please provide a function: %s", type(prevFn))

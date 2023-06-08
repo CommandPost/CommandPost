@@ -88,52 +88,52 @@ local JOG_WHEEL_ABSOLUTE_SIX = {
     ["Editor Keyboard"] = 4080,
 }
 
---- plugins.core.resolve.manager.LONG_PRESS_DURATION -> number
+--- plugins.core.controlsurfaces.resolve.manager.LONG_PRESS_DURATION -> number
 --- Constant
 --- How long a button needs to be pressed before it's considered a long press (in seconds).
 mod.DEFAULT_LONG_PRESS_DURATION = 0.4
 
---- plugins.core.resolve.manager.DEFAULT_SENSITIVITY -> number
+--- plugins.core.controlsurfaces.resolve.manager.DEFAULT_SENSITIVITY -> number
 --- Constant
 --- The default sensitivity used for Blackmagic Resolve Control Surfaces.
 mod.DEFAULT_SENSITIVITY = 8000
 
---- plugins.core.resolve.manager.DEFAULT_JOG_MODE -> string
+--- plugins.core.controlsurfaces.resolve.manager.DEFAULT_JOG_MODE -> string
 --- Constant
 --- The default Jog Wheel Mode.
 mod.DEFAULT_JOG_MODE = "RELATIVE"
 
---- plugins.core.resolve.manager.lastApplication <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.manager.lastApplication <cp.prop: string>
 --- Field
 --- Last Application used in the Preferences Panel.
 mod.lastApplication = config.prop("daVinciResolveControlSurface.preferences.lastApplication", "All Applications")
 
---- plugins.core.resolve.manager.lastApplication <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.manager.lastApplication <cp.prop: string>
 --- Field
 --- Last Bank used in the Preferences Panel.
 mod.lastBank = config.prop("daVinciResolveControlSurface.preferences.lastBank", "1")
 
---- plugins.core.resolve.manager.repeatTimers -> table
+--- plugins.core.controlsurfaces.resolve.manager.repeatTimers -> table
 --- Variable
 --- A table containing `hs.timer` objects.
 mod.repeatTimers = {}
 
---- plugins.core.resolve.prefs.displayMessageWhenChangingBanks <cp.prop: boolean>
+--- plugins.core.controlsurfaces.resolve.prefs.displayMessageWhenChangingBanks <cp.prop: boolean>
 --- Field
 --- Display a message when changing banks?
 mod.displayMessageWhenChangingBanks = config.prop("daVinciResolveControlSurface.preferences.displayMessageWhenChangingBanks", true)
 
---- plugins.core.resolve.prefs.snippetsRefreshFrequency <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.prefs.snippetsRefreshFrequency <cp.prop: string>
 --- Field
 --- How often snippets are refreshed.
 mod.snippetsRefreshFrequency = config.prop("daVinciResolveControlSurface.preferences.snippetsRefreshFrequency", "1")
 
---- plugins.core.resolve.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- plugins.core.controlsurfaces.resolve.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
 --- Enable or disable the automatic switching of applications.
 mod.automaticallySwitchApplications = config.prop("daVinciResolveControlSurface.automaticallySwitchApplications", true)
 
---- plugins.core.resolve.manager.lastBundleID <cp.prop: string>
+--- plugins.core.controlsurfaces.resolve.manager.lastBundleID <cp.prop: string>
 --- Field
 --- The last Bundle ID.
 mod.lastBundleID = config.prop("daVinciResolveControlSurface.lastBundleID", "All Applications")
@@ -143,17 +143,17 @@ mod.lastBundleID = config.prop("daVinciResolveControlSurface.lastBundleID", "All
 -- Default Layout Path
 local defaultLayoutPath = config.basePath .. "/plugins/core/controlsurfaces/resolve/default/Default.cpResolve"
 
---- plugins.core.resolve.manager.defaultLayout -> table
+--- plugins.core.controlsurfaces.resolve.manager.defaultLayout -> table
 --- Variable
 --- Default Layout
 mod.defaultLayout = json.read(defaultLayoutPath)
 
---- plugins.core.resolve.manager.items <cp.prop: table>
+--- plugins.core.controlsurfaces.resolve.manager.items <cp.prop: table>
 --- Field
 --- A table containing the control surface layout.
 mod.items = json.prop(config.userConfigRootPath, "DaVinci Resolve Control Surface", "Settings.cpResolve", mod.defaultLayout)
 
---- plugins.core.resolve.manager.activeBanks <cp.prop: table>
+--- plugins.core.controlsurfaces.resolve.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.activeBanks = config.prop("daVinciResolveControlSurface.activeBanks", {
@@ -161,7 +161,7 @@ mod.activeBanks = config.prop("daVinciResolveControlSurface.activeBanks", {
     ["Editor Keyboard"] = {},
 })
 
---- plugins.core.resolve.manager.activeBanks <cp.prop: table>
+--- plugins.core.controlsurfaces.resolve.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.previousActiveBanks = config.prop("daVinciResolveControlSurface.previousActiveBanks", {
@@ -169,7 +169,7 @@ mod.previousActiveBanks = config.prop("daVinciResolveControlSurface.previousActi
     ["Editor Keyboard"] = {},
 })
 
--- plugins.core.resolve.manager.devices -> table
+-- plugins.core.controlsurfaces.resolve.manager.devices -> table
 -- Variable
 -- Table of Devices.
 mod.devices = {
@@ -177,7 +177,7 @@ mod.devices = {
     ["Editor Keyboard"] = {},
 }
 
--- plugins.core.resolve.manager.deviceOrder -> table
+-- plugins.core.controlsurfaces.resolve.manager.deviceOrder -> table
 -- Variable
 -- Table of Device Orders.
 mod.deviceOrder = {
@@ -185,7 +185,7 @@ mod.deviceOrder = {
     ["Editor Keyboard"] = {},
 }
 
--- plugins.core.resolve.manager.defaultSensitivity -> table
+-- plugins.core.controlsurfaces.resolve.manager.defaultSensitivity -> table
 -- Variable
 -- Table of Default Sensitivity Values.
 mod.defaultSensitivity = {
@@ -244,7 +244,7 @@ local jogModeOnDeviceCache = {}
 -- Relative Jog Mode Cache
 local relativeJogModeCache = {}
 
---- plugins.core.resolve.manager.batteryStatus(deviceType, deviceID) -> none
+--- plugins.core.controlsurfaces.resolve.manager.batteryStatus(deviceType, deviceID) -> none
 --- Function
 --- Gets the Battery Status for a specific device
 ---
@@ -315,7 +315,7 @@ local RELATIVE_FINE_CONTROL_SENSITIVITY_TRANSLATION = {
     ["28000"]   = 120,
 }
 
---- plugins.core.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
+--- plugins.core.controlsurfaces.resolve.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
 --- Control Surface Button Callback
 ---
@@ -777,7 +777,7 @@ function mod.buttonCallback(object, buttonID, pressed, jogWheelMode, jogWheelVal
 
 end
 
---- plugins.core.resolve.manager.update() -> none
+--- plugins.core.controlsurfaces.resolve.manager.update() -> none
 --- Function
 --- Updates all the control surface LEDs.
 ---
@@ -959,7 +959,7 @@ function mod.update()
     end
 end
 
---- plugins.core.resolve.manager.discoveryCallback(connected, object) -> none
+--- plugins.core.controlsurfaces.resolve.manager.discoveryCallback(connected, object) -> none
 --- Function
 --- Control Surface Discovery Callback
 ---
@@ -1022,7 +1022,7 @@ function mod.discoveryCallback(connected, object)
     end
 end
 
---- plugins.core.resolve.manager.start() -> boolean
+--- plugins.core.controlsurfaces.resolve.manager.start() -> boolean
 --- Function
 --- Starts the DaVinci Resolve Control Surface Plugin
 ---
@@ -1082,7 +1082,7 @@ function mod.start()
     blackmagic.init(mod.discoveryCallback)
 end
 
---- plugins.core.resolve.manager.start() -> boolean
+--- plugins.core.controlsurfaces.resolve.manager.start() -> boolean
 --- Function
 --- Stops DaVinci Resolve Control Surface Support.
 ---
@@ -1160,7 +1160,7 @@ function mod.stop()
     collectgarbage()
 end
 
---- plugins.core.resolve.manager.enabled <cp.prop: boolean>
+--- plugins.core.controlsurfaces.resolve.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable DaVinci Resolve Control Surface support
 mod.enabled = config.prop("enableDaVinciResolveControlSurfaceSupport", false):watch(function(enabled)

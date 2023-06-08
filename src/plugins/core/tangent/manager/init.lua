@@ -119,7 +119,7 @@ mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
     end
 end)
 
---- plugins.core.tangent.manager.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn) -> connection
+--- plugins.core.tangent.manager.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, groupID) -> connection
 --- Function
 --- Creates a new Tangent Connection
 ---
@@ -128,10 +128,6 @@ end)
 ---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 ---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
 ---  * task - An optional string containing the name of the task associated with the application.
----           This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
----           This parameter should only be required if the string passed in appStr does not match the Task name that the OS
----           identifies as your application. Typically, this is only usually required for Plugins which run within a parent
----           Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
 ---  * pluginPath - A string containing the absolute path of the directory that contains the built-in Default Map XML files.
 ---  * addDefaultModes - A boolean which indicates whether or not CommandPost should add any default modes.
 ---  * setupFn - Setup function.
@@ -140,6 +136,11 @@ end)
 ---
 --- Returns:
 ---  * The connection object
+---
+--- Notes:
+---  * Notes for the `task` parameter:
+---   ** This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
+---   ** This parameter should only be required if the string passed in appStr does not match the Task name that the OS identifies as your application. Typically, this is only usually required for Plugins which run within a parent Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
 function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, groupID)
     if not mod.connections[applicationName] then
         local c = connection:new(applicationName .. mod.APPLICATION_NAME_SUFFIX, applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, mod)

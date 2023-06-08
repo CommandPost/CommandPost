@@ -21,13 +21,17 @@ local named = class "core.tangent.manager.named" :include(lazy)
 
 local NAMES_KEY = {}
 
---- plugins.core.tangent.manager.named(id, name[, parent]) -> named
+--- plugins.core.tangent.manager.named(id, name, parent) -> named
 --- Constructor
 --- Creates a new `named` instance, with the specified base name.
 ---
 --- Parameters:
 ---  * id - the unique ID for the value.
 ---  * name - The base name of the
+---  * parent - the parent
+---
+--- Returns:
+---  * None
 function named:initialize(id, name, parent)
     self.id = id
     self._parent = parent

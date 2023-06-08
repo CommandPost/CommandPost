@@ -16,7 +16,16 @@ local mod = {}
 
 --- plugins.finalcutpro.timeline.videoeffects(action) -> boolean
 --- Function
---- Applies the specified action as a video effect. Expects action to be a table with the following structure:
+--- Applies the specified action as a video effect.
+---
+--- Parameters:
+---  * `action`     - A table with the name/category/theme for the video effect to apply, or a string with just the name.
+---
+--- Returns:
+---  * `true` if a matching video effect was found and applied to the timeline.
+---
+--- Notes:
+---  * Expects action to be a table with the following structure:
 ---
 --- ```lua
 --- { name = "XXX", category = "YYY", theme = "ZZZ" }
@@ -26,12 +35,6 @@ local mod = {}
 --- but if they are known it's recommended to use them, or it will simply execute the first matching video effect with that name.
 ---
 --- Alternatively, you can also supply a string with just the name.
----
---- Parameters:
----  * `action`     - A table with the name/category/theme for the video effect to apply, or a string with just the name.
----
---- Returns:
----  * `true` if a matching video effect was found and applied to the timeline.
 function mod.apply(action)
 
     --------------------------------------------------------------------------------

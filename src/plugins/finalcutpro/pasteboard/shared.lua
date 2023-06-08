@@ -184,9 +184,7 @@ end
 
 --- plugins.finalcutpro.pasteboard.shared.overrideNextFolderName(overrideFolder) -> none
 --- Function
---- Overrides the folder name for the next clip which is copied from Final Cut Pro to the
---- specified value. Once the override has been used, the standard folder name via
---- `mod.getLocalFolderName()` will be used for subsequent copy operations.
+--- Overrides the folder name for the next clip which is copied from Final Cut Pro to the specified value. Once the override has been used, the standard folder name via `mod.getLocalFolderName()` will be used for subsequent copy operations.
 ---
 --- Parameters:
 ---  * None
@@ -268,7 +266,7 @@ function mod.setHistory(folderName, history)
     return false
 end
 
---- plugins.finalcutpro.pasteboard.shared.setHistory(folderName, history) -> none
+--- plugins.finalcutpro.pasteboard.shared.setHistory(folderName) -> none
 --- Function
 --- Clears the history.
 ---

@@ -1745,7 +1745,7 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
     end
 end
 
---- plugins.core.loupedeckctandlive.manager:executeAction(thisAction) -> boolean
+--- plugins.core.loupedeckctandlive.manager:executeAction(thisAction, deviceNumber) -> boolean
 --- Function
 --- Executes an action.
 ---

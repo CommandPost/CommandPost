@@ -15,7 +15,8 @@ mod._items = {}
 --- Creates a new Update Location Callback
 ---
 --- Parameters:
----  * `id`      - The unique ID for this callback.
+---  * `id` - The unique ID for this callback.
+---  * `callbackFn` - The callback function.
 ---
 --- Returns:
 ---  * table that has been created

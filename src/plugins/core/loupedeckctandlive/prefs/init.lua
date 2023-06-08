@@ -733,8 +733,7 @@ end
 
 --- plugins.core.loupedeckctandlive.prefs:generateKnobImages(app, bank, id) -> none
 --- Method
---- Generates a combined image for all the knobs on a single side.
---- Which side is generated is determined by the knob id.
+--- Generates a combined image for all the knobs on a single side. Which side is generated is determined by the knob id.
 ---
 --- Parameters:
 ---  * app - The application bundle ID as a string.
@@ -1382,7 +1381,7 @@ function mod.mt:refreshDevice()
     self.device:refresh(tonumber(lastDevice))
 end
 
---- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
+--- plugins.core.loupedeckctandlive.prefs:panelCallback(id, params) -> none
 --- Method
 --- JavaScript Callback for the Preferences Panel
 ---

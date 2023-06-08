@@ -256,9 +256,7 @@ end
 
 --- plugins.finalcutpro.pasteboard.manager.overrideNextClipName(overrideName) -> none
 --- Function
---- Overrides the name for the next clip which is copied from FCPX to the specified
---- value. Once the override has been used, the standard clip name via
---- `mod.findClipName(...)` will be used for subsequent copy operations.
+--- Overrides the name for the next clip which is copied from FCPX to the specified value. Once the override has been used, the standard clip name via `mod.findClipName(...)` will be used for subsequent copy operations.
 ---
 --- Parameters:
 ---  * overrideName - The override name.
@@ -516,8 +514,7 @@ mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboa
 
 --- plugins.finalcutpro.pasteboard.manager.doWaitForFreshData(oldData) -> cp.rx.go.Statement
 --- Function
---- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to copy
---- to the clipboard. If none is found, an error is sent.
+--- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to copy to the clipboard. If none is found, an error is sent.
 ---
 --- Parameters:
 ---  * oldData - The original Pasteboard data.
@@ -537,8 +534,7 @@ end
 
 --- plugins.finalcutpro.pasteboard.manager.doWaitForData(newData) -> cp.rx.go.Statement
 --- Function
---- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to appear
---- on the clipboard. If none is found, an error is sent.
+--- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to appear on the clipboard. If none is found, an error is sent.
 ---
 --- Parameters:
 ---  * newData - The new Pasteboard data.

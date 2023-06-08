@@ -1415,7 +1415,7 @@ function mod.getCustomGuideColor(id)
     return customGuideColor and customGuideColor[id]
 end
 
---- plugins.finalcutpro.viewer.overlays.setGuideAlpha(value) -> none
+--- plugins.finalcutpro.viewer.overlays.setGuideAlpha(id, value) -> none
 --- Function
 --- Sets Guide Alpha.
 ---
@@ -1433,7 +1433,7 @@ function mod.setGuideAlpha(id, value)
     mod.update()
 end
 
---- plugins.finalcutpro.viewer.overlays.setGuideColor(value) -> none
+--- plugins.finalcutpro.viewer.overlays.setGuideColor(id, value) -> none
 --- Function
 --- Sets Guide Color.
 ---

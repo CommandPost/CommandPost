@@ -19,12 +19,15 @@ local insert            = table.insert
 
 local controls = class "core.tangent.manager.controls" :include(lazy)
 
---- plugins.core.tangent.manager.controls(id, name)
+--- plugins.core.tangent.manager.controls(manager) -> Group
 --- Constructor
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
----  * name      - The name of the controls.
+---  * manager - The manager
+---
+--- Returns:
+---  * A new `Group` object
 function controls:initialize(manager)
     self.ids = {}
     self._manager = manager
@@ -85,9 +88,7 @@ end
 
 --- plugins.core.tangent.manager.controls:register(control) -> self
 --- Method
---- Registers a control (Action/Parameter/Menu) with it's ID
---- This allows efficient retrieval via the `findById(...)` method, as well
---- as checking that ID is unique.
+--- Registers a control (Action/Parameter/Menu) with it's ID. This allows efficient retrieval via the `findById(...)` method, as well as checking that ID is unique.
 ---
 --- Parameters:
 ---  * control       - The Action/Parameter/Menu to register
@@ -141,7 +142,7 @@ end
 --- Method
 --- Adds a subgroup to this group.
 ---
---- Parameters
+--- Parameters:
 ---  * name  - the name of the new sub-group
 ---
 --- Returns:
@@ -163,7 +164,7 @@ end
 --- Method
 --- Adds an `action` to this controls.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new action
 ---  * name  - The name of the action.
 ---
@@ -187,7 +188,7 @@ end
 --- Method
 --- Adds an `parameter` to this controls.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new parameter
 ---  * name  - The name of the parameter.
 ---
@@ -211,7 +212,7 @@ end
 --- Method
 --- Adds an `menu` to this controls.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new menu
 ---  * name  - The name of the menu.
 ---
