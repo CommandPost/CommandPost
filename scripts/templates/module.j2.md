@@ -47,9 +47,9 @@
 {% if "returns" in item %}
 | **Returns**                                 | <ul>{% for return in item.returns %}<li>{{ return | replace(" * ","") }}</li>{% endfor %}</ul>          |
 {% endif %}
-| **Notes**                                   | {% if "notes" in item %}<ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}- None{% endif %} |
+| **Notes**                                   | {% if "notes" in item and item.notes|length > 0 %}<ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}<ul><li>None</li></ul>{% endif %} |
 {% if "examples" in item %}
-| **Examples**                                | {% if "examples" in item %}<ul>{% for example in item.examples %}<li>{{ example | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}- None{% endif %} |
+| **Examples**                                | {% if "examples" in item and item.examples|length > 0 %}<ul>{% for example in item.examples %}<li>{{ example | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}<ul><li>None</li></ul>{% endif %} |
 {% endif %}
 | **Source**                                  | [{{ item.file | replace("../CommandPost/", "") }} line {{ item.lineno }}]({{ source_url_base }}{{ item.file | replace("../CommandPost/", "") }}#L{{ item.lineno }}) |
 
