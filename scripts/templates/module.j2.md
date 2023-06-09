@@ -51,7 +51,7 @@
 {% if "examples" in item %}
 | **Examples**                                | {% if "examples" in item and item.examples|length > 0 %}<ul>{% for example in item.examples %}<li>{{ example | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}<ul><li>None</li></ul>{% endif %} |
 {% endif %}
-| **Source**                                  | [{{ item.file | replace("../CommandPost/", "") }} line {{ item.lineno }}]({{ source_url_base }}{{ item.file | replace("../CommandPost/", "") }}#L{{ item.lineno }}) |
+| **Source**                                  | [{{ item.file | replace("../CommandPost/", "") }} line {{ item.lineno }}]({{ source_url_base }}{{ item.file | replace("../CommandPost/", "") }}#L{{ item.lineno }}){target="_blank"} |
 
 ---
 
