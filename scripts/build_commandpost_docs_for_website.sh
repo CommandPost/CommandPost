@@ -24,12 +24,11 @@ echo " - Copying New Files to CommandPost-Website"
 cp build/CommandPost-Docs/hs/markdown/* ../CommandPost-Website/docs/api-references/hammerspoon/
 cp /Users/chrishocking/Documents/GitHub/CommandPost-Website/docs/api-references/hammerspoon.yml /Users/chrishocking/Documents/GitHub/CommandPost-Website/docs/api-references/hammerspoon/index.yml
 
-
 # ---------------------------------------------
 #  Build CommandPost Extensions Documentation:
 # ---------------------------------------------
 echo "Building CommandPost Extensions Documentation..."
-scripts/docs/bin/build_docs.py --title "CommandPost" --source_url_base "https://github.com/CommandPost/CommandPost/blob/master/" --templates ../CommandPost/scripts/templates --output_dir build/CommandPost-Docs/cp/ --standalone --markdown ../CommandPost/src/extensions/cp/
+scripts/docs/bin/build_docs.py --title "CommandPost" --source_url_base "https://github.com/CommandPost/CommandPost/blob/develop/" --templates ../CommandPost/scripts/templates --output_dir build/CommandPost-Docs/cp/ --standalone --markdown ../CommandPost/src/extensions/cp/
 echo " - Documentation Created Successfully!"
 echo " - Removing Old Files in CommandPost-Website"
 rm -R ../CommandPost-Website/docs/api-references/commandpost/
@@ -43,7 +42,7 @@ cp /Users/chrishocking/Documents/GitHub/CommandPost-Website/docs/api-references/
 #  Build CommandPost Plugins Documentation:
 # ------------------------------------------
 echo "Building CommandPost Plugins Documentation..."
-scripts/docs/bin/build_docs.py --title "CommandPost" --source_url_base "https://github.com/CommandPost/CommandPost/blob/master/" --templates ../CommandPost/scripts/templates --output_dir build/CommandPost-Docs/plugins/ --standalone --markdown ../CommandPost/src/plugins/
+scripts/docs/bin/build_docs.py --title "CommandPost" --source_url_base "https://github.com/CommandPost/CommandPost/blob/develop/" --templates ../CommandPost/scripts/templates --output_dir build/CommandPost-Docs/plugins/ --standalone --markdown ../CommandPost/src/plugins/
 echo " - Documentation Created Successfully!"
 echo " - Removing Old Files in CommandPost-Website"
 rm -R ../CommandPost-Website/docs/api-references/plugins/

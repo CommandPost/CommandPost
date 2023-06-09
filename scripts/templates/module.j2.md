@@ -48,6 +48,10 @@
 | **Returns**                                 | <ul>{% for return in item.returns %}<li>{{ return | replace(" * ","") }}</li>{% endfor %}</ul>          |
 {% endif %}
 | **Notes**                                   | {% if "notes" in item %}<ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}- None{% endif %} |
+{% if "examples" in item %}
+| **Examples**                                | {% if "examples" in item %}<ul>{% for example in item.examples %}<li>{{ example | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}- None{% endif %} |
+{% endif %}
+| **Source**                                  | [{{ item.file | replace("../CommandPost/", "") }} line {{ item.lineno }}]({{ source_url_base }}{{ item.file | replace("../CommandPost/", "") }}#L{{ item.lineno }}) |
 
 ---
 
