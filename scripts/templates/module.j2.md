@@ -30,7 +30,7 @@
 ## API Documentation
 
 {% for type in type_order %}{% if module[type]|length > 0 %}
-### {{ type}}s
+#### {{ type}}s
 
 {% for item in module[type] %}
 
@@ -47,9 +47,8 @@
 {% if "returns" in item %}
 | **Returns**                                 | <ul>{% for return in item.returns %}<li>{{ return | replace(" * ","") }}</li>{% endfor %}</ul>          |
 {% endif %}
-{% if "notes" in item %}
-| **Notes**                                   | <ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>                |
-{% endif %}
+| **Notes**                                   | {% if "notes" in item %}<ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>{% else %}- None{% endif %} |
 
 ---
+
 {% endfor %}{% endif %}{% endfor %}
