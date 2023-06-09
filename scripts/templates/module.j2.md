@@ -3,22 +3,29 @@
 {{ module.doc }}
 {% if module["submodules"]|length > 0 %}
 
+---
+
 ## Submodules
 {% for submodule in module["submodules"] %}
  * [{{ module.name }}.{{ submodule }}]({{ module.name }}.{{ submodule }}.md)
 {% endfor %}
 {% endif %}
 
+---
+
 ## API Overview
 {% for type in type_order %}
 {# Considering: {{ type }} ({{ module[type]|length }}) #}
 {% if module[type]|length > 0 %}
-* {{ type }}s - {{ type_desc[type] }}
+**{{ type }}s** - _{{ type_desc[type] }}_
 {% for item in module[type] %}
- * [{{ item.name }}](#{{ item.name }})
+ * [{{ item.name }}](#{{ item.name | lower | replace(" ", "-") }})
 {% endfor %}
+
 {% endif %}
 {% endfor %}
+
+---
 
 ## API Documentation
 
@@ -26,7 +33,10 @@
 ### {{ type}}s
 
 {% for item in module[type] %}
-| [{{ item.name }}](#{{ item.name }})         |                                                                                     |
+
+### [{{ item.name }}](#{{ item.name | lower | replace(" ", "-") }})
+
+|                                             |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `{{ item.def }}`                                                                    |
 | **Type**                                    | {{ item.type }}                                                                     |
@@ -41,4 +51,5 @@
 | **Notes**                                   | <ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>                |
 {% endif %}
 
+---
 {% endfor %}{% endif %}{% endfor %}
