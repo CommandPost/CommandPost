@@ -191,6 +191,7 @@
     "betterPerformance": "Bedre ydeevne",
     "betterQuality": "Bedre kvalitet",
     "black": "Sort",
+    "blackPoint": "Sort punkt",
     "blade": "Klinge",
     "blendMode": "Blendtilstand",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Koden skal returnere en funktion.",
     "cold": "Kold",
     "color": "Farve",
+    "colorAdjustments": "Farvejusteringer",
+    "colorAdjustments_group": "Farvejusteringer",
     "colorAndEffects": "Farve & effekter",
     "colorBoard": "Farvebræt",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Kontrol Final Cut Pro brugergrænsefladeelement (absolut)",
     "controlFCPUIElementRelative": "Kontrol Final Cut Pro brugergrænsefladeelement (relativ)",
     "controlFCPUIElementRelativeNote": "Hold musen hen over et UI-element, hold CONTROL, og juster derefter MIDI-drejeknappen / Fader for at registrere.",
+    "controlRange": "Kontrolområde",
     "controlSurfaces": "Kontrol overflader",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Styrer lydstyrken i Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Styrer tidslinjens zoom via pop-up-udseendet",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Ignorer kort",
     "finalcutpro_import_preferences_label": "Importpræferencer",
     "finalcutpro_inspector_audio_label": "Inspektør: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspektør: Farvejusteringer",
     "finalcutpro_inspector_info_label": "Inspektør: Info",
     "finalcutpro_inspector_show_label": "Inspektør: Yderligere handlinger",
     "finalcutpro_inspector_text_label": "Inspektør: Tekst",
@@ -1284,6 +1289,8 @@
     "highlights": "Højdepunkter",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Fremhæver Tint",
+    "highlightsWarmth": "Fremhæver varme",
     "histogram": "Histogram",
     "history": "Historie",
     "historyIsEmpty": "Historik er tom",
@@ -1560,6 +1567,8 @@
     "midtones": "mellemtoner",
     "midtones2": "MT",
     "midtones4": "mids",
+    "midtonesTint": "Mellemtoner Tint",
+    "midtonesWarmth": "Mellemtoner Varme",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Skygger",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Shadows Tint",
+    "shadowsWarmth": "Skygger Varme",
     "share": "Del",
     "shareDetails_Facebook": "Type: Facebook\nLogin: %{login}\nTitel: %{title}",
     "shareDetails_Tudou": "Type: Tudou\nLogin: %{login}\nTitel: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "Stien til delt pasteboard findes ikke længere. Vil du vælge en ny placering?",
     "sharedPasteboardRootFolder": "Delt pasteboard rodmappe",
     "sharp": "Skarp",
+    "shiftAnchorDownPixels": {
+        "one": "Flyt anker ned med %{amount} Pixel",
+        "other": "Flyt anker ned med %{amount} Pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Skift anker til venstre med %{amount} Pixel",
+        "other": "Skift anker til venstre med %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Skift anker til højre med %{amount} Pixel",
+        "other": "Skift anker til højre med %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Flyt ankeret op med %{amount} Pixel",
+        "other": "Flyt ankeret op med %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Skift position ned %{amount} Pixel",
         "other": "Skift position ned %{amount} Pixels"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Skift skalering op med %{amount} Pixel",
         "other": "Skift skalering op med %{amount} Pixels"
+    },
+    "shiftScaleXDown": {
+        "one": "Skift skaler X ned med %{amount} Pixel",
+        "other": "Skift skaler X ned med %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Skift skala X op med %{amount} Pixel",
+        "other": "Skift skala X op med %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Skift skaler Y ned med %{amount} Pixel",
+        "other": "Skift skaler Y ned med %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Skift skala Y op med %{amount} Pixel",
+        "other": "Skift skala Y op med %{amount} Pixel"
     },
     "short": "Kort",
     "shortPressAction": "Kort pressehandling",
