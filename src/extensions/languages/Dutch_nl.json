@@ -191,6 +191,7 @@
     "betterPerformance": "Betere prestatie",
     "betterQuality": "Betere kwaliteit",
     "black": "Zwart",
+    "blackPoint": "Zwart punt",
     "blade": "Blad",
     "blendMode": "Mengmodus",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "De code moet een functie teruggeven.",
     "cold": "Koude",
     "color": "Kleur",
+    "colorAdjustments": "Kleuraanpassingen",
+    "colorAdjustments_group": "Kleuraanpassingen",
     "colorAndEffects": "Kleur en effecten",
     "colorBoard": "Color Board",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Besturing Final Cut Pro Gebruikersinterface Element (absoluut)",
     "controlFCPUIElementRelative": "Besturing Final Cut Pro Gebruikersinterface-element (relatief)",
     "controlFCPUIElementRelativeNote": "Beweeg de muis over een UI-element, houd CONTROL ingedrukt en pas de MIDI-knop / fader aan om te registreren.",
+    "controlRange": "Regelbereik",
     "controlSurfaces": "Controle oppervlakken",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Regelt het volume in de Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Regelt de tijdlijnzoom via de pop-up Vormgeving",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Kaarten negeren",
     "finalcutpro_import_preferences_label": "Voorkeuren importeren",
     "finalcutpro_inspector_audio_label": "Inspecteur: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspecteur: Kleuraanpassingen",
     "finalcutpro_inspector_info_label": "Inspecteur: Info",
     "finalcutpro_inspector_show_label": "Inspector: aanvullende acties",
     "finalcutpro_inspector_text_label": "Inspecteur: tekst",
@@ -1284,6 +1289,8 @@
     "highlights": "highlights",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Hoogtepunten Tint",
+    "highlightsWarmth": "Hoogtepunten Warmte",
     "histogram": "histogram",
     "history": "Geschiedenis",
     "historyIsEmpty": "Geschiedenis is leeg",
@@ -1560,6 +1567,8 @@
     "midtones": "middentonen",
     "midtones2": "MT",
     "midtones4": "mids",
+    "midtonesTint": "Middentonen Tint",
+    "midtonesWarmth": "Middentonen Warmte",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Shadows",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Schaduwen Tint",
+    "shadowsWarmth": "Schaduwen Warmte",
     "share": "Delen",
     "shareDetails_Facebook": "Type: Facebook\nLog in: %{login}\nTitel: %{title}",
     "shareDetails_Tudou": "Type: Tudou\nLog in: %{login}\nTitel: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "Het pad met het gedeelde plakbord bestaat niet meer. Wilt u een nieuwe locatie selecteren?",
     "sharedPasteboardRootFolder": "Shared Pasteboard Root Folder",
     "sharp": "Scherp",
+    "shiftAnchorDownPixels": {
+        "one": "Verschuif het anker omlaag met %{amount} Pixel",
+        "other": "Verschuif het anker omlaag met %{amount} Pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Verschuif het anker naar links met %{amount} Pixel",
+        "other": "Verschuif het anker naar links met %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Verplaats het anker naar rechts met %{amount} Pixel",
+        "other": "Verplaats het anker naar rechts met %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Verschuif het anker omhoog met %{amount} Pixel",
+        "other": "Verschuif het anker omhoog met %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Shift Scale Up by %{amount} Pixel",
         "other": "Shift Scale Up by %{amount} Pixels"
+    },
+    "shiftScaleXDown": {
+        "one": "Verschuif schaal X omlaag met %{amount} Pixel",
+        "other": "Verschuif schaal X omlaag met %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Verschuif Schaal X omhoog met %{amount} Pixel",
+        "other": "Verschuif Schaal X omhoog met %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Verschuif schaal Y omlaag met %{amount} Pixel",
+        "other": "Verschuif schaal Y omlaag met %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Verschuif schaal Y omhoog met %{amount} Pixel",
+        "other": "Verschuif schaal Y omhoog met %{amount} Pixel"
     },
     "short": "Kort",
     "shortPressAction": "Korte druk actie",
