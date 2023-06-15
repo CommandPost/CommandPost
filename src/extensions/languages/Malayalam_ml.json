@@ -191,6 +191,7 @@
     "betterPerformance": "മികച്ച പ്രകടനം",
     "betterQuality": "മികച്ച നിലവാരം",
     "black": "കറുപ്പ്",
+    "blackPoint": "ബ്ലാക്ക് പോയിന്റ്",
     "blade": "ബ്ലേഡ്",
     "blendMode": "കൂടിക്കലർന്ന അവസ്ഥ",
     "blendMode9": "കൂടിക്കലർന്ന അവസ്ഥ",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "കോഡിന് ഒരു ഫംഗ്ഷൻ നൽകേണ്ടതുണ്ട്.",
     "cold": "തണുപ്പ്",
     "color": "നിറം",
+    "colorAdjustments": "വർണ്ണ ക്രമീകരണങ്ങൾ",
+    "colorAdjustments_group": "വർണ്ണ ക്രമീകരണങ്ങൾ",
     "colorAndEffects": "നിറവും ഇഫക്റ്റുകളും",
     "colorBoard": "കളർ ബോർഡ്",
     "colorBoard2": "സി.ബി.",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "ഫൈനൽ കട്ട് പ്രോ യൂസർ ഇന്റർഫേസ് എലമെന്റ് (സമ്പൂർണ്ണ) നിയന്ത്രിക്കുക",
     "controlFCPUIElementRelative": "ഫൈനൽ കട്ട് പ്രോ യൂസർ ഇന്റർഫേസ് എലമെന്റ് (ആപേക്ഷികം) നിയന്ത്രിക്കുക",
     "controlFCPUIElementRelativeNote": "ഒരു യുഐ എലമെന്റിന് മുകളിലൂടെ മ mouse സ് ഹോവർ ചെയ്യുക, CONTROL അമർത്തിപ്പിടിക്കുക, തുടർന്ന് രജിസ്റ്റർ ചെയ്യുന്നതിന് മിഡി നോബ് / ഫേഡർ ക്രമീകരിക്കുക.",
+    "controlRange": "നിയന്ത്രണ പരിധി",
     "controlSurfaces": "ഉപരിതലങ്ങൾ നിയന്ത്രിക്കുക",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "ഫൈനൽ കട്ട് പ്രോ ഓഡിയോ ഇൻസ്പെക്ടറിൽ വോളിയം നിയന്ത്രിക്കുന്നു",
     "controlsTimelineZoomViaTheAppearancePopup": "രൂപ പോപ്പ്അപ്പ് വഴി ടൈംലൈൻ സൂം നിയന്ത്രിക്കുന്നു",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "കാർഡുകൾ അവഗണിക്കുക",
     "finalcutpro_import_preferences_label": "ഇമ്പോർട്ടുചെയ്യൽ മുൻഗണനകൾ",
     "finalcutpro_inspector_audio_label": "ഇൻസ്പെക്ടർ: ഓഡിയോ",
+    "finalcutpro_inspector_coloradjustments_label": "ഇൻസ്പെക്ടർ: വർണ്ണ ക്രമീകരണം",
     "finalcutpro_inspector_info_label": "ഇൻസ്പെക്ടർ: വിവരം",
     "finalcutpro_inspector_show_label": "ഇൻസ്പെക്ടർ: അധിക പ്രവർത്തനങ്ങൾ",
     "finalcutpro_inspector_text_label": "ഇൻസ്പെക്ടർ: വാചകം",
@@ -1284,6 +1289,8 @@
     "highlights": "ഹൈലൈറ്റുകൾ",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "ഹൈലൈറ്റുകൾ ടിന്റ്",
+    "highlightsWarmth": "ഊഷ്മളത ഹൈലൈറ്റ് ചെയ്യുന്നു",
     "histogram": "ഹിസ്റ്റോഗ്രാം",
     "history": "ചരിത്രം",
     "historyIsEmpty": "ചരിത്രം ശൂന്യമാണ്",
@@ -1560,6 +1567,8 @@
     "midtones": "മിഡ്‌ടോണുകൾ",
     "midtones2": "എം.ടി.",
     "midtones4": "മിഡ്‌സ്",
+    "midtonesTint": "മിഡ്‌ടോൺസ് ടിന്റ്",
+    "midtonesWarmth": "മിഡ്‌ടോണുകളുടെ ചൂട്",
     "mins": {
         "one": "മിനിറ്റ്",
         "other": "മിനിറ്റ്"
@@ -2114,6 +2123,8 @@
     "shadows": "നിഴലുകൾ",
     "shadows2": "എസ്ഡി",
     "shadows4": "Shdw",
+    "shadowsTint": "ഷാഡോസ് ടിന്റ്",
+    "shadowsWarmth": "ഷാഡോസ് ചൂട്",
     "share": "പങ്കിടുക",
     "shareDetails_Facebook": "തരം: ഫേസ്ബുക്ക്\nലോഗിൻ: %{login}\nശീർഷകം: %{title}",
     "shareDetails_Tudou": "തരം: ടുഡ ou\nലോഗിൻ: %{login}\nശീർഷകം: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "പങ്കിട്ട പേസ്റ്റ്ബോർഡ് പാത്ത് നിലവിലില്ല. ഒരു പുതിയ സ്ഥാനം തിരഞ്ഞെടുക്കാൻ നിങ്ങൾ ആഗ്രഹിക്കുന്നുണ്ടോ?",
     "sharedPasteboardRootFolder": "പങ്കിട്ട പേസ്റ്റ്ബോർഡ് റൂട്ട് ഫോൾഡർ",
     "sharp": "മൂർച്ചയുള്ളത്",
+    "shiftAnchorDownPixels": {
+        "one": "%{amount} പിക്സൽ ആങ്കർ താഴേക്ക് മാറ്റുക",
+        "other": "%{amount} പിക്സൽ ആങ്കർ താഴേക്ക് മാറ്റുക"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "ആങ്കർ %{amount} പിക്സൽ ഇടത്തേക്ക് മാറ്റുക",
+        "other": "ആങ്കർ %{amount} പിക്സൽ ഇടത്തേക്ക് മാറ്റുക"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "%{amount} പിക്സലിൽ ആങ്കർ വലത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} പിക്സലിൽ ആങ്കർ വലത്തേക്ക് മാറ്റുക"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "%{amount} പിക്സൽ ആങ്കർ ഉയർത്തുക",
+        "other": "%{amount} പിക്സൽ ആങ്കർ ഉയർത്തുക"
+    },
     "shiftPositionDownPixels": {
         "one": "ഷിഫ്റ്റ് സ്ഥാനം താഴേക്ക് %{amount} പിക്സൽ",
         "other": "ഷിഫ്റ്റ് സ്ഥാനം താഴേക്ക് %{amount} പിക്സൽ"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "%{amount} പിക്സൽ ഉപയോഗിച്ച് സ്കെയിൽ മുകളിലേക്ക് മാറ്റുക",
         "other": "%{amount} പിക്സൽ ഉപയോഗിച്ച് സ്കെയിൽ മുകളിലേക്ക് മാറ്റുക"
+    },
+    "shiftScaleXDown": {
+        "one": "സ്കെയിൽ X %{amount} പിക്സൽ താഴേക്ക് മാറ്റുക",
+        "other": "സ്കെയിൽ X %{amount} പിക്സൽ താഴേക്ക് മാറ്റുക"
+    },
+    "shiftScaleXUp": {
+        "one": "ഷിഫ്റ്റ് സ്കെയിൽ X %{amount} പിക്സൽ മുകളിലേക്ക്",
+        "other": "ഷിഫ്റ്റ് സ്കെയിൽ X %{amount} പിക്സൽ മുകളിലേക്ക്"
+    },
+    "shiftScaleYDown": {
+        "one": "Y എന്ന സ്കെയിൽ %{amount} പിക്സൽ കൊണ്ട് താഴേക്ക് മാറ്റുക",
+        "other": "Y എന്ന സ്കെയിൽ %{amount} പിക്സൽ കൊണ്ട് താഴേക്ക് മാറ്റുക"
+    },
+    "shiftScaleYUp": {
+        "one": "%{amount} പിക്സലിൽ Y എന്ന സ്കെയിൽ ഷിഫ്റ്റ് ചെയ്യുക",
+        "other": "%{amount} പിക്സലിൽ Y എന്ന സ്കെയിൽ ഷിഫ്റ്റ് ചെയ്യുക"
     },
     "short": "ചെറുത്",
     "shortPressAction": "ഷോർട്ട് പ്രസ്സ് ആക്ഷൻ",
