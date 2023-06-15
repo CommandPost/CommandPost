@@ -191,6 +191,7 @@
     "betterPerformance": "تحسين الأداء",
     "betterQuality": "أفضل جودة",
     "black": "أسود",
+    "blackPoint": "نقطة سوداء",
     "blade": "شفرة",
     "blendMode": "مزيج الوضع",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "يحتاج الرمز إلى إرجاع وظيفة.",
     "cold": "البرد",
     "color": "لون",
+    "colorAdjustments": "تعديلات اللون",
+    "colorAdjustments_group": "تعديلات اللون",
     "colorAndEffects": "اللون والآثار",
     "colorBoard": "لون المجلس",
     "colorBoard2": "بناء القدرات",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "التحكم النهائي قص عنصر واجهة المستخدم برو (المطلق)",
     "controlFCPUIElementRelative": "التحكم النهائي قص عنصر واجهة المستخدم برو (النسبية)",
     "controlFCPUIElementRelativeNote": "قم بتمرير الماوس فوق \"عنصر واجهة مستخدم\"، وتسيطر، ثم ضبط ميدي مقبض/ترويسة للتسجيل.",
+    "controlRange": "نطاق السيطرة",
     "controlSurfaces": "أسطح التحكم",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "يتحكم في مستوى الصوت في Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "يتحكم في تكبير الخط الزمني عبر نافذة المظهر المنبثقة",
@@ -1028,6 +1032,7 @@
     "finalcutpro_import_ignorecard_label": "تجاهل بطاقات",
     "finalcutpro_import_preferences_label": "استيراد تفضيلات",
     "finalcutpro_inspector_audio_label": "المفتش: الصوت",
+    "finalcutpro_inspector_coloradjustments_label": "المفتش: تعديلات اللون",
     "finalcutpro_inspector_info_label": "المفتش: معلومات",
     "finalcutpro_inspector_show_label": "مفتش: إجراءات إضافية",
     "finalcutpro_inspector_text_label": "المفتش: النص",
@@ -1300,6 +1305,8 @@
     "highlights": "ويسلط الضوء على",
     "highlights2": "HL",
     "highlights4": "لجت",
+    "highlightsTint": "يسلط الضوء على اللون",
+    "highlightsWarmth": "يبرز الدفء",
     "histogram": "الرسم البياني",
     "history": "التاريخ",
     "historyIsEmpty": "التاريخ فارغ",
@@ -1580,6 +1587,8 @@
     "midtones": "الألوان النصفية",
     "midtones2": "طن متري",
     "midtones4": "أجهزة الإنترنت النقالة",
+    "midtonesTint": "تينت الدرجات اللونية النصفية",
+    "midtonesWarmth": "الدفء ذو الدرجات اللونية النصفية",
     "mins": {
         "few": "دقيقة",
         "many": "دقيقة",
@@ -2146,6 +2155,8 @@
     "shadows": "الظلال",
     "shadows2": "التنمية المستدامة",
     "shadows4": "شدو",
+    "shadowsTint": "الظل الظل",
+    "shadowsWarmth": "دفء الظلال",
     "share": "شارك",
     "shareDetails_Facebook": "Type: Facebook\nLogin: %{login}\nTitle: %{title}",
     "shareDetails_Tudou": "Type: Tudou\nLogin: %{login}\nTitle: %{title}",
@@ -2161,6 +2172,38 @@
     "sharedPasteboardPathMissing": "المسار \"الكرتون المشتركة\" لم يعد موجوداً. هل تريد تحديد موقع جديد؟",
     "sharedPasteboardRootFolder": "مشاركة المجلد الجذر الكرتون",
     "sharp": "حاد",
+    "shiftAnchorDownPixels": {
+        "few": "Shift Anchor Down by %{amount} Pixel",
+        "many": "Shift Anchor Down by %{amount} Pixel",
+        "one": "Shift Anchor Down by %{amount} Pixel",
+        "other": "Shift Anchor Down by %{amount} Pixel",
+        "two": "Shift Anchor Down by %{amount} Pixel",
+        "zero": "Shift Anchor Down by %{amount} Pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "few": "Shift Anchor Left by %{amount} Pixel",
+        "many": "Shift Anchor Left by %{amount} Pixel",
+        "one": "Shift Anchor Left by %{amount} Pixel",
+        "other": "Shift Anchor Left by %{amount} Pixel",
+        "two": "Shift Anchor Left by %{amount} Pixel",
+        "zero": "Shift Anchor Left by %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "few": "Shift Anchor Right by %{amount} Pixel",
+        "many": "Shift Anchor Right by %{amount} Pixel",
+        "one": "Shift Anchor Right by %{amount} Pixel",
+        "other": "Shift Anchor Right by %{amount} Pixel",
+        "two": "Shift Anchor Right by %{amount} Pixel",
+        "zero": "Shift Anchor Right by %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "few": "Shift Anchor Up by %{amount} Pixel",
+        "many": "Shift Anchor Up by %{amount} Pixel",
+        "one": "Shift Anchor Up by %{amount} Pixel",
+        "other": "Shift Anchor Up by %{amount} Pixel",
+        "two": "Shift Anchor Up by %{amount} Pixel",
+        "zero": "Shift Anchor Up by %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "few": "Shift Position Down %{amount} Pixels",
         "many": "Shift Position Down %{amount} Pixels",
@@ -2224,6 +2267,38 @@
         "other": "Shift Scale Up by %{amount} Pixels",
         "two": "Shift Scale Up by %{amount} Pixels",
         "zero": "Shift Scale Up by %{amount} Pixels"
+    },
+    "shiftScaleXDown": {
+        "few": "Shift Scale X Down by %{amount} Pixel",
+        "many": "Shift Scale X Down by %{amount} Pixel",
+        "one": "Shift Scale X Down by %{amount} Pixel",
+        "other": "Shift Scale X Down by %{amount} Pixel",
+        "two": "Shift Scale X Down by %{amount} Pixel",
+        "zero": "Shift Scale X Down by %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "few": "Shift Scale X Up by %{amount} Pixel",
+        "many": "Shift Scale X Up by %{amount} Pixel",
+        "one": "Shift Scale X Up by %{amount} Pixel",
+        "other": "Shift Scale X Up by %{amount} Pixel",
+        "two": "Shift Scale X Up by %{amount} Pixel",
+        "zero": "Shift Scale X Up by %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "few": "Shift Scale Y Down by %{amount} Pixel",
+        "many": "Shift Scale Y Down by %{amount} Pixel",
+        "one": "Shift Scale Y Down by %{amount} Pixel",
+        "other": "Shift Scale Y Down by %{amount} Pixel",
+        "two": "Shift Scale Y Down by %{amount} Pixel",
+        "zero": "Shift Scale Y Down by %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "few": "Shift Scale Y Up by %{amount} Pixel",
+        "many": "Shift Scale Y Up by %{amount} Pixel",
+        "one": "Shift Scale Y Up by %{amount} Pixel",
+        "other": "Shift Scale Y Up by %{amount} Pixel",
+        "two": "Shift Scale Y Up by %{amount} Pixel",
+        "zero": "Shift Scale Y Up by %{amount} Pixel"
     },
     "short": "قصيرة",
     "shortPressAction": "العمل الصحفي القصير",
