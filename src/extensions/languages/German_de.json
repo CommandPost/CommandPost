@@ -191,6 +191,7 @@
     "betterPerformance": "Bessere Leistung",
     "betterQuality": "Bessere Qualität",
     "black": "schwarz",
+    "blackPoint": "Schwarzer Punkt",
     "blade": "Messer",
     "blendMode": "Mischmodus",
     "blendMode9": "Mischmodus",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Der Code muss eine Funktion zurückgeben.",
     "cold": "Kalt",
     "color": "Farbe",
+    "colorAdjustments": "Farbanpassungen",
+    "colorAdjustments_group": "Farbanpassungen",
     "colorAndEffects": "Farbe & Effekte",
     "colorBoard": "Color Board",
     "colorBoard2": "FarbBoard2",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "controlFCPUIElementAbsolute",
     "controlFCPUIElementRelative": "controlFCPUIElementRelativ",
     "controlFCPUIElementRelativeNote": "controlFCPUIElementRelativeNote",
+    "controlRange": "Kontrollbereich",
     "controlSurfaces": "Kontrolloberflächen",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Steuert die Lautstärke im Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Steuert den Zoom der Zeitleiste über das Popup \"Darstellung\"",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Karten ignorieren",
     "finalcutpro_import_preferences_label": "Einstellungen importieren",
     "finalcutpro_inspector_audio_label": "Inspektor: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspektor: Farbanpassungen",
     "finalcutpro_inspector_info_label": "Inspektor: Info",
     "finalcutpro_inspector_show_label": "Inspektor: Zusätzliche Aktionen",
     "finalcutpro_inspector_text_label": "Inspektor: Text",
@@ -1284,6 +1289,8 @@
     "highlights": "Höhepunkte",
     "highlights2": "highlights2",
     "highlights4": "highlights4",
+    "highlightsTint": "Highlights Tönung",
+    "highlightsWarmth": "Highlights Wärme",
     "histogram": "Histogramm",
     "history": "Geschichte",
     "historyIsEmpty": "Der Verlauf ist leer",
@@ -1560,6 +1567,8 @@
     "midtones": "Mitten",
     "midtones2": "Mitteltöne2",
     "midtones4": "Mitteltöne4",
+    "midtonesTint": "Mitteltöne-Tönung",
+    "midtonesWarmth": "Mitteltöne Wärme",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Schatten",
     "shadows2": "Schatten2",
     "shadows4": "Schatten4",
+    "shadowsTint": "Schattentönung",
+    "shadowsWarmth": "Schatten Wärme",
     "share": "Teilen",
     "shareDetails_Facebook": "Typ: Facebook\nEinloggen: %{login}\nTitel: %{title}",
     "shareDetails_Tudou": "Typ: Tudou\nEinloggen: %{login}\nTitel: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "Der Pfad aus dem Klemmbrett fehlt. Neuen Pfad auswählen?",
     "sharedPasteboardRootFolder": "sharedPasteboardRootFolder",
     "sharp": "Scharf",
+    "shiftAnchorDownPixels": {
+        "one": "Anker um %{amount} Pixel nach unten verschieben",
+        "other": "Anker um %{amount} Pixel nach unten verschieben"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Anker um %{amount} Pixel nach links verschieben",
+        "other": "Anker um %{amount} Pixel nach links verschieben"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Anker um %{amount} Pixel nach rechts verschieben",
+        "other": "Anker um %{amount} Pixel nach rechts verschieben"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Anker um %{amount} Pixel nach oben verschieben",
+        "other": "Anker um %{amount} Pixel nach oben verschieben"
+    },
     "shiftPositionDownPixels": {
         "one": "Position nach unten verschieben %{amount} Pixel",
         "other": "Position nach unten verschieben %{amount} Pixel"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Shift Scale Up um %{amount} Pixel",
         "other": "Shift Scale Up um %{amount} Pixel"
+    },
+    "shiftScaleXDown": {
+        "one": "Verschieben Sie die Skalierung von X um %{amount} Pixel nach unten",
+        "other": "Verschieben Sie die Skalierung von X um %{amount} Pixel nach unten"
+    },
+    "shiftScaleXUp": {
+        "one": "Skalieren Sie X um %{amount} Pixel nach oben",
+        "other": "Skalieren Sie X um %{amount} Pixel nach oben"
+    },
+    "shiftScaleYDown": {
+        "one": "Verschieben Sie die Y-Skalierung um %{amount} Pixel nach unten",
+        "other": "Verschieben Sie die Y-Skalierung um %{amount} Pixel nach unten"
+    },
+    "shiftScaleYUp": {
+        "one": "Verschieben Sie Y um %{amount} Pixel nach oben",
+        "other": "Verschieben Sie Y um %{amount} Pixel nach oben"
     },
     "short": "Kurz",
     "shortPressAction": "Aktion kurz drücken",
