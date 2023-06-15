@@ -191,6 +191,7 @@
     "betterPerformance": "Prestazioni migliori",
     "betterQuality": "Qualità migliore",
     "black": "Nero",
+    "blackPoint": "Punto nero",
     "blade": "Lama",
     "blendMode": "Modalità di fusione",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Il codice deve ritornare una funzione.",
     "cold": "Freddo",
     "color": "Colore",
+    "colorAdjustments": "Regolazioni del colore",
+    "colorAdjustments_group": "Regolazioni del colore",
     "colorAndEffects": "Colore ed effetti",
     "colorBoard": "Color Board",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Controlla l'elemento dell'interfaccia grafica di Final Cut Pro (Assoluto)",
     "controlFCPUIElementRelative": "Controlla l'elemento dell'interfaccia grafica di Final Cut Pro (Relativo)",
     "controlFCPUIElementRelativeNote": "Passa il mouse sopra un elemento dell'interfaccia utente, tieni premuto CONTROL, quindi regola la manopola / fader MIDI per registrarti.",
+    "controlRange": "Gamma di controllo",
     "controlSurfaces": "Superfici di Controllo",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Controlla il Volume nell'Audio Inspector di Final Cut Pro",
     "controlsTimelineZoomViaTheAppearancePopup": "Controlla lo zoom della timeline tramite popup Aspetto",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Ignora schede",
     "finalcutpro_import_preferences_label": "Importa preferenze",
     "finalcutpro_inspector_audio_label": "Inspector: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Ispettore: regolazioni del colore",
     "finalcutpro_inspector_info_label": "Inspector: Info",
     "finalcutpro_inspector_show_label": "Inspector: Azioni aggiuntive",
     "finalcutpro_inspector_text_label": "Inspector: Testo",
@@ -1284,6 +1289,8 @@
     "highlights": "Luci",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "In evidenza Tinta",
+    "highlightsWarmth": "In evidenza Calore",
     "histogram": "Istogramma",
     "history": "Cronologia",
     "historyIsEmpty": "La cronologia è vuota",
@@ -1560,6 +1567,8 @@
     "midtones": "Mezzitoni",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "Tinta mezzitoni",
+    "midtonesWarmth": "Calore dei mezzitoni",
     "mins": {
         "one": "Min",
         "other": "Min"
@@ -2114,6 +2123,8 @@
     "shadows": "Ombre",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Ombre Tinta",
+    "shadowsWarmth": "Ombre Calore",
     "share": "Condividi",
     "shareDetails_Facebook": "Tipo: Facebook\nEntra %{login}\nTitolo: %{title}",
     "shareDetails_Tudou": "Tipo: Tudou\nEntra %{login}\nTitolo: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "Il percorso degli appunti condivisi non esiste più. Vuoi selezionare una nuova posizione?",
     "sharedPasteboardRootFolder": "Cartella padre degli appunti condivisi",
     "sharp": "Netto",
+    "shiftAnchorDownPixels": {
+        "one": "Sposta l'ancora in basso di %{amount} pixel",
+        "other": "Sposta l'ancora in basso di %{amount} pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Sposta l'ancora a sinistra di %{amount} Pixel",
+        "other": "Sposta l'ancora a sinistra di %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Sposta l'ancora a destra di %{amount} Pixel",
+        "other": "Sposta l'ancora a destra di %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Sposta l'ancora in alto di %{amount} Pixel",
+        "other": "Sposta l'ancora in alto di %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Sposta in basso di %{amount} pixel",
         "other": "Sposta in basso di %{amount} pixel"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Aumenta le dimensioni di %{amount} pixel",
         "other": "Aumenta le dimensioni di %{amount} pixel"
+    },
+    "shiftScaleXDown": {
+        "one": "Sposta scala X verso il basso di %{amount} Pixel",
+        "other": "Sposta scala X verso il basso di %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Sposta la scala X verso l'alto di %{amount} pixel",
+        "other": "Sposta la scala X verso l'alto di %{amount} pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Sposta la scala Y verso il basso di %{amount} Pixel",
+        "other": "Sposta la scala Y verso il basso di %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Sposta la scala Y verso l'alto di %{amount} Pixel",
+        "other": "Sposta la scala Y verso l'alto di %{amount} Pixel"
     },
     "short": "Breve",
     "shortPressAction": "Azione di pressione breve",
