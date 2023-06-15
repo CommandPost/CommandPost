@@ -191,6 +191,7 @@
     "betterPerformance": "Millor Rendiment",
     "betterQuality": "Millor Qualitat",
     "black": "Negre",
+    "blackPoint": "Punt Negre",
     "blade": "Fulla",
     "blendMode": "Mode de barreja",
     "blendMode9": "Mode de combinació",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "El codi ha de retornar una funció.",
     "cold": "Refredat",
     "color": "Color",
+    "colorAdjustments": "Ajustos de color",
+    "colorAdjustments_group": "Ajustos de color",
     "colorAndEffects": "Color i efectes",
     "colorBoard": "Tauler de colors",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Control de l'element de la interfície d'usuari de Final Cut Pro (absolut)",
     "controlFCPUIElementRelative": "Control de l'element de la interfície d'usuari de Final Cut Pro (relatiu)",
     "controlFCPUIElementRelativeNote": "Passeu el ratolí per sobre d'un element de la interfície d'usuari, manteniu premuda la tecla CONTROL i, a continuació, ajusteu el botó/fader MIDI per registrar-lo.",
+    "controlRange": "Interval de control",
     "controlSurfaces": "Superfícies de control",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Controla el volum al Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Controla el zoom de la línia de temps mitjançant la finestra emergent d'aparença",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Ignora les targetes",
     "finalcutpro_import_preferences_label": "Preferències d'importació",
     "finalcutpro_inspector_audio_label": "Inspector: Àudio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspector: Ajustos de color",
     "finalcutpro_inspector_info_label": "Inspector: Info",
     "finalcutpro_inspector_show_label": "Inspector: Accions addicionals",
     "finalcutpro_inspector_text_label": "Inspector: Text",
@@ -1284,6 +1289,8 @@
     "highlights": "Destacats",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Destacats Tint",
+    "highlightsWarmth": "Destaca la calor",
     "histogram": "Histograma",
     "history": "Història",
     "historyIsEmpty": "La història és buida",
@@ -1560,6 +1567,8 @@
     "midtones": "Tons mitjans",
     "midtones2": "MT",
     "midtones4": "Mitjans",
+    "midtonesTint": "Tint de tons mitjans",
+    "midtonesWarmth": "Calidesa dels tons mitjans",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Ombres",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Tint d'ombres",
+    "shadowsWarmth": "Ombres Calidesa",
     "share": "Compartir",
     "shareDetails_Facebook": "Tipus: Facebook\nInici de sessió: %{login}\nTítol: %{title}",
     "shareDetails_Tudou": "Tipus: Tudou\nInici de sessió: %{login}\nTítol: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "La ruta del tauler compartit ja no existeix. Voleu seleccionar una ubicació nova?",
     "sharedPasteboardRootFolder": "Carpeta arrel de tauler compartida",
     "sharp": "Agut",
+    "shiftAnchorDownPixels": {
+        "one": "Desplaceu l'àncora cap avall en %{amount} píxels",
+        "other": "Desplaceu l'àncora cap avall en %{amount} píxels"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Desplaça l'ancoratge cap a l'esquerra en %{amount} píxels",
+        "other": "Desplaça l'ancoratge cap a l'esquerra en %{amount} píxels"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Desplaça l'àncora a la dreta en %{amount} píxels",
+        "other": "Desplaça l'àncora a la dreta en %{amount} píxels"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Desplaceu l'ancoratge cap amunt en %{amount} píxels",
+        "other": "Desplaceu l'ancoratge cap amunt en %{amount} píxels"
+    },
     "shiftPositionDownPixels": {
         "one": "Canvia la posició cap avall %{amount} píxels",
         "other": "Canvia la posició cap avall %{amount} píxels"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Augmenta l'escala en %{amount} píxels",
         "other": "Augmenta l'escala en %{amount} píxels"
+    },
+    "shiftScaleXDown": {
+        "one": "Desplaceu l'escala X cap avall en %{amount} píxels",
+        "other": "Desplaceu l'escala X cap avall en %{amount} píxels"
+    },
+    "shiftScaleXUp": {
+        "one": "Canjeu l'escala X cap amunt en %{amount} píxels",
+        "other": "Canjeu l'escala X cap amunt en %{amount} píxels"
+    },
+    "shiftScaleYDown": {
+        "one": "Desplaceu l'escala Y avall en %{amount} píxel",
+        "other": "Desplaceu l'escala Y avall en %{amount} píxel"
+    },
+    "shiftScaleYUp": {
+        "one": "Canjeu l'escala Y amunt en %{amount} píxels",
+        "other": "Canjeu l'escala Y amunt en %{amount} píxels"
     },
     "short": "Curt",
     "shortPressAction": "Acció de premsa curta",
