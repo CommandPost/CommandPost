@@ -29,6 +29,7 @@ local Require               = require "cp.rx.go.Require"
 local Retry                 = require "cp.rx.go.Retry"
 local Throw                 = require "cp.rx.go.Throw"
 
+local doesFileExist         = tools.doesFileExist
 local uuid                  = host.uuid
 
 local mod = {}
@@ -507,11 +508,6 @@ mod.watching = prop.new(function()
     return mod._timer ~= nil
 end)
 
---- plugins.finalcutpro.pasteboard.manager.buffer <cp.prop: table>
---- Field
---- Contains the Pasteboard Buffer.
-mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer.cpPasteboard", {})
-
 --- plugins.finalcutpro.pasteboard.manager.doWaitForFreshData(oldData) -> cp.rx.go.Statement
 --- Function
 --- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to copy to the clipboard. If none is found, an error is sent.
@@ -766,6 +762,24 @@ function plugin.init(deps)
     if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
+    -- Update the preferences file if needed:
+    --------------------------------------------------------------------------------
+    local legacyPath = config.userConfigRootPath .. "/" .. "Pasteboard Buffer/Pasteboard Buffer.cpPasteboard"
+    local newPath = config.userConfigRootPath .. "/" .. "Pasteboard Buffer/Pasteboard Buffer V2.cpPasteboard"
+    local defaultData = {}
+    if doesFileExist(legacyPath) and not doesFileExist(newPath) then
+        local legacyData = json.read(legacyPath)
+        if legacyData then
+            log.df("Migrating 'Pasteboard Buffer.cpPasteboard' to 'Pasteboard Buffer V2.cpPasteboard'...")
+            for i, v in pairs(legacyData) do
+                log.df(" - Adding Pasteboard Buffer Item: " .. i)
+                defaultData[tostring(i)] = v
+            end
+        end
+    end
+    mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer V2.cpPasteboard", defaultData)
+
+    --------------------------------------------------------------------------------
     -- Manage dependancies:
     --------------------------------------------------------------------------------
     mod.hudManager = deps.hudManager
@@ -782,15 +796,18 @@ function plugin.init(deps)
     -- Pasteboard Buffer:
     --------------------------------------------------------------------------------
     for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
-        fcpxCmds
-            :add("saveToPasteboardBuffer" .. tostring(id))
-            :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-            :whenActivated(function() mod.doSaveToBuffer(id):Now() end)
+
+        local pid = tostring(id)
 
         fcpxCmds
-            :add("restoreFromPasteboardBuffer" .. tostring(id))
-            :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
-            :whenActivated(function() mod.doRestoreFromBuffer(id):Now() end)
+            :add("saveToPasteboardBuffer" .. pid)
+            :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=pid}))
+            :whenActivated(function() mod.doSaveToBuffer(pid):Now() end)
+
+        fcpxCmds
+            :add("restoreFromPasteboardBuffer" .. pid)
+            :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=pid}))
+            :whenActivated(function() mod.doRestoreFromBuffer(pid):Now() end)
     end
 
     return mod
