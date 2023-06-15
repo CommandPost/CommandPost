@@ -191,6 +191,7 @@
     "betterPerformance": "Jobb teljesítmény",
     "betterQuality": "Jobb minőség",
     "black": "Fekete",
+    "blackPoint": "Fekete pont",
     "blade": "Penge",
     "blendMode": "Blend mód",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "A kódnak vissza kell adnia egy függvényt.",
     "cold": "Hideg",
     "color": "Szín",
+    "colorAdjustments": "Színbeállítások",
+    "colorAdjustments_group": "Színbeállítások",
     "colorAndEffects": "Szín és effektusok",
     "colorBoard": "Színes tábla",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "A Final Cut Pro felhasználói felület elemének ellenőrzése (abszolút)",
     "controlFCPUIElementRelative": "A Final Cut Pro felhasználói felület elemének (relatív) vezérlése",
     "controlFCPUIElementRelativeNote": "Vigye az egeret egy felhasználói felület elemére, tartsa lenyomva a CONTROL gombot, majd állítsa be a MIDI gombot / Fader a regisztrációhoz.",
+    "controlRange": "Vezérlési tartomány",
     "controlSurfaces": "Külső vezérlők",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Szabályozza a hangerőt a Final Cut Pro Audio Inspectorban",
     "controlsTimelineZoomViaTheAppearancePopup": "Az idővonal nagyítását vezérli a Megjelenés előugró ablakon keresztül",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Hagyja figyelmen kívül a kártyákat",
     "finalcutpro_import_preferences_label": "Importálási beállítások",
     "finalcutpro_inspector_audio_label": "Felügyelő: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Ellenőr: Színbeállítások",
     "finalcutpro_inspector_info_label": "Ellenőr: Információ",
     "finalcutpro_inspector_show_label": "Felügyelő: További tevékenységek",
     "finalcutpro_inspector_text_label": "Felügyelő: Szöveg",
@@ -1284,6 +1289,8 @@
     "highlights": "Főbb",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Kiemeli Tint",
+    "highlightsWarmth": "Kiemeli a melegséget",
     "histogram": "hisztogram",
     "history": "Történelem",
     "historyIsEmpty": "Az előzmények üres",
@@ -1560,6 +1567,8 @@
     "midtones": "középtónusok",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "Középtónusok Tint",
+    "midtonesWarmth": "Középtónusok melegsége",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Shadows",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Shadows Tint",
+    "shadowsWarmth": "Árnyékok melege",
     "share": "Ossza meg",
     "shareDetails_Facebook": "Típus: Facebook\nBejelentkezés: %{login}\nCím: %{title}",
     "shareDetails_Tudou": "Típus: Tudou\nBejelentkezés: %{login}\nCím: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "A Shared Pasteboard elérési útja már nem létezik. Szeretne új helyet választani?",
     "sharedPasteboardRootFolder": "Megosztott Pasteboard Root Mappa",
     "sharp": "Éles",
+    "shiftAnchorDownPixels": {
+        "one": "Horgony lefelé tolása %{amount} képponttal",
+        "other": "Horgony lefelé tolása %{amount} képponttal"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Horgony eltolása balra %{amount} képponttal",
+        "other": "Horgony eltolása balra %{amount} képponttal"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Horgony eltolása jobbra %{amount} képponttal",
+        "other": "Horgony eltolása jobbra %{amount} képponttal"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Horgony felfelé tolása %{amount} képponttal",
+        "other": "Horgony felfelé tolása %{amount} képponttal"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} pixel",
         "other": "Shift Position Down %{amount} pixel"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Shift Scale Up %{amount} képponttal",
         "other": "Shift Scale Up %{amount} képponttal"
+    },
+    "shiftScaleXDown": {
+        "one": "Lépték X lefelé %{amount} képponttal",
+        "other": "Lépték X lefelé %{amount} képponttal"
+    },
+    "shiftScaleXUp": {
+        "one": "Lépték X felfelé %{amount} képponttal",
+        "other": "Lépték X felfelé %{amount} képponttal"
+    },
+    "shiftScaleYDown": {
+        "one": "Az Y skála eltolása %{amount} képponttal lefelé",
+        "other": "Az Y skála eltolása %{amount} képponttal lefelé"
+    },
+    "shiftScaleYUp": {
+        "one": "Az Y méretarány eltolása %{amount} képponttal felfelé",
+        "other": "Az Y méretarány eltolása %{amount} képponttal felfelé"
     },
     "short": "Rövid",
     "shortPressAction": "Rövid megnyomásos művelet",
