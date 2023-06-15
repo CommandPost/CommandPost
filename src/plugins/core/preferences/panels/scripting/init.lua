@@ -257,7 +257,7 @@ function plugin.init(deps, env)
             {
                 label 	    = "Learn More...",
                 width       = 100,
-                onclick	    = function() execute("open 'https://help.commandpost.io/advanced/controlling_commandpost'") end,
+                onclick	    = function() execute("open 'https://commandpost.io/scripting/applescript/'") end,
             }
         )
 

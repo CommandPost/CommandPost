@@ -64,7 +64,7 @@ function plugin.init(deps)
                     label = i18n("moveableMarkers") .. "?",
                     width = 250,
                     onclick = function()
-                        execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-moveable-markers"')
+                        execute('open "https://commandpost.io/faq/#why-did-you-remove-moveable-markers"')
                     end,
                 })
 
@@ -73,7 +73,7 @@ function plugin.init(deps)
                     label = i18n("showTimelineInViewers") .. "?",
                     width = 250,
                     onclick = function()
-                        execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-show-timeline-in-viewers"')
+                        execute('open "https://commandpost.io/faq/#why-did-you-remove-show-timeline-in-viewers"')
                     end,
                 })
             :addButton(8999.2,
@@ -81,7 +81,7 @@ function plugin.init(deps)
                     label = i18n("hiddenFCPXMLImportExportOptions") .. "?",
                     width = 250,
                     onclick = function()
-                        execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-the-hidden-fcpxml-import-export-option"')
+                        execute('open "https://commandpost.io/faq/#why-did-you-remove-the-hidden-fcpxml-importexport-option"')
                     end,
                 })
             :addContent(9000, [[

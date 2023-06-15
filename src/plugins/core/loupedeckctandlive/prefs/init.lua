@@ -70,12 +70,12 @@ local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Loupedeck"
 -- SNIPPET_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
+local SNIPPET_HELP_URL = "https://commandpost.io/scripting/snippets-for-icons/"
 
 -- SNIPPET_LED_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_LED_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_led_colors"
+local SNIPPET_LED_HELP_URL = "https://commandpost.io/scripting/snippets-for-led-colors/"
 
 -- delayedFn -> hs.timer
 -- Variable

@@ -51,7 +51,7 @@ mod.configPrefix = "cp"
 --- cp.config.privacyPolicyURL -> string
 --- Constant
 --- URL for Privacy Policy
-mod.privacyPolicyURL = "https://help.commandpost.io/getting_started/privacy_policy/"
+mod.privacyPolicyURL = "https://commandpost.io/privacy/"
 
 --- cp.config.translationURL -> string
 --- Constant

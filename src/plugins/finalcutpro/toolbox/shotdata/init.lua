@@ -52,7 +52,7 @@ local mod = {}
 -- SHOT_DATA_MANUAL_URL -> string
 -- Constant
 -- URL to the Shot Data Manual
-local SHOT_DATA_USER_GUIDE_URL = "https://help.commandpost.io/toolbox/shot_data"
+local SHOT_DATA_USER_GUIDE_URL = "https://commandpost.io/toolbox/shot-data/"
 
 -- NOTION_TEMPLATE_URL -> string
 -- Constant

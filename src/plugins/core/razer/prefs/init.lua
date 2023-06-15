@@ -40,7 +40,7 @@ local mod = {}
 -- SNIPPET_LED_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_LED_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_led_colors"
+local SNIPPET_LED_HELP_URL = "https://commandpost.io/scripting/snippets-for-led-colors/"
 
 --- plugins.core.razer.prefs.pasteboard <cp.prop: table>
 --- Field
