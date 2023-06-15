@@ -15,6 +15,7 @@ local ColorCurves           = require "cp.apple.finalcutpro.inspector.color.Colo
 local ColorWheels           = require "cp.apple.finalcutpro.inspector.color.ColorWheels"
 local CorrectionsBar        = require "cp.apple.finalcutpro.inspector.color.CorrectionsBar"
 local HueSaturationCurves   = require "cp.apple.finalcutpro.inspector.color.HueSaturationCurves"
+local ColorAdjustments      = require "cp.apple.finalcutpro.inspector.color.ColorAdjustments"
 
 local If                    = require "cp.rx.go.If"
 local WaitUntil             = require "cp.rx.go.WaitUntil"
@@ -274,6 +275,19 @@ end
 --- The HueSaturationCurves object.
 function ColorInspector.lazy.value:hueSaturationCurves()
     return HueSaturationCurves(self)
+end
+
+--------------------------------------------------------------------------------
+--
+-- COLOR ADJUSTMENTS:
+--
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.colorAdjustments <ColorAdjustments>
+--- Field
+--- The ColorAdjustments object.
+function ColorInspector.lazy.value:colorAdjustments()
+    return ColorAdjustments(self)
 end
 
 return ColorInspector
