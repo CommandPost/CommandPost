@@ -191,6 +191,7 @@
     "betterPerformance": "बेहतर प्रदर्शन",
     "betterQuality": "बेहतर गुणवत्ता",
     "black": "काली",
+    "blackPoint": "काला बिन्दु",
     "blade": "ब्लेड",
     "blendMode": "मिश्रण मोड",
     "blendMode9": "मिश्रण मोड",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "कोड को एक फ़ंक्शन वापस करने की आवश्यकता है।",
     "cold": "सर्दी",
     "color": "रंग",
+    "colorAdjustments": "रंग समायोजन",
+    "colorAdjustments_group": "रंग समायोजन",
     "colorAndEffects": "रंग और प्रभाव",
     "colorBoard": "रंग बोर्ड",
     "colorBoard2": "colorBoard2",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "controlFCPUIElementAbsolute",
     "controlFCPUIElementRelative": "controlFCPUIElementRelative",
     "controlFCPUIElementRelativeNote": "controlFCPUIElementRelativeNote",
+    "controlRange": "नियंत्रण सीमा",
     "controlSurfaces": "नियंत्रण सतहों",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "फाइनल कट प्रो ऑडियो इंस्पेक्टर में वॉल्यूम को नियंत्रित करता है",
     "controlsTimelineZoomViaTheAppearancePopup": "नियंत्रण पॉपअप के माध्यम से समयरेखा ज़ूम को नियंत्रित करता है",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "कार्ड पर ध्यान न दें",
     "finalcutpro_import_preferences_label": "प्राथमिकताएं आयात करें",
     "finalcutpro_inspector_audio_label": "इंस्पेक्टर: ऑडियो",
+    "finalcutpro_inspector_coloradjustments_label": "इंस्पेक्टर: रंग समायोजन",
     "finalcutpro_inspector_info_label": "इंस्पेक्टर: जानकारी",
     "finalcutpro_inspector_show_label": "इंस्पेक्टर: अतिरिक्त कार्रवाई",
     "finalcutpro_inspector_text_label": "इंस्पेक्टर: पाठ",
@@ -1284,6 +1289,8 @@
     "highlights": "हाइलाइट",
     "highlights2": "Highlights2",
     "highlights4": "Highlights4",
+    "highlightsTint": "हाइलाइट्स टिंट",
+    "highlightsWarmth": "गर्माहट पर प्रकाश डाला गया",
     "histogram": "हिस्टोग्राम",
     "history": "इतिहास",
     "historyIsEmpty": "इतिहास खाली है",
@@ -1560,6 +1567,8 @@
     "midtones": "मि़डटॉन",
     "midtones2": "midtones2",
     "midtones4": "midtones4",
+    "midtonesTint": "मिडटोन टिंट",
+    "midtonesWarmth": "मिडटोन्स वार्मथ",
     "mins": {
         "one": "मिनट",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "छैया छैया",
     "shadows2": "shadows2",
     "shadows4": "shadows4",
+    "shadowsTint": "छाया टिंट",
+    "shadowsWarmth": "छाया की गर्मी",
     "share": "शेयर",
     "shareDetails_Facebook": "प्रकार: फेसबुक\nलॉग इन करें: %{login}\nशीर्षक: %{title}",
     "shareDetails_Tudou": "Type: Tudou\nLogin: %{login}\nTitle: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "sharedPasteboardPathMissing",
     "sharedPasteboardRootFolder": "sharedPasteboardRootFolder",
     "sharp": "तेज़",
+    "shiftAnchorDownPixels": {
+        "one": "एंकर को %{amount} पिक्सेल नीचे शिफ़्ट करें",
+        "other": "एंकर को %{amount} पिक्सेल नीचे शिफ़्ट करें"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "एंकर को %{amount} पिक्सेल तक लेफ्ट में शिफ्ट करें",
+        "other": "एंकर को %{amount} पिक्सेल तक लेफ्ट में शिफ्ट करें"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "एंकर को %{amount} पिक्सेल से दाएँ शिफ्ट करें",
+        "other": "एंकर को %{amount} पिक्सेल से दाएँ शिफ्ट करें"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "शिफ़्ट एंकर को %{amount} पिक्सेल तक बढ़ाएँ",
+        "other": "शिफ़्ट एंकर को %{amount} पिक्सेल तक बढ़ाएँ"
+    },
     "shiftPositionDownPixels": {
         "one": "शिफ्ट स्थिति नीचे %{amount} पिक्सेल",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "%{amount} पिक्सेल द्वारा शिफ्ट स्केल",
         "other": "%{amount} पिक्सेल द्वारा शिफ्ट स्केल"
+    },
+    "shiftScaleXDown": {
+        "one": "स्केल X को %{amount} पिक्सेल से घटाएं",
+        "other": "स्केल X को %{amount} पिक्सेल से घटाएं"
+    },
+    "shiftScaleXUp": {
+        "one": "शिफ़्ट स्केल X %{amount} पिक्सेल से ऊपर",
+        "other": "शिफ़्ट स्केल X %{amount} पिक्सेल से ऊपर"
+    },
+    "shiftScaleYDown": {
+        "one": "शिफ़्ट स्केल Y को %{amount} पिक्सेल से नीचे करें",
+        "other": "शिफ़्ट स्केल Y को %{amount} पिक्सेल से नीचे करें"
+    },
+    "shiftScaleYUp": {
+        "one": "Shift स्केल Y %{amount} पिक्सेल से ऊपर",
+        "other": "Shift स्केल Y %{amount} पिक्सेल से ऊपर"
     },
     "short": "छोटा",
     "shortPressAction": "शॉर्ट प्रेस एक्शन",
