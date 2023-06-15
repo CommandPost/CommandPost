@@ -191,6 +191,7 @@
     "betterPerformance": "Hiệu suất tốt hơn",
     "betterQuality": "Chất lượng tốt hơn",
     "black": "Đen",
+    "blackPoint": "Điểm đen",
     "blade": "Lưỡi",
     "blendMode": "Chế độ hòa trộn",
     "blendMode9": "Chế độ hòa trộn",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Mã cần trả về một hàm.",
     "cold": "Lạnh",
     "color": "Màu",
+    "colorAdjustments": "Điều chỉnh màu",
+    "colorAdjustments_group": "Điều chỉnh màu",
     "colorAndEffects": "Màu sắc & hiệu ứng",
     "colorBoard": "Bảng màu",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Kiểm soát phần tử giao diện người dùng cuối cùng của phần tử điều khiển cắt (Tuyệt đối)",
     "controlFCPUIElementRelative": "Kiểm soát phần tử giao diện người dùng cuối cùng của phần tử điều khiển cắt (tương đối)",
     "controlFCPUIElementRelativeNote": "Di chuột qua phần tử giao diện người dùng, giữ CONTROL, sau đó điều chỉnh MIDI Knob / Fader để đăng ký.",
+    "controlRange": "Phạm vi kiểm soát",
     "controlSurfaces": "Kiểm soát bề mặt",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Kiểm soát Âm lượng trong Trình kiểm tra âm thanh Final Cut Pro",
     "controlsTimelineZoomViaTheAppearancePopup": "Kiểm soát Thu phóng dòng thời gian thông qua Cửa sổ bật lên giao diện",
@@ -1008,6 +1012,7 @@
     "finalcutpro_import_ignorecard_label": "Bỏ qua thẻ",
     "finalcutpro_import_preferences_label": "Tuỳ chọn Nhập",
     "finalcutpro_inspector_audio_label": "Thanh tra: Âm thanh",
+    "finalcutpro_inspector_coloradjustments_label": "Thanh tra: Điều chỉnh màu",
     "finalcutpro_inspector_info_label": "Thanh tra: Thông tin",
     "finalcutpro_inspector_show_label": "Thanh tra: Hành động bổ sung",
     "finalcutpro_inspector_text_label": "Thanh tra: Văn bản",
@@ -1280,6 +1285,8 @@
     "highlights": "Điểm nổi bật",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Màu sắc nổi bật",
+    "highlightsWarmth": "Điểm nổi bật",
     "histogram": "Biểu đồ",
     "history": "Lịch sử",
     "historyIsEmpty": "Lịch sử trống rỗng",
@@ -1555,6 +1562,8 @@
     "midtones": "Midtones",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "tông màu trung tính",
+    "midtonesWarmth": "Âm trung ấm áp",
     "mins": {
         "other": "min"
     },
@@ -2106,6 +2115,8 @@
     "shadows": "Bóng tối",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "bóng tối",
+    "shadowsWarmth": "bóng tối ấm áp",
     "share": "Chia sẻ",
     "shareDetails_Facebook": "Loại: Facebook\nĐăng nhập: %{login}\nTiêu đề: %{title}",
     "shareDetails_Tudou": "Loại: Tudou\nĐăng nhập: %{login}\nTiêu đề: %{title}",
@@ -2121,6 +2132,18 @@
     "sharedPasteboardPathMissing": "Đường dẫn trên bảng chia sẻ không còn tồn tại nữa. Bạn có muốn chọn một vị trí mới không?",
     "sharedPasteboardRootFolder": "Thư mục gốc của bảng gốc được chia sẻ",
     "sharp": "Nhọn",
+    "shiftAnchorDownPixels": {
+        "other": "Dịch chuyển Neo xuống theo %{amount} Pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "Dịch chuyển Neo sang trái bởi %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "Dịch Neo sang phải theo %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "Dịch neo lên trên %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "other": "Shift Vị trí Xuống %{amount} Pixel"
     },
@@ -2144,6 +2167,18 @@
     },
     "shiftScaleUp": {
         "other": "Thay đổi quy mô lên %{amount} Pixel"
+    },
+    "shiftScaleXDown": {
+        "other": "Dịch chuyển tỷ lệ X xuống %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "other": "Thay đổi tỷ lệ tăng X lên %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "other": "Dịch chuyển tỷ lệ Y xuống %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "other": "Thay đổi tỷ lệ Y Tăng theo %{amount} Pixel"
     },
     "short": "Ngắn",
     "shortPressAction": "Hành động báo chí ngắn",
