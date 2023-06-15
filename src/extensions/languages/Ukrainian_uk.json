@@ -191,6 +191,7 @@
     "betterPerformance": "Краща ефективність",
     "betterQuality": "Краща якість",
     "black": "Чорний",
+    "blackPoint": "Чорна точка",
     "blade": "Лезо",
     "blendMode": "Режим змішування",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Цей код має повертати функцію.",
     "cold": "Холодний",
     "color": "Колір",
+    "colorAdjustments": "Налаштування кольору",
+    "colorAdjustments_group": "Налаштування кольору",
     "colorAndEffects": "Колір та ефекти",
     "colorBoard": "Кольорова дошка",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Контрольний елемент інтерфейсу користувача Final Cut Pro (абсолютний)",
     "controlFCPUIElementRelative": "Контрольний елемент інтерфейсу користувача Final Cut Pro (відносний)",
     "controlFCPUIElementRelativeNote": "Наведіть курсор миші на елемент інтерфейсу користувача, утримуйте кнопку CONTROL, а потім настройте MIDI Knob / Fader для реєстрації.",
+    "controlRange": "Діапазон контролю",
     "controlSurfaces": "Панелі управління",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Керує гучністю в Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Керує масштабуванням шкали часу за допомогою спливаючого вікна",
@@ -1020,6 +1024,7 @@
     "finalcutpro_import_ignorecard_label": "Ігнорувати карти",
     "finalcutpro_import_preferences_label": "Налаштування імпорту",
     "finalcutpro_inspector_audio_label": "Інспектор: Аудіо",
+    "finalcutpro_inspector_coloradjustments_label": "Інспектор: Налаштування кольору",
     "finalcutpro_inspector_info_label": "Інспектор: Інформація",
     "finalcutpro_inspector_show_label": "Інспектор: додаткові дії",
     "finalcutpro_inspector_text_label": "Інспектор: Текст",
@@ -1292,6 +1297,8 @@
     "highlights": "Основні моменти",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Відтінок відблисків",
+    "highlightsWarmth": "Основні моменти Тепло",
     "histogram": "Гістограма",
     "history": "Історія",
     "historyIsEmpty": "Історія порожня",
@@ -1570,6 +1577,8 @@
     "midtones": "Midtones",
     "midtones2": "MT",
     "midtones4": "Середини",
+    "midtonesTint": "Відтінок середніх тонів",
+    "midtonesWarmth": "Середні тони Тепло",
     "mins": {
         "few": "хв",
         "many": "хв",
@@ -2130,6 +2139,8 @@
     "shadows": "Тіні",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Тіні відтінкові",
+    "shadowsWarmth": "Тіні Тепло",
     "share": "Поділитися",
     "shareDetails_Facebook": "Тип: Facebook\nВхід: %{login}\nНазва: %{title}",
     "shareDetails_Tudou": "Тип: Тудоу\nВхід: %{login}\nНазва: %{title}",
@@ -2145,6 +2156,30 @@
     "sharedPasteboardPathMissing": "Шлях спільного вставлення більше не існує. Хочете вибрати нове місцезнаходження?",
     "sharedPasteboardRootFolder": "Спільна папка кореневої панелі",
     "sharp": "Різкий",
+    "shiftAnchorDownPixels": {
+        "few": "Зсунути прив’язку вниз на %{amount} пікселів",
+        "many": "Зсунути прив’язку вниз на %{amount} пікселів",
+        "one": "Зсунути прив’язку вниз на %{amount} пікселів",
+        "other": "Зсунути прив’язку вниз на %{amount} пікселів"
+    },
+    "shiftAnchorLeftPixels": {
+        "few": "Зсув прив’язки вліво на %{amount} пікселів",
+        "many": "Зсув прив’язки вліво на %{amount} пікселів",
+        "one": "Зсув прив’язки вліво на %{amount} пікселів",
+        "other": "Зсув прив’язки вліво на %{amount} пікселів"
+    },
+    "shiftAnchorRightPixels": {
+        "few": "Зсунути прив’язку вправо на %{amount} пікселів",
+        "many": "Зсунути прив’язку вправо на %{amount} пікселів",
+        "one": "Зсунути прив’язку вправо на %{amount} пікселів",
+        "other": "Зсунути прив’язку вправо на %{amount} пікселів"
+    },
+    "shiftAnchorUpPixels": {
+        "few": "Зсунути прив’язку вгору на %{amount} пікселів",
+        "many": "Зсунути прив’язку вгору на %{amount} пікселів",
+        "one": "Зсунути прив’язку вгору на %{amount} пікселів",
+        "other": "Зсунути прив’язку вгору на %{amount} пікселів"
+    },
     "shiftPositionDownPixels": {
         "few": "Зсув позиції вниз %{amount} Піксель",
         "many": "Зсув позиції вниз %{amount} Піксель",
@@ -2192,6 +2227,30 @@
         "many": "Зсуньте масштаб вгору на %{amount} пікселів",
         "one": "Зсуньте масштаб вгору на %{amount} пікселів",
         "other": "Зсуньте масштаб вгору на %{amount} пікселів"
+    },
+    "shiftScaleXDown": {
+        "few": "Зсув шкали X вниз на %{amount} пікселів",
+        "many": "Зсув шкали X вниз на %{amount} пікселів",
+        "one": "Зсув шкали X вниз на %{amount} пікселів",
+        "other": "Зсув шкали X вниз на %{amount} пікселів"
+    },
+    "shiftScaleXUp": {
+        "few": "Зсув масштабу X угору на %{amount} пікселів",
+        "many": "Зсув масштабу X угору на %{amount} пікселів",
+        "one": "Зсув масштабу X угору на %{amount} пікселів",
+        "other": "Зсув масштабу X угору на %{amount} пікселів"
+    },
+    "shiftScaleYDown": {
+        "few": "Зсунути масштаб Y вниз на %{amount} пікселів",
+        "many": "Зсунути масштаб Y вниз на %{amount} пікселів",
+        "one": "Зсунути масштаб Y вниз на %{amount} пікселів",
+        "other": "Зсунути масштаб Y вниз на %{amount} пікселів"
+    },
+    "shiftScaleYUp": {
+        "few": "Зсув масштабу Y угору на %{amount} пікселів",
+        "many": "Зсув масштабу Y угору на %{amount} пікселів",
+        "one": "Зсув масштабу Y угору на %{amount} пікселів",
+        "other": "Зсув масштабу Y угору на %{amount} пікселів"
     },
     "short": "Короткий",
     "shortPressAction": "Коротке натискання",
