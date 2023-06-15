@@ -191,6 +191,7 @@
     "betterPerformance": "Performances",
     "betterQuality": "Meilleure possible",
     "black": "Noir",
+    "blackPoint": "Point noir",
     "blade": "lame",
     "blendMode": "Mode de fusion",
     "blendMode9": "Mode de fusion",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Le code doit renvoyer à une fonction.",
     "cold": "Du froid",
     "color": "Couleur",
+    "colorAdjustments": "Ajustements des couleurs",
+    "colorAdjustments_group": "Ajustements des couleurs",
     "colorAndEffects": "Couleur et effets",
     "colorBoard": "Conseil de couleur",
     "colorBoard2": "colorBoard2",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "controlFCPUIElementAbsolute",
     "controlFCPUIElementRelative": "controlFCPUIElementRelative",
     "controlFCPUIElementRelativeNote": "controlFCPUIElementRelativeNote",
+    "controlRange": "Plage de contrôle",
     "controlSurfaces": "Surfaces de contrôle.",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Contrôle le volume dans l'inspecteur audio de Final Cut Pro",
     "controlsTimelineZoomViaTheAppearancePopup": "Contrôle le zoom de la chronologie via la fenêtre contextuelle d'apparence",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Ignorer les cartes de médias",
     "finalcutpro_import_preferences_label": "Importer les préférences",
     "finalcutpro_inspector_audio_label": "Inspecteur : Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspecteur : Ajustements des couleurs",
     "finalcutpro_inspector_info_label": "Inspecteur : Infos",
     "finalcutpro_inspector_show_label": "Inspecteur: actions supplémentaires",
     "finalcutpro_inspector_text_label": "Inspecteur: Texte",
@@ -1284,6 +1289,8 @@
     "highlights": "Points forts",
     "highlights2": "faits saillants2",
     "highlights4": "faits saillants4",
+    "highlightsTint": "Faits saillants Teinte",
+    "highlightsWarmth": "Faits saillants Chaleur",
     "histogram": "histogramme",
     "history": "Historique",
     "historyIsEmpty": "L'histoire est vide",
@@ -1560,6 +1567,8 @@
     "midtones": "Tons moyens",
     "midtones2": "midtones2",
     "midtones4": "midtones4",
+    "midtonesTint": "Teinte des tons moyens",
+    "midtonesWarmth": "Chaleur des tons moyens",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Ombres",
     "shadows2": "ombres2",
     "shadows4": "ombres4",
+    "shadowsTint": "Teinte des ombres",
+    "shadowsWarmth": "Chaleur des ombres",
     "share": "Partager",
     "shareDetails_Facebook": "Type : Facebook\nConnexion : %{login}\nTitre : %{title}",
     "shareDetails_Tudou": "Type: Tudou\nConnexion: %{login}\nTitre: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "L'emplacment du presse-papiers est inexistant. Voulez-vous en choisir un nouveau ?",
     "sharedPasteboardRootFolder": "Chemin de dossier du presse-papiers partagé",
     "sharp": "Tranchant",
+    "shiftAnchorDownPixels": {
+        "one": "Décaler l'ancre vers le bas de %{amount} pixel",
+        "other": "Décaler l'ancre vers le bas de %{amount} pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Décaler l'ancre vers la gauche de %{amount} pixels",
+        "other": "Décaler l'ancre vers la gauche de %{amount} pixels"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Décaler l'ancre vers la droite de %{amount} pixel",
+        "other": "Décaler l'ancre vers la droite de %{amount} pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Décaler l'ancre vers le haut de %{amount} pixels",
+        "other": "Décaler l'ancre vers le haut de %{amount} pixels"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Shift Scale Up by %{amount} Pixel",
         "other": "Shift Scale Up by %{amount} Pixels"
+    },
+    "shiftScaleXDown": {
+        "one": "Décaler l'échelle X vers le bas de %{amount} Pixel",
+        "other": "Décaler l'échelle X vers le bas de %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Décaler l'échelle X vers le haut de %{amount} Pixel",
+        "other": "Décaler l'échelle X vers le haut de %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Décaler l'échelle Y vers le bas de %{amount} Pixel",
+        "other": "Décaler l'échelle Y vers le bas de %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Décaler l'échelle Y vers le haut de %{amount} Pixel",
+        "other": "Décaler l'échelle Y vers le haut de %{amount} Pixel"
     },
     "short": "Court",
     "shortPressAction": "Appuyez brièvement sur l'action",
