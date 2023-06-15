@@ -191,6 +191,7 @@
     "betterPerformance": "Bättre Prestanda",
     "betterQuality": "Bättre kvalité",
     "black": "Svart",
+    "blackPoint": "Svart punkt",
     "blade": "Blad",
     "blendMode": "Blandningsläge",
     "blendMode9": "Blandningsläge",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Koden måste returnera en funktion.",
     "cold": "Kall",
     "color": "Färg",
+    "colorAdjustments": "Färgjusteringar",
+    "colorAdjustments_group": "Färgjusteringar",
     "colorAndEffects": "Färg & effekter",
     "colorBoard": "Färgbräda",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Kontrollera Final Cut Pro-användargränssnittselementet (absolut)",
     "controlFCPUIElementRelative": "Kontrollera Final Cut Pro användargränssnittselement (Relativt)",
     "controlFCPUIElementRelativeNote": "Håll musen över ett UI-element, håll CONTROL och justera sedan MIDI-ratten / Fader för att registrera.",
+    "controlRange": "Kontrollområde",
     "controlSurfaces": "Kontrollera ytor",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Styr volymen i Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Kontrollerar tidslinjens zoomning via popup-utseendet",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Ignorera kort",
     "finalcutpro_import_preferences_label": "Importera inställningar",
     "finalcutpro_inspector_audio_label": "Inspektör: Ljud",
+    "finalcutpro_inspector_coloradjustments_label": "Inspektör: Färgjusteringar",
     "finalcutpro_inspector_info_label": "Inspektör: Info",
     "finalcutpro_inspector_show_label": "Inspektör: Ytterligare åtgärder",
     "finalcutpro_inspector_text_label": "Inspektör: Text",
@@ -1284,6 +1289,8 @@
     "highlights": "slingor",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Höjdpunkter Tint",
+    "highlightsWarmth": "Framhäver Värme",
     "histogram": "Histogram",
     "history": "Historia",
     "historyIsEmpty": "Historiken är tom",
@@ -1560,6 +1567,8 @@
     "midtones": "Mellantoner toner~~POS=HEADCOMP",
     "midtones2": "MT",
     "midtones4": "MIDS",
+    "midtonesTint": "Mellantoner Nyans",
+    "midtonesWarmth": "Mellantoner Värme",
     "mins": {
         "one": "min",
         "other": "min"
@@ -2114,6 +2123,8 @@
     "shadows": "skuggor",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Skuggor nyans",
+    "shadowsWarmth": "Skuggor Värme",
     "share": "Dela med sig",
     "shareDetails_Facebook": "Skriv: Facebook\nLogga in: %{login}\nTitel: %{title}",
     "shareDetails_Tudou": "Typ: Tudou\nLogga in: %{login}\nTitel: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "Den delade pasteboardbanan finns inte längre. Vill du välja en ny plats?",
     "sharedPasteboardRootFolder": "Delad pasteboardrotmapp",
     "sharp": "Skarp",
+    "shiftAnchorDownPixels": {
+        "one": "Flytta ned ankaret med %{amount} pixlar",
+        "other": "Flytta ned ankaret med %{amount} pixlar"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Flytta ankare åt vänster med %{amount} Pixel",
+        "other": "Flytta ankare åt vänster med %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Flytta ankare åt höger med %{amount} Pixel",
+        "other": "Flytta ankare åt höger med %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Flytta ankare uppåt med %{amount} Pixel",
+        "other": "Flytta ankare uppåt med %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Skiftposition ned %{amount} Pixel",
         "other": "Skiftposition ned %{amount} Pixel"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Skift upp med %{amount} Pixel",
         "other": "Skift upp med %{amount} Pixel"
+    },
+    "shiftScaleXDown": {
+        "one": "Flytta Skala X ned med %{amount} Pixel",
+        "other": "Flytta Skala X ned med %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Flytta Skala X Upp med %{amount} Pixel",
+        "other": "Flytta Skala X Upp med %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Flytta ned skala Y med %{amount} Pixel",
+        "other": "Flytta ned skala Y med %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Flytta Skala Y upp med %{amount} Pixel",
+        "other": "Flytta Skala Y upp med %{amount} Pixel"
     },
     "short": "Kort",
     "shortPressAction": "Kort tryckåtgärd",
