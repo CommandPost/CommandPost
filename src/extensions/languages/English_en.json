@@ -2128,6 +2128,22 @@
     "shareSuccessful": "Share Successful\n%{info}",
     "shareUnknown": "Type: %{type}",
     "sharp": "Sharp",
+    "shiftAnchorDownPixels": {
+        "one": "Shift Anchor Down by %{amount} Pixel",
+        "other": "Shift Anchor Down by %{amount} Pixels"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Shift Anchor Left by %{amount} Pixel",
+        "other": "Shift Anchor Left by %{amount} Pixels"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Shift Anchor Right by %{amount} Pixel",
+        "other": "Shift Anchor Right by %{amount} Pixels"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Shift Anchor Up by %{amount} Pixel",
+        "other": "Shift Anchor Up by %{amount} Pixels"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
