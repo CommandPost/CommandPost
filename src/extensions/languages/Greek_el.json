@@ -191,6 +191,7 @@
     "betterPerformance": "Καλύτερη απόδοση",
     "betterQuality": "Καλύτερη ποιότητα",
     "black": "Μαύρος",
+    "blackPoint": "Μαύρο Σημείο",
     "blade": "Λεπίδα",
     "blendMode": "Λειτουργία συγχώνευσης",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Ο κωδικός πρέπει να επιστρέψει μια συνάρτηση.",
     "cold": "Κρύο",
     "color": "Χρώμα",
+    "colorAdjustments": "Ρυθμίσεις χρώματος",
+    "colorAdjustments_group": "Ρυθμίσεις χρώματος",
     "colorAndEffects": "Χρώμα & εφέ",
     "colorBoard": "Πίνακας χρωμάτων",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Στοιχείο διεπαφής χρήστη Final Cut Pro (Απόλυτο)",
     "controlFCPUIElementRelative": "Στοιχείο διεπαφής χρήστη Final Cut Pro (σχετικό)",
     "controlFCPUIElementRelativeNote": "Τοποθετήστε το ποντίκι πάνω από ένα στοιχείο UI, κρατήστε CONTROL και, στη συνέχεια, ρυθμίστε το MIDI Knob / Fader για να εγγραφείτε.",
+    "controlRange": "Εύρος Ελέγχου",
     "controlSurfaces": "Επιφάνειες ελέγχου",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Ελέγχει την ένταση του ήχου στο Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Ελέγχει το ζουμ χρονοδιαγράμματος μέσω του αναδυόμενου παραθύρου εμφάνισης",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Αγνόηση καρτών",
     "finalcutpro_import_preferences_label": "Προτιμήσεις εισαγωγής",
     "finalcutpro_inspector_audio_label": "Επιθεωρητής: Ήχος",
+    "finalcutpro_inspector_coloradjustments_label": "Επιθεωρητής: Color Adjustments",
     "finalcutpro_inspector_info_label": "Επιθεωρητής: Πληροφορίες",
     "finalcutpro_inspector_show_label": "Επιθεωρητής: Πρόσθετες ενέργειες",
     "finalcutpro_inspector_text_label": "Επιθεωρητής: Κείμενο",
@@ -1284,6 +1289,8 @@
     "highlights": "Καλύτερες στιγμές",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Χαρακτηριστικά Απόχρωση",
+    "highlightsWarmth": "Τονίζει τη ζεστασιά",
     "histogram": "Ιστόγραμμα",
     "history": "Ιστορία",
     "historyIsEmpty": "Η ιστορία είναι κενή",
@@ -1560,6 +1567,8 @@
     "midtones": "Midtones",
     "midtones2": "MT",
     "midtones4": "Μέσα",
+    "midtonesTint": "Ενδιάμεσοι τόνοι απόχρωση",
+    "midtonesWarmth": "Ενδιάμεσοι τόνοι Ζεστασιά",
     "mins": {
         "one": "min",
         "other": "min"
@@ -2114,6 +2123,8 @@
     "shadows": "Σκιές",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Απόχρωση σκιών",
+    "shadowsWarmth": "Ζεστασιά σκιών",
     "share": "Μερίδιο",
     "shareDetails_Facebook": "Τύπος: Facebook\nΣύνδεση: %{login}\nΤίτλος: %{title}",
     "shareDetails_Tudou": "Τύπος: Tudou\nΣύνδεση: %{login}\nΤίτλος: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "Η διαδρομή κοινόχρηστου χαρτιού δεν υπάρχει πλέον. Θέλετε να επιλέξετε μια νέα τοποθεσία;",
     "sharedPasteboardRootFolder": "Κοινόχρηστος φάκελος ρίζας πακέτου",
     "sharp": "Αιχμηρός",
+    "shiftAnchorDownPixels": {
+        "one": "Μετατόπιση αγκύρωσης προς τα κάτω κατά %{amount} pixel",
+        "other": "Μετατόπιση αγκύρωσης προς τα κάτω κατά %{amount} pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Shift Anchor Left κατά %{amount} Pixel",
+        "other": "Shift Anchor Left κατά %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Μετατόπιση αγκύρωσης προς τα δεξιά κατά %{amount} pixel",
+        "other": "Μετατόπιση αγκύρωσης προς τα δεξιά κατά %{amount} pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Shift Anchor Up κατά %{amount} Pixel",
+        "other": "Shift Anchor Up κατά %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Θέση αλλαγής ταχύτητας %{amount} Pixel",
         "other": "Θέση αλλαγής ταχύτητας %{amount} Pixel"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Μετατόπιση κλίμακας προς τα πάνω κατά %{amount} Pixel",
         "other": "Μετατόπιση κλίμακας προς τα πάνω κατά %{amount} Pixel"
+    },
+    "shiftScaleXDown": {
+        "one": "Μετατόπιση κλίμακας X προς τα κάτω κατά %{amount} pixel",
+        "other": "Μετατόπιση κλίμακας X προς τα κάτω κατά %{amount} pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Μετατόπιση κλίμακας X προς τα πάνω κατά %{amount} pixel",
+        "other": "Μετατόπιση κλίμακας X προς τα πάνω κατά %{amount} pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Μετατόπιση κλίμακας Y προς τα κάτω κατά %{amount} pixel",
+        "other": "Μετατόπιση κλίμακας Y προς τα κάτω κατά %{amount} pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Μετατόπιση κλίμακας Y προς τα πάνω κατά %{amount} pixel",
+        "other": "Μετατόπιση κλίμακας Y προς τα πάνω κατά %{amount} pixel"
     },
     "short": "Μικρός",
     "shortPressAction": "Ενέργεια σύντομου τύπου",
