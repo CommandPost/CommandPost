@@ -191,6 +191,7 @@
     "betterPerformance": "더 나은 성능",
     "betterQuality": "더 좋은 품질",
     "black": "검은",
+    "blackPoint": "블랙 포인트",
     "blade": "잎",
     "blendMode": "혼합 모드",
     "blendMode9": "혼합 모드",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "코드는 함수를 반환해야합니다.",
     "cold": "춥다",
     "color": "색깔",
+    "colorAdjustments": "색상 조정",
+    "colorAdjustments_group": "색상 조정",
     "colorAndEffects": "색상 및 효과",
     "colorBoard": "컬러 보드",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Final Cut Pro 사용자 인터페이스 요소 제어 (절대)",
     "controlFCPUIElementRelative": "Final Cut Pro 사용자 인터페이스 요소 제어 (상대)",
     "controlFCPUIElementRelativeNote": "UI 요소 위로 마우스를 가져 가고 CONTROL을 누른 상태에서 MIDI 노브 / 페이더를 조정하여 등록하십시오.",
+    "controlRange": "제어 범위",
     "controlSurfaces": "컨트롤 표면",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Final Cut Pro Audio Inspector에서 볼륨을 제어합니다.",
     "controlsTimelineZoomViaTheAppearancePopup": "Appearance Popup을 통해 타임 라인 확대 / 축소 제어",
@@ -1008,6 +1012,7 @@
     "finalcutpro_import_ignorecard_label": "카드 무시",
     "finalcutpro_import_preferences_label": "가져 오기 환경 설정",
     "finalcutpro_inspector_audio_label": "인스펙터 : 오디오",
+    "finalcutpro_inspector_coloradjustments_label": "검사기: 색상 조정",
     "finalcutpro_inspector_info_label": "인스펙터 : 정보",
     "finalcutpro_inspector_show_label": "인스펙터 : 추가 액션",
     "finalcutpro_inspector_text_label": "인스펙터 : 텍스트",
@@ -1280,6 +1285,8 @@
     "highlights": "하이라이트",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "하이라이트 틴트",
+    "highlightsWarmth": "하이라이트 따뜻함",
     "histogram": "히스토그램",
     "history": "역사",
     "historyIsEmpty": "역사는 비어있다",
@@ -1555,6 +1562,8 @@
     "midtones": "중간 톤",
     "midtones2": "산",
     "midtones4": "미드",
+    "midtonesTint": "미드톤 틴트",
+    "midtonesWarmth": "중간톤 따뜻함",
     "mins": {
         "other": "분"
     },
@@ -2106,6 +2115,8 @@
     "shadows": "그림자",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "그림자 색조",
+    "shadowsWarmth": "그림자 따뜻함",
     "share": "공유",
     "shareDetails_Facebook": "유형 : Facebook\n로그인 : %{login}\n제목 : %{title}",
     "shareDetails_Tudou": "유형 : Tudou\n로그인 : %{login}\n제목 : %{title}",
@@ -2121,6 +2132,18 @@
     "sharedPasteboardPathMissing": "공유 보드 경로가 더 이상 존재하지 않습니다. 새로운 위치를 선택 하시겠습니까?",
     "sharedPasteboardRootFolder": "공유 보드 루트 폴더",
     "sharp": "날카로운",
+    "shiftAnchorDownPixels": {
+        "other": "앵커를 %{amount}픽셀 아래로 이동"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "앵커 왼쪽으로 %{amount}픽셀 이동"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "앵커를 %{amount}픽셀 오른쪽으로 이동"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "앵커를 %{amount}픽셀 위로 이동"
+    },
     "shiftPositionDownPixels": {
         "other": "%{amount} 픽셀 아래로 위치 이동"
     },
@@ -2144,6 +2167,18 @@
     },
     "shiftScaleUp": {
         "other": "%{amount} 픽셀 단위로 확대 이동"
+    },
+    "shiftScaleXDown": {
+        "other": "비율 X를 %{amount}픽셀 아래로 이동"
+    },
+    "shiftScaleXUp": {
+        "other": "배율 X 위로 %{amount}픽셀 이동"
+    },
+    "shiftScaleYDown": {
+        "other": "비율 Y를 %{amount}픽셀 아래로 이동"
+    },
+    "shiftScaleYUp": {
+        "other": "비율 Y를 %{amount}픽셀 위로 이동"
     },
     "short": "짧은",
     "shortPressAction": "짧게 누르기 동작",
