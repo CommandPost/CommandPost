@@ -21,6 +21,8 @@ local tools             = require "cp.tools"
 local wshttp            = require "cp.websocket.http"
 local wsserial          = require "cp.websocket.serial"
 
+local semver            = require "semver"
+
 local concat            = table.concat
 local doAfter           = timer.doAfter
 local floor             = math.floor
@@ -352,6 +354,34 @@ function mod.mt:initaliseDevice()
 
     if self.deviceType == mod.deviceTypes.CT then
         self:updateScreenColor(mod.screens.wheel, b)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Check the Loupedeck Live Firmware:
+    --------------------------------------------------------------------------------
+    if not self.loupedeckLiveIsUsingRazerFirmwareCheckDone and self.deviceType == mod.deviceTypes.LIVE then
+        log.df("Loupedeck Live connected, so lets check the firmware version...")
+        self:requestFirmwareVersion(function(data)
+            local firmwareVersion = data and data.b and semver(data.b)
+            if firmwareVersion then
+                self.loupedeckLiveIsUsingRazerFirmwareCheckDone = true
+                log.df("Loupedeck Live is using firmware version: v%s", firmwareVersion)
+                if firmwareVersion > semver("0.2.5") then
+                    log.df("Loupedeck Live is running firmware greater than v0.2.5, so using Razer screen format.")
+                    self.loupedeckLiveIsUsingRazerFirmware = true
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the screen:
+                    --------------------------------------------------------------------------------
+                    self:initaliseDevice()
+                else
+                    --log.df("Loupedeck Live is running firmware lower than v0.2.5")
+                    self.loupedeckLiveIsUsingRazerFirmware = false
+                end
+            else
+                log.df("Failed to get the Loupedeck Live firmware version.")
+            end
+        end)
     end
 end
 
@@ -1464,7 +1494,7 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     -- The Razer Stream Controller only has one screen object, so we need to do
     -- a bit of processing to convert it back into left, middle and right screens:
     --------------------------------------------------------------------------------
-    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER then
+    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER or self.loupedeckLiveIsUsingRazerFirmware == true then
         if not frame then
             frame = {}
         end
