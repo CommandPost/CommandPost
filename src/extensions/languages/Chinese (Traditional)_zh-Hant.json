@@ -191,6 +191,7 @@
     "betterPerformance": "更好的性能",
     "betterQuality": "更好的質量",
     "black": "黑色",
+    "blackPoint": "黑點",
     "blade": "刀",
     "blendMode": "混合模式",
     "blendMode9": "混合模式",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "代碼需要返回一個函數。",
     "cold": "冷",
     "color": "顏色",
+    "colorAdjustments": "顏色調整",
+    "colorAdjustments_group": "顏色調整",
     "colorAndEffects": "顏色和效果",
     "colorBoard": "彩板",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "控制Final Cut Pro用戶界面元素（絕對）",
     "controlFCPUIElementRelative": "控制Final Cut Pro用戶界面元素（相對）",
     "controlFCPUIElementRelativeNote": "將鼠標懸停在UI元素上，按住CONTROL，然後調整MIDI旋鈕/推子進行註冊。",
+    "controlRange": "控制範圍",
     "controlSurfaces": "控制面",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "在 Final Cut Pro 音頻檢查器中控制音量",
     "controlsTimelineZoomViaTheAppearancePopup": "通過外觀彈出窗口控制時間軸縮放",
@@ -1008,6 +1012,7 @@
     "finalcutpro_import_ignorecard_label": "忽略卡片",
     "finalcutpro_import_preferences_label": "導入首選項",
     "finalcutpro_inspector_audio_label": "檢查員：音頻",
+    "finalcutpro_inspector_coloradjustments_label": "檢查員：顏色調整",
     "finalcutpro_inspector_info_label": "檢查員：信息",
     "finalcutpro_inspector_show_label": "檢查員：其他行動",
     "finalcutpro_inspector_text_label": "檢查員：文字",
@@ -1280,6 +1285,8 @@
     "highlights": "強調",
     "highlights2": "HL",
     "highlights4": "HLGT",
+    "highlightsTint": "亮點色調",
+    "highlightsWarmth": "亮點溫馨",
     "histogram": "直方圖",
     "history": "歷史",
     "historyIsEmpty": "歷史是空的",
@@ -1555,6 +1562,8 @@
     "midtones": "中間調",
     "midtones2": "公噸",
     "midtones4": "MIDS",
+    "midtonesTint": "中間色調",
+    "midtonesWarmth": "中間調溫暖",
     "mins": {
         "other": "分鐘"
     },
@@ -2106,6 +2115,8 @@
     "shadows": "陰影",
     "shadows2": "SD",
     "shadows4": "SHDW",
+    "shadowsTint": "陰影色調",
+    "shadowsWarmth": "陰影溫暖",
     "share": "分享",
     "shareDetails_Facebook": "類型：Facebook\n登錄：％{login}\n標題：％{title}",
     "shareDetails_Tudou": "類型：土豆網\n登錄：％{login}\n標題：％{title}",
@@ -2121,6 +2132,18 @@
     "sharedPasteboardPathMissing": "共享粘貼板路徑不再存在。你想選擇一個新的位置嗎？",
     "sharedPasteboardRootFolder": "共享的粘貼板根文件夾",
     "sharp": "尖銳",
+    "shiftAnchorDownPixels": {
+        "other": "將錨點向下移動 %{amount} 像素"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "向左移動錨點 %{amount} 像素"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "將錨向右移動 %{amount} 像素"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "將錨點向上移動 %{amount} 像素"
+    },
     "shiftPositionDownPixels": {
         "other": "將位置向下移動 %{amount} 像素"
     },
@@ -2144,6 +2167,18 @@
     },
     "shiftScaleUp": {
         "other": "Shift Scale Up %{amount} 像素"
+    },
+    "shiftScaleXDown": {
+        "other": "將比例 X 向下移動 %{amount} 像素"
+    },
+    "shiftScaleXUp": {
+        "other": "將 X 向上移動 %{amount} 像素"
+    },
+    "shiftScaleYDown": {
+        "other": "將 Y 比例向下移動 %{amount} 像素"
+    },
+    "shiftScaleYUp": {
+        "other": "按 %{amount} 像素移動 Y 軸"
     },
     "short": "短的",
     "shortPressAction": "短按動作",
