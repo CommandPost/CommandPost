@@ -191,6 +191,7 @@
     "betterPerformance": "Lepsza wydajność",
     "betterQuality": "Lepsza jakość",
     "black": "czarny",
+    "blackPoint": "Czarny punkt",
     "blade": "Nóż",
     "blendMode": "Tryb mieszania",
     "blendMode9": "Tryb mieszania",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Kod musi zwrócić funkcję.",
     "cold": "Zimno",
     "color": "Kolor",
+    "colorAdjustments": "Korekty kolorów",
+    "colorAdjustments_group": "Korekty kolorów",
     "colorAndEffects": "Kolor i efekty",
     "colorBoard": "Tablica kolorów",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Element interfejsu użytkownika kontroli Final Cut Pro (absolutny)",
     "controlFCPUIElementRelative": "Kontroluj element interfejsu użytkownika Final Cut Pro (względny)",
     "controlFCPUIElementRelativeNote": "Najedź myszką na element interfejsu, przytrzymaj CONTROL, a następnie dostosuj pokrętło / suwak MIDI, aby się zarejestrować.",
+    "controlRange": "Zakres kontrolny",
     "controlSurfaces": "Powierzchnie sterujące",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Kontroluje głośność w inspektorze Final Cut Pro Audio",
     "controlsTimelineZoomViaTheAppearancePopup": "Steruje powiększeniem osi czasu za pomocą wyskakującego okienka wyglądu",
@@ -1020,6 +1024,7 @@
     "finalcutpro_import_ignorecard_label": "Ignoruj karty",
     "finalcutpro_import_preferences_label": "Preferencje importu",
     "finalcutpro_inspector_audio_label": "Inspektor: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspektor: Korekty kolorów",
     "finalcutpro_inspector_info_label": "Inspektor: Informacje",
     "finalcutpro_inspector_show_label": "Inspektor: dodatkowe działania",
     "finalcutpro_inspector_text_label": "Inspektor: Tekst",
@@ -1292,6 +1297,8 @@
     "highlights": "Najważniejsze",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Podkreśla odcień",
+    "highlightsWarmth": "Podkreśla ciepło",
     "histogram": "Histogram",
     "history": "Historia",
     "historyIsEmpty": "Historia jest pusta",
@@ -1570,6 +1577,8 @@
     "midtones": "Półcienie",
     "midtones2": "MT",
     "midtones4": "Średnie",
+    "midtonesTint": "Odcień półtonów",
+    "midtonesWarmth": "Ciepło w tonach średnich",
     "mins": {
         "few": "min",
         "many": "min",
@@ -2130,6 +2139,8 @@
     "shadows": "Cienie",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Odcień cieni",
+    "shadowsWarmth": "Ciepło Cienia",
     "share": "Dzielić",
     "shareDetails_Facebook": "Wpisz: Facebook\nLogin: %{login}\nTytuł: %{title}",
     "shareDetails_Tudou": "Wpisz: Tudou\nLogin: %{login}\nTytuł: %{title}",
@@ -2145,6 +2156,30 @@
     "sharedPasteboardPathMissing": "Ścieżka Shared Pasteboard już nie istnieje. Czy chcesz wybrać nową lokalizację?",
     "sharedPasteboardRootFolder": "Udostępniony folder główny tektury",
     "sharp": "Ostry",
+    "shiftAnchorDownPixels": {
+        "few": "Przesuń kotwicę w dół o %{amount} pikseli",
+        "many": "Przesuń kotwicę w dół o %{amount} pikseli",
+        "one": "Przesuń kotwicę w dół o %{amount} pikseli",
+        "other": "Przesuń kotwicę w dół o %{amount} pikseli"
+    },
+    "shiftAnchorLeftPixels": {
+        "few": "Przesuń kotwicę w lewo o %{amount} pikseli",
+        "many": "Przesuń kotwicę w lewo o %{amount} pikseli",
+        "one": "Przesuń kotwicę w lewo o %{amount} pikseli",
+        "other": "Przesuń kotwicę w lewo o %{amount} pikseli"
+    },
+    "shiftAnchorRightPixels": {
+        "few": "Przesuń kotwicę w prawo o %{amount} pikseli",
+        "many": "Przesuń kotwicę w prawo o %{amount} pikseli",
+        "one": "Przesuń kotwicę w prawo o %{amount} pikseli",
+        "other": "Przesuń kotwicę w prawo o %{amount} pikseli"
+    },
+    "shiftAnchorUpPixels": {
+        "few": "Przesuń kotwicę w górę o %{amount} pikseli",
+        "many": "Przesuń kotwicę w górę o %{amount} pikseli",
+        "one": "Przesuń kotwicę w górę o %{amount} pikseli",
+        "other": "Przesuń kotwicę w górę o %{amount} pikseli"
+    },
     "shiftPositionDownPixels": {
         "few": "Przesuń pozycję w dół %{amount} Piksel",
         "many": "Przesuń pozycję w dół %{amount} Piksel",
@@ -2192,6 +2227,30 @@
         "many": "Przesuń przeskalowanie w górę o %{amount} pikseli",
         "one": "Przesuń przeskalowanie w górę o %{amount} pikseli",
         "other": "Przesuń przeskalowanie w górę o %{amount} pikseli"
+    },
+    "shiftScaleXDown": {
+        "few": "Przesuń skalę X w dół o %{amount} pikseli",
+        "many": "Przesuń skalę X w dół o %{amount} pikseli",
+        "one": "Przesuń skalę X w dół o %{amount} pikseli",
+        "other": "Przesuń skalę X w dół o %{amount} pikseli"
+    },
+    "shiftScaleXUp": {
+        "few": "Shift Skaluj X w górę o %{amount} pikseli",
+        "many": "Shift Skaluj X w górę o %{amount} pikseli",
+        "one": "Shift Skaluj X w górę o %{amount} pikseli",
+        "other": "Shift Skaluj X w górę o %{amount} pikseli"
+    },
+    "shiftScaleYDown": {
+        "few": "Przesuń skalę Y w dół o %{amount} pikseli",
+        "many": "Przesuń skalę Y w dół o %{amount} pikseli",
+        "one": "Przesuń skalę Y w dół o %{amount} pikseli",
+        "other": "Przesuń skalę Y w dół o %{amount} pikseli"
+    },
+    "shiftScaleYUp": {
+        "few": "Shift Skaluj Y w górę o %{amount} pikseli",
+        "many": "Shift Skaluj Y w górę o %{amount} pikseli",
+        "one": "Shift Skaluj Y w górę o %{amount} pikseli",
+        "other": "Shift Skaluj Y w górę o %{amount} pikseli"
     },
     "short": "Niski",
     "shortPressAction": "Krótkie naciśnięcie",
