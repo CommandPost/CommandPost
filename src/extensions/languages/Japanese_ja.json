@@ -191,6 +191,7 @@
     "betterPerformance": "よりよい性能",
     "betterQuality": "より良い品質",
     "black": "ブラック",
+    "blackPoint": "黒点",
     "blade": "刃",
     "blendMode": "ブレンドモード",
     "blendMode9": "BlendMode",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "コードは関数を返す必要があります。",
     "cold": "コールド",
     "color": "色",
+    "colorAdjustments": "色の調整",
+    "colorAdjustments_group": "色の調整",
     "colorAndEffects": "色と効果",
     "colorBoard": "カラーボード",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Final Cut Proユーザーインターフェイス要素を制御する（絶対）",
     "controlFCPUIElementRelative": "Final Cut Proのユーザーインターフェイス要素を制御する（相対）",
     "controlFCPUIElementRelativeNote": "UIエレメントの上にマウスを置いて、CONTROLを押したまま、MIDIノブ/フェーダーを調整して登録します。",
+    "controlRange": "制御範囲",
     "controlSurfaces": "操縦翼面",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "FinalCutProオーディオインスペクタで音量を制御します",
     "controlsTimelineZoomViaTheAppearancePopup": "外観ポップアップを介してタイムラインズームを制御します",
@@ -1008,6 +1012,7 @@
     "finalcutpro_import_ignorecard_label": "カードを無視する",
     "finalcutpro_import_preferences_label": "インポート設定",
     "finalcutpro_inspector_audio_label": "インスペクター：オーディオ",
+    "finalcutpro_inspector_coloradjustments_label": "インスペクター: カラー調整",
     "finalcutpro_inspector_info_label": "インスペクター：情報",
     "finalcutpro_inspector_show_label": "インスペクタ：追加のアクション",
     "finalcutpro_inspector_text_label": "インスペクタ：テキスト",
@@ -1280,6 +1285,8 @@
     "highlights": "ハイライト",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "ハイライトの色合い",
+    "highlightsWarmth": "ハイライトの暖かさ",
     "histogram": "ヒストグラム",
     "history": "歴史",
     "historyIsEmpty": "履歴は空です",
@@ -1555,6 +1562,8 @@
     "midtones": "ミドルトン",
     "midtones2": "MT",
     "midtones4": "ミッド",
+    "midtonesTint": "ミッドトーンの色合い",
+    "midtonesWarmth": "中間色の暖かさ",
     "mins": {
         "other": "最小"
     },
@@ -2106,6 +2115,8 @@
     "shadows": "影",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "シャドウティント",
+    "shadowsWarmth": "影の温かさ",
     "share": "シェア",
     "shareDetails_Facebook": "タイプ：Facebook\nログイン：％{login}\nタイトル：％{title}",
     "shareDetails_Tudou": "タイプ：Tudou\nログイン：％{login}\nタイトル：％{title}",
@@ -2121,6 +2132,18 @@
     "sharedPasteboardPathMissing": "共有ペーストボードパスは存在しません。新しい場所を選択しますか？",
     "sharedPasteboardRootFolder": "共有ペーストボードのルートフォルダ",
     "sharp": "シャープ",
+    "shiftAnchorDownPixels": {
+        "other": "アンカーを %{amount} ピクセル下に移動"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "アンカーを %{amount} ピクセル左に移動"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "アンカーを %{amount} ピクセル右に移動"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "アンカーを %{amount} ピクセル上にシフト"
+    },
     "shiftPositionDownPixels": {
         "other": "位置を下にシフト％{amount}ピクセル"
     },
@@ -2144,6 +2167,18 @@
     },
     "shiftScaleUp": {
         "other": "シフトスケールアップ％{amount}ピクセル"
+    },
+    "shiftScaleXDown": {
+        "other": "スケール X を %{amount} ピクセル下にシフト"
+    },
+    "shiftScaleXUp": {
+        "other": "スケール X を %{amount} ピクセル上にシフト"
+    },
+    "shiftScaleYDown": {
+        "other": "Y スケールを %{amount} ピクセル下にシフト"
+    },
+    "shiftScaleYUp": {
+        "other": "スケール Y を %{amount} ピクセル分上にシフト"
     },
     "short": "短い",
     "shortPressAction": "短押しアクション",
