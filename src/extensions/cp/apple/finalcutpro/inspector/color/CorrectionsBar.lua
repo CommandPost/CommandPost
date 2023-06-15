@@ -1,42 +1,47 @@
 --- === cp.apple.finalcutpro.inspector.color.CorrectionsBar ===
 ---
---- The Correction selection/management bar at the top of the ColorInspector
+--- The Correction selection/management bar at the top of the ColorInspector.
 ---
 --- Requires Final Cut Pro 10.4 or later.
+---
+--- Color Adjustments requires Final Cut Pro 10.6.6 or later.
 
-local require = require
+local require           = require
 
-local log                               = require "hs.logger" .new "colorInspect"
+local log               = require "hs.logger" .new "colorInspect"
 
-local axutils                           = require "cp.ui.axutils"
-local Element                           = require "cp.ui.Element"
-local CheckBox                          = require "cp.ui.CheckBox"
-local just                              = require "cp.just"
-local MenuButton                        = require "cp.ui.MenuButton"
+local axutils           = require "cp.ui.axutils"
+local Element           = require "cp.ui.Element"
+local CheckBox          = require "cp.ui.CheckBox"
+local just              = require "cp.just"
+local MenuButton        = require "cp.ui.MenuButton"
 
-local Do                                = require "cp.rx.go.Do"
-local If                                = require "cp.rx.go.If"
-local Throw                             = require "cp.rx.go.Throw"
-local Require                           = require "cp.rx.go.Require"
+local Do                = require "cp.rx.go.Do"
+local If                = require "cp.rx.go.If"
+local Throw             = require "cp.rx.go.Throw"
+local Require           = require "cp.rx.go.Require"
 
-local sort = table.sort
-
+local sort              = table.sort
 
 local CorrectionsBar = Element:subclass("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES
 --- Constant
---- Table of Correction Types:
+--- Table of Correction Types.
 ---
----  * "Color Board"
----  * "Color Wheels"
----  * "Color Curves"
----  * "Hue/Saturation Curves"
+--- Notes:
+---  * Possible values are:
+---   ** "Color Board"
+---   ** "Color Wheels"
+---   ** "Color Curves"
+---   ** "Hue/Saturation Curves"
+---   ** "Color Adjustments" (Final Cut Pro 10.6.6 or later)
 CorrectionsBar.static.CORRECTION_TYPES = {
     ["Color Board"]             = "FFCorrectorColorBoard",
     ["Color Wheels"]            = "PAECorrectorEffectDisplayName",
     ["Color Curves"]            = "PAEColorCurvesEffectDisplayName",
     ["Hue/Saturation Curves"]   = "PAEHSCurvesEffectDisplayName",
+    ["Color Adjustments"]      = "HDRColorCorrect::Filter Name",
 }
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.matches(element) -> boolean

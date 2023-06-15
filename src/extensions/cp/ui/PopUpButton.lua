@@ -65,7 +65,7 @@ function PopUpButton.lazy.prop:value()
                             return
                         end
                     end
-                    items:doCancel()
+                    items:performAction("AXCancel")
                 end
             end
         end
@@ -177,7 +177,7 @@ function PopUpButton:doSelectValue(value, overrideValue)
                         return true
                     end
                 end
-                menuUI:doCancel()
+                menuUI:performAction("AXCancel")
                 return false
             end)
             :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
