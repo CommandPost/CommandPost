@@ -191,6 +191,7 @@
     "betterPerformance": "Melhor performance",
     "betterQuality": "Melhor qualidade",
     "black": "Preto",
+    "blackPoint": "Ponto preto",
     "blade": "Lâmina",
     "blendMode": "Modo de mistura",
     "blendMode9": "Modo de mistura",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "O código precisa retornar uma função.",
     "cold": "Frio",
     "color": "Cor",
+    "colorAdjustments": "Ajustes de cor",
+    "colorAdjustments_group": "Ajustes de cor",
     "colorAndEffects": "Cor e Efeitos",
     "colorBoard": "Placa de cores",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Elemento de interface do usuário do Final Cut Pro de controle (absoluto)",
     "controlFCPUIElementRelative": "Elemento de interface do usuário do Final Cut Pro de controle (relativo)",
     "controlFCPUIElementRelativeNote": "Passe o mouse sobre um elemento da interface do usuário, segure CONTROL e ajuste o MIDI Knob / Fader para registrar.",
+    "controlRange": "Faixa de controle",
     "controlSurfaces": "Superfícies de controle",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Controla o volume no Inspetor de áudio do Final Cut Pro",
     "controlsTimelineZoomViaTheAppearancePopup": "Controla o zoom da linha de tempo por meio do pop-up de aparência",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "Ignorar cartões",
     "finalcutpro_import_preferences_label": "Preferências de importação",
     "finalcutpro_inspector_audio_label": "Inspetor: Áudio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspetor: Ajustes de cor",
     "finalcutpro_inspector_info_label": "Inspetor: Informações",
     "finalcutpro_inspector_show_label": "Inspetor: ações adicionais",
     "finalcutpro_inspector_text_label": "Inspetor: texto",
@@ -1284,6 +1289,8 @@
     "highlights": "Destaques",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Matiz de Destaques",
+    "highlightsWarmth": "Destaques Calor",
     "histogram": "Histograma",
     "history": "História",
     "historyIsEmpty": "A história está vazia",
@@ -1560,6 +1567,8 @@
     "midtones": "Midtones",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "Matiz de meio-tom",
+    "midtonesWarmth": "Meio-tom quente",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "Sombras",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Tonalidade das Sombras",
+    "shadowsWarmth": "Calor das Sombras",
     "share": "Compartilhar",
     "shareDetails_Facebook": "Tipo: Facebook\nLogin: %{login}\nTítulo: %{title}",
     "shareDetails_Tudou": "Tipo: Tudou\nLogin: %{login}\nTítulo: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "O caminho do Shared Pasteboard não existe mais. Gostaria de selecionar um novo local?",
     "sharedPasteboardRootFolder": "Pasta raiz compartilhada do Pasteboard",
     "sharp": "Afiado",
+    "shiftAnchorDownPixels": {
+        "one": "Mude a âncora para baixo em %{amount} Pixel",
+        "other": "Shift Skaluj Y w górę o %{amount} pikseli"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Deslocar a âncora à esquerda em %{amount} Pixel",
+        "other": "Deslocar a âncora à esquerda em %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Deslocar a âncora para a direita em %{amount} Pixel",
+        "other": "Deslocar a âncora para a direita em %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Mude a âncora para cima em %{amount} Pixel",
+        "other": "Mude a âncora para cima em %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Posição de mudança para baixo %{amount} Pixel",
         "other": "Posição de mudança para baixo %{amount} Pixel"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "Deslocamento da escala em %{amount} Pixel",
         "other": "Deslocamento da escala em %{amount} Pixel"
+    },
+    "shiftScaleXDown": {
+        "one": "Deslocar escala X para baixo em %{amount} pixel",
+        "other": "Deslocar escala X para baixo em %{amount} pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Shift Scale X Up em %{amount} Pixel",
+        "other": "Shift Scale X Up em %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Deslocar escala Y para baixo em %{amount} pixel",
+        "other": "Deslocar escala Y para baixo em %{amount} pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Deslocar escala Y para cima em %{amount} pixel",
+        "other": "Deslocar escala Y para cima em %{amount} pixel"
     },
     "short": "Curto",
     "shortPressAction": "Ação de Pressão Curta",
