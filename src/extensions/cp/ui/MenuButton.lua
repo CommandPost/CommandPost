@@ -196,7 +196,12 @@ function MenuButton:selectItemMatching(pattern)
     local ui = self:UI()
     if ui then
         local title = ui:attributeValue("AXTitle")
-        if string.match(title, pattern) then
+        --------------------------------------------------------------------------------
+        -- NOTE: For some reason on macOS Ventura this title can sometimes be nil.
+        --       This problem doesn't happen on macOS Monterey. Hence we check that
+        --       `title` is valid below:
+        --------------------------------------------------------------------------------
+        if title and string.match(title, pattern) then
             -- Don't bother selecting if it's already selected.
             return true
         end
