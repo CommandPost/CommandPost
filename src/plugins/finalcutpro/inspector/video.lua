@@ -654,6 +654,104 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Scale X:
+    --------------------------------------------------------------------------------
+    local scaleX = transform:scaleX()
+    local shiftScaleXUpdating = false
+    local shiftScaleXValue = 0
+    local updateShiftScaleX = deferred.new(0.01):action(function()
+        return If(function() return not shiftScaleXUpdating and shiftScaleXValue ~= 0 end)
+        :Then(
+            Do(scaleX:doShow())
+            :Then(function()
+                shiftScaleXUpdating = true
+                local currentValue = scaleX:value()
+                if currentValue then
+                    scaleX:value(currentValue + shiftScaleXValue)
+                    shiftScaleXValue = 0
+                end
+                shiftScaleXUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateShiftScaleX")
+        :Now()
+    end)
+    local shiftScale = function(value)
+        shiftScaleXValue = shiftScaleXValue + value
+        updateShiftScaleX()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftScaleXUp" .. shiftAmount)
+            :titled(i18n("shiftScaleXUp", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount) end)
+            :whenRepeated(function() shiftScale(shiftAmount) end)
+
+        fcpxCmds:add("shiftScaleXDown" .. shiftAmount)
+            :titled(i18n("shiftScaleXDown", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount * -1) end)
+            :whenRepeated(function() shiftScale(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetScaleX")
+        :titled(i18n("reset") .. " " .. i18n("scale") .. " X " .. i18n("all"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            scaleX:show()
+            scaleX:value(100)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Scale Y:
+    --------------------------------------------------------------------------------
+    local scaleY = transform:scaleY()
+    local shiftScaleYUpdating = false
+    local shiftScaleYValue = 0
+    local updateShiftScaleY = deferred.new(0.01):action(function()
+        return If(function() return not shiftScaleYUpdating and shiftScaleYValue ~= 0 end)
+        :Then(
+            Do(scaleY:doShow())
+            :Then(function()
+                shiftScaleYUpdating = true
+                local currentValue = scaleY:value()
+                if currentValue then
+                    scaleY:value(currentValue + shiftScaleYValue)
+                    shiftScaleYValue = 0
+                end
+                shiftScaleYUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateShiftScaleY")
+        :Now()
+    end)
+    local shiftScale = function(value)
+        shiftScaleYValue = shiftScaleYValue + value
+        updateShiftScaleY()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftScaleUpY" .. shiftAmount)
+            :titled(i18n("shiftScaleYUp", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount) end)
+            :whenRepeated(function() shiftScale(shiftAmount) end)
+
+        fcpxCmds:add("shiftScaleDownY" .. shiftAmount)
+            :titled(i18n("shiftScaleYDown", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount * -1) end)
+            :whenRepeated(function() shiftScale(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetScaleY")
+        :titled(i18n("reset") .. " " .. i18n("scale") .. " Y " .. i18n("all"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            scaleY:show()
+            scaleY:value(100)
+        end)
+
+    --------------------------------------------------------------------------------
     -- Rotation:
     --------------------------------------------------------------------------------
     local rotation = fcp.inspector.video:transform():rotation()
