@@ -191,6 +191,7 @@
     "betterPerformance": "ਬਿਹਤਰ ਪ੍ਰਦਰਸ਼ਨ",
     "betterQuality": "ਬਿਹਤਰ ਗੁਣਵੱਤਾ",
     "black": "ਬਲੈਕ",
+    "blackPoint": "ਬਲੈਕ ਪੁਆਇੰਟ",
     "blade": "ਬਲੇਡ",
     "blendMode": "ਬਲੇਡ ਮੋਡ",
     "blendMode9": "ਬਲੇਂਡਮੋਡ",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "ਕੋਡ ਨੂੰ ਇੱਕ ਕਾਰਜ ਵਾਪਸ ਕਰਨ ਦੀ ਜ਼ਰੂਰਤ ਹੈ.",
     "cold": "ਠੰਡਾ",
     "color": "ਰੰਗ",
+    "colorAdjustments": "ਰੰਗ ਸਮਾਯੋਜਨ",
+    "colorAdjustments_group": "ਰੰਗ ਸਮਾਯੋਜਨ",
     "colorAndEffects": "ਰੰਗ ਅਤੇ ਪਰਭਾਵ",
     "colorBoard": "ਰੰਗ ਬੋਰਡ",
     "colorBoard2": "ਸੀਬੀ",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਯੂਜ਼ਰ ਇੰਟਰਫੇਸ ਐਲੀਮੈਂਟ (ਸੰਪੂਰਨ) ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ",
     "controlFCPUIElementRelative": "ਫਾਈਨਲ ਕਟ ਪ੍ਰੋ ਯੂਜ਼ਰ ਇੰਟਰਫੇਸ ਐਲੀਮੈਂਟ (ਰੀਲੇਟਿਵ) ਕੰਟ੍ਰੋਲ ਕਰੋ",
     "controlFCPUIElementRelativeNote": "ਇੱਕ UI ਐਲੀਮੈਂਟ ਤੇ ਮਾਉਸ ਨੂੰ ਹਿਵਰਓ, ਕੰਟਰੋਲ ਲਵੋ, ਫਿਰ ਰਜਿਸਟਰ ਕਰਨ ਲਈ MIDI Knob / Fader ਨੂੰ ਵਿਵਸਥਿਤ ਕਰੋ.",
+    "controlRange": "ਕੰਟਰੋਲ ਰੇਂਜ",
     "controlSurfaces": "ਸਤਹ ਕੰਟਰੋਲ ਕਰੋ",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਆਡੀਓ ਇੰਸਪੈਕਟਰ ਵਿੱਚ ਵਾਲੀਅਮ ਨੂੰ ਕੰਟਰੋਲ ਕਰਦਾ ਹੈ",
     "controlsTimelineZoomViaTheAppearancePopup": "ਦਿੱਖ ਪੌਪ-ਅਪ ਦੁਆਰਾ ਟਾਈਮਲਾਈਨ ਜ਼ੂਮ ਨੂੰ ਨਿਯੰਤਰਿਤ ਕਰਦਾ ਹੈ",
@@ -1012,6 +1016,7 @@
     "finalcutpro_import_ignorecard_label": "ਕਾਰਡ ਅਣਡਿੱਠ ਕਰੋ",
     "finalcutpro_import_preferences_label": "ਪਸੰਦ ਨੂੰ ਆਯਾਤ ਕਰੋ",
     "finalcutpro_inspector_audio_label": "ਇੰਸਪੈਕਟਰ: ਆਡੀਓ",
+    "finalcutpro_inspector_coloradjustments_label": "ਇੰਸਪੈਕਟਰ: ਰੰਗ ਵਿਵਸਥਾ",
     "finalcutpro_inspector_info_label": "ਇੰਸਪੈਕਟਰ: ਜਾਣਕਾਰੀ",
     "finalcutpro_inspector_show_label": "ਇੰਸਪੈਕਟਰ: ਵਾਧੂ ਕਾਰਵਾਈਆਂ",
     "finalcutpro_inspector_text_label": "ਇੰਸਪੈਕਟਰ: ਪਾਠ",
@@ -1284,6 +1289,8 @@
     "highlights": "ਹਾਈਲਾਈਟਸ",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "ਹਾਈਲਾਈਟਸ ਟਿੰਟ",
+    "highlightsWarmth": "ਨਿੱਘ ਨੂੰ ਉਜਾਗਰ ਕਰਦਾ ਹੈ",
     "histogram": "ਹਿਸਟੋਗ੍ਰਾਮ",
     "history": "ਇਤਿਹਾਸ",
     "historyIsEmpty": "ਇਤਿਹਾਸ ਖਾਲੀ ਹੈ",
@@ -1560,6 +1567,8 @@
     "midtones": "ਮਿਡਟੋਨਜ਼",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "ਮਿਡਟੋਨਸ ਟਿੰਟ",
+    "midtonesWarmth": "ਮਿਡਟੋਨਸ ਨਿੱਘ",
     "mins": {
         "one": "ਮਿੰਟ",
         "other": "mins"
@@ -2114,6 +2123,8 @@
     "shadows": "ਸ਼ੈਡੋ",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "ਸ਼ੈਡੋਜ਼ ਰੰਗਤ",
+    "shadowsWarmth": "ਪਰਛਾਵੇਂ ਨਿੱਘ",
     "share": "ਸਾਂਝਾ ਕਰੋ",
     "shareDetails_Facebook": "ਕਿਸਮ: ਫੇਸਬੁੱਕ\nਲਾਗਇਨ: %{login}\nਟਾਈਟਲ: %{title}",
     "shareDetails_Tudou": "ਕਿਸਮ: Tudou\nਲਾਗਇਨ: %{login}\nਟਾਈਟਲ: %{title}",
@@ -2129,6 +2140,22 @@
     "sharedPasteboardPathMissing": "ਸ਼ੇਅਰਡ ਪੇਸਟਬੋਰਡ ਪਾਥ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ. ਕੀ ਤੁਸੀਂ ਇੱਕ ਨਵੀਂ ਥਾਂ ਚੁਣਨਾ ਚਾਹੋਗੇ?",
     "sharedPasteboardRootFolder": "ਸ਼ੇਅਰਡ ਪੇਸਟਬੋਰਡ ਰੂਟ ਫੋਲਡਰ",
     "sharp": "ਤਿੱਖੀ",
+    "shiftAnchorDownPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
     "shiftPositionDownPixels": {
         "one": "ਸ਼ਿਫਟ ਸਥਿਤੀ ਹੇਠਾਂ %{amount} ਪਿਕਸਲ",
         "other": "ਸ਼ਿਫਟ ਸਥਿਤੀ ਹੇਠਾਂ %{amount} ਪਿਕਸਲ"
@@ -2160,6 +2187,22 @@
     "shiftScaleUp": {
         "one": "%{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸਿਫਟ ਸਕੇਲ",
         "other": "%{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸਿਫਟ ਸਕੇਲ"
+    },
+    "shiftScaleXDown": {
+        "one": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftScaleXUp": {
+        "one": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftScaleYDown": {
+        "one": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftScaleYUp": {
+        "one": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
     },
     "short": "ਛੋਟਾ",
     "shortPressAction": "ਛੋਟੀ ਪ੍ਰੈਸ ਕਾਰਵਾਈ",
