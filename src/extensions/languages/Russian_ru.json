@@ -191,6 +191,7 @@
     "betterPerformance": "Лучшая производительность",
     "betterQuality": "Лучше качество",
     "black": "черный",
+    "blackPoint": "Черная точка",
     "blade": "лопасть",
     "blendMode": "Режим смешивания",
     "blendMode9": "Режим смешивания",
@@ -285,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Код должен возвращать функцию.",
     "cold": "Холодно",
     "color": "цвет",
+    "colorAdjustments": "Настройки цвета",
+    "colorAdjustments_group": "Настройки цвета",
     "colorAndEffects": "Цвет & Эффекты",
     "colorBoard": "Цветная доска",
     "colorBoard2": "CB",
@@ -336,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Элемент интерфейса пользователя Final Cut Pro (абсолютный)",
     "controlFCPUIElementRelative": "Элемент пользовательского интерфейса Final Cut Pro (относительный)",
     "controlFCPUIElementRelativeNote": "Наведите указатель мыши на элемент пользовательского интерфейса, удерживайте CONTROL, затем отрегулируйте MIDI-регулятор / фейдер для регистрации.",
+    "controlRange": "Диапазон управления",
     "controlSurfaces": "Панели управления",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Управляет громкостью в Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Управляет масштабированием временной шкалы через всплывающее окно «Внешний вид»",
@@ -1020,6 +1024,7 @@
     "finalcutpro_import_ignorecard_label": "Игнорировать карты",
     "finalcutpro_import_preferences_label": "Параметры импорта",
     "finalcutpro_inspector_audio_label": "Инспектор: Аудио",
+    "finalcutpro_inspector_coloradjustments_label": "Инспектор: настройка цвета",
     "finalcutpro_inspector_info_label": "Инспектор: Информация",
     "finalcutpro_inspector_show_label": "Инспектор: Дополнительные действия",
     "finalcutpro_inspector_text_label": "Инспектор: Текст",
@@ -1292,6 +1297,8 @@
     "highlights": "Особенности",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Оттенок",
+    "highlightsWarmth": "тепло",
     "histogram": "Гистограмма",
     "history": "История",
     "historyIsEmpty": "История пуста",
@@ -1570,6 +1577,8 @@
     "midtones": "Midtones",
     "midtones2": "Монтана",
     "midtones4": "Mids",
+    "midtonesTint": "Оттенок средних тонов",
+    "midtonesWarmth": "Средние тона Теплота",
     "mins": {
         "few": "мин",
         "many": "мин",
@@ -2130,6 +2139,8 @@
     "shadows": "Тени",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Оттенок теней",
+    "shadowsWarmth": "Тепло теней",
     "share": "Поделиться",
     "shareDetails_Facebook": "Тип: Facebook\nЛогин: %{login}\nНазвание: %{title}",
     "shareDetails_Tudou": "Тип: Tudou\nЛогин: %{login}\nНазвание: %{title}",
@@ -2145,6 +2156,30 @@
     "sharedPasteboardPathMissing": "Путь общих паштетов больше не существует. Вы хотите выбрать новое местоположение?",
     "sharedPasteboardRootFolder": "Общая корневая папка картонной корзины",
     "sharp": "диез",
+    "shiftAnchorDownPixels": {
+        "few": "Сдвинуть привязку вниз на %{amount} пикселя",
+        "many": "Сдвинуть привязку вниз на %{amount} пикселя",
+        "one": "Сдвинуть привязку вниз на %{amount} пикселя",
+        "other": "Сдвинуть привязку вниз на %{amount} пикселя"
+    },
+    "shiftAnchorLeftPixels": {
+        "few": "Сдвинуть привязку влево на %{amount} пикселя",
+        "many": "Сдвинуть привязку влево на %{amount} пикселя",
+        "one": "Сдвинуть привязку влево на %{amount} пикселя",
+        "other": "Сдвинуть привязку влево на %{amount} пикселя"
+    },
+    "shiftAnchorRightPixels": {
+        "few": "Сдвинуть привязку вправо на %{amount} пикселя",
+        "many": "Сдвинуть привязку вправо на %{amount} пикселя",
+        "one": "Сдвинуть привязку вправо на %{amount} пикселя",
+        "other": "Сдвинуть привязку вправо на %{amount} пикселя"
+    },
+    "shiftAnchorUpPixels": {
+        "few": "Сдвинуть привязку вверх на %{amount} пикселя",
+        "many": "Сдвинуть привязку вверх на %{amount} пикселя",
+        "one": "Сдвинуть привязку вверх на %{amount} пикселя",
+        "other": "Сдвинуть привязку вверх на %{amount} пикселя"
+    },
     "shiftPositionDownPixels": {
         "few": "Shift Position Down %{amount} пикселей",
         "many": "Shift Position Down %{amount} пикселей",
@@ -2192,6 +2227,30 @@
         "many": "Сдвиг Масштаб на %{amount} пикселей",
         "one": "Сдвиг Масштаб на %{amount} пикселей",
         "other": "Сдвиг Масштаб на %{amount} пикселей"
+    },
+    "shiftScaleXDown": {
+        "few": "Сдвинуть масштаб X вниз на %{amount} пикселей",
+        "many": "Сдвинуть масштаб X вниз на %{amount} пикселей",
+        "one": "Сдвинуть масштаб X вниз на %{amount} пикселей",
+        "other": "Сдвинуть масштаб X вниз на %{amount} пикселей"
+    },
+    "shiftScaleXUp": {
+        "few": "Сдвинуть масштаб X вверх на %{amount} пикселей",
+        "many": "Сдвинуть масштаб X вверх на %{amount} пикселей",
+        "one": "Сдвинуть масштаб X вверх на %{amount} пикселей",
+        "other": "Сдвинуть масштаб X вверх на %{amount} пикселей"
+    },
+    "shiftScaleYDown": {
+        "few": "Сдвинуть шкалу Y вниз на %{amount} пикселей",
+        "many": "Сдвинуть шкалу Y вниз на %{amount} пикселей",
+        "one": "Сдвинуть шкалу Y вниз на %{amount} пикселей",
+        "other": "Сдвинуть шкалу Y вниз на %{amount} пикселей"
+    },
+    "shiftScaleYUp": {
+        "few": "Сдвинуть масштаб Y вверх на %{amount} пикселей",
+        "many": "Сдвинуть масштаб Y вверх на %{amount} пикселей",
+        "one": "Сдвинуть масштаб Y вверх на %{amount} пикселей",
+        "other": "Сдвинуть масштаб Y вверх на %{amount} пикселей"
     },
     "short": "короткий",
     "shortPressAction": "Короткое нажатие",
