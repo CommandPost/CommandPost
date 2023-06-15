@@ -2176,6 +2176,22 @@
         "one": "Shift Scale Up by %{amount} Pixel",
         "other": "Shift Scale Up by %{amount} Pixels"
     },
+    "shiftScaleXDown": {
+        "one": "Shift Scale X Down by %{amount} Pixel",
+        "other": "Shift Scale X Down by %{amount} Pixels"
+    },
+    "shiftScaleXUp": {
+        "one": "Shift Scale X Up by %{amount} Pixel",
+        "other": "Shift Scale X Up by %{amount} Pixels"
+    },
+    "shiftScaleYDown": {
+        "one": "Shift Scale Y Down by %{amount} Pixel",
+        "other": "Shift Scale Y Down by %{amount} Pixels"
+    },
+    "shiftScaleYUp": {
+        "one": "Shift Scale Y Up by %{amount} Pixel",
+        "other": "Shift Scale Y Up by %{amount} Pixels"
+    },
     "short": "Short",
     "shortcut_group_fcpx": "Final Cut Pro",
     "shortcut_group_global": "All Applications",
