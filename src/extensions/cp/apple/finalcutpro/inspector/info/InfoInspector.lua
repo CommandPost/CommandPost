@@ -103,6 +103,9 @@ function InfoInspector:initialize(parent)
 
         audioOutputChannels     = staticText "Audio Channel Count",
         audioSampleRate         = staticText "Audio Sample Rate",
+
+        filename                = staticText "Filename",
+        displayName             = staticText "Display name",
     }
 end
 
