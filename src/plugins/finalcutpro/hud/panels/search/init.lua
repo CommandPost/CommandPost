@@ -136,6 +136,8 @@ local function getColumnNames()
         ["Proxy Codecs"] =  fcp:string("Proxy Codecs"),
         ["360° Mode"] = fcp:string("FFOrganizerFilterHUDFormatInfoSphericalType"),
         ["Stereoscopic Mode"] = fcp:string("FFMD3DStereoMode"),
+        ["Filename"] = fcp:string("Filename"),
+        ["Display name"] = fcp:string("Display name"),
     }
 end
 
