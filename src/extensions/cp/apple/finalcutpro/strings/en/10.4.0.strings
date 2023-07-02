@@ -5,5 +5,73 @@
 <dict>
     <key>CPShowHorizon</key>
     <string>Show Horizon</string>
+
+    <!-- Colourlab Ai: -->
+    <key>ColourlabAi_EffectName</key>
+    <string>Colourlab Ai</string>
+    <key>ColourlabAi_UseSmartMatch</key>
+    <string>Use Smart Match</string>
+    <key>ColourlabAi_InputProfile</key>
+    <string>Input Profile</string>
+    <key>ColourlabAi_GamutLimit</key>
+    <string>Gamut Limit</string>
+    <key>ColourlabAi_GamutLimitRed</key>
+    <string>Gamut Limit Red</string>
+    <key>ColourlabAi_GamutLimitGreen</key>
+    <string>Gamut Limit Green</string>
+    <key>ColourlabAi_GamutLimitBlue</key>
+    <string>Gamut Limit Blue</string>
+    <key>ColourlabAi_ColorWheelsWindow</key>
+    <string>Color Wheels Window</string>
+    <key>ColourlabAi_PrinterLightsLuma</key>
+    <string>Printer Lights Luma</string>
+    <key>ColourlabAi_PrinterLightsRed</key>
+    <string>Printer Lights Red</string>
+    <key>ColourlabAi_PrinterLightsGreen</key>
+    <string>Printer Lights Green</string>
+    <key>ColourlabAi_PrinterLightsBlue</key>
+    <string>Printer Lights Blue</string>
+    <key>ColourlabAi_PrinterLightsCyan</key>
+    <string>Printer Lights Cyan</string>
+    <key>ColourlabAi_PrinterLightsMagenta</key>
+    <string>Printer Lights Magenta</string>
+    <key>ColourlabAi_PrinterLightsYellow</key>
+    <string>Printer Lights Yellow</string>
+    <key>ColourlabAi_LiftMaster</key>
+    <string>Lift Master</string>
+    <key>ColourlabAi_LiftRed</key>
+    <string>Lift Red</string>
+    <key>ColourlabAi_LiftGreen</key>
+    <string>Lift Green</string>
+    <key>ColourlabAi_LiftBlue</key>
+    <string>Lift Blue</string>
+    <key>ColourlabAi_GammaMaster</key>
+    <string>Gamma Master</string>
+    <key>ColourlabAi_GammaRed</key>
+    <string>Gamma Red</string>
+    <key>ColourlabAi_GammaGreen</key>
+    <string>Gamma Green</string>
+    <key>ColourlabAi_GammaBlue</key>
+    <string>Gamma Blue</string>
+    <key>ColourlabAi_GainMaster</key>
+    <string>Gain Master</string>
+    <key>ColourlabAi_GainRed</key>
+    <string>Gain Red</string>
+    <key>ColourlabAi_GainGreen</key>
+    <string>Gain Green</string>
+    <key>ColourlabAi_GainBlue</key>
+    <string>Gain Blue</string>
+    <key>ColourlabAi_Saturation</key>
+    <string>Saturation</string>
+    <key>ColourlabAi_Contrast</key>
+    <string>Contrast</string>
+    <key>ColourlabAi_Pivot</key>
+    <string>Pivot</string>
+    <key>ColourlabAi_Temperature</key>
+    <string>Temperature</string>
+    <key>ColourlabAi_ShowLook</key>
+    <string>Show Look</string>
+    <key>ColourlabAi_ShowHelp</key>
+    <string>Show Help</string>
 </dict>
 </plist>
