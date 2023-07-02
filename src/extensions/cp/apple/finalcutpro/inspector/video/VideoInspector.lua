@@ -51,6 +51,7 @@ local BasePanel                 = require "cp.apple.finalcutpro.inspector.BasePa
 local IP                        = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 local strings                   = require "cp.apple.finalcutpro.strings"
 
+local button                    = IP.button
 local checkBox                  = IP.checkBox
 local hasProperties             = IP.hasProperties
 local popUpButton               = IP.popUpButton
@@ -103,7 +104,46 @@ function VideoInspector:initialize(parent)
 
     -- specify that the `contentUI` contains the PropertyRows.
     hasProperties(self, self.contentUI) {
-        effects             = section "FFInspectorBrickEffects" {},
+        effects             = section "FFInspectorBrickEffects" {
+
+            --------------------------------------------------------------------------------
+            -- Colourlab Ai:
+            --------------------------------------------------------------------------------
+            colourlabAi                 = section       "ColourlabAi_EffectName" {
+                useSmartMatch           = checkBox      "ColourlabAi_UseSmartMatch",
+                inputProfile            = popUpButton   "ColourlabAi_InputProfile",
+                gamutLimit              = checkBox      "ColourlabAi_GamutLimit",
+                gamutLimitRed           = slider        "ColourlabAi_GamutLimitRed",
+                gamutLimitGreen         = slider        "ColourlabAi_GamutLimitGreen",
+                gamutLimitBlue          = slider        "ColourlabAi_GamutLimitBlue",
+                colorWheelsWindow       = button        "ColourlabAi_ColorWheelsWindow",
+                printerLightsLuma       = slider        "ColourlabAi_PrinterLightsLuma",
+                printerLightsRed        = slider        "ColourlabAi_PrinterLightsRed",
+                printerLightsGreen      = slider        "ColourlabAi_PrinterLightsGreen",
+                printerLightsBlue       = slider        "ColourlabAi_PrinterLightsBlue",
+                printerLightsCyan       = slider        "ColourlabAi_PrinterLightsCyan",
+                printerLightsMagenta    = slider        "ColourlabAi_PrinterLightsMagenta",
+                printerLightsYellow     = slider        "ColourlabAi_PrinterLightsYellow",
+                liftMaster              = slider        "ColourlabAi_LiftMaster",
+                liftRed                 = slider        "ColourlabAi_LiftRed",
+                liftGreen               = slider        "ColourlabAi_LiftGreen",
+                liftBlue                = slider        "ColourlabAi_LiftBlue",
+                gammaMaster             = slider        "ColourlabAi_GammaMaster",
+                gammaRed                = slider        "ColourlabAi_GammaRed",
+                gammaGreen              = slider        "ColourlabAi_GammaGreen",
+                gammaBlue               = slider        "ColourlabAi_GammaBlue",
+                gainMaster              = slider        "ColourlabAi_GainMaster",
+                gainRed                 = slider        "ColourlabAi_GainRed",
+                gainGreen               = slider        "ColourlabAi_GainGreen",
+                gainBlue                = slider        "ColourlabAi_GainBlue",
+                saturation              = slider        "ColourlabAi_Saturation",
+                contrast                = slider        "ColourlabAi_Contrast",
+                pivot                   = slider        "ColourlabAi_Pivot",
+                temperature             = slider        "ColourlabAi_Temperature",
+                showLook                = popUpButton   "ColourlabAi_ShowLook",
+                showHelp                = button        "ColourlabAi_ShowHelp",
+            },
+        },
 
         compositing         = section "FFHeliumBlendCompositingEffect" {
             blendMode       = popUpButton "FFHeliumBlendMode",

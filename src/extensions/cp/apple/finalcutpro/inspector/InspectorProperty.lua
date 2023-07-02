@@ -438,6 +438,26 @@ function mod.menuButton(labelKey, index)
     end, index)
 end
 
+--- cp.apple.finalcutpro.inspector.InspectorProperty.button(labelKey[, index]) -> cp.prop <cp.ui.PropertyRow; read-only>
+--- Function
+--- Creates a new `cp.prop` that contains a `PropertyRow` matching the `labelKey`.
+---
+--- Parameters:
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
+---
+--- Returns:
+---  * The `cp.prop` that returns the `PropertyRow`.
+---
+--- Notes:
+---  * It has one additional property:
+---   ** `button`   - A `cp.ui.Button`.
+function mod.button(labelKey, index)
+    return mod.simple(labelKey, function(row)
+        row.button = Button(row, function() return childFromRight(row:children(), 1, Button.matches) end)
+    end, index)
+end
+
 --- cp.apple.finalcutpro.inspector.InspectorProperty.popUpButton(labelKey[, index]) -> cp.prop <cp.ui.PropertyRow; read-only>
 --- Function
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
