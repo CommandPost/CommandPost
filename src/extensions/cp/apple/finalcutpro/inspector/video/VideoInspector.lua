@@ -54,6 +54,7 @@ local strings                   = require "cp.apple.finalcutpro.strings"
 local button                    = IP.button
 local checkBox                  = IP.checkBox
 local hasProperties             = IP.hasProperties
+local menuButton                = IP.menuButton
 local popUpButton               = IP.popUpButton
 local section                   = IP.section
 local slider                    = IP.slider
@@ -111,7 +112,7 @@ function VideoInspector:initialize(parent)
             --------------------------------------------------------------------------------
             colourlabAi                 = section       "ColourlabAi_EffectName" {
                 useSmartMatch           = checkBox      "ColourlabAi_UseSmartMatch",
-                inputProfile            = popUpButton   "ColourlabAi_InputProfile",
+                inputProfile            = menuButton    "ColourlabAi_InputProfile",
                 gamutLimit              = checkBox      "ColourlabAi_GamutLimit",
                 gamutLimitRed           = slider        "ColourlabAi_GamutLimitRed",
                 gamutLimitGreen         = slider        "ColourlabAi_GamutLimitGreen",
@@ -140,7 +141,7 @@ function VideoInspector:initialize(parent)
                 contrast                = slider        "ColourlabAi_Contrast",
                 pivot                   = slider        "ColourlabAi_Pivot",
                 temperature             = slider        "ColourlabAi_Temperature",
-                showLook                = popUpButton   "ColourlabAi_ShowLook",
+                showLook                = menuButton    "ColourlabAi_ShowLook",
                 showHelp                = button        "ColourlabAi_ShowHelp",
             },
         },
