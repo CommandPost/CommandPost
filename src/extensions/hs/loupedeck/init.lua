@@ -57,6 +57,11 @@ local RAZER_VENDOR_ID = 0x1532
 -- Loupedeck CT USB Product ID
 local LOUPEDECK_CT_ID = 3
 
+-- LOUPEDECK_CT_V2_ID -> number
+-- Constant
+-- Loupedeck CT USB Product ID
+local LOUPEDECK_CT_V2_ID = 7
+
 -- LOUPEDECK_LIVE_ID -> number
 -- Constant
 -- Loupedeck LIVE USB Product ID
@@ -357,18 +362,18 @@ function mod.mt:initaliseDevice()
     end
 
     --------------------------------------------------------------------------------
-    -- Check the Loupedeck Live Firmware:
+    -- Check the Loupedeck Firmware:
     --------------------------------------------------------------------------------
-    if not self.loupedeckLiveIsUsingRazerFirmwareCheckDone and self.deviceType == mod.deviceTypes.LIVE then
-        log.df("Loupedeck Live connected, so lets check the firmware version...")
+    if not self.loupedeckDeviceIsUsingRazerFirmwareCheckDone and (self.deviceType == mod.deviceTypes.LIVE or self.deviceType == mod.deviceTypes.CT) then
+        log.df("Loupedeck CT or Live connected, so lets check the firmware version...")
         self:requestFirmwareVersion(function(data)
             local firmwareVersion = data and data.b and semver(data.b)
             if firmwareVersion then
-                self.loupedeckLiveIsUsingRazerFirmwareCheckDone = true
-                log.df("Loupedeck Live is using firmware version: v%s", firmwareVersion)
+                self.loupedeckDeviceIsUsingRazerFirmwareCheckDone = true
+                log.df("Loupedeck device is using firmware version: v%s", firmwareVersion)
                 if firmwareVersion > semver("0.2.5") then
-                    log.df("Loupedeck Live is running firmware greater than v0.2.5, so using Razer screen format.")
-                    self.loupedeckLiveIsUsingRazerFirmware = true
+                    log.df("Loupedeck device is running firmware greater than v0.2.5, so using Razer screen format.")
+                    self.loupedeckDeviceIsUsingRazerFirmware = true
 
                     --------------------------------------------------------------------------------
                     -- Refresh the screen:
@@ -376,13 +381,14 @@ function mod.mt:initaliseDevice()
                     self:initaliseDevice()
                 else
                     --log.df("Loupedeck Live is running firmware lower than v0.2.5")
-                    self.loupedeckLiveIsUsingRazerFirmware = false
+                    self.loupedeckDeviceIsUsingRazerFirmware = false
                 end
             else
                 log.df("Failed to get the Loupedeck Live firmware version.")
             end
         end)
     end
+
 end
 
 --- hs.loupedeck:callback([callbackFn]) -> boolean
@@ -1494,7 +1500,7 @@ function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     -- The Razer Stream Controller only has one screen object, so we need to do
     -- a bit of processing to convert it back into left, middle and right screens:
     --------------------------------------------------------------------------------
-    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER or self.loupedeckLiveIsUsingRazerFirmware == true then
+    if self.deviceType == mod.deviceTypes.RAZER_STREAM_CONTROLLER or self.loupedeckDeviceIsUsingRazerFirmware == true then
         if not frame then
             frame = {}
         end
@@ -2077,6 +2083,7 @@ function mod.findDevices(deviceType)
         local portDetails = availablePortDetails[portName]
         if portDetails and portDetails.idVendor and portDetails.idVendor == LOUPEDECK_VENDOR_ID then
             if (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_ID)
+            or (deviceType == mod.deviceTypes.CT and portDetails.idProduct == LOUPEDECK_CT_V2_ID)
             or (deviceType == mod.deviceTypes.LIVE and portDetails.idProduct == LOUPEDECK_LIVE_ID)
             or (deviceType == mod.deviceTypes.LIVE_S and portDetails.idProduct == LOUPEDECK_LIVE_S_ID) then
                 table.insert(results, portName)
