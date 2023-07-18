@@ -1112,7 +1112,7 @@ function plugin.init(deps)
         fcpxCmds:add("distortBottomRightYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("bottom") .. " " .. i18n("right") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                distortBottomRightYValue = distortBottomRightYValue + c
+                distortBottomRightYValue = distortBottomRightYValue - c
                 updateDistortBottomRightY()
             end)
 
@@ -1168,7 +1168,7 @@ function plugin.init(deps)
         fcpxCmds:add("distortTopRightYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("top") .. " " .. i18n("right") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                distortTopRightYValue = distortTopRightYValue + c
+                distortTopRightYValue = distortTopRightYValue - c
                 updateDistortTopRightY()
             end)
     end
