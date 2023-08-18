@@ -276,7 +276,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local controllerCallback = function(_, params)
         if params["type"] == "examples" then
-            os.execute('open "http://help.commandpost.io/advanced/snippets"')
+            os.execute('open "https://commandpost.io/scripting/snippets-for-actions/"')
         elseif params["type"] == "new" then
             --------------------------------------------------------------------------------
             -- New Snippet:
