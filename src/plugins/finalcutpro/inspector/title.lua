@@ -4,12 +4,18 @@
 
 local require = require
 
-local log                   = require "hs.logger".new "titleInspector"
+local log                       = require "hs.logger".new "titleInspector"
 
-local axutils               = require "cp.ui.axutils"
-local deferred              = require "cp.deferred"
-local fcp                   = require "cp.apple.finalcutpro"
-local Slider                = require "cp.ui.Slider"
+local axutils                   = require "cp.ui.axutils"
+local deferred                  = require "cp.deferred"
+local fcp                       = require "cp.apple.finalcutpro"
+local tools                     = require "cp.tools"
+
+local Slider                    = require "cp.ui.Slider"
+local TextField                 = require "cp.ui.TextField"
+
+local toRegionalNumber          = tools.toRegionalNumber
+local toRegionalNumberString    = tools.toRegionalNumberString
 
 local plugin = {
     id              = "finalcutpro.inspector.title",
@@ -27,7 +33,20 @@ local mod = {}
 -- How long we should defer all the update functions.
 local DEFER_VALUE = 0.01
 
---- plugins.finalcutpro.inspector.title.motionVFXAnimationAmountSlider -> cp.ui.slider
+--- plugins.finalcutpro.inspector.title.motionVFXAnimationTextField -> cp.ui.TextField
+--- Field
+--- MotionVFX Title Animation Amount Text Field
+mod.motionVFXAnimationTextField = TextField(fcp.inspector.title, function()
+    local title = fcp.inspector.title
+    local ui = title and title:UI()
+    local groupA = ui and axutils.childAtIndex(ui, 1)
+    local groupB = groupA and axutils.childAtIndex(groupA, 1)
+    local animationAmountSliderUI = groupB and axutils.childWithDescription(groupB, "animation amount scrubber")
+    return animationAmountSliderUI
+end, toRegionalNumber, toRegionalNumberString):forceFocus()
+
+
+--- plugins.finalcutpro.inspector.title.motionVFXAnimationAmountSlider -> cp.ui.Slider
 --- Field
 --- MotionVFX Title Animation Amount Slider
 mod.motionVFXAnimationAmountSlider = Slider(fcp.inspector.title, function()
@@ -38,6 +57,9 @@ mod.motionVFXAnimationAmountSlider = Slider(fcp.inspector.title, function()
     local animationAmountSliderUI = groupB and axutils.childWithDescription(groupB, "animation amount slider")
     return animationAmountSliderUI
 end)
+
+-- Mirror the Slider to the Text Box, otherwise it doesn't update correctly:
+mod.motionVFXAnimationAmountSlider.value:mirror(mod.motionVFXAnimationTextField.value)
 
 -- makeSliderHandler(finderFn) -> function
 -- Function
