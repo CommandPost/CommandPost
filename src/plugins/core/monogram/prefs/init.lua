@@ -74,12 +74,40 @@ local function updateUI()
     local faves = mod.monogram.favourites()
     local max = mod.monogram.NUMBER_OF_FAVOURITES
     for i = 1, max do
+        --------------------------------------------------------------------------------
+        -- Press:
+        --
+        -- NOTE: The press actions are just stored in the JSON as numbers for legacy
+        --       reasons (i.e. left and right were added later).
+        --------------------------------------------------------------------------------
         local fave = faves[tostring(i)]
         if fave then
             local actionTitle = fave.actionTitle
-            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
+            script = script .. [[changeValueByID('press_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
         else
-            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+            script = script .. [[changeValueByID('press_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+        end
+
+        --------------------------------------------------------------------------------
+        -- Left:
+        --------------------------------------------------------------------------------
+        fave = faves["left_" ..tostring(i)]
+        if fave then
+            local actionTitle = fave.actionTitle
+            script = script .. [[changeValueByID('left_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
+        else
+            script = script .. [[changeValueByID('left_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+        end
+
+        --------------------------------------------------------------------------------
+        -- Right:
+        --------------------------------------------------------------------------------
+        fave = faves["right_" ..tostring(i)]
+        if fave then
+            local actionTitle = fave.actionTitle
+            script = script .. [[changeValueByID('right_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
+        else
+            script = script .. [[changeValueByID('right_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
         end
     end
 
