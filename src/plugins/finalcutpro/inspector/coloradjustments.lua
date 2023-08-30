@@ -4,11 +4,13 @@
 
 local require = require
 
---local log                   = require "hs.logger".new "videoInspector"
+local log                   = require "hs.logger".new "colorAdjustments"
 
 local deferred              = require "cp.deferred"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
+
+local semver                = require "semver"
 
 local plugin = {
     id              = "finalcutpro.inspector.coloradjustments",
@@ -23,6 +25,14 @@ function plugin.init(deps)
     -- Only load plugin if FCPX is supported:
     --------------------------------------------------------------------------------
     if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX 10.6.6 or later:
+    --------------------------------------------------------------------------------
+    if fcp.version() < semver("10.6.6") then
+        log.df("The Color Adjustment Actions require Final Cut Pro 10.6.6 or later")
+        return
+    end
 
     local SHIFT_AMOUNTS = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
 
