@@ -2424,6 +2424,7 @@
     "toggleControls": "Toggle Controls",
     "toggleDaVinciResolveControlSurfaceSupport": "Toggle DaVinci Resolve Control Surface Support",
     "toggleEffects": "Toggle Effects",
+    "toggleKeyframe": "Toggle Keyframe",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Toggle Opacity Fade Handles in Video Animation Popup on Selected Clips",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Due to a Final Cut Pro bug this doesn't work for clips in a Secondary Storyline",
     "toggleOverlaysWithCapsLock": "Toggle Overlays with Caps Lock",

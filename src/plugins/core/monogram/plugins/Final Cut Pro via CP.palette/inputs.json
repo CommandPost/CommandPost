@@ -5500,5 +5500,161 @@
     {
         "info": "Zoom the contents to fit the size of the Browser, Viewer, or Timeline",
         "name": "Command Set Shortcuts.View.Zoom to Fit"
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Bottom Left X",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Bottom Left Y",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Bottom Right X",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Bottom Right Y",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Top Right X",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Top Right Y",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Top Left X",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the distort on the selected clip",
+        "name": "Video Inspector.Distort.Distort Top Left Y",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Compositing.Opacity.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Position.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Position.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Rotation.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Scale All.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Scale X.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Scale Y.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Transform.Anchor.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Crop.Left.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Crop.Right.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Crop.Top.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Crop.Bottom.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Distort.Bottom Left.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Distort.Bottom Right.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Distort.Top Right.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Video Inspector",
+        "name": "Video Inspector.Distort.Top Left.Toggle Keyframe"
+    },
+    {
+        "info": "Mouse clicks the Add/Remove Keyframe button in the Title Inspector",
+        "name": "Title Inspector.MotionVFX Title.Animation Amount.Toggle Keyframe"
     }
 ]

@@ -291,6 +291,22 @@ local function simple(labelKey, prepareFn, index)
 
         row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
 
+        row.keyframe    = Button(row, function() return childFromRight(row:children(), 2, Button.matches) end)
+
+        function row.keyframe:addKeyframe()
+            local ui = self:UI()
+            if ui then
+                local f = ui:attributeValue("AXFrame")
+                if f then
+                    local point = {
+                        x = f.x + f.w - 5,
+                        y = f.y + (f.h / 2)
+                    }
+                    tools.ninjaMouseClick(point)
+                end
+            end
+        end
+
         if prepareFn then
             prepareFn(row)
         end

@@ -4,13 +4,14 @@
 
 local require = require
 
-local log                       = require "hs.logger".new "titleInspector"
+--local log                       = require "hs.logger".new "titleInspector"
 
 local axutils                   = require "cp.ui.axutils"
 local deferred                  = require "cp.deferred"
 local fcp                       = require "cp.apple.finalcutpro"
 local tools                     = require "cp.tools"
 
+local Button                    = require "cp.ui.Button"
 local Slider                    = require "cp.ui.Slider"
 local TextField                 = require "cp.ui.TextField"
 
@@ -22,16 +23,10 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]        = "fcpxCmds",
-        ["core.monogram.manager"]       = "manager",
     }
 }
 
 local mod = {}
-
--- DEFER_VALUE -> number
--- Constant
--- How long we should defer all the update functions.
-local DEFER_VALUE = 0.01
 
 --- plugins.finalcutpro.inspector.title.motionVFXAnimationTextField -> cp.ui.TextField
 --- Field
@@ -58,47 +53,65 @@ mod.motionVFXAnimationAmountSlider = Slider(fcp.inspector.title, function()
     return animationAmountSliderUI
 end)
 
+--- plugins.finalcutpro.inspector.title.motionVFXAnimationAmountAddKeyframe -> cp.ui.Button
+--- Field
+--- MotionVFX Title Animation Amount Add Keyframe Button
+mod.motionVFXAnimationAmountAddKeyframeButton = Button(fcp.inspector.title, function()
+    local title = fcp.inspector.title
+    local ui = title and title:UI()
+    local groupA = ui and axutils.childAtIndex(ui, 1)
+    local groupB = groupA and axutils.childAtIndex(groupA, 1)
+    local animationAmountSliderUI = groupB and axutils.childWithDescription(groupB, "animation amount add a keyframe")
+    return animationAmountSliderUI
+end)
+
+--- plugins.finalcutpro.inspector.title.motionVFXAnimationAmountDeleteKeyframe -> cp.ui.Button
+--- Field
+--- MotionVFX Title Animation Amount Delete Keyframe Button
+mod.motionVFXAnimationAmountDeleteKeyframeButton = Button(fcp.inspector.title, function()
+    local title = fcp.inspector.title
+    local ui = title and title:UI()
+    local groupA = ui and axutils.childAtIndex(ui, 1)
+    local groupB = groupA and axutils.childAtIndex(groupA, 1)
+    local animationAmountSliderUI = groupB and axutils.childWithDescription(groupB, "animation amount delete keyframe")
+    return animationAmountSliderUI
+end)
+
+--- plugins.finalcutpro.inspector.title.motionVFXAnimationAmountAnimationButton -> cp.ui.Button
+--- Field
+--- MotionVFX Title Animation Amount Keyframe Button
+mod.motionVFXAnimationAmountKeyframeButton = Button(fcp.inspector.title, function()
+    local title = fcp.inspector.title
+    local ui = title and title:UI()
+    local groupA = ui and axutils.childAtIndex(ui, 1)
+    local groupB = groupA and axutils.childAtIndex(groupA, 1)
+    local animationAmountSliderUI = groupB and axutils.childWithDescription(groupB, "animation amount animation button")
+    return animationAmountSliderUI
+end)
+
 -- Mirror the Slider to the Text Box, otherwise it doesn't update correctly:
 mod.motionVFXAnimationAmountSlider.value:mirror(mod.motionVFXAnimationTextField.value)
 
--- makeSliderHandler(finderFn) -> function
--- Function
--- Creates a 'handler' for slider controls, applying them to the slider returned by the `finderFn`
---
--- Parameters:
---  * finderFn - a function that will return the slider to apply the value to.
---
--- Returns:
---  * a function that will receive the Monogram control metadata table and process it.
-local function makeSliderHandler(finderFn)
-    local absolute
-    local shift = 0
-    local slider = finderFn()
-
-    local updateUI = deferred.new(DEFER_VALUE):action(function()
-
-        if slider:isShowing() then
-            if absolute then
-                slider:value(absolute)
-                absolute = nil
-            else
-                local current = slider:value()
-                slider:value(current + shift)
-                shift = 0
-            end
-        else
-            slider:show()
-        end
-    end)
-
-    return function(data)
-        if data.operation == "+" then
-            local increment = data.params and data.params[1]
-            shift = shift + increment
-            updateUI()
-        elseif data.operation == "=" then
-            absolute = data.params and data.params[1]
-            updateUI()
+--- plugins.finalcutpro.inspector.title.toggleMotionVFXAnimationAmountKeyframe() -> none
+--- Function
+--- Toggles the MotionVFX Title Animation Amount Keyframe button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.toggleMotionVFXAnimationAmountKeyframe()
+    mod.motionVFXAnimationAmountAddKeyframeButton:show()
+    local ui = mod.motionVFXAnimationAmountKeyframeButton:UI() or mod.motionVFXAnimationAmountAddKeyframeButton:UI() or mod.motionVFXAnimationAmountDeleteKeyframeButton:UI()
+    if ui then
+        local f = ui:attributeValue("AXFrame")
+        if f then
+            local point = {
+                x = f.x + f.w - 5,
+                y = f.y + (f.h / 2)
+            }
+            tools.ninjaMouseClick(point)
         end
     end
 end
@@ -149,11 +162,10 @@ function plugin.init(deps)
         end)
         :titled("MotionVFX Title - Animation Amount - Set to Zero")
 
-    --------------------------------------------------------------------------------
-    -- MotionVFX - Title - Animation Amount - Monogram Slider:
-    --------------------------------------------------------------------------------
-    local registerAction = deps.manager.registerAction
-    registerAction("Title Inspector.MotionVFX Title.Animation Amount", makeSliderHandler(function() return mod.motionVFXAnimationAmountSlider end))
+    deps.fcpxCmds
+        :add("motionVFXAnimationAmountToggleKeyframe")
+        :whenActivated(mod.toggleMotionVFXAnimationAmountKeyframe)
+        :titled("MotionVFX Title - Animation Amount - Toggle Keyframe")
 
     return mod
 end
