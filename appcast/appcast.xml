@@ -6,14 +6,14 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.4.21</title>
+			<title>Version 1.4.22</title>
 			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
-			<pubDate>Wed, 30 Aug 2023 18:35:01 +1000</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.4.21/CommandPost_1.4.21.dmg"
-				sparkle:version="7971"
-                sparkle:shortVersionString="1.4.21"
-				sparkle:dsaSignature="MC0CFE1b4nyJEqPuvcZiZX+jO+JzNY+aAhUA3bDfajiO1h3zQjDEXELwu+fONA0="
-				sparkle:edSignature="hsSbetzDAatr+TpAM8dK829fvTYsfS+Q9rLY1qgOEPIlmftt8CNxunP/8G479u5+Kfjhwn98CzZ1MRo5XWOpCA==" length="66495973"
+			<pubDate>Thu, 31 Aug 2023 17:16:51 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.4.22/CommandPost_1.4.22.dmg"
+				sparkle:version="7972"
+                sparkle:shortVersionString="1.4.22"
+				sparkle:dsaSignature="MCwCFC02GtUV+CXu7EOBFLNNTvzEg4fAAhReAV+5XbYL1vJQe71rBSvDN3KWLg=="
+				sparkle:edSignature="GmTe7+UE5GZNHFmGh8TFYKP/OHd789jiKD8F4C19qwgqcYwohelDKMguRbEOYcObbalaqetfluLOAUKpyUM8Bw==" length="66515806"
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
