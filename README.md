@@ -14,15 +14,15 @@ With the addition of a powerful plugin architecture, the aim of CommandPost is t
 
 ## Download:
 
-You can Download CommandPost [here](https://commandpost.io/#download).
+You can Download CommandPost [here](https://commandpost.io/download/).
 
 ## User Guide:
 
-You can access the User Guide [here](http://help.commandpost.io/).
+You can access the User Guide [here](https://commandpost.io).
 
 ## Developer Guide:
 
-You can access the Developer Guide [here](http://dev.commandpost.io/). This includes information on Installation & Usage.  
+You can access the Developer Guide [here](https://commandpost.io/developer/introduction/). This includes information on Installation & Usage.  
 [![Contributors](https://img.shields.io/github/contributors/CommandPost/CommandPost.svg)](https://github.com/CommandPost/CommandPost/graphs/contributors)
 
 You can participate in the translation [here](https://poeditor.com/join/project/QWvOQlF1Sy).  
@@ -33,6 +33,6 @@ You can also read our Developer Code of Conduct [here](https://github.com/Comman
 
 ## Sponsor:
 
-To help continue CommandPost to grow, evolve, and stay completely free and open-source, we offer the ability to [sponsor CommandPost directly through GitHub](https://github.com/sponsors/commandpost).
+To help continue CommandPost to grow, evolve, and stay completely free and open-source you can find out how to sponsor CommandPost [here](https://commandpost.io/sponsor/).
 
 
