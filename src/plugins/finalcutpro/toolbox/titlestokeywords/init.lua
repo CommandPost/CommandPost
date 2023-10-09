@@ -32,7 +32,6 @@ local get                       = fntable.get
 local is                        = fnvalue.is
 local pipe                      = fn.pipe
 
-local between                   = tools.between
 local doesIntersect             = time.doesIntersect
 local escapeTilda               = tools.escapeTilda
 local lines                     = tools.lines
@@ -520,6 +519,19 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                     if clipName == "asset-clip" then
                         local syncClipAttributes = syncClipNode:attributes()
                         parentRef = syncClipAttributes and syncClipAttributes["ref"]
+                    elseif clipName == "clip" then
+                        --------------------------------------------------------------------------------
+                        -- sync-clip > clip > video / audio:
+                        --------------------------------------------------------------------------------
+                        local clipChildren = syncClipNode:children()
+                        for _, clipNode in ipairs(clipChildren) do
+                            local clipNodeName = clipNode:name()
+                            if clipNodeName == "video" or clipNodeName == "audio" then
+                                local clipAttributes = clipNode:attributes()
+                                parentRef = clipAttributes and clipAttributes["ref"]
+                            end
+                        end
+
                     --------------------------------------------------------------------------------
                     -- If the 'sync-clip' contains a 'spine' iterate through all the children
                     -- as well:
@@ -531,6 +543,20 @@ local function checkIfTitlesIntersectWithClips(spineChildren, titles)
                             if spineClipName == "asset-clip" then
                                 local syncClipAttributes = spineNode:attributes()
                                 parentRef = syncClipAttributes and syncClipAttributes["ref"]
+                            elseif spineClipName == "clip" then
+                                --------------------------------------------------------------------------------
+                                -- 'clip' doesn't contain a 'ref' so we need to look for an 'audio' or 'video'
+                                -- inside to get it:
+                                --------------------------------------------------------------------------------
+                                local clipNodes = spineNode:children()
+                                for _, clipNode in ipairs(clipNodes) do
+                                    local clipNodeName = clipNode:name()
+                                    if clipNodeName == "audio" or clipNodeName == "video" then
+                                        local clipAttributes = clipNode:attributes()
+                                        parentRef = clipAttributes and clipAttributes["ref"]
+                                    end
+                                end
+
                             end
                         end
                     end
@@ -845,9 +871,9 @@ local function processFCPXML(path)
             --------------------------------------------------------------------------------
             -- Add markers for asset-clip and mc-clip's:
             --------------------------------------------------------------------------------
-            local attributes = eventNode:attributes()
+            local a = eventNode:attributes()
             for _, v in ipairs(titlesToAdd) do
-                if v.ref == attributes.ref and v.clipType == "asset-clip" then
+                if v.ref == a.ref and v.clipType == "asset-clip" then
                     --------------------------------------------------------------------------------
                     -- DTD v1.10:
                     --
@@ -899,7 +925,7 @@ local function processFCPXML(path)
                         newClipName = string.lower(newClipName)
                     end
                     newNode:addAttribute("value", newClipName)
-                elseif v.ref == attributes.ref and v.clipType == "mc-clip" then
+                elseif v.ref == a.ref and v.clipType == "mc-clip" then
                     --------------------------------------------------------------------------------
                     -- DTD v1.10:
                     --
@@ -964,9 +990,9 @@ local function processFCPXML(path)
                     for _, spineNode in ipairs(spineNodes) do
                         local spineNodeName = spineNode:name()
                         if spineNodeName == "asset-clip" or spineNodeName == "mc-clip" then
-                            local attributes = spineNode:attributes()
+                            local a = spineNode:attributes()
                             for _, v in ipairs(titlesToAdd) do
-                                if v.ref == attributes.ref and v.clipType == "sync-clip" then
+                                if v.ref == a.ref and v.clipType == "sync-clip" then
                                     --------------------------------------------------------------------------------
                                     -- DTD v1.10:
                                     --
@@ -1019,13 +1045,88 @@ local function processFCPXML(path)
                                     newNode:addAttribute("value", newClipName)
                                 end
                             end
-                        end
+                        elseif spineNodeName == "clip" then
+                            --------------------------------------------------------------------------------
+                            -- sync-clip > spine > clip:
+                            --------------------------------------------------------------------------------
+                            local clipNodes = spineNode:children()
+                            for _, clipNode in ipairs(clipNodes) do
+                                local clipNodeName = clipNode:name()
+                                if clipNodeName == "audio" or clipNodeName == "video" then
+                                    local currentAttributes = clipNode:attributes()
+                                    for _, v in ipairs(titlesToAdd) do
+                                        if v.ref == currentAttributes.ref and v.clipType == "sync-clip" then
+                                            --------------------------------------------------------------------------------
+                                            -- DTD v1.10:
+                                            --
+                                            -- <!-- A 'clip' is a container for other story elements. -->
+                                            -- <!-- Clips have only one primary item, and zero or more anchored items. -->
+                                            -- <!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+                                            --
+                                            -- <!ELEMENT clip (note?, %timing-params;, %intrinsic-params;, (spine | (%clip_item;) | caption)*, (%marker_item;)*, audio-channel-source*, (%video_filter_item;)*, filter-audio*, metadata?)>
+                                            -- <!ATTLIST clip %clip_attrs;>
+                                            -- <!ATTLIST clip format IDREF #IMPLIED>                <!-- default is same as parent -->
+                                            -- <!ATTLIST clip audioStart %time; #IMPLIED>
+                                            -- <!ATTLIST clip audioDuration %time; #IMPLIED>
+                                            -- <!ATTLIST clip tcStart %time; #IMPLIED>              <!-- clip timecode origin -->
+                                            -- <!ATTLIST clip tcFormat (DF | NDF) #IMPLIED>         <!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
+                                            -- <!ATTLIST clip modDate CDATA #IMPLIED>
+                                            --
+                                            --------------------------------------------------------------------------------
 
+                                            --------------------------------------------------------------------------------
+                                            -- We need to insert our 'keyword' BEFORE markers, 'audio-channel-source',
+                                            -- 'filter-video', 'filter-video-mask', 'filter-audio' and 'metadata'.
+                                            --
+                                            -- NOTE: We've added in `sync-source` below. I'm not sure that
+                                            -- `audio-channel-source` should actually be in this list, but I've left it
+                                            -- there, just incase there's a reason it was here in the first place.
+                                            --------------------------------------------------------------------------------
+                                            local whereToInsert = eventNode:childCount() + 1
+                                            local eventNodeChildren = eventNode:children()  or {} -- Just incase there are no children!
+                                            local abortClipNames = {"marker", "chapter-marker", "rating", "keyword", "analysis-marker", "sync-source", "audio-channel-source", "filter-video", "filter-video-mask", "filter-audio", "metadata"}
+                                            for i, vv in pairs(eventNodeChildren) do
+                                                local abortName = vv:name()
+                                                if tableContains(abortClipNames, abortName) then
+                                                    whereToInsert = i
+                                                    break
+                                                end
+                                            end
+
+                                            --------------------------------------------------------------------------------
+                                            -- Is it a keyword or a rating?
+                                            --------------------------------------------------------------------------------
+                                            local newNodeType = "keyword"
+                                            if mod.treatFavoriteAndRejectAsRatingsInsteadOfKeywords() and v.name == "FAVORITE" or v.name == "REJECT" then
+                                                newNodeType = "rating"
+                                            end
+
+                                            eventNode:addNode(newNodeType, whereToInsert)
+                                            local newNode = eventNode:children()[whereToInsert]
+                                            newNode:addAttribute("start", v.offset)
+                                            newNode:addAttribute("duration", v.duration)
+
+                                            --------------------------------------------------------------------------------
+                                            -- Replace Commas if we need to:
+                                            --------------------------------------------------------------------------------
+                                            local newClipName = v.name
+                                            if mod.replaceCommasWithAlternativeCommas() then
+                                                newClipName = replace(newClipName, ",", ALTERNATIVE_COMMA)
+                                            end
+                                            if newNodeType == "rating" then
+                                                newClipName = string.lower(newClipName)
+                                            end
+                                            newNode:addAttribute("value", newClipName)
+                                        end
+                                    end
+                                end
+                            end
+                        end
                     end
                 elseif syncClipNodeName == "asset-clip" or syncClipNodeName == "mc-clip" then
-                    local attributes = syncClipNode:attributes()
+                    local a = syncClipNode:attributes()
                     for _, v in ipairs(titlesToAdd) do
-                        if v.ref == attributes.ref and v.clipType == "sync-clip" then
+                        if v.ref == a.ref and v.clipType == "sync-clip" then
                             --------------------------------------------------------------------------------
                             -- DTD v1.10:
                             --
