@@ -144,7 +144,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Define path to csv2notion:
     --------------------------------------------------------------------------------
-    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion_neo"
+    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
 
     --------------------------------------------------------------------------------
     -- Setup Arguments for csv2notion:
@@ -562,7 +562,7 @@ function plugin.init(deps, env)
         label           = i18n("notion"),
         image           = icon,
         tooltip         = i18n("notion"),
-        height          = 510,
+        height          = 490,
     })
     :addContent(1, generateContent, false)
 
