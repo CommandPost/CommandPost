@@ -194,7 +194,7 @@ function VideoInspector:initialize(parent)
             smoothing       = slider "FFStabilizationInertiaCamSmooth",
             tripodMode      = checkBox "FFStabilizationUseTripodMode",
           translationSmooth = slider "FFStabilizationTranslationSmooth",
-            rotationSmoooth = slider "FFStabilizationRotationSmooth",
+            rotationSmooth  = slider "FFStabilizationRotationSmooth",
             scaleSmooth     = slider "FFStabilizationScaleSmooth",
         },
 
