@@ -948,6 +948,7 @@
     "feedback": "Feedback",
     "feedbackError": "The following error occurred trying to communicate with the CommandPost servers:\n\n%{message}\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
     "feedbackSuccess": "Your feedback was submitted successfully.\n\nThank you!",
+    "fieldOfView": "Field of View",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "The selected file could not be read.",
     "fill": "Fill",
@@ -1519,6 +1520,7 @@
     "macosShortcutsSetupMessage": "CommandPost requires a <strong>Automation</strong> permission<br /> to list shortcuts from the macOS Shortcuts app in the Search Console.<br /><br />This is <strong>optional</strong>. If you click <strong>Enable Shortcuts</strong>, you may be prompted for permission<br /> if CommandPost hasn't already asked previously. You can change this permission at any time by visiting the <strong>System Preferences > Security & Privacy > Privacy > Automation</strong> panel.",
     "magicButton": "Magic Button",
     "magnify": "Magnify",
+    "mapping": "Mapping",
     "marker": "Marker",
     "master": "Master",
     "master2": "MS",
@@ -1710,6 +1712,8 @@
     "optional": "Optional",
     "options": "Options",
     "organize": "Organize",
+    "orientation": "Orientation",
+    "orientationMapping": "Orientation Mapping",
     "originalClipName": "Original Clip Name",
     "originalOptimised": "Original/Optimised",
     "originalTitle": "Original Title",
@@ -1930,6 +1934,7 @@
     "renameButtonQuestion": "What would you like to rename this button to?",
     "renameClip": "Rename Clip",
     "renderComplete": "Render Complete!",
+    "reorient": "Reorient",
     "repeat": "Repeat",
     "repeatPressActionUntilReleased": "Repeat Press Action Until Released",
     "replace": "Replace",
@@ -2000,6 +2005,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Right Text Layer",
     "rightVertical": "Right Vertical",
+    "roll": "Roll",
     "rollingShutter": "Rolling Shutter",
     "rotate": "Rotate",
     "rotate9": "Rotate",
@@ -2157,6 +2163,38 @@
         "one": "Shift Anchor Up by %{amount} Pixel",
         "other": "Shift Anchor Up by %{amount} Pixels"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Shift Orientation Field of View Left by %{amount} Degree",
+        "other": "Shift Orientation Field of View Left by %{amount} Degrees"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Shift Orientation Field of View Right by %{amount} Degree",
+        "other": "Shift Orientation Field of View Right by %{amount} Degrees"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Shift Orientation Pan Left by %{amount} Degree",
+        "other": "Shift Orientation Pan Left by %{amount} Degrees"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Shift Orientation Pan Right by %{amount} Degree",
+        "other": "Shift Orientation Pan Right by %{amount} Degrees"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Shift Orientation Roll Left by %{amount} Degree",
+        "other": "Shift Orientation Roll Left by %{amount} Degrees"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Shift Orientation Roll Right by %{amount} Degree",
+        "other": "Shift Orientation Roll Right by %{amount} Degrees"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Shift Orientation Tilt Left by %{amount} Degree",
+        "other": "Shift Orientation Tilt Left by %{amount} Degrees"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Shift Orientation Tilt Right by %{amount} Degree",
+        "other": "Shift Orientation Tilt Right by %{amount} Degrees"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2172,6 +2210,30 @@
     "shiftPositionUpPixels": {
         "one": "Shift Position Up %{amount} Pixel",
         "other": "Shift Position Up %{amount} Pixels"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Shift Reorient Pan Left by %{amount} Degree",
+        "other": "Shift Reorient Pan Left by %{amount} Degrees"
+    },
+    "shiftReorientPanRight": {
+        "one": "Shift Reorient Pan Right by %{amount} Degree",
+        "other": "Shift Reorient Pan Right by %{amount} Degrees"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Shift Reorient Roll Left by %{amount} Degree",
+        "other": "Shift Reorient Roll Left by %{amount} Degrees"
+    },
+    "shiftReorientRollRight": {
+        "one": "Shift Reorient Roll Right by %{amount} Degree",
+        "other": "Shift Reorient Roll Right by %{amount} Degrees"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Shift Reorient Tilt Left by %{amount} Degree",
+        "other": "Shift Reorient Tilt Left by %{amount} Degrees"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Shift Reorient Tilt Right by %{amount} Degree",
+        "other": "Shift Reorient Tilt Right by %{amount} Degrees"
     },
     "shiftRotationLeft": {
         "one": "Shift Rotation Left by %{amount} Degree",
@@ -2395,6 +2457,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "This will only trigger the play shortcut key if already stopped.",
     "three": "3",
     "threeDeeText": "3D Text",
+    "tilt": "Tilt",
     "timeline": "Timeline",
     "timeline_group": "Timeline",
     "timelineBatchExportBeginMessage": "This Timeline Batch Export Tool uses automation to select each clip individually, then triggers the 'File > Share' menu item.\n\nPlease do not move the mouse or touch the keyboard until this process is complete.\n\nThe 'Enable Rendering During Playback' preference will be disabled until the Batch Export is completed to improve performance.\n\nIf you have a slower machine, or are exporting a lot of clips, Final Cut Pro may struggle to keep up - in which case, you might have more success using this tool to 'Send to Compressor', as you actually transcoding will only take place when you begin the export queue.\n\nAs an alterative to CommandPost, you can also use the Frame.io App - however this can be much slower on large timelines, as it exports the whole timeline first.",
@@ -2405,6 +2468,7 @@
     "timelineZoom": "Timeline Zoom",
     "tint": "Tint",
     "tint4": "Tint",
+    "tinyPlanet": "Tiny Planet",
     "tip": "Tip",
     "title": "Title",
     "title_group": "Title",
