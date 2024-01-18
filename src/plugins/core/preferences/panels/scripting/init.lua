@@ -187,6 +187,7 @@ local plugin = {
     dependencies    = {
         ["core.preferences.manager"] = "manager",
         ["core.action.manager"] = "actionmanager",
+        ["core.controlsurfaces.manager"] = "controlSurfaceManager",
     }
 }
 
@@ -197,6 +198,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     mod._manager = deps.manager
     local actionmanager = deps.actionmanager
+    local controlSurfaceManager = deps.controlSurfaceManager
 
     --------------------------------------------------------------------------------
     -- Setup a global shortcut function for trigger actions:
@@ -421,6 +423,11 @@ function plugin.init(deps, env)
                     webviewAlert(webview, function() end, i18n("noSnippetExists"), "", i18n("ok"))
                 end
             end
+        elseif params["type"] == "openControlSurfaces" then
+            --------------------------------------------------------------------------------
+            -- Open Control Surfaces:
+            --------------------------------------------------------------------------------
+            controlSurfaceManager.show()
         end
     end
     deps.manager.addHandler("snippets", controllerCallback)
