@@ -160,6 +160,20 @@ function VideoInspector:initialize(parent)
             anchor          = xy "FFHeliumXFormAnchor",
         },
 
+        orientation         = section "FFHeliumOrientationEffect" {
+            tilt            = slider "FFOrientationLatitude",
+            pan             = slider "FFOrientationLongitude",
+            roll            = slider "FFOrientationRoll",
+            fieldOfView     = slider "FFOrientationFieldOfView",
+            mapping         = popUpButton "FFOrientationMapping",
+        },
+
+        reorient            = section "FFHeliumReorientEffect" {
+            tilt            = slider "FFOrientationLatitude",
+            pan             = slider "FFOrientationLongitude",
+            roll            = slider "FFOrientationRoll",
+        },
+
         crop                = section "FFHeliumCropEffect" {
             type            = popUpButton "FFType",
             left            = slider "FFCropLeft",
@@ -167,12 +181,14 @@ function VideoInspector:initialize(parent)
             top             = slider "FFCropTop",
             bottom          = slider "FFCropBottom",
         },
+
         distort             = section "FFHeliumDistortEffect" {
             bottomLeft      = xy "PerspectiveTile::Bottom Left",
             bottomRight     = xy "PerspectiveTile::Bottom Right",
             topRight        = xy "PerspectiveTile::Top Right",
             topLeft         = xy "PerspectiveTile::Top Left",
         },
+
         stabilization       = section "FFStabilizationEffect" {
             method          = popUpButton "FFStabilizationAlgorithmRequested",
             smoothing       = slider "FFStabilizationInertiaCamSmooth",
@@ -181,9 +197,11 @@ function VideoInspector:initialize(parent)
             rotationSmoooth = slider "FFStabilizationRotationSmooth",
             scaleSmooth     = slider "FFStabilizationScaleSmooth",
         },
+
         rollingShutter      = section "FFRollingShutterEffect" {
             amount          = popUpButton "FFRollingShutterAmount",
         },
+
         spatialConform      = section "FFHeliumConformEffect" {
             type            = popUpButton "FFType",
         },
