@@ -653,7 +653,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Define path to csv2notion:
     --------------------------------------------------------------------------------
-    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion_neo"
 
     --------------------------------------------------------------------------------
     -- Setup Arguments for csv2notion:
