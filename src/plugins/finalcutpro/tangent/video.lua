@@ -275,7 +275,7 @@ function plugin.init(deps)
             -- Translation Smooth / Rotation Smooth / Scale Smooth / Smoothing:
             --------------------------------------------------------------------------------
             id = sliderParameter(stabilizationGroup, stabilization:translationSmooth(), id, 0, 4.5, 0.1, 1.5)
-            id = sliderParameter(stabilizationGroup, stabilization:rotationSmoooth(), id, 0, 4.5, 0.1, 1.5)
+            id = sliderParameter(stabilizationGroup, stabilization:rotationSmooth(), id, 0, 4.5, 0.1, 1.5)
             id = sliderParameter(stabilizationGroup, stabilization:scaleSmooth(), id, 0, 4.5, 0.1, 1.5)
             id = sliderParameter(stabilizationGroup, stabilization:smoothing(), id, 0, 3, 0.1, 1)
 
