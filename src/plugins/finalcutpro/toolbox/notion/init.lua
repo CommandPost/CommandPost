@@ -36,12 +36,17 @@ local mod = {}
 -- NOTION_TOKEN_HELP_URL -> string
 -- Constant
 -- URL to Token Help
-local NOTION_TOKEN_HELP_URL = "https://vzhd1701.notion.site/Find-Your-Notion-Token-5f57951434c1414d84ac72f88226eede"
+local NOTION_TOKEN_HELP_URL = "https://github.com/TheAcharya/csv2notion-neo#prerequisite"
+
+-- NOTION_TOKEN_HELP_URL -> string
+-- Constant
+-- URL to Token Help
+local NOTION_WORKSPACE_HELP_URL = "https://github.com/TheAcharya/csv2notion-neo#prerequisite"
 
 -- NOTION_DATABASE_VIEW_HELP_URL -> string
 -- Constant
 -- URL to Database View Help
-local NOTION_DATABASE_VIEW_HELP_URL = "https://github.com/vzhd1701/csv2notion/raw/master/examples/db_link.png"
+local NOTION_DATABASE_VIEW_HELP_URL = "https://github.com/TheAcharya/csv2notion-neo#prerequisite"
 
 --- plugins.finalcutpro.toolbox.notion.settings <cp.prop: table>
 --- Field
@@ -57,6 +62,11 @@ mod.mergeData = config.prop("toolbox.notion.mergeData", true)
 --- Field
 --- Notion Token.
 mod.token = config.prop("toolbox.notion.token", "")
+
+--- plugins.finalcutpro.toolbox.notion.workspace <cp.prop: string>
+--- Field
+--- Notion workspace.
+mod.workspace = config.prop("toolbox.notion.workspace", "")
 
 --- plugins.finalcutpro.toolbox.notion.databaseURL <cp.prop: string>
 --- Field
@@ -127,12 +137,21 @@ local function uploadToNotion(csvPath)
     local databaseURL           = mod.databaseURL()
     local mergeData             = mod.mergeData()
     local defaultEmoji          = mod.defaultEmoji()
+    local workspace             = mod.workspace()
 
     --------------------------------------------------------------------------------
     -- Make sure there's a valid token!
     --------------------------------------------------------------------------------
     if not token or trim(token) == "" then
         injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidTokenIsRequired") .. "');")
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure there's a valid workspace!
+    --------------------------------------------------------------------------------
+    if not workspace or trim(workspace) == "" then
+        injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidWorkspaceIsRequired") .. "');")
         return
     end
 
@@ -144,7 +163,7 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     -- Define path to csv2notion:
     --------------------------------------------------------------------------------
-    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion"
+    local binPath = config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/csv2notion/csv2notion_neo"
 
     --------------------------------------------------------------------------------
     -- Setup Arguments for csv2notion:
@@ -152,6 +171,8 @@ local function uploadToNotion(csvPath)
     local arguments = {
         "--token",
         token,
+        "--workspace",
+        workspace
     }
 
     if databaseURL and databaseURL ~= "" then
@@ -265,6 +286,7 @@ local function updateUI()
         changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
 
         changeValueByID("token", "]] .. mod.token() .. [[");
+        changeValueByID("workspace", "]] .. mod.workspace() .. [[");
         changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
         changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
     ]]
@@ -400,6 +422,11 @@ local function callback(id, params)
         -- Find Token Help Button:
         --------------------------------------------------------------------------------
         execute("open " .. NOTION_TOKEN_HELP_URL)
+    elseif callbackType == "findWorkspace" then
+        --------------------------------------------------------------------------------
+        -- Find Workspace Help Button:
+        --------------------------------------------------------------------------------
+        execute("open " .. NOTION_WORKSPACE_HELP_URL)
     elseif callbackType == "findDatabaseURL" then
         --------------------------------------------------------------------------------
         -- Find Database Help Button:
@@ -419,6 +446,8 @@ local function callback(id, params)
         if tid then
             if tid == "token" then
                 mod.token(value)
+            elseif tid == "workspace" then
+                mod.workspace(value)
             elseif tid == "databaseURL" then
                 mod.databaseURL(value)
             elseif tid == "defaultEmoji" then
@@ -562,7 +591,7 @@ function plugin.init(deps, env)
         label           = i18n("notion"),
         image           = icon,
         tooltip         = i18n("notion"),
-        height          = 490,
+        height          = 560,
     })
     :addContent(1, generateContent, false)
 

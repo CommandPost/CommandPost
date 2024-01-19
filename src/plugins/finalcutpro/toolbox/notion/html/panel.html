@@ -246,6 +246,18 @@
     </tr>
     <tr>
         <th class="notionLabelRow">
+           <p class="notionText">{{ i18n("notionWorkspace") }} ({{ string.lower(i18n("required")) }}):</p>
+        </th>
+        <th>
+            <input class="notionTextBox" id="workspace" type="text" onchange="updateText(this)">
+        </th>
+        <th width="10px"></th>
+		<th>
+			<a href="#" class="bottomButton" style="width:120px;" onclick="pressButton('findToken')">{{ i18n("findWorkspace") }}</a>
+		</th>
+    </tr>
+    <tr>
+        <th class="notionLabelRow">
            <p class="notionText">{{ i18n("notionDatabaseURL") }} ({{ string.lower(i18n("optional")) }}):</p>
         </th>
         <th>
