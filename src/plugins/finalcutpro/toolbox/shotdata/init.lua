@@ -62,12 +62,17 @@ local NOTION_TEMPLATE_URL = "https://soothsayer.notion.site/1e6a317008e546159ca7
 -- NOTION_TOKEN_HELP_URL -> string
 -- Constant
 -- URL to Token Help
-local NOTION_TOKEN_HELP_URL = "https://vzhd1701.notion.site/Find-Your-Notion-Token-5f57951434c1414d84ac72f88226eede"
+local NOTION_TOKEN_HELP_URL = "https://github.com/TheAcharya/csv2notion-neo#prerequisite"
+
+-- NOTION_TOKEN_HELP_URL -> string
+-- Constant
+-- URL to Token Help
+local NOTION_WORKSPACE_HELP_URL = "https://github.com/TheAcharya/csv2notion-neo#prerequisite"
 
 -- NOTION_DATABASE_VIEW_HELP_URL -> string
 -- Constant
 -- URL to Database View Help
-local NOTION_DATABASE_VIEW_HELP_URL = "https://github.com/vzhd1701/csv2notion/raw/master/examples/db_link.png"
+local NOTION_DATABASE_VIEW_HELP_URL = "https://github.com/TheAcharya/csv2notion-neo#prerequisite"
 
 -- TEMPLATE_NUMBER_OF_NODES -> number
 -- Constant
@@ -340,6 +345,11 @@ mod.mergeData = config.prop("toolbox.shotdata.mergeData", true)
 --- Field
 --- Notion Token.
 mod.token = config.prop("toolbox.shotdata.token", "")
+
+--- plugins.finalcutpro.toolbox.shotdata.workspace <cp.prop: string>
+--- Field
+--- Notion workspace.
+mod.workspace = config.prop("toolbox.shotdata.workspace", "")
 
 --- plugins.finalcutpro.toolbox.shotdata.databaseURL <cp.prop: string>
 --- Field
@@ -632,6 +642,7 @@ local function uploadToNotion(csvPath)
     --log.df("lets process: %s", csvPath)
 
     local token                 = mod.token()
+    local workspace             = mod.workspace()
     local databaseURL           = mod.databaseURL()
     local mergeData             = mod.mergeData()
     local ignoreColumns         = mod.ignoreColumns()
@@ -642,6 +653,14 @@ local function uploadToNotion(csvPath)
     --------------------------------------------------------------------------------
     if not token or trim(token) == "" then
         injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidTokenIsRequired") .. "');")
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure there's a valid workspace!
+    --------------------------------------------------------------------------------
+    if not workspace or trim(workspace) == "" then
+        injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidWorkspaceIsRequired") .. "');")
         return
     end
 
@@ -661,6 +680,8 @@ local function uploadToNotion(csvPath)
     local arguments = {
         "--token",
         token,
+        "--workspace",
+        workspace
     }
 
     if databaseURL and databaseURL ~= "" then
@@ -1082,6 +1103,7 @@ local function updateUI()
         changeCheckedByID("mergeData", ]] .. tostring(mod.mergeData()) .. [[);
 
         changeValueByID("token", "]] .. mod.token() .. [[");
+        changeValueByID("workspace", "]] .. mod.workspace() .. [[");
         changeValueByID("databaseURL", "]] .. mod.databaseURL() .. [[");
         changeValueByID("defaultEmoji", "]] .. mod.defaultEmoji() .. [[");
 
@@ -1176,6 +1198,11 @@ local function callback(id, params)
         -- Find Token Help Button:
         --------------------------------------------------------------------------------
         execute("open " .. NOTION_TOKEN_HELP_URL)
+    elseif callbackType == "findWorkspace" then
+        --------------------------------------------------------------------------------
+        -- Find Workspace Help Button:
+        --------------------------------------------------------------------------------
+        execute("open " .. NOTION_WORKSPACE_HELP_URL)
     elseif callbackType == "findDatabaseURL" then
         --------------------------------------------------------------------------------
         -- Find Database Help Button:
@@ -1200,6 +1227,8 @@ local function callback(id, params)
         if tid then
             if tid == "token" then
                 mod.token(value)
+            elseif tid == "workspace" then
+                mod.workspace(value)
             elseif tid == "databaseURL" then
                 mod.databaseURL(value)
             elseif tid == "defaultEmoji" then
@@ -1424,7 +1453,7 @@ function plugin.init(deps, env)
         label           = i18n("shotData"),
         image           = imageFromPath(env:pathToAbsolute("/images/shotdata.png")),
         tooltip         = i18n("shotData"),
-        height          = 1100,
+        height          = 1150,
     })
     :addContent(1, generateContent, false)
 

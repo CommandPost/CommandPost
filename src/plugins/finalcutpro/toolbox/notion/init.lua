@@ -148,10 +148,10 @@ local function uploadToNotion(csvPath)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure there's a valid token!
+    -- Make sure there's a valid workspace!
     --------------------------------------------------------------------------------
     if not workspace or trim(workspace) == "" then
-        injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidTokenIsRequired") .. "');")
+        injectScript("setStatus('red', '" .. string.upper(i18n("failed")) .. ": " .. i18n("aValidWorkspaceIsRequired") .. "');")
         return
     end
 
