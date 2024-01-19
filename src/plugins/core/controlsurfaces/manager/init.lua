@@ -33,7 +33,7 @@ local mod = {}
 --- plugins.core.controlsurfaces.manager.NUMBER_OF_BANKS -> number
 --- Constant
 --- Number of banks.
-mod.NUMBER_OF_BANKS = 15
+mod.NUMBER_OF_BANKS = 30
 
 --- plugins.core.controlsurfaces.manager.NUMBER_OF_DEVICES -> number
 --- Constant
