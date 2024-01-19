@@ -591,7 +591,7 @@ function plugin.init(deps, env)
         label           = i18n("notion"),
         image           = icon,
         tooltip         = i18n("notion"),
-        height          = 560,
+        height          = 540,
     })
     :addContent(1, generateContent, false)
 
