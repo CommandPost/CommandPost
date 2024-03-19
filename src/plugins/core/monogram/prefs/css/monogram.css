@@ -33,32 +33,17 @@
 	width: 290px;
 }
 
-.monogramRowFavourite {
-	width: 15%;
-}
-
-.monogramRowAction {
-	width: 50%;
-}
-
-.monogramRowActionButton {
-	width: 12%;
-}
-
 .monogram thead {
 	font-weight: bold;
 	font-size: 12px;
-	width: 100%;
+    display:table;
+    width: 100%;
 }
 
 .monogram thead tr, .monogram tbody tr {
 	display: table;
 	table-layout: fixed;
-	width: 100%;
-}
-
-.monogram thead tr {
-	width: calc( 100% - 8px);
+	/* width: 100%; */
 }
 
 .monogram tbody {
@@ -103,7 +88,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 620px;
+	width: 120px !important;
 }
 
 .monogramActionButton {

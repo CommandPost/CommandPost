@@ -187,10 +187,10 @@ local format                = string.format
 --- or a `table` of [Definitions](cp.spec.Definition.md).
 ---
 --- Parameters:
---- * name      - The name of the test suite.
+---  * name      - The name of the test suite.
 ---
 --- Returns:
---- * A `function` that must be called with the set of [Definitions](cp.spec.Definition.md) or [suites](cp.spec.Specification.md) to run.
+---  * A `function` that must be called with the set of [Definitions](cp.spec.Definition.md) or [suites](cp.spec.Specification.md) to run.
 local function describe(name)
     return function(...)
         return Specification(name):with(...)
@@ -199,28 +199,29 @@ end
 
 --- cp.spec.describe(name) -> function(definitions) -> cp.spec.Specification
 --- Function
---- Returns a `function` which will accept a list of test [definitions](cp.spec.Definition.md),
---- or a `table` of [definitions](cp.spec.Definition.md).
+--- Returns a `function` which will accept a list of test [definitions](cp.spec.Definition.md), or a `table` of [definitions](cp.spec.Definition.md).
 ---
 --- Parameters:
---- * name      - The name of the test suite.
+---  * name      - The name of the test suite.
 ---
 --- Returns:
---- * A `function` that must be called with the set of [definitions](cp.spec.Definition.md) or [suites](cp.spec.Specification.md) to run.
+---  * A `function` that must be called with the set of [definitions](cp.spec.Definition.md) or [suites](cp.spec.Specification.md) to run.
 local context = describe
 
 --- cp.spec.it(name[, ...]) -> cp.spec.Scenario
 --- Function
---- Returns an [Scenario](cp.spec.Scenario.md) with the specified name and optional `doingFn` function.
---- If the function is not provided, it must be done via the [doing](#doing) method prior to running.
+--- Returns an [Scenario](cp.spec.Scenario.md) with the specified name and optional `doingFn` function. If the function is not provided, it must be done via the [doing](#doing) method prior to running.
 ---
 --- Parameters:
---- * name      - The name of the scenario.
---- * doingFn   - (optional) The `function` to call when doing the operation. Will be passed the [Run.This](cp.spec.Run.This.md)
+---  * name      - The name of the scenario.
+---  * doingFn   - (optional) The `function` to call when doing the operation. Will be passed the [Run.This](cp.spec.Run.This.md)
 ---     instance for the definition.
 ---
+--- Returns:
+---  * A `cp.spec.Scenario` object
+---
 --- Notes:
---- * See [doing](cp.spec.Scenario.md#doing) for more details regarding the function.
+---  * See [doing](cp.spec.Scenario.md#doing) for more details regarding the function.
 local function it(name, doingFn)
     return Scenario("it " .. name, doingFn)
 end
@@ -230,13 +231,15 @@ end
 -- The path to search to find `spec` files. Defaults to the standard path.
 local searchPath = nil
 
---- cp.spec.setSearchPath(path)
+--- cp.spec.setSearchPath(path) -> none
 --- Function
---- Sets the path that will be used to search for `spec` files with the `spec "my.extension"` call.
---- By default it will search the current package path. If specified, it will also search the provided path.
+--- Sets the path that will be used to search for `spec` files with the `spec "my.extension"` call. By default it will search the current package path. If specified, it will also search the provided path.
 ---
 --- Parameters:
---- * path - The path to search for `spec` files. Set to `nil` to only search the default package path.
+---  * path - The path to search for `spec` files. Set to `nil` to only search the default package path.
+---
+--- Returns:
+---  * None
 local function setSearchPath(path)
     searchPath = path
 end
@@ -360,15 +363,17 @@ end
 --- cp.spec(id) -> cp.spec.Definition
 --- Function
 --- This will search the package path (and [specPath](#setSpecPath), if set) for `_spec.lua` files.
---- It will first look for a file ending with `_spec.lua`, then will look for a file named `_spec.lua` in the folder.
---- For example, if you run `require "cp.spec" "foo.bar"`, it will first look for `"foo/bar_spec.lua"`, then `"foo/bar/_spec.lua"`.
---- This gives flexibility for extensions that are organised as single files or as folders.
 ---
 --- Parameters:
---- * id - the path ID for the spec. Eg. "cp.app"
+---  * id - the path ID for the spec. Eg. "cp.app"
 ---
 --- Returns:
---- * The [Definition](cp.spec.Definition.md), or throws an error.
+---  * The [Definition](cp.spec.Definition.md), or throws an error.
+---
+--- Notes:
+---  * It will first look for a file ending with `_spec.lua`, then will look for a file named `_spec.lua` in the folder.
+---  * For example, if you run `require "cp.spec" "foo.bar"`, it will first look for `"foo/bar_spec.lua"`, then `"foo/bar/_spec.lua"`.
+---  * This gives flexibility for extensions that are organised as single files or as folders.
 local function loadSpec(id)
     local result, err = execSpec(id, "spec", 2)
 
@@ -427,15 +432,13 @@ end
 
 --- cp.spec.test(id) -> cp.spec.Definition
 --- Function
---- Attempts to load a [cp.test](cp.test.md) with the specified ID, converting
---- it to a `cp.spec` [Definition](cp.spec.Definition.md). This can then
---- be run like any other `spec`.
+--- Attempts to load a [cp.test](cp.test.md) with the specified ID, converting it to a `cp.spec` [Definition](cp.spec.Definition.md). This can then be run like any other `spec`.
 ---
 --- Parameters:
---- * id - The `cp.test` ID (eg. `"cp.app"`).
+---  * id - The `cp.test` ID (eg. `"cp.app"`).
 ---
 --- Returns:
---- * The `Definition` or throws an error if it can't be found.
+---  * The `Definition` or throws an error if it can't be found.
 local function loadTest(id)
     local result, err = execSpec(id, "test")
 
@@ -563,18 +566,16 @@ local ID_SEARCH_PATTERN = "(.*)%.%*$"
 --- cp.spec.find(idPattern) -> cp.spec.Definition
 --- Function
 --- Attempts to find specs that match the provided ID pattern.
---- Essentially, this is a standard `require` id/path to the spec file, with
---- an optional `"*"` at the end to indicate that all specs available
---- under that path should be loaded. Eg. "foo.bar" will find the specific spec at `foo/bar_spec.lua` or `foo/bar/._spec.lua`,
---- or if those don't exist it will see if there is a `foo/bar_test.lua` or `foo/bar/._test.lua` and load that via [test](#test) instead.
---- However, if the pattern is "foo.bar.*", it will not only look for those specs, but will also check under that folder for other
---- `_spec.lua` or `_test.lua` files to add to the collection to run.
 ---
 --- Parameters:
 ---  * idPattern - the ID pattern
 ---
 --- Returns:
 ---  * The spec or `nil` and an error message.
+---
+--- Notes:
+---  * Essentially, this is a standard `require` id/path to the spec file, with an optional `"*"` at the end to indicate that all specs available under that path should be loaded. Eg. "foo.bar" will find the specific spec at `foo/bar_spec.lua` or `foo/bar/._spec.lua`, or if those don't exist it will see if there is a `foo/bar_test.lua` or `foo/bar/._test.lua` and load that via [test](#test) instead.
+---  * However, if the pattern is "foo.bar.*", it will not only look for those specs, but will also check under that folder for other `_spec.lua` or `_test.lua` files to add to the collection to run.
 local function find(idPattern)
     local id = idPattern:match(ID_SEARCH_PATTERN)
     local result, err

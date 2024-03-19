@@ -69,7 +69,7 @@ end
 -- Creates a new `Where`
 --
 -- Parameters:
--- * definition     - The [Definition](cp.spec.Definition.md) where it spawned from.
+-- * definition - The [Definition](cp.spec.Definition.md) where it spawned from.
 function Where:initialize(scenario, whereData)
     self.whereData = convertData(whereData)
     self.scenario = scenario

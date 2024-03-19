@@ -53,10 +53,10 @@ local html = {}
 --- Checks if the `value` is an `cp.web.html` block.
 ---
 --- Parameters:
---- * value     - the value to check
+---  * value     - the value to check
 ---
 --- Returns:
---- * `true` if it is an HTML block, or `false` otherwise.
+---  * `true` if it is an HTML block, or `false` otherwise.
 html.is = block.is
 
 html.__index = function(_, name)

@@ -69,6 +69,7 @@
     "alphaAdd": "Alpha Add",
     "alphaAdd9": "Alpha Add",
     "alreadyWatched": "Den här mappen övervakas redan.",
+    "alternative": "Alternativ",
     "always": "Alltid",
     "alwaysOnTop": "Alltid på topp",
     "ambience": "Atmosfär",
@@ -190,6 +191,7 @@
     "betterPerformance": "Bättre Prestanda",
     "betterQuality": "Bättre kvalité",
     "black": "Svart",
+    "blackPoint": "Svart punkt",
     "blade": "Blad",
     "blendMode": "Blandningsläge",
     "blendMode9": "Blandningsläge",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Koden måste returnera en funktion.",
     "cold": "Kall",
     "color": "Färg",
+    "colorAdjustments": "Färgjusteringar",
+    "colorAdjustments_group": "Färgjusteringar",
     "colorAndEffects": "Färg & effekter",
     "colorBoard": "Färgbräda",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Kontrollera Final Cut Pro-användargränssnittselementet (absolut)",
     "controlFCPUIElementRelative": "Kontrollera Final Cut Pro användargränssnittselement (Relativt)",
     "controlFCPUIElementRelativeNote": "Håll musen över ett UI-element, håll CONTROL och justera sedan MIDI-ratten / Fader för att registrera.",
+    "controlRange": "Kontrollområde",
     "controlSurfaces": "Kontrollera ytor",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Styr volymen i Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Kontrollerar tidslinjens zoomning via popup-utseendet",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Ladda ner Tangent Hub",
     "dragAndDropFileAction": "Dra & släpp filåtgärd",
     "dragAndDropTextAction": "Dra och släpp textåtgärd",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Dra ditt projekt från Final Cut Pro-gränssnittet och släpp här",
     "draggable": "dragbar",
     "draggableGuides": "Dragbara guider",
     "driveManagement": "Drive Management",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "Ignorera kort",
     "finalcutpro_import_preferences_label": "Importera inställningar",
     "finalcutpro_inspector_audio_label": "Inspektör: Ljud",
+    "finalcutpro_inspector_coloradjustments_label": "Inspektör: Färgjusteringar",
+    "finalcutpro_inspector_colourlabai_label": "Inspektör: Colourlab Ai",
     "finalcutpro_inspector_info_label": "Inspektör: Info",
     "finalcutpro_inspector_show_label": "Inspektör: Ytterligare åtgärder",
     "finalcutpro_inspector_text_label": "Inspektör: Text",
+    "finalcutpro_inspector_title_label": "Inspektör: Titel",
     "finalcutpro_inspector_video_label": "Inspektör: Video",
     "finalcutpro_language_label": "Final Cut Pro-språk",
     "finalcutpro_loupedeckplugin_label": "Loupedeck Plugin",
@@ -1282,6 +1291,8 @@
     "highlights": "slingor",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Höjdpunkter Tint",
+    "highlightsWarmth": "Framhäver Värme",
     "histogram": "Histogram",
     "history": "Historia",
     "historyIsEmpty": "Historiken är tom",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "Upprepa tangenten",
     "keyboard": "Tangentbord",
     "keyboardShortcut": "Tangentbordsgenväg",
+    "keyboardShortcutAlternativeDescription": "Utlöser en virtuell tangentbordspress med en alternativ metod (för användning i Blender, etc)",
     "keyboardShortcutDescription": "Utlöser en virtuell tangentbordspress",
     "keyboardShortcuts": "Tangentbordsgenvägar",
     "keyframe": "keyframe",
@@ -1423,6 +1435,7 @@
     "learnMore": "Läs mer",
     "leaveFilesInPlaceOnImport": "Lämna filer på plats vid import",
     "ledAlwaysOn": "LED alltid på",
+    "ledBrightness": "LED-ljusstyrka",
     "ledColor": "LED-färg",
     "left": "Vänster",
     "leftDoubleMouseClick": "Vänster dubbel musklick",
@@ -1455,6 +1468,7 @@
     "location": "Plats",
     "long": "Lång",
     "longPress": "Lång press",
+    "longPressAction": "Långtrycksåtgärd",
     "longPressDuration": "Lång trycktid",
     "look": "Se",
     "loopPlayback": "Loop-uppspelning",
@@ -1555,6 +1569,8 @@
     "midtones": "Mellantoner toner~~POS=HEADCOMP",
     "midtones2": "MT",
     "midtones4": "MIDS",
+    "midtonesTint": "Mellantoner Nyans",
+    "midtonesWarmth": "Mellantoner Värme",
     "mins": {
         "one": "min",
         "other": "min"
@@ -2109,6 +2125,8 @@
     "shadows": "skuggor",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Skuggor nyans",
+    "shadowsWarmth": "Skuggor Värme",
     "share": "Dela med sig",
     "shareDetails_Facebook": "Skriv: Facebook\nLogga in: %{login}\nTitel: %{title}",
     "shareDetails_Tudou": "Typ: Tudou\nLogga in: %{login}\nTitel: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "Den delade pasteboardbanan finns inte längre. Vill du välja en ny plats?",
     "sharedPasteboardRootFolder": "Delad pasteboardrotmapp",
     "sharp": "Skarp",
+    "shiftAnchorDownPixels": {
+        "one": "Flytta ned ankaret med %{amount} pixlar",
+        "other": "Flytta ned ankaret med %{amount} pixlar"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Flytta ankare åt vänster med %{amount} Pixel",
+        "other": "Flytta ankare åt vänster med %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Flytta ankare åt höger med %{amount} Pixel",
+        "other": "Flytta ankare åt höger med %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Flytta ankare uppåt med %{amount} Pixel",
+        "other": "Flytta ankare uppåt med %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Skiftposition ned %{amount} Pixel",
         "other": "Skiftposition ned %{amount} Pixel"
@@ -2156,7 +2190,24 @@
         "one": "Skift upp med %{amount} Pixel",
         "other": "Skift upp med %{amount} Pixel"
     },
+    "shiftScaleXDown": {
+        "one": "Flytta Skala X ned med %{amount} Pixel",
+        "other": "Flytta Skala X ned med %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Flytta Skala X Upp med %{amount} Pixel",
+        "other": "Flytta Skala X Upp med %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Flytta ned skala Y med %{amount} Pixel",
+        "other": "Flytta ned skala Y med %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Flytta Skala Y upp med %{amount} Pixel",
+        "other": "Flytta Skala Y upp med %{amount} Pixel"
+    },
     "short": "Kort",
+    "shortPressAction": "Kort tryckåtgärd",
     "shortcutAlreadyInUse": "Den här genvägen används redan.",
     "shortcutAlreadyInUseByMacOS": "Den här genvägskombinationen används för närvarande av macOS (dvs. den kan användas av skärmdumpning, universell åtkomst och tangentnavigeringsnycklar).",
     "shortcutCouldNotBeTriggered": "Denna genväg kunde inte utlösas.\n\nKontrollera att du har giltiga genvägstangenter tilldelade kommandot som du har försökt utlösa i Final Cut Pro Command Editor och försök igen.",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "från Final Cut Pro till DaVinci Resolve.",
     "sonyTimecodeFixerDescriptionTwo": "Den här verktygslådan kommer att uppdatera en FCPXML för att använda de korrekta tidskodvärdena från XML-sidecar-filen, så att du lättare kan skicka tidslinjer",
     "sonyTimecodeRepair": "Sony Timecode Reparation",
+    "sonyTimecodeRepairDescriptionFive": "Denna verktygslåda slängdes ihop för Alister Robbie. Tack George Elias, Jamie LeJeune & Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Denna verktygslåda slängdes ihop för Alister Robbie. Tack för att du testade Jamie LeJeune!",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro tolkar för närvarande inte alltid korrekt tidskod från vissa Sony-kameror som spelar in i ett MP4-omslag.",
     "sonyTimecodeRepairDescriptionThree": "så att du lättare kan skicka tidslinjer från Final Cut Pro till DaVinci Resolve, Baselight eller Adobe Premiere (med XtoCC).",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "Föreslå rörelsefunktion till Apple",
     "support": "Stöd",
     "swipe": "Hårt slag",
+    "swipeLeftAction": "Svep åt vänster Åtgärd",
+    "swipeRightAction": "Svep åt höger Åtgärd",
     "switchBetweenInsideOutsideMarks": "Växla mellan inre / yttre masker",
     "switchDaVinciResolveControlSurfaceTo": "Växla DaVinci Resolve Control Surface till",
     "switchLoupedeckCTTo": "Byt Loupedeck CT till",

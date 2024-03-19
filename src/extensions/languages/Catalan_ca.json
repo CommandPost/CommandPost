@@ -69,6 +69,7 @@
     "alphaAdd": "Afegeix alfa",
     "alphaAdd9": "Afegeix alfa",
     "alreadyWatched": "Aquesta carpeta ja s'està mirant.",
+    "alternative": "Alternativa",
     "always": "Sempre",
     "alwaysOnTop": "Sempre a la part superior",
     "ambience": "Ambient",
@@ -190,6 +191,7 @@
     "betterPerformance": "Millor Rendiment",
     "betterQuality": "Millor Qualitat",
     "black": "Negre",
+    "blackPoint": "Punt Negre",
     "blade": "Fulla",
     "blendMode": "Mode de barreja",
     "blendMode9": "Mode de combinació",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "El codi ha de retornar una funció.",
     "cold": "Refredat",
     "color": "Color",
+    "colorAdjustments": "Ajustos de color",
+    "colorAdjustments_group": "Ajustos de color",
     "colorAndEffects": "Color i efectes",
     "colorBoard": "Tauler de colors",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Control de l'element de la interfície d'usuari de Final Cut Pro (absolut)",
     "controlFCPUIElementRelative": "Control de l'element de la interfície d'usuari de Final Cut Pro (relatiu)",
     "controlFCPUIElementRelativeNote": "Passeu el ratolí per sobre d'un element de la interfície d'usuari, manteniu premuda la tecla CONTROL i, a continuació, ajusteu el botó/fader MIDI per registrar-lo.",
+    "controlRange": "Interval de control",
     "controlSurfaces": "Superfícies de control",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Controla el volum al Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Controla el zoom de la línia de temps mitjançant la finestra emergent d'aparença",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Descarrega Tangent Hub",
     "dragAndDropFileAction": "Acció d'arrossegar i deixar anar el fitxer",
     "dragAndDropTextAction": "Acció d'arrossegar i deixar anar text",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Arrossegueu el vostre projecte des de la interfície Final Cut Pro i deixeu-lo anar aquí",
     "draggable": "Arrossegable",
     "draggableGuides": "Guies arrossegables",
     "driveManagement": "Gestió de la unitat",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "Ignora les targetes",
     "finalcutpro_import_preferences_label": "Preferències d'importació",
     "finalcutpro_inspector_audio_label": "Inspector: Àudio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspector: Ajustos de color",
+    "finalcutpro_inspector_colourlabai_label": "Inspector: Colorlab Ai",
     "finalcutpro_inspector_info_label": "Inspector: Info",
     "finalcutpro_inspector_show_label": "Inspector: Accions addicionals",
     "finalcutpro_inspector_text_label": "Inspector: Text",
+    "finalcutpro_inspector_title_label": "Inspector: Títol",
     "finalcutpro_inspector_video_label": "Inspector: Vídeo",
     "finalcutpro_language_label": "Idiomes Final Cut Pro",
     "finalcutpro_loupedeckplugin_label": "Connector Loupedeck",
@@ -1282,6 +1291,8 @@
     "highlights": "Destacats",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Destacats Tint",
+    "highlightsWarmth": "Destaca la calor",
     "histogram": "Histograma",
     "history": "Història",
     "historyIsEmpty": "La història és buida",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "Repetició de claus",
     "keyboard": "Teclat",
     "keyboardShortcut": "Drecera de teclat",
+    "keyboardShortcutAlternativeDescription": "Activa una pressió de teclat virtual mitjançant un mètode alternatiu (per utilitzar-lo a Blender, etc.)",
     "keyboardShortcutDescription": "Activa una pressió de teclat virtual",
     "keyboardShortcuts": "Dreceres de teclat",
     "keyframe": "Fotograma clau",
@@ -1423,6 +1435,7 @@
     "learnMore": "Aprèn més",
     "leaveFilesInPlaceOnImport": "Deixeu els fitxers al seu lloc durant la importació",
     "ledAlwaysOn": "LED sempre encès",
+    "ledBrightness": "Lluminositat LED",
     "ledColor": "Color LED",
     "left": "Esquerra",
     "leftDoubleMouseClick": "Fes doble clic esquerre del ratolí",
@@ -1455,6 +1468,7 @@
     "location": "Ubicació",
     "long": "Llarg",
     "longPress": "Premsa llarga",
+    "longPressAction": "Acció de premsa llarga",
     "longPressDuration": "Durada de premsa llarga",
     "look": "Mira",
     "loopPlayback": "Reproducció en bucle",
@@ -1555,6 +1569,8 @@
     "midtones": "Tons mitjans",
     "midtones2": "MT",
     "midtones4": "Mitjans",
+    "midtonesTint": "Tint de tons mitjans",
+    "midtonesWarmth": "Calidesa dels tons mitjans",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2109,6 +2125,8 @@
     "shadows": "Ombres",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Tint d'ombres",
+    "shadowsWarmth": "Ombres Calidesa",
     "share": "Compartir",
     "shareDetails_Facebook": "Tipus: Facebook\nInici de sessió: %{login}\nTítol: %{title}",
     "shareDetails_Tudou": "Tipus: Tudou\nInici de sessió: %{login}\nTítol: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "La ruta del tauler compartit ja no existeix. Voleu seleccionar una ubicació nova?",
     "sharedPasteboardRootFolder": "Carpeta arrel de tauler compartida",
     "sharp": "Agut",
+    "shiftAnchorDownPixels": {
+        "one": "Desplaceu l'àncora cap avall en %{amount} píxels",
+        "other": "Desplaceu l'àncora cap avall en %{amount} píxels"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Desplaça l'ancoratge cap a l'esquerra en %{amount} píxels",
+        "other": "Desplaça l'ancoratge cap a l'esquerra en %{amount} píxels"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Desplaça l'àncora a la dreta en %{amount} píxels",
+        "other": "Desplaça l'àncora a la dreta en %{amount} píxels"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Desplaceu l'ancoratge cap amunt en %{amount} píxels",
+        "other": "Desplaceu l'ancoratge cap amunt en %{amount} píxels"
+    },
     "shiftPositionDownPixels": {
         "one": "Canvia la posició cap avall %{amount} píxels",
         "other": "Canvia la posició cap avall %{amount} píxels"
@@ -2156,7 +2190,24 @@
         "one": "Augmenta l'escala en %{amount} píxels",
         "other": "Augmenta l'escala en %{amount} píxels"
     },
+    "shiftScaleXDown": {
+        "one": "Desplaceu l'escala X cap avall en %{amount} píxels",
+        "other": "Desplaceu l'escala X cap avall en %{amount} píxels"
+    },
+    "shiftScaleXUp": {
+        "one": "Canjeu l'escala X cap amunt en %{amount} píxels",
+        "other": "Canjeu l'escala X cap amunt en %{amount} píxels"
+    },
+    "shiftScaleYDown": {
+        "one": "Desplaceu l'escala Y avall en %{amount} píxel",
+        "other": "Desplaceu l'escala Y avall en %{amount} píxel"
+    },
+    "shiftScaleYUp": {
+        "one": "Canjeu l'escala Y amunt en %{amount} píxels",
+        "other": "Canjeu l'escala Y amunt en %{amount} píxels"
+    },
     "short": "Curt",
+    "shortPressAction": "Acció de premsa curta",
     "shortcutAlreadyInUse": "Aquesta drecera ja està en ús.",
     "shortcutAlreadyInUseByMacOS": "Aquesta combinació de dreceres l'està utilitzant actualment macOS (és a dir, es podria utilitzar per les tecles de captura de pantalla, accés universal i navegació del teclat).",
     "shortcutCouldNotBeTriggered": "Aquesta drecera no s'ha pogut activar.\n\nSi us plau, comproveu que teniu les tecles de drecera vàlides assignades a l'ordre que heu intentat activar a l'Editor d'ordres de Final Cut Pro i torneu-ho a provar.",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "de Final Cut Pro a DaVinci Resolve.",
     "sonyTimecodeFixerDescriptionTwo": "Aquesta caixa d'eines actualitzarà un FCPXML per utilitzar els valors de codi de temps correctes del fitxer XML sidecar, de manera que pugueu enviar línies de temps més fàcilment.",
     "sonyTimecodeRepair": "Reparació de codi de temps de Sony",
+    "sonyTimecodeRepairDescriptionFive": "Aquesta caixa d'eines va ser creada per a Alister Robbie. Gràcies George Elias, Jamie LeJeune i Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Aquesta caixa d'eines va ser creada per a Alister Robbie. Gràcies per provar Jamie LeJeune!",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro actualment no sempre interpreta correctament el codi de temps de determinades càmeres Sony que estan gravant en un embolcall MP4.",
     "sonyTimecodeRepairDescriptionThree": "perquè pugueu enviar més fàcilment línies de temps des de Final Cut Pro a DaVinci Resolve, Baselight o Adobe Premiere (amb XtoCC).",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "Suggereix la funció de moviment a Apple",
     "support": "Suport",
     "swipe": "Llisca",
+    "swipeLeftAction": "Acció de lliscar cap a l'esquerra",
+    "swipeRightAction": "Acció de lliscar cap a la dreta",
     "switchBetweenInsideOutsideMarks": "Canvia entre màscares interiors i exteriors",
     "switchDaVinciResolveControlSurfaceTo": "Canvia la superfície de control de DaVinci Resolve a",
     "switchLoupedeckCTTo": "Canvia a Loupedeck CT",

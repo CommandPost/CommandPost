@@ -64,7 +64,7 @@
 ---
 --- This will do a run for each variation and interpolate the value into the run name for each.
 ---
---- **Note:** "where" parameters will not override built-in functions and fields in the [this](cp.spec.Run.This.md)
+---  **Note:** "where" parameters will not override built-in functions and fields in the [this](cp.spec.Run.This.md)
 --- instance (such as "async" or "done") so ensure that you pick names that don't clash.
 
 local require               = require
@@ -91,10 +91,10 @@ end
 --- Checks if the `instance` is an instance of `Specification`.
 ---
 --- Presentation:
---- * instance - The instance to check
+---  * instance - The instance to check
 ---
 --- Returns:
---- * `true` if it's a `Specification` instance.
+---  * `true` if it's a `Specification` instance.
 function Scenario.static.is(instance)
     return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(Scenario)
 end
@@ -104,14 +104,14 @@ end
 --- Creates a new `Scenario` with the specified name.
 ---
 --- Parameters:
---- * name          - The name of the scenario.
---- * testFn     - (optional) The `function` which performs the test for in the scenario.
+---  * name          - The name of the scenario.
+---  * testFn     - (optional) The `function` which performs the test for in the scenario.
 ---
 --- Returns:
---- * The new `Scenario`.
+---  * The new `Scenario`.
 ---
 --- Notes:
---- * If the `testFn` is not provided here, it must be done via the [doing](#doing) method prior to running,
+---  * If the `testFn` is not provided here, it must be done via the [doing](#doing) method prior to running,
 ---   an `error` will occur.
 function Scenario:initialize(name, testFn)
     Definition.initialize(self, name)
@@ -123,10 +123,10 @@ end
 --- Specifies the `function` for the definition.
 ---
 --- Parameters:
---- * testFn     - The function that will do the test.
+---  * testFn - The function that will do the test.
 ---
 --- Returns:
---- * The same `Definition`.
+---  * The same `Definition`.
 function Scenario:doing(testFn)
     if type(testFn) ~= "function" then
         error("Provide a function to execute.")
@@ -188,7 +188,10 @@ end
 --- Runs the scenario.
 ---
 --- Parameters:
---- * ...   - The list of filters. The first one will be compared to this scenario to determine it should be run.
+---  * ...   - The list of filters. The first one will be compared to this scenario to determine it should be run.
+---
+--- Returns:
+---  * cp.spec.Run object
 function Scenario:run()
     -- TODO: support filtering
     return Run(self.name, self)
@@ -205,14 +208,15 @@ end
 --- cp.spec.Scenario:where(data) -> cp.spec.Where
 --- Method
 --- Specifies a `table` of data that will be iterated through as multiple [Runs](cp.spec.Run.md), one row at a time.
---- The first row should be all strings, which will be the name of the parameter. Subsequent rows are the values for
---- those rows.
 ---
 --- Parameters:
---- * data      - The data table.
+---  * data      - The data table.
 ---
 --- Returns:
---- * The [Where](cp.spec.Where.md).
+---  * The [Where](cp.spec.Where.md).
+---
+--- Notes:
+---  * The first row should be all strings, which will be the name of the parameter. Subsequent rows are the values for those rows.
 function Scenario:where(data)
     return Where(self, data)
 end

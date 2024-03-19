@@ -7,6 +7,7 @@ local require           = require
 local application       = require "hs.application"
 
 local config            = require "cp.config"
+local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
 local mergeTable        = tools.mergeTable
@@ -111,6 +112,7 @@ local plugin = {
         ["core.commands.global"]        = "global",
         ["core.action.manager"]         = "actionmanager",
         ["core.application.manager"]    = "appmanager",
+        ["core.menu.manager"]           = "menumanager",
     }
 }
 
@@ -125,6 +127,13 @@ function plugin.init(deps)
         :groupedBy("commandPost")
         :whenActivated(mod.show)
         :activatedBy():ctrl():option():cmd("space")
+
+    --------------------------------------------------------------------------------
+    -- Add Search Console to the top of the menubar:
+    --------------------------------------------------------------------------------
+    deps.menumanager.top:addItem(0.000000001, function()
+        return { title = i18n("searchConsole"), fn = mod.show }
+    end)
 
     return mod
 end

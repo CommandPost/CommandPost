@@ -168,18 +168,18 @@ end
 --- Prepends the content. If specified, the `escaped` value will override any default escaping for the content type.
 ---
 --- Parameters:
---- * newContent		- The content to prepend to the contents of the HTML block.
---- * escaped			- May be set to override default escaping for the content.
+---  * newContent		- The content to prepend to the contents of the HTML block.
+---  * escaped			- May be set to override default escaping for the content.
 ---
 --- Returns:
---- * The same HTML block instance.
+---  * The same HTML block instance.
 ---
 --- Notes:
---- * The `newContent` may be almost any value. The default handling is below:
---- ** `cp.web.html` instance: Any other HTML block can be added. Default escaping: `false`.
---- ** `function`: Functions will be executed every time the HTML block is converted to a string. Default escaping: whatever the default is for the returned value.
---- ** `list`: Tables which are lists will be iterrated and each item will be evaluated each time the HTML block is converted to a string. Default escaping: the default for each item.
---- ** _everything else_: Converted to a string via the `tostring` function. Default escaping: `true`.
+---  * The `newContent` may be almost any value. The default handling is below:
+---  ** `cp.web.html` instance: Any other HTML block can be added. Default escaping: `false`.
+---  ** `function`: Functions will be executed every time the HTML block is converted to a string. Default escaping: whatever the default is for the returned value.
+---  ** `list`: Tables which are lists will be iterrated and each item will be evaluated each time the HTML block is converted to a string. Default escaping: the default for each item.
+---  ** _everything else_: Converted to a string via the `tostring` function. Default escaping: `true`.
 function block:prepend(newContent, escaped)
     local content = self:_content()
 
@@ -194,18 +194,18 @@ end
 --- Appends the content. If specified, the `escaped` value will override any default escaping for the content type.
 ---
 --- Parameters:
---- * newContent		- The content to append to the contents of the HTML block.
---- * escaped			- May be set to override default escaping for the content.
+---  * newContent		- The content to append to the contents of the HTML block.
+---  * escaped			- May be set to override default escaping for the content.
 ---
 --- Returns:
---- * The same HTML block instance.
+---  * The same HTML block instance.
 ---
 --- Notes:
---- * The `newContent` may be almost any value. The default handling is below:
---- ** `cp.web.html` instance: Any other HTML block can be added. Default escaping: `false`.
---- ** `function`: Functions will be executed every time the HTML block is converted to a string. Default escaping: whatever the default is for the returned value.
---- ** `list`: Tables which are lists will be iterrated and each item will be evaluated each time the HTML block is converted to a string. Default escaping: the default for each item.
---- ** _everything else_: Converted to a string via the `tostring` function. Default escaping: `true`.
+---  * The `newContent` may be almost any value. The default handling is below:
+---  ** `cp.web.html` instance: Any other HTML block can be added. Default escaping: `false`.
+---  ** `function`: Functions will be executed every time the HTML block is converted to a string. Default escaping: whatever the default is for the returned value.
+---  ** `list`: Tables which are lists will be iterrated and each item will be evaluated each time the HTML block is converted to a string. Default escaping: the default for each item.
+---  ** _everything else_: Converted to a string via the `tostring` function. Default escaping: `true`.
 function block:append(newContent, escaped)
     local content = self:_content()
 
@@ -285,10 +285,10 @@ end
 --- Checks if the `value` is an `cp.web.block`.
 ---
 --- Parameters:
---- * value		- the value to check
+---  * value		- the value to check
 ---
 --- Returns:
---- * `true` if it is an HTML block, or `false` otherwise.
+---  * `true` if it is an HTML block, or `false` otherwise.
 block.is = isBlock
 
 return block

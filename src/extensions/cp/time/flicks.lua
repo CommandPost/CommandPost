@@ -41,32 +41,32 @@
 ---
 --- # Details
 ---
---- * 24 fps frame: 29400000 flicks
---- * 25 fps frame: 28224000 flicks
---- * 30 fps frame: 23520000 flicks
---- * 48 fps frame: 14700000 flicks
---- * 50 fps frame: 14112000 flicks
---- * 60 fps frame: 11760000 flicks
---- * 90 fps frame: 7840000 flicks
---- * 100 fps frame: 7056000 flicks
---- * 120 fps frame: 5880000 flicks
---- * 8000 fps frame: 88200 flicks
---- * 16000 fps frame: 44100 flicks
---- * 22050 fps frame: 32000 flicks
---- * 24000 fps frame: 29400 flicks
---- * 32000 fps frame: 22050 flicks
---- * 44100 fps frame: 16000 flicks
---- * 48000 fps frame: 14700 flicks
---- * 88200 fps frame: 8000 flicks
---- * 96000 fps frame: 7350 flicks
---- * 192000 fps frame: 3675 flicks
+---  * 24 fps frame: 29400000 flicks
+---  * 25 fps frame: 28224000 flicks
+---  * 30 fps frame: 23520000 flicks
+---  * 48 fps frame: 14700000 flicks
+---  * 50 fps frame: 14112000 flicks
+---  * 60 fps frame: 11760000 flicks
+---  * 90 fps frame: 7840000 flicks
+---  * 100 fps frame: 7056000 flicks
+---  * 120 fps frame: 5880000 flicks
+---  * 8000 fps frame: 88200 flicks
+---  * 16000 fps frame: 44100 flicks
+---  * 22050 fps frame: 32000 flicks
+---  * 24000 fps frame: 29400 flicks
+---  * 32000 fps frame: 22050 flicks
+---  * 44100 fps frame: 16000 flicks
+---  * 48000 fps frame: 14700 flicks
+---  * 88200 fps frame: 8000 flicks
+---  * 96000 fps frame: 7350 flicks
+---  * 192000 fps frame: 3675 flicks
 ---
 --- # NTSC:
 ---
---- * 24 * 1000/1001 (~23.976) fps frame: 29429400 flicks
---- * 30 * 1000/1001 (~29.97) fps frame: 23543520 flicks
---- * 60 * 1000/1001 (~59.94) fps frame: 11771760 flicks
---- * 120 * 1000/1001 (~119.88) fps frame: 5885880 flicks
+---  * 24 * 1000/1001 (~23.976) fps frame: 29429400 flicks
+---  * 30 * 1000/1001 (~29.97) fps frame: 23543520 flicks
+---  * 60 * 1000/1001 (~59.94) fps frame: 11771760 flicks
+---  * 120 * 1000/1001 (~119.88) fps frame: 5885880 flicks
 
 -- local log					= require("hs.logger").new("flicks")
 
@@ -186,32 +186,6 @@ end
 --- cp.time.flicks.parse(timecodeString, framerate) -> flicks
 --- Constructor
 --- Attempts to parse the timecode string value with the specified framerate.
---- The timecode can match the folowing patterns:
----
---- * `"HH:MM:SS:FF"`
---- * `"HH:MM:SS;FF"`
---- * `"HHMMSSFF"`
----
---- The characters above match to `H`ours, `M`inutes `S`econds and `F`rames, respectively. For example,
---- a timecode of 1 hour, 23 minutes, 45 seconds and 12 frames could be expressed as:
----
---- * `"01:23:45:12"`
---- * `"01:23:45;12"`
---- * `"01234512"`
----
---- Times with a value of zero from left to right may be omitted. After the first non-zero value, all
---- other numbers including framesmust always be expressed, even if they are zero.
---- So, if your timecode is 1 minute 30 seconds, you could use:
----
---- * `"1:30:00"`
---- * `"1:30;00"`
---- * `"13000"`
----
---- You can also put numbers up to `99` in each block. So, another way of expressing 1 minute 30 seconds is:
----
---- * `"90:00"`
---- * `"90;00"`
---- * `"9000"`
 ---
 --- Parameters:
 ---  * timecodeString   - The timecode as a string.
@@ -219,6 +193,34 @@ end
 ---
 --- Returns:
 ---  * a new `flicks` instance for the timecode.
+---
+--- Notes:
+--- The timecode can match the folowing patterns:
+---
+---  * `"HH:MM:SS:FF"`
+---  * `"HH:MM:SS;FF"`
+---  * `"HHMMSSFF"`
+---
+--- The characters above match to `H`ours, `M`inutes `S`econds and `F`rames, respectively. For example,
+--- a timecode of 1 hour, 23 minutes, 45 seconds and 12 frames could be expressed as:
+---
+---  * `"01:23:45:12"`
+---  * `"01:23:45;12"`
+---  * `"01234512"`
+---
+--- Times with a value of zero from left to right may be omitted. After the first non-zero value, all
+--- other numbers including framesmust always be expressed, even if they are zero.
+--- So, if your timecode is 1 minute 30 seconds, you could use:
+---
+---  * `"1:30:00"`
+---  * `"1:30;00"`
+---  * `"13000"`
+---
+--- You can also put numbers up to `99` in each block. So, another way of expressing 1 minute 30 seconds is:
+---
+---  * `"90:00"`
+---  * `"90;00"`
+---  * `"9000"`
 function flicks.parse(timecodeString, framerate)
     local tokens = timecodeString:gsub("[;:]", "")
     local block, multiplier = _findFlicksPerFrame(framerate)
@@ -248,19 +250,21 @@ end
 
 --- cp.time.flicks.new(value) -> flicks
 --- Constructor
---- Creates a new `flicks` instance. By default, the unit is in flicks`, but can be set as a
---- different unit using the `flicks.perXXX` constants. For example:
----
---- ```lua
---- local oneFlick = flicks.new(1)
---- local oneSecond = flicks.new(1 * flicks.perSecond)
---- ```
+--- Creates a new `flicks` instance. By default, the unit is in flicks`, but can be set as a different unit using the `flicks.perXXX` constants.
 ---
 --- Parameters:
 ---  * value - the base value to set to
 ---
 --- Returns:
 ---  * the new `flicks` instance
+---
+--- Notes:
+---  * For example:
+---
+--- ```lua
+--- local oneFlick = flicks.new(1)
+--- local oneSecond = flicks.new(1 * flicks.perSecond)
+--- ```
 function flicks.new(value)
     local o = {
         value = value // 1,
@@ -313,8 +317,6 @@ end
 --- cp.time.flicks:toTimecode(framerate[, delimeter]) -> string
 --- Method
 --- Converts the flicks into a string of the format "HH[:]MM[:]SS[:;]FF", with hours, minutes and frames listed respectively.
---- By default, there will be no delimiter. If you provide ":" then all delimiters will be colons. If you provide
---- ";" then the final delimiter will be a semic-colon, all others will be colons.
 ---
 --- Parameters:
 ---  * framerate    - the framerate to use when calculating frames per second.
@@ -322,6 +324,9 @@ end
 ---
 --- Returns:
 ---  * String of the timecode.
+---
+--- Notes:
+---  *  By default, there will be no delimiter. If you provide ":" then all delimiters will be colons. If you provide ";" then the final delimiter will be a semic-colon, all others will be colons.
 function flicks.mt:toTimecode(framerate, delimeter)
     local result
     local flicksPerFrame, fps = _findFlicksPerFrame(framerate)

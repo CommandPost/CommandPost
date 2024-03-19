@@ -8,8 +8,7 @@ local mod = {}
 
 --- cp.fn.prop.mutate(getFn[, setFn]) -> function(prop) -> cp.prop
 --- Function
---- A function combinator which returns a function that receives a [cp.prop](cp.prop.md) and creates a mutated `cp.prop`
---- based on the `getFn` and `setFn` provided.
+--- A function combinator which returns a function that receives a [cp.prop](cp.prop.md) and creates a mutated `cp.prop` based on the `getFn` and `setFn` provided.
 ---
 --- Parameters:
 ---  * getFn - A function that receives the current value and returns the modified value of the prop.

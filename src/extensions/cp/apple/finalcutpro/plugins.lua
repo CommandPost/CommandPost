@@ -132,7 +132,12 @@ local PLUGIN_TYPES = {
 -- BUILT_IN_PLUGINS -> table
 -- Constant
 -- Table of built-in plugins
-local BUILT_IN_PLUGINS = {
+local BUILT_IN_PLUGINS
+
+-- BUILT_IN_PLUGINS_10_6_5 -> table
+-- Constant
+-- Table of built-in plugins for 10.6.5 and earlier
+local BUILT_IN_PLUGINS_10_6_5 = {
     --------------------------------------------------------------------------------
     -- Built-in Effects:
     --------------------------------------------------------------------------------
@@ -156,6 +161,68 @@ local BUILT_IN_PLUGINS = {
         ["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
     },
 }
+
+-- BUILT_IN_PLUGINS_10_6_6 -> table
+-- Constant
+-- Table of built-in plugins for 10.6.6 and later
+local BUILT_IN_PLUGINS_10_6_6 = {
+    --------------------------------------------------------------------------------
+    -- Built-in Effects:
+    --------------------------------------------------------------------------------
+    [PLUGIN_TYPES.videoEffect] = {
+        ["FFEffectCategoryColor"]           = {                                         -- Color
+                                                "FFCorrectorColorBoard",                -- Color Board
+                                                "PAEColorCurvesEffectDisplayName",      -- Color Curves
+                                                "PAECorrectorEffectDisplayName",        -- Color Wheels
+                                                "PAELUTEffectDisplayName",              -- Custom LUT
+                                                "HDRTools::Filter Name",                -- HDR Tools
+                                                "PAEHSCurvesEffectDisplayName",         -- Hue/Saturation Curves
+                                                "HSVAdjust::Filter Name"                -- Hue/Saturation
+                                              },
+        ["FFEffectCategoryMasksAndKeying"]  = {                                         -- Masks and Keying
+                                                "FFCornerMask",                         -- Corner Mask
+                                                "FFSplineMaskEffect",                   -- Draw Mask
+                                                                                        -- Graduated Mask - It's a Motion Effect
+                                                "Keyer::Filter Name",                   -- Green Screen Keyer
+                                                "Image Mask Name",                      -- Image Mask
+                                                "LumaKeyer::Filter Name",               -- Luma Keyer
+                                                "FFHeVAMLMatteEffect",                  -- Scene Removal Mask
+                                                "FFShapeMaskEffect",                    -- Shape Mask
+                                                                                        -- Vignette Mask - It's a Motion Effect
+                                              },
+        ["Stylize"]                         = {                                         -- Stylize
+                                                "DropShadow::Filter Name"               -- Drop Shadow
+                                              },
+        ["FFEffectCategoryBasics"]          = {                                         -- Basics
+                                                "FFNoiseReduction"                      -- Noise Reduction
+                                              },
+        ["FFEffectCategory360"]             = {                                         -- 360°
+                                                "360 Noise Reduction::Filter Name"      -- 360° Noise Reduction
+                                              },
+    },
+
+    --------------------------------------------------------------------------------
+    -- Built-in Transitions:
+    --------------------------------------------------------------------------------
+    [PLUGIN_TYPES.transition] = {
+        ["Transitions::Dissolves"] = { "CrossDissolve::Filter Name", "DipToColorDissolve::Transition Name", "FFTransition_OpticalFlow" },
+        ["Movements"] = { "SpinSlide::Transition Name", "Swap::Transition Name", "RippleTransition::Transition Name", "Mosaic::Transition Name", "PageCurl::Transition Name", "PuzzleSlide::Transition Name", "Slide::Transition Name" },
+        ["Objects"] = { "Cube::Transition Name", "StarIris::Transition Name", "Doorway::Transition Name" },
+        ["Wipes"] = { "BandWipe::Transition Name", "CenterWipe::Transition Name", "CheckerWipe::Transition Name", "ChevronWipe::Transition Name", "OvalIris::Transition Name", "ClockWipe::Transition Name", "GradientImageWipe::Transition Name", "Inset Wipe::Transition Name", "X-Wipe::Transition Name", "EdgeWipe::Transition Name" },
+        ["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
+    },
+}
+
+--------------------------------------------------------------------------------
+-- Load different built-in plugins depending on Final Cut Pro version:
+--------------------------------------------------------------------------------
+local activeVersion = fcpApp:versionString()
+local currentVerison = activeVersion and v(activeVersion)
+if currentVerison and currentVerison < v("10.6.6") then
+    BUILT_IN_PLUGINS = BUILT_IN_PLUGINS_10_6_5
+else
+    BUILT_IN_PLUGINS = BUILT_IN_PLUGINS_10_6_6
+end
 
 -- BUILT_IN_EDEL_EFFECTS -> table
 -- Constant
@@ -753,15 +820,7 @@ mod._getPluginName = getPluginName
 
 --- cp.apple.finalcutpro.plugins:scanPluginsDirectory(locale, path, filter) -> boolean
 --- Method
---- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
----
----   1. <type>/<plugin name>/<plugin name>.<ext>
----   2. <type>/<group>/<plugin name>/<plugin name>.<ext>
----   3. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
----
---- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of locales.
----
---- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `locale` provided. Other locales are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
+--- Scans a root plugins directory.
 ---
 --- Parameters:
 ---  * `locale`   - The locale code to scan for (e.g. "en" or "fr").
@@ -770,6 +829,14 @@ mod._getPluginName = getPluginName
 ---
 --- Returns:
 ---  * `true` if the plugin directory was successfully scanned.
+---
+--- Notes:
+---  * Plugins directories have a standard structure which comes in two flavours:
+---   ** <type>/<plugin name>/<plugin name>.<ext>
+---   ** <type>/<group>/<plugin name>/<plugin name>.<ext>
+---   ** <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
+---  * This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of locales.
+---  * This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `locale` provided. Other locales are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
 function mod.mt:scanPluginsDirectory(locale, path, checkFn)
     locale = localeID(locale)
     --------------------------------------------------------------------------------
@@ -1423,10 +1490,10 @@ end
 --- Finds the 'transitions' plugins.
 ---
 --- Parameters:
---- * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available plugins.
+---  * A table of the available plugins.
 function mod.mt:transitions(locale)
     locale = localeID(locale)
     return self:ofType(PLUGIN_TYPES.transition, locale)

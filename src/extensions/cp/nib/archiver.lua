@@ -387,7 +387,7 @@ end
 ---
 --- Returns:
 ---  * A `table` containing the archive data, or `nil` if the file could not be read.
---- * The `string` error message, if any.
+---  * The `string` error message, if any.
 function mod.fromFile(filename)
     if not filename then
         return nil, "No filename was provided"

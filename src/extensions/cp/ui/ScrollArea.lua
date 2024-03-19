@@ -206,7 +206,7 @@ end
 --- Parameters:
 ---  * childUI - The `hs.axuielement` object of the child you want to show.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:showChildUI(childUI)
     local ui = self:UI()
@@ -290,7 +290,7 @@ end
 --- Parameters:
 ---  * index - The index of the child you want to show.
 ---
---- Return:
+--- Returns:
 ---  * Self
 function ScrollArea:showChildAt(index)
     local ui = self:childrenUI()

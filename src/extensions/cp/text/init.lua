@@ -50,7 +50,6 @@ local utf16BEchar, utf16BEcodepoint 	= utf16BE.char, utf16BE.codepoint
 local unpack, pack						        = table.unpack, table.pack
 local floor								            = math.floor
 
-
 local text = {}
 
 text.mt = {}
@@ -65,10 +64,13 @@ end
 
 --- cp.text.encoding
 --- Constant
---- The list of supported encoding formats:
----  * `utf8`		- UTF-8. The most common format on the web, backwards compatible with ANSI/ASCII.
----  * `utf16le`	- UTF-16 (little-endian). Commonly used in Windows and Mac text files.
----  * `utf16be`	- UTF-16 (big-endian). Alternate 16-bit format, common on Linux and PowerPC-based architectures.
+--- The list of supported encoding formats.
+---
+--- Notes:
+---  * The list of supported encoding formats:
+---   ** `utf8`		- UTF-8. The most common format on the web, backwards compatible with ANSI/ASCII.
+---   ** `utf16le`	- UTF-16 (little-endian). Commonly used in Windows and Mac text files.
+---   ** `utf16be`	- UTF-16 (big-endian). Alternate 16-bit format, common on Linux and PowerPC-based architectures.
 text.encoding = protect {
     utf8	= "utf8",
     utf16le	= "utf16le",
@@ -129,8 +131,7 @@ end
 
 --- cp.text.fromString(value[, encoding]) -> text
 --- Constructor
---- Returns a new `text` instance representing the string value of the specified value. If no encoding is specified,
---- it will attempt to determine the encoding from a leading Byte-Order Marker (BOM). If none is present, it defaults to UTF-8.
+--- Returns a new `text` instance representing the string value of the specified value. If no encoding is specified, it will attempt to determine the encoding from a leading Byte-Order Marker (BOM). If none is present, it defaults to UTF-8.
 ---
 --- Parameters:
 ---  * `value`		- The value to turn into a unicode text instance.
@@ -165,8 +166,7 @@ end
 
 --- cp.text.fromCodepoints(codepoints[, i[, j]]) -> text
 --- Constructor
---- Returns a new `text` instance representing the specified array of codepoints. Since `i` and `j` default to the first
---- and last indexes of the array, simply passing in the array will convert all codepoints in that array.
+--- Returns a new `text` instance representing the specified array of codepoints. Since `i` and `j` default to the first and last indexes of the array, simply passing in the array will convert all codepoints in that array.
 ---
 --- Parameters:
 ---  * `codepoints`	- The array of codepoint integers.
@@ -226,8 +226,7 @@ end
 
 --- cp.text.fromFile(path[, encoding]) -> text
 --- Constructor
---- Returns a new `text` instance representing the text loaded from the specified path. If no encoding is specified,
---- it will attempt to determine the encoding from a leading Byte-Order Marker (BOM). If none is present, it defaults to UTF-8.
+--- Returns a new `text` instance representing the text loaded from the specified path. If no encoding is specified, it will attempt to determine the encoding from a leading Byte-Order Marker (BOM). If none is present, it defaults to UTF-8.
 ---
 --- Parameters:
 ---  * `value`		- The value to turn into a unicode text instance.
@@ -275,8 +274,6 @@ end
 --- cp.text:sub(i [, j]) -> cp.text
 --- Method
 --- Returns the substring of this text that starts at `i` and continues until `j`; `i` and `j` can be negative.
---- If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length).
---- In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
 ---
 --- Parameters:
 ---  * i - See above
@@ -284,6 +281,10 @@ end
 ---
 --- Returns:
 ---  * None
+---
+--- Notes:
+---  * If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length).
+---  * In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
 function text.mt:sub(i, j)
     j = j or -1
     return text.fromCodepoints(getCodes(self), i, j)
@@ -293,8 +294,6 @@ end
 --- Method
 --- Looks for the first match of pattern in the string `value`. If it finds a match, then find returns the indices of `value` where this occurrence starts and ends; otherwise, it returns `nil`. A third, optional numerical argument `init` specifies where to start the search; its default value is `1` and can be negative. A value of `true` as a fourth, optional argument plain turns off the pattern matching facilities, so the function does a plain "find substring" operation, with no characters in pattern being considered "magic". Note that if plain is given, then `init` must be given as well.
 ---
---- If the pattern has captures, then in a successful match the captured values are also returned, after the two indices.
----
 --- Parameters:
 ---  * `pattern`		- The pattern to find.
 ---  * `init`			- The index to start matching from. Defaults to `1`.
@@ -302,6 +301,9 @@ end
 ---
 --- Returns:
 ---  * the start index, the end index, followed by any captures
+---
+--- Notes:
+---  * If the pattern has captures, then in a successful match the captured values are also returned, after the two indices.
 function text.mt:find(pattern, init, plain)
     return matcher(pattern):find(self, init, plain)
 end
@@ -397,7 +399,7 @@ end
 --- Returns the text as an encoded `string` value.
 ---
 --- Parameters:
----  * `encoding`	- The encoding to use when converting. Defaults to `cp.text.encoding.utf8`.
+---  * `encoding` - The encoding to use when converting. Defaults to `cp.text.encoding.utf8`.
 --
 -- Returns:
 --  * The `string` version of the `cp.text` value with the specified encoding..

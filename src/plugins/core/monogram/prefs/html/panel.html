@@ -14,36 +14,6 @@
 		}
 	}
 
-	function changeEnabled(){
-		try {
-			var result = {
-				id: "monogramPanelCallback",
-				params: {
-					type: "changeEnabled",
-					enabled: document.getElementById("enabled").checked
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function changeApplication(){
-		try {
-			var result = {
-				id: "monogramPanelCallback",
-				params: {
-					type: "changeApplication",
-					application: document.getElementById("application").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
 	function pressAction(buttonID){
 		try {
 			var result = {
@@ -77,11 +47,16 @@
 <div id="monogramControls" class="uiItem">
 	<div id="monogramGroup" class="monogramGroup">
 		<table class="monogram">
-			<thead>
+            <thead>
 				<tr>
-					<th class="monogramRowFavourite">{{ i18n("identification") }}</th>
-					<th class="monogramRowAction">{{ i18n("action") }}</th>
-					<th class="monogramRowActionButton"></th>
+					<th width="100px"></th>
+					<th width="150px">{{ i18n("pressAction") }}</th>
+					<th width="120px"></th>
+					<th width="150px">{{ i18n("turnLeftAction") }}</th>
+					<th width="120px"></th>
+					<th width="150px">{{ i18n("turnRightAction") }}</th>
+					<th width="120px"></th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -89,15 +64,29 @@
 				for i=1,maxItems,1 do
 			%}
 				<tr>
-					<td class="monogramRowFavourite">
-						{{ i18n("monogram") }} {{ i18n("favourite") }} #{{ i }}
+					<td width="100px">
+						{{ i18n("favourite") }} {{ string.format("%02d", i) }}
 					</td>
-					<td class="monogramRowAction">
-						<input type="text" id="label_{{ i }}" class="monogramActionTextbox" value="{{ i18n("none") }}" disabled>
+					<td width="150px">
+						<input type="text" id="press_{{ i }}" class="monogramActionTextbox" value="{{ i18n("none") }}" disabled>
 					</td>
-					<td class="monogramRowActionButton">
+					<td width="120px">
 						<a href="#" class="button monogramActionButton" onclick="pressAction('{{ i }}')">{{ i18n("select") }}</a>
 						<a href="#" class="button monogramActionButton" onclick="pressClear('{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+					<td width="150px">
+						<input type="text" id="left_{{ i }}" class="monogramActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td width="120px">
+						<a href="#" class="button monogramActionButton" onclick="pressAction('left_{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button monogramActionButton" onclick="pressClear('left_{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+					<td width="150px">
+						<input type="text" id="right_{{ i }}" class="monogramActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td width="120px">
+						<a href="#" class="button monogramActionButton" onclick="pressAction('right_{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button monogramActionButton" onclick="pressClear('right_{{ i }}')">{{ i18n("clear") }}</a>
 					</td>
 				</tr>
 			{%

@@ -152,10 +152,7 @@ end
 
 --- cp.app.forBundleID(bundleID)
 --- Constructor
---- Returns the `cp.app` for the specified Bundle ID. If the app has already been created,
---- the same instance of `cp.app` will be returned on subsequent calls.
----
---- The Bundle ID
+--- Returns the `cp.app` for the specified Bundle ID. If the app has already been created, the same instance of `cp.app` will be returned on subsequent calls.
 ---
 --- Parameters:
 ---  * bundleID      - The application bundle ID to find the app for.
@@ -226,8 +223,7 @@ end
 
 --- cp.app:keyStroke(modifiers, character) -> none
 --- Method
---- Generates and emits a single keystroke event pair for the supplied keyboard
---- modifiers and character to the application.
+--- Generates and emits a single keystroke event pair for the supplied keyboard modifiers and character to the application.
 ---
 --- Parameters:
 ---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
@@ -330,29 +326,23 @@ end
 --- Method
 --- Registers the specified class as one which will be used when accessing a specific `AXWindow` instance.
 ---
---- By default, it will use the `matches` function on the class itself to check. An alternate function can be
---- provided by putting it in the `{matches = <function>}` property of the `options` table.
----
---- By default, Windows instances are assumed to be short-lived, and will not persist beyond the window opening or closing.
---- To indicate that it should stick around, add `persistent = true` to the `options` table.
----
---- If the new `AXWindow` matches, this class will be used when requesting the set of windows via
---- the [#windows] method or the [#focusedWindow] or [#mainWindow] props.
----
---- Classes registered later will supersede those registered earlier, so ensure that matchers are specific enough to
---- not recognise more window UIs than they should.
----
 --- Parameters:
---- * windowClass       - The class that will be used to create the window. It should be a subclass of [Window](cp.ui.Window.md)
---- * options           - (optional) if provided, it will be passed the `hs.asm.axuielement` being wrapped, and should return `true` or `false`.
+---  * windowClass       - The class that will be used to create the window. It should be a subclass of [Window](cp.ui.Window.md)
+---  * options           - (optional) if provided, it will be passed the `hs.asm.axuielement` being wrapped, and should return `true` or `false`.
 ---
 --- Returns:
---- * the same instance of the `cp.app` for further configuration.
+---  * the same instance of the `cp.app` for further configuration.
 ---
 --- Notes:
---- * Options:
+---  * Options:
 ---     * `matches`: a `function` that will receive the AXWindow instance and should return `true` or `false`.
 ---     * `persistent`: if set to `true`, the Window instance will be cached and checked when windows appear and disappear.
+---  * By default, it will use the `matches` function on the class itself to check. An alternate function can be provided by putting it in the `{matches = <function>}` property of the `options` table.
+---
+---  * By default, Windows instances are assumed to be short-lived, and will not persist beyond the window opening or closing.
+---  * To indicate that it should stick around, add `persistent = true` to the `options` table.
+---  * If the new `AXWindow` matches, this class will be used when requesting the set of windows via the [#windows] method or the [#focusedWindow] or [#mainWindow] props.
+---  * Classes registered later will supersede those registered earlier, so ensure that matchers are specific enough to not recognise more window UIs than they should.
 function app:registerWindowType(windowClass, options)
     local matchesFn = options and  options.matches or windowClass.matches
     if type(matchesFn) ~= "function" then
@@ -832,8 +822,7 @@ end
 
 --- cp.app:doLaunch([waitSeconds[, path]]) -> cp.rx.Statement <boolean>
 --- Method
---- Returns a `Statement` that can be run to launch or focus the current app.
---- It will resolve to `true` when the app was launched.
+--- Returns a `Statement` that can be run to launch or focus the current app. It will resolve to `true` when the app was launched.
 ---
 --- Parameters:
 ---  * waitSeconds - (optional) The number of seconds to wait for it to load. Defaults to 30 seconds.
@@ -885,9 +874,7 @@ end
 
 --- cp.app:quit(waitSeconds) -> self
 --- Method
---- Asks the application to quit, if it's running. The app may not have actually quit after this
---- function runs, even if `true` is returned. The application may take some time, or may be prompting
---- the user for input, etc.
+--- Asks the application to quit, if it's running. The app may not have actually quit after this function runs, even if `true` is returned. The application may take some time, or may be prompting the user for input, etc.
 ---
 --- Parameters:
 ---  * `waitSeconds`    - If povided, the number of seconds to wait until the quit completes. If `nil`, it will return immediately.
@@ -930,12 +917,7 @@ end
 
 --- cp.app:doRestart() -> cp.rx.go.Statement <boolean>
 --- Method
---- Returns a `Statement` which will attempt to restart the app. If the app
---- was not running at the time, no action is taken and `false` is returned. If it was
---- running then the app will be attempted to quit then restarted.
----
---- If you have multiple versions of the same app on your system, this will
---- restart with the same version that was running when the restart was requested.
+--- Returns a `Statement` which will attempt to restart the app. If the app was not running at the time, no action is taken and `false` is returned. If it was running then the app will be attempted to quit then restarted.
 ---
 --- Parameters:
 ---  * None.
@@ -945,6 +927,7 @@ end
 ---
 --- Notes:
 ---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
+---  * If you have multiple versions of the same app on your system, this will restart with the same version that was running when the restart was requested.
 function app.lazy.method:doRestart()
     return If(self.hsApplication):Then(function(hsApp)
         local appPath = hsApp:path()
@@ -1099,9 +1082,7 @@ end
 
 --- cp.app:isSupportedLocale(locale) -> boolean
 --- Method
---- Checks if the specified locale is supported. The `locale` can
---- be either a string with the locale code (eg. "en_AU") or a
---- `cp.i18n.localeID`.
+--- Checks if the specified locale is supported. The `locale` can be either a string with the locale code (eg. "en_AU") or a `cp.i18n.localeID`.
 ---
 --- Parameters:
 ---  * locale    - The locale code string or `localeID` to check.
@@ -1123,8 +1104,7 @@ end
 
 --- cp.app:bestSupportedLocale(locale) -> cp.i18n.localeID or nil
 --- Method
---- Finds the closest match for the specified locale. The returned locale
---- will be in the same language as the provided locale, and as close a match as possible with the region and script.
+--- Finds the closest match for the specified locale. The returned locale will be in the same language as the provided locale, and as close a match as possible with the region and script.
 ---
 --- Parameters:
 ---  * locale    - The local to match
@@ -1182,8 +1162,7 @@ end
 
 --- cp.app:searchResources(value) -> hs.task
 --- Method
---- Creates a `hs.task` which will search for the specified string value in the resources
---- of the current app.
+--- Creates a `hs.task` which will search for the specified string value in the resources of the current app.
 ---
 --- Parameters:
 ---  * value     - The string value to search for.

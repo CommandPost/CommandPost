@@ -70,12 +70,12 @@ local BUY_MORE_ICONS_URL = "https://www.sideshowfx.net/buy?category=Loupedeck"
 -- SNIPPET_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_icons"
+local SNIPPET_HELP_URL = "https://commandpost.io/scripting/snippets-for-icons/"
 
 -- SNIPPET_LED_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_LED_HELP_URL = "https://help.commandpost.io/advanced/snippets_for_led_colors"
+local SNIPPET_LED_HELP_URL = "https://commandpost.io/scripting/snippets-for-led-colors/"
 
 -- delayedFn -> hs.timer
 -- Variable
@@ -733,8 +733,7 @@ end
 
 --- plugins.core.loupedeckctandlive.prefs:generateKnobImages(app, bank, id) -> none
 --- Method
---- Generates a combined image for all the knobs on a single side.
---- Which side is generated is determined by the knob id.
+--- Generates a combined image for all the knobs on a single side. Which side is generated is determined by the knob id.
 ---
 --- Parameters:
 ---  * app - The application bundle ID as a string.
@@ -1382,7 +1381,7 @@ function mod.mt:refreshDevice()
     self.device:refresh(tonumber(lastDevice))
 end
 
---- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
+--- plugins.core.loupedeckctandlive.prefs:panelCallback(id, params) -> none
 --- Method
 --- JavaScript Callback for the Preferences Panel
 ---

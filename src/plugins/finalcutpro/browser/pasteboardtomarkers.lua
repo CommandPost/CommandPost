@@ -8,12 +8,12 @@
 --- ```
 --- 05:00:00: Test Keyword 1
 --- #05:01:00:01: Test Keyword 2
---- *05:02:00: Test Keyword 3
+---  *05:02:00: Test Keyword 3
 --- 05:02:15: Test Keyword 4
---- *05:03:00: Test Keyword 5
+---  *05:03:00: Test Keyword 5
 --- 05:03:15: Test Keyword 6
 --- #05:03:30: Test Keyword 7
---- *05:04:00: Test Keyword 8
+---  *05:04:00: Test Keyword 8
 --- ```
 ---
 --- If a * is place before the timecode, it will make the clip as a favourite

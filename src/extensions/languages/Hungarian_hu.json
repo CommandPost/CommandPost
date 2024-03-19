@@ -69,6 +69,7 @@
     "alphaAdd": "Alpha Add",
     "alphaAdd9": "Alpha Add",
     "alreadyWatched": "Ez a mappa már watchfolder.",
+    "alternative": "Alternatív",
     "always": "Mindig",
     "alwaysOnTop": "Mindig a tetején",
     "ambience": "Környezet",
@@ -190,6 +191,7 @@
     "betterPerformance": "Jobb teljesítmény",
     "betterQuality": "Jobb minőség",
     "black": "Fekete",
+    "blackPoint": "Fekete pont",
     "blade": "Penge",
     "blendMode": "Blend mód",
     "blendMode9": "BlendMode",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "A kódnak vissza kell adnia egy függvényt.",
     "cold": "Hideg",
     "color": "Szín",
+    "colorAdjustments": "Színbeállítások",
+    "colorAdjustments_group": "Színbeállítások",
     "colorAndEffects": "Szín és effektusok",
     "colorBoard": "Színes tábla",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "A Final Cut Pro felhasználói felület elemének ellenőrzése (abszolút)",
     "controlFCPUIElementRelative": "A Final Cut Pro felhasználói felület elemének (relatív) vezérlése",
     "controlFCPUIElementRelativeNote": "Vigye az egeret egy felhasználói felület elemére, tartsa lenyomva a CONTROL gombot, majd állítsa be a MIDI gombot / Fader a regisztrációhoz.",
+    "controlRange": "Vezérlési tartomány",
     "controlSurfaces": "Külső vezérlők",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Szabályozza a hangerőt a Final Cut Pro Audio Inspectorban",
     "controlsTimelineZoomViaTheAppearancePopup": "Az idővonal nagyítását vezérli a Megjelenés előugró ablakon keresztül",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Tangent Hub letöltése",
     "dragAndDropFileAction": "Drag & Drop fájl művelet",
     "dragAndDropTextAction": "Drag & Drop szövegművelet",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Húzza projektjét a Final Cut Pro felületről, és dobja ide",
     "draggable": "húzható",
     "draggableGuides": "Húzható segédvonalak",
     "driveManagement": "Meghajtók kezelése",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "Hagyja figyelmen kívül a kártyákat",
     "finalcutpro_import_preferences_label": "Importálási beállítások",
     "finalcutpro_inspector_audio_label": "Felügyelő: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Ellenőr: Színbeállítások",
+    "finalcutpro_inspector_colourlabai_label": "Felügyelő: Colourlab Ai",
     "finalcutpro_inspector_info_label": "Ellenőr: Információ",
     "finalcutpro_inspector_show_label": "Felügyelő: További tevékenységek",
     "finalcutpro_inspector_text_label": "Felügyelő: Szöveg",
+    "finalcutpro_inspector_title_label": "Ellenőr: Cím",
     "finalcutpro_inspector_video_label": "Felügyelő: Videó",
     "finalcutpro_language_label": "Final Cut Pro nyelvek",
     "finalcutpro_loupedeckplugin_label": "Loupedeck beépülő modul",
@@ -1282,6 +1291,8 @@
     "highlights": "Főbb",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Kiemeli Tint",
+    "highlightsWarmth": "Kiemeli a melegséget",
     "histogram": "hisztogram",
     "history": "Történelem",
     "historyIsEmpty": "Az előzmények üres",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "Billentyűismétlés",
     "keyboard": "Billentyűzet",
     "keyboardShortcut": "Billentyűparancs",
+    "keyboardShortcutAlternativeDescription": "Kiváltja a virtuális billentyűzet lenyomását egy alternatív módszerrel (Blenderben stb.",
     "keyboardShortcutDescription": "Kiváltja a virtuális billentyűzet megnyomását",
     "keyboardShortcuts": "Gyorsbillentyűk",
     "keyframe": "Kulcsképkockák",
@@ -1423,6 +1435,7 @@
     "learnMore": "Tudj meg többet",
     "leaveFilesInPlaceOnImport": "Hagyja a fájlokat a helyén az importáláskor",
     "ledAlwaysOn": "LED Mindig világít",
+    "ledBrightness": "LED fényerő",
     "ledColor": "LED szín",
     "left": "Balra",
     "leftDoubleMouseClick": "Kattintson duplán az egér bal gombjával",
@@ -1455,6 +1468,7 @@
     "location": "Elhelyezkedés",
     "long": "Hosszú",
     "longPress": "Hosszan nyomja meg",
+    "longPressAction": "Hosszú megnyomásos művelet",
     "longPressDuration": "Hosszú nyomás időtartama",
     "look": "Néz",
     "loopPlayback": "Hurok lejátszás",
@@ -1555,6 +1569,8 @@
     "midtones": "középtónusok",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "Középtónusok Tint",
+    "midtonesWarmth": "Középtónusok melegsége",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2109,6 +2125,8 @@
     "shadows": "Shadows",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Shadows Tint",
+    "shadowsWarmth": "Árnyékok melege",
     "share": "Ossza meg",
     "shareDetails_Facebook": "Típus: Facebook\nBejelentkezés: %{login}\nCím: %{title}",
     "shareDetails_Tudou": "Típus: Tudou\nBejelentkezés: %{login}\nCím: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "A Shared Pasteboard elérési útja már nem létezik. Szeretne új helyet választani?",
     "sharedPasteboardRootFolder": "Megosztott Pasteboard Root Mappa",
     "sharp": "Éles",
+    "shiftAnchorDownPixels": {
+        "one": "Horgony lefelé tolása %{amount} képponttal",
+        "other": "Horgony lefelé tolása %{amount} képponttal"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Horgony eltolása balra %{amount} képponttal",
+        "other": "Horgony eltolása balra %{amount} képponttal"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Horgony eltolása jobbra %{amount} képponttal",
+        "other": "Horgony eltolása jobbra %{amount} képponttal"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Horgony felfelé tolása %{amount} képponttal",
+        "other": "Horgony felfelé tolása %{amount} képponttal"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} pixel",
         "other": "Shift Position Down %{amount} pixel"
@@ -2156,7 +2190,24 @@
         "one": "Shift Scale Up %{amount} képponttal",
         "other": "Shift Scale Up %{amount} képponttal"
     },
+    "shiftScaleXDown": {
+        "one": "Lépték X lefelé %{amount} képponttal",
+        "other": "Lépték X lefelé %{amount} képponttal"
+    },
+    "shiftScaleXUp": {
+        "one": "Lépték X felfelé %{amount} képponttal",
+        "other": "Lépték X felfelé %{amount} képponttal"
+    },
+    "shiftScaleYDown": {
+        "one": "Az Y skála eltolása %{amount} képponttal lefelé",
+        "other": "Az Y skála eltolása %{amount} képponttal lefelé"
+    },
+    "shiftScaleYUp": {
+        "one": "Az Y méretarány eltolása %{amount} képponttal felfelé",
+        "other": "Az Y méretarány eltolása %{amount} képponttal felfelé"
+    },
     "short": "Rövid",
+    "shortPressAction": "Rövid megnyomásos művelet",
     "shortcutAlreadyInUse": "Ez a gyorsbillentyű már használatban van.",
     "shortcutAlreadyInUseByMacOS": "Ezt a gyorsbillentyű-kombinációt jelenleg a macOS használja (azaz a Képernyő-rögzítő, az Univerzális hozzáférés és a Billentyűzet navigációs billentyűi használhatják).",
     "shortcutCouldNotBeTriggered": "Ezt a parancsikont nem lehetett kiváltani.\n\nEllenőrizze, hogy érvényes-e a parancshoz rendelt gyorsbillentyűk, amelyeket megpróbált aktiválni a Final Cut Pro Parancsszerkesztőben, és próbálkozzon újra.",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "a Final Cut Pro-tól a DaVinci Resolve-ig.",
     "sonyTimecodeFixerDescriptionTwo": "Ez az eszköztár frissíti az FCPXML-t, hogy az XML mellékfájlból származó megfelelő időkód-értékeket használja, így könnyebben küldhet idővonalakat.",
     "sonyTimecodeRepair": "Sony időkód javítás",
+    "sonyTimecodeRepairDescriptionFive": "Ezt az Eszköztárat Alister Robbie-nak dobták össze. Köszönöm George Elias, Jamie LeJeune és Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Ezt az Eszköztárat Alister Robbie-nak dobták össze. Köszönjük, hogy tesztelte Jamie LeJeune-t!",
     "sonyTimecodeRepairDescriptionOne": "A Final Cut Pro jelenleg nem mindig értelmezi helyesen az időkódot bizonyos Sony fényképezőgépekből, amelyek MP4-csomagolóba rögzítenek.",
     "sonyTimecodeRepairDescriptionThree": "így könnyebben küldhet idővonalakat a Final Cut Pro-ból a DaVinci Resolve-ba, a Baselight-ba vagy az Adobe Premiere-be (XtoCC-vel).",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "Javasolj egy Motion funkciót az Apple számára",
     "support": "Támogatás",
     "swipe": "Elcsór",
+    "swipeLeftAction": "Csúsztassa balra a műveletet",
+    "swipeRightAction": "Csúsztassa jobbra a műveletet",
     "switchBetweenInsideOutsideMarks": "Váltás a belső / külső maszkok között",
     "switchDaVinciResolveControlSurfaceTo": "Kapcsolja át a DaVinci Resolve Control Surface-t a következőre",
     "switchLoupedeckCTTo": "Kapcsolja a Loupedeck CT-t",

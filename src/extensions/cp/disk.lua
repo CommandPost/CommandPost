@@ -8,17 +8,17 @@
 --- to be performed on the operations. These tables can have any combination of
 --- the following:
 ---
---- * `physical`        - only process physical drives.
---- * `virtual`         - only process virtual drives.
---- * `external`        - only external drives.
---- * `internal`        - only internal drives.
---- * `ejectable`       - only drives that can be ejected.
---- * `bootable`        - only bootable drives.
---- * `writable`        - only writeable drives.
---- * `root`            - only top-level drives (vs partitions)
---- * `hidden`          - by default, only 'unhidden' devices are returned.
---- * `mounted`         - only mounted drives.
---- * `unmounted`       - only unmounted drives.
+---  * `physical`        - only process physical drives.
+---  * `virtual`         - only process virtual drives.
+---  * `external`        - only external drives.
+---  * `internal`        - only internal drives.
+---  * `ejectable`       - only drives that can be ejected.
+---  * `bootable`        - only bootable drives.
+---  * `writable`        - only writeable drives.
+---  * `root`            - only top-level drives (vs partitions)
+---  * `hidden`          - by default, only 'unhidden' devices are returned.
+---  * `mounted`         - only mounted drives.
+---  * `unmounted`       - only unmounted drives.
 ---
 --- ```lua
 --- local disk = require("cp.disk")
@@ -164,15 +164,14 @@ end
 
 --- cp.disk.visit(options, fn) -> nil
 --- Function
---- Visits all drives matching the `options` and executes the
---- `fn` function with the `deviceID` string (e.g. "disk0" or "disk2s1") and a table of additional data about the drive.
+--- Visits all drives matching the `options` and executes the `fn` function with the `deviceID` string (e.g. "disk0" or "disk2s1") and a table of additional data about the drive.
 ---
 --- Parameters:
---- * options   - The table of filter options.
---- * fn        - The function to execute.
+---  * options   - The table of filter options.
+---  * fn        - The function to execute.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function mod.visit(options, fn)
     options = options or {}
 
@@ -187,10 +186,10 @@ end
 --- Mounts all disks matching the provided `options`.
 ---
 --- Parameters:
---- * options   - The table of filter options.
+---  * options   - The table of filter options.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function mod.mount(options)
     options = options or {}
     options.unmounted = true
@@ -202,10 +201,10 @@ end
 --- Unmounts all disks matching the provided `options`.
 ---
 --- Parameters:
---- * options   - The table of filter options.
+---  * options   - The table of filter options.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function mod.unmount(options)
     options = options or {}
     options.mounted = true
@@ -217,10 +216,10 @@ end
 --- Unmounts and ejects (where appropriate) all disks matching the provided `options`.
 ---
 --- Parameters:
---- * options   - The table of filter options.
+---  * options   - The table of filter options.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function mod.eject(options)
     options = options or {}
     options.ejectable = true

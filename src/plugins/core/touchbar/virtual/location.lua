@@ -15,7 +15,8 @@ mod._items = {}
 --- Creates a new Update Location Callback
 ---
 --- Parameters:
---- * `id`      - The unique ID for this callback.
+---  * `id` - The unique ID for this callback.
+---  * `callbackFn` - The callback function.
 ---
 --- Returns:
 ---  * table that has been created
@@ -41,7 +42,7 @@ end
 --- Gets an Update Location Callback based on an ID.
 ---
 --- Parameters:
---- * `id`      - The unique ID for the callback you want to return.
+---  * `id`      - The unique ID for the callback you want to return.
 ---
 --- Returns:
 ---  * table containing the callback
@@ -54,7 +55,7 @@ end
 --- Returns all of the created Update Location Callbacks
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * table containing all of the created callbacks
@@ -67,7 +68,7 @@ end
 --- Returns the ID of the current Update Location Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
@@ -80,7 +81,7 @@ end
 --- Returns the callbackFn of the current Update Location Callback
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
@@ -93,7 +94,7 @@ end
 --- Deletes a Update Location Callback based on an ID.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 ---  * None

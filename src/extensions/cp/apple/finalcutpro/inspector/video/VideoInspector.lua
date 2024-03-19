@@ -3,25 +3,25 @@
 --- Video Inspector Module.
 ---
 --- Section Rows (`compositing`, `transform`, etc.) have the following properties:
---- * enabled   - (cp.ui.CheckBox) Indicates if the section is enabled.
---- * toggle    - (cp.ui.Button) Will toggle the Hide/Show button.
---- * reset     - (cp.ui.Button) Will reset the contents of the section.
---- * expanded  - (cp.prop <boolean>) Get/sets whether the section is expanded.
+---  * enabled   - (cp.ui.CheckBox) Indicates if the section is enabled.
+---  * toggle    - (cp.ui.Button) Will toggle the Hide/Show button.
+---  * reset     - (cp.ui.Button) Will reset the contents of the section.
+---  * expanded  - (cp.prop <boolean>) Get/sets whether the section is expanded.
 ---
 --- Property Rows depend on the type of property:
 ---
 --- Menu Property:
---- * value     - (cp.ui.PopUpButton) The current value of the property.
+---  * value     - (cp.ui.PopUpButton) The current value of the property.
 ---
 --- Slider Property:
---- * value     - (cp.ui.Slider) The current value of the property.
+---  * value     - (cp.ui.Slider) The current value of the property.
 ---
 --- XY Property:
---- * x         - (cp.ui.TextField) The current 'X' value.
---- * y         - (cp.ui.TextField) The current 'Y' value.
+---  * x         - (cp.ui.TextField) The current 'X' value.
+---  * y         - (cp.ui.TextField) The current 'Y' value.
 ---
 --- CheckBox Property:
---- * value     - (cp.ui.CheckBox) The currently value.
+---  * value     - (cp.ui.CheckBox) The currently value.
 ---
 --- For example:
 --- ```lua
@@ -51,8 +51,10 @@ local BasePanel                 = require "cp.apple.finalcutpro.inspector.BasePa
 local IP                        = require "cp.apple.finalcutpro.inspector.InspectorProperty"
 local strings                   = require "cp.apple.finalcutpro.strings"
 
+local button                    = IP.button
 local checkBox                  = IP.checkBox
 local hasProperties             = IP.hasProperties
+local menuButton                = IP.menuButton
 local popUpButton               = IP.popUpButton
 local section                   = IP.section
 local slider                    = IP.slider
@@ -103,7 +105,46 @@ function VideoInspector:initialize(parent)
 
     -- specify that the `contentUI` contains the PropertyRows.
     hasProperties(self, self.contentUI) {
-        effects             = section "FFInspectorBrickEffects" {},
+        effects             = section "FFInspectorBrickEffects" {
+
+            --------------------------------------------------------------------------------
+            -- Colourlab Ai:
+            --------------------------------------------------------------------------------
+            colourlabAi                 = section       "ColourlabAi_EffectName" {
+                useSmartMatch           = checkBox      "ColourlabAi_UseSmartMatch",
+                inputProfile            = menuButton    "ColourlabAi_InputProfile",
+                gamutLimit              = checkBox      "ColourlabAi_GamutLimit",
+                gamutLimitRed           = slider        "ColourlabAi_GamutLimitRed",
+                gamutLimitGreen         = slider        "ColourlabAi_GamutLimitGreen",
+                gamutLimitBlue          = slider        "ColourlabAi_GamutLimitBlue",
+                colorWheelsWindow       = button        "ColourlabAi_ColorWheelsWindow",
+                printerLightsLuma       = slider        "ColourlabAi_PrinterLightsLuma",
+                printerLightsRed        = slider        "ColourlabAi_PrinterLightsRed",
+                printerLightsGreen      = slider        "ColourlabAi_PrinterLightsGreen",
+                printerLightsBlue       = slider        "ColourlabAi_PrinterLightsBlue",
+                printerLightsCyan       = slider        "ColourlabAi_PrinterLightsCyan",
+                printerLightsMagenta    = slider        "ColourlabAi_PrinterLightsMagenta",
+                printerLightsYellow     = slider        "ColourlabAi_PrinterLightsYellow",
+                liftMaster              = slider        "ColourlabAi_LiftMaster",
+                liftRed                 = slider        "ColourlabAi_LiftRed",
+                liftGreen               = slider        "ColourlabAi_LiftGreen",
+                liftBlue                = slider        "ColourlabAi_LiftBlue",
+                gammaMaster             = slider        "ColourlabAi_GammaMaster",
+                gammaRed                = slider        "ColourlabAi_GammaRed",
+                gammaGreen              = slider        "ColourlabAi_GammaGreen",
+                gammaBlue               = slider        "ColourlabAi_GammaBlue",
+                gainMaster              = slider        "ColourlabAi_GainMaster",
+                gainRed                 = slider        "ColourlabAi_GainRed",
+                gainGreen               = slider        "ColourlabAi_GainGreen",
+                gainBlue                = slider        "ColourlabAi_GainBlue",
+                saturation              = slider        "ColourlabAi_Saturation",
+                contrast                = slider        "ColourlabAi_Contrast",
+                pivot                   = slider        "ColourlabAi_Pivot",
+                temperature             = slider        "ColourlabAi_Temperature",
+                showLook                = menuButton    "ColourlabAi_ShowLook",
+                showHelp                = button        "ColourlabAi_ShowHelp",
+            },
+        },
 
         compositing         = section "FFHeliumBlendCompositingEffect" {
             blendMode       = popUpButton "FFHeliumBlendMode",
@@ -119,6 +160,20 @@ function VideoInspector:initialize(parent)
             anchor          = xy "FFHeliumXFormAnchor",
         },
 
+        orientation         = section "FFHeliumOrientationEffect" {
+            tilt            = slider "FFOrientationLatitude",
+            pan             = slider "FFOrientationLongitude",
+            roll            = slider "FFOrientationRoll",
+            fieldOfView     = slider "FFOrientationFieldOfView",
+            mapping         = popUpButton "FFOrientationMapping",
+        },
+
+        reorient            = section "FFHeliumReorientEffect" {
+            tilt            = slider "FFOrientationLatitude",
+            pan             = slider "FFOrientationLongitude",
+            roll            = slider "FFOrientationRoll",
+        },
+
         crop                = section "FFHeliumCropEffect" {
             type            = popUpButton "FFType",
             left            = slider "FFCropLeft",
@@ -126,23 +181,27 @@ function VideoInspector:initialize(parent)
             top             = slider "FFCropTop",
             bottom          = slider "FFCropBottom",
         },
+
         distort             = section "FFHeliumDistortEffect" {
             bottomLeft      = xy "PerspectiveTile::Bottom Left",
             bottomRight     = xy "PerspectiveTile::Bottom Right",
             topRight        = xy "PerspectiveTile::Top Right",
             topLeft         = xy "PerspectiveTile::Top Left",
         },
+
         stabilization       = section "FFStabilizationEffect" {
             method          = popUpButton "FFStabilizationAlgorithmRequested",
             smoothing       = slider "FFStabilizationInertiaCamSmooth",
             tripodMode      = checkBox "FFStabilizationUseTripodMode",
           translationSmooth = slider "FFStabilizationTranslationSmooth",
-            rotationSmoooth = slider "FFStabilizationRotationSmooth",
+            rotationSmooth  = slider "FFStabilizationRotationSmooth",
             scaleSmooth     = slider "FFStabilizationScaleSmooth",
         },
+
         rollingShutter      = section "FFRollingShutterEffect" {
             amount          = popUpButton "FFRollingShutterAmount",
         },
+
         spatialConform      = section "FFHeliumConformEffect" {
             type            = popUpButton "FFType",
         },

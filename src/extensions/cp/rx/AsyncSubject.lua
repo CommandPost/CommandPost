@@ -45,8 +45,7 @@ end
 --- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `AsyncSubject`.
 ---
 --- Parameters:
----  * onNext | observer - A `function` called when the `AsyncSubject` produces a value
----                       or an existing [Observer](cp.rx.Observer.md) to attach to the `AsyncSubject`.
+---  * onNext | observer - A `function` called when the `AsyncSubject` produces a value or an existing [Observer](cp.rx.Observer.md) to attach to the `AsyncSubject`.
 ---  * onError           - A `function` called when the `AsyncSubject` terminates due to an error.
 ---  * onCompleted       - A `funtion` called when the `AsyncSubject` completes normally.
 ---
@@ -88,6 +87,9 @@ end
 ---
 --- Parameters:
 ---  * ...       - The values to send.
+---
+--- Returns:
+---  * None
 function AsyncSubject:onNext(...)
   if not self.stopped then
     self.value = util.pack(...)
@@ -99,7 +101,10 @@ end
 --- Signal to all [Observers](cp.rx.Observer.md) that an error has occurred.
 ---
 --- Parameters:
----  * message     - A string describing what went wrong.
+---  * message - A string describing what went wrong.
+---
+--- Returns:
+---  * None
 function AsyncSubject:onError(message)
   if not self.stopped then
     self.errorMessage = message

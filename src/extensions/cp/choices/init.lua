@@ -55,7 +55,7 @@ end
 --- Sets the ID of the choice.
 ---
 --- Parameters:
----  * `value`	- The ID.
+---  * `value` - The ID.
 ---
 --- Returns:
 ---  * The choice builder.
@@ -82,8 +82,7 @@ end
 
 --- cp.choices.builder:params(value) -> builder
 --- Method
---- Specifies a table of parameter values for the choice. These
---- values need to be simple - text, numbers, booleans, or tables.
+--- Specifies a table of parameter values for the choice. These values need to be simple - text, numbers, booleans, or tables.
 ---
 --- Parameters:
 ---  * `value`	- The table of parameters.
@@ -108,7 +107,7 @@ mod.builder = builder
 --- Creates a new `cp.choices` instance for the specified type.
 ---
 --- Parameters:
----  * `type`	- The unique ID for the type.
+---  * `type` - The unique ID for the type.
 ---
 --- Returns:
 ---  * The new `choices` instance.
@@ -127,8 +126,16 @@ end
 
 --- cp.choices:new(choiceType) -> choices.builder
 --- Method
---- Adds a new choice with the specified. Additional settings
---- can be set using the returned builder instance. E.g.:
+--- Adds a new choice with the specified.
+---
+--- Parameters:
+---  * `text`	- The text title for the choice.
+---
+--- Returns:
+---  * The choice builder, added to the choices set.
+---
+--- Notes:
+---  * Additional settings can be set using the returned builder instance. E.g.:
 ---
 --- ```
 --- choices:add("Do Something")
@@ -138,12 +145,6 @@ end
 --- 		two = "bar",
 --- 	})
 --- ```
----
---- Parameters:
----  * `text`	- The text title for the choice.
----
---- Returns:
----  * The choice builder, added to the choices set.
 function mod:add(text)
     local choice = {
         type	= self._type

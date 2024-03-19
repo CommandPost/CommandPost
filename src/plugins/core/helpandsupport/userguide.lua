@@ -19,7 +19,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-    os.execute('open "http://help.commandpost.io/"')
+    os.execute('open "https://commandpost.io/"')
 end
 
 

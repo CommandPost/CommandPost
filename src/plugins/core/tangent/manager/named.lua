@@ -21,13 +21,17 @@ local named = class "core.tangent.manager.named" :include(lazy)
 
 local NAMES_KEY = {}
 
---- plugins.core.tangent.manager.named(id, name[, parent]) -> named
+--- plugins.core.tangent.manager.named(id, name, parent) -> named
 --- Constructor
 --- Creates a new `named` instance, with the specified base name.
 ---
 --- Parameters:
---- * id - the unique ID for the value.
---- * name - The base name of the
+---  * id - the unique ID for the value.
+---  * name - The base name of the
+---  * parent - the parent
+---
+--- Returns:
+---  * None
 function named:initialize(id, name, parent)
     self.id = id
     self._parent = parent
@@ -131,10 +135,10 @@ end
 --- Gets or sets the full name.
 ---
 --- Parameters:
---- * value - The new name value.
+---  * value - The new name value.
 ---
 --- Returns:
---- * The current value, or `self` if a new value was provided.
+---  * The current value, or `self` if a new value was provided.
 local function getName(self, value)
     if value ~= nil then
         self._name = value
@@ -168,10 +172,10 @@ end
 --- Sets the name `X`, where `X` is a number as defined when the `named` was created.
 ---
 --- Parameters:
---- * value - The new name value.
+---  * value - The new name value.
 ---
 --- Returns:
---- * The current value, or `self` if a new value was provided.
+---  * The current value, or `self` if a new value was provided.
 function named:__index(key)
     if key == "name" then
         return getName
@@ -203,10 +207,10 @@ end
 --- Returns the `xml` configuration for the Action.
 ---
 --- Parameters:
---- * thing     - The thing to retrieve the names from.
+---  * thing     - The thing to retrieve the names from.
 ---
 --- Returns:
---- * The `xml` for the Action.
+---  * The `xml` for the Action.
 function named:xml()
     return x(function()
         local result = x()
@@ -236,10 +240,10 @@ end
 --- Check if the `thing` is a `named` table.
 ---
 --- Parameters:
---- * thing     - The thing to check.
+---  * thing     - The thing to check.
 ---
 --- Returns:
---- * `true` if it is `named.
+---  * `true` if it is `named.
 function named.static.is(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(named)
 end

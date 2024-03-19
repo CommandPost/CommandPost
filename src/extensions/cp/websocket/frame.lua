@@ -165,8 +165,7 @@ end
 
 --- cp.websocket.frame.bytesRequired(data) -> number | nil
 --- Function
---- Checks bytes in the data `string` or `buffer`. If it contains a valid frame header (everything up to but not including the masking key/payload)
---- it will return the total required bytes for a valid frame, otherwise it will return `nil`.
+--- Checks bytes in the data `string` or `buffer`. If it contains a valid frame header (everything up to but not including the masking key/payload) it will return the total required bytes for a valid frame, otherwise it will return `nil`.
 ---
 --- Parameters:
 ---  * data: the `string` or `buffer` to check.
@@ -247,8 +246,8 @@ end
 ---  * If a `success`, the `value` will be a table containing the following:
 ---   * `frame` - The `cp.websocket.frame` value
 ---   * `bytes` - The `number` of bytes which were read from the `buffer`.
---- * If a `success`, the passed-in `buffer` will have had the bytes required for the `frame` removed.
---- * If a `failure`, the passed-in `buffer` will not be modified.
+---  * If a `success`, the passed-in `buffer` will have had the bytes required for the `frame` removed.
+---  * If a `failure`, the passed-in `buffer` will not be modified.
 function mod.fromBuffer(buff)
     if not buffer.is(buff) then
         return result.failure("expected a `cp.buffer`: %s", type(buff))

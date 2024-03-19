@@ -25,10 +25,10 @@ local InfoBar = Group:subclass("cp.apple.finalcutpro.viewer.InfoBar")
 --- Checks if the element is an `InfoBar` instance.
 ---
 --- Parameters:
---- * element       - The `axuielement` to check.
+---  * element       - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches the pattern for a `Viewer` `InfoBar`.
+---  * `true` if it matches the pattern for a `Viewer` `InfoBar`.
 function InfoBar.matches(element)
     if Group.matches(element) and #element == 5 then
         local children = axutils.children(element, leftToRight)

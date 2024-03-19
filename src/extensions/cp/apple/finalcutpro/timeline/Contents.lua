@@ -163,7 +163,7 @@ end
 ---  * None
 ---
 --- Returns:
---- * The `Statement`.
+---  * The `Statement`.
 function Contents.lazy.method:doShow()
     return self:parent():doShow()
 end
@@ -182,7 +182,7 @@ end
 ---  * None
 ---
 --- Returns:
---- * The `Statement`.
+---  * The `Statement`.
 function Contents.lazy.method:doHide()
     return self:parent():doHide()
 end
@@ -253,17 +253,16 @@ end
 --- Method
 --- Returns a table containing the list of selected clips.
 ---
---- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
----
---- If `filterFn` is provided it will be called with a single argument to check if the provided
---- clip should be included in the final table.
----
 --- Parameters:
 ---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
 ---  * filterFn		- (optional) if provided, the function will be called to check each clip
 ---
 --- Returns:
 ---  * The table of selected axuielements that match the conditions
+---
+--- Notes:
+---  * If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
+---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:selectedClipsUI(expandGroups, filterFn)
     local clips = self:selectedChildren()
     if clips then
@@ -276,17 +275,16 @@ end
 --- Function
 --- Returns a table containing the list of clips in the Timeline.
 ---
---- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
----
---- If `filterFn` is provided it will be called with a single argument to check if the provided
---- clip should be included in the final table.
----
 --- Parameters:
 ---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
 ---  * filterFn		- (optional) if provided, the function will be called to check each clip
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
+---
+--- Notes:
+---  * If `expandsGroups` is true any AXGroup items will be expanded to the list of contained AXLayoutItems.
+---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:clipsUI(expandGroups, filterFn)
     local children = self:children()
     if children then
@@ -319,13 +317,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Contents:positionClipsUI(position, expandedGroups, filterFn) -> table of axuielements
 --- Function
---- Returns a table array containing the list of clips in the Timeline at the specified `position`, ordered with the
---- highest clips at the beginning of the array.
----
---- If `expandsGroups` is `true` any `AXGroup` items will be expanded to the list of contained `AXLayoutItems`.
----
---- If `filterFn` is provided it will be called with a single argument to check if the provided
---- clip should be included in the final table.
+--- Returns a table array containing the list of clips in the Timeline at the specified `position`, ordered with the highest clips at the beginning of the array.
 ---
 --- Parameters:
 ---  * position     - The `X` (or horizontal) position value to find clips under.
@@ -334,6 +326,10 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
+---
+--- Notes:
+---  * If `expandsGroups` is `true` any `AXGroup` items will be expanded to the list of contained `AXLayoutItems`.
+---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:positionClipsUI(position, expandGroups, filterFn)
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip.AXFrame
@@ -348,13 +344,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Contents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
---- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the
---- highest clips at the beginning of the array.
----
---- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
----
---- If `filterFn` is provided it will be called with a single argument to check if the provided
---- clip should be included in the final table.
+--- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the highest clips at the beginning of the array.
 ---
 --- Parameters:
 ---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
@@ -362,19 +352,17 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
+---
+--- Notes:
+---  * If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
+---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:playheadClipsUI(expandGroups, filterFn)
     return self:positionClipsUI(self.playhead:position(), expandGroups, filterFn)
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:skimmingPlayheadClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
---- Returns a table array containing the list of clips in the Timeline under the skimming playhead, ordered with the
---- highest clips at the beginning of the array.
----
---- If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
----
---- If `filterFn` is provided it will be called with a single argument to check if the provided
---- clip should be included in the final table.
+--- Returns a table array containing the list of clips in the Timeline under the skimming playhead, ordered with the highest clips at the beginning of the array.
 ---
 --- Parameters:
 ---  * expandGroups	- (optional) if true, expand AXGroups to include contained AXLayoutItems
@@ -382,6 +370,10 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
+---
+--- Notes:
+---  * If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
+---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:skimmingPlayheadClipsUI(expandGroups, filterFn)
     return self:positionClipsUI(self.skimmingPlayhead:position(), expandGroups, filterFn)
 end
@@ -512,10 +504,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs.axuielement` values in the Timeline Contents area.
 ---
 --- Parameters:
---- * clipsUI       - The table of `hs._asm.axuilement` values to select.
+---  * clipsUI       - The table of `hs._asm.axuilement` values to select.
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) that will select the clips or throw an error if there is an issue.
+---  * A [Statement](cp.rx.go.Statement.md) that will select the clips or throw an error if there is an issue.
 function Contents:doSelectClips(clipsUI)
     return If(self.isShowing)
     :Then(function()
@@ -539,10 +531,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will select the specified single `hs.axuielement` value in the Timeline Contents area.
 ---
 --- Parameters:
---- * clipUI       - The `hs._asm.axuilement` values to select.
+---  * clipUI       - The `hs._asm.axuilement` values to select.
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
+---  * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
 function Contents:doSelectClip(clipUI)
     return If(self.isShowing)
     :Then(function()
@@ -557,8 +549,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Contents:doSelectTopClip([position]) -> cp.rx.go.Statement
 --- Method
---- Creates a [Statement](cp.rx.go.Statement.md) that will select the top clip at the given position,
---- resolving to the top clip if available.
+--- Creates a [Statement](cp.rx.go.Statement.md) that will select the top clip at the given position, resolving to the top clip if available.
 ---
 --- Parameters:
 ---  * position - (optional) The position `table` to select the top clip at.
@@ -587,10 +578,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will focus on the `Contents`.
 ---
 --- Parameters:
---- * show      - if `true`, the `Contents` will be shown before focusing.
+---  * show      - if `true`, the `Contents` will be shown before focusing.
 ---
 --- Returns:
---- * The `Statement`.
+---  * The `Statement`.
 function Contents:doFocus(show)
     show = show or false
     local menu = self:app().menu

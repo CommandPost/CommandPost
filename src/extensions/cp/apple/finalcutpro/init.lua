@@ -10,9 +10,9 @@
 ---
 --- Then, there are the `UpperCase` files, which represent the application itself:
 ---
---- * `MenuBar` 	            - The main menu bar.
---- * `prefs/PreferencesWindow` - The preferences window.
---- * etc...
+---  * `MenuBar` 	            - The main menu bar.
+---  * `prefs/PreferencesWindow` - The preferences window.
+---  * etc...
 ---
 --- The `fcp` variable is the root application. It has functions which allow you to perform tasks or access parts of the UI. For example, to open the `Preferences` window, you can do this:
 ---
@@ -58,9 +58,9 @@
 --- end
 --- ```
 ---
---- **Delegates to:** [app](cp.apple.finalcutpro.app.md), [menu](cp.app.menu.md)
+---  **Delegates to:** [app](cp.apple.finalcutpro.app.md), [menu](cp.app.menu.md)
 ---
---- Note: All values/methods/props from delegates can be accessed directly from the `cp.apple.finalcutpro` instance. For example:
+--- Notes: All values/methods/props from delegates can be accessed directly from the `cp.apple.finalcutpro` instance. For example:
 ---
 --- ```lua
 --- fcp.app:UI() == fcp:UI() -- the same `cp.prop` result.
@@ -155,7 +155,7 @@ function fcp:initialize()
 --- The [app](cp.app.md) for Final Cut Pro.
 ---
 --- Notes:
---- * All values from [app](cp.app.md) can be accessed directly from the `finalcutpro` instance.
+---  * All values from [app](cp.app.md) can be accessed directly from the `finalcutpro` instance.
     self.app = app
 
 --- cp.apple.finalcutpro.preferences <cp.app.prefs>
@@ -303,7 +303,7 @@ end
 --- Field
 --- Is a supported version of Final Cut Pro installed?
 ---
---- Note:
+--- Notes:
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
 function fcp.lazy.prop:isSupported()
     return self.app.version:mutate(function(original)
@@ -316,7 +316,7 @@ end
 --- Field
 --- Is an unsupported version of Final Cut Pro installed?
 ---
---- Note:
+--- Notes:
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 function fcp.lazy.prop:isUnsupported()
     return self.isInstalled:AND(self.isSupported:NOT())
@@ -324,8 +324,7 @@ end
 
 --- cp.apple.finalcutpro:string(key[, locale[, quiet]]) -> string
 --- Method
---- Looks up an application string with the specified `key`.
---- If no `locale` value is provided, the [current locale](#currentLocale) is used.
+--- Looks up an application string with the specified `key`. If no `locale` value is provided, the [current locale](#currentLocale) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
@@ -378,10 +377,10 @@ end
 --- Gets a table of all the active library paths.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A table containing any active library paths.
+---  * A table containing any active library paths.
 function fcp:activeLibraryPaths()
     local paths = {}
     local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
@@ -403,10 +402,10 @@ end
 --- Gets a table of all the active library paths.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A table containing any active library paths.
+---  * A table containing any active library paths.
 function fcp:activeLibraryNames()
     local result = {}
     local activeLibraryPaths = self:activeLibraryPaths()
@@ -424,10 +423,10 @@ end
 --- Gets a table of all the recent library paths (that are accessible).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A table containing any recent library paths.
+---  * A table containing any recent library paths.
 function fcp:recentLibraryPaths()
     local paths = {}
     local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
@@ -449,10 +448,10 @@ end
 --- Gets a table of all the recent library names (that are accessible).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A table containing any recent library names.
+---  * A table containing any recent library names.
 function fcp:recentLibraryNames()
     local result = {}
     local recentLibraryPaths = self:recentLibraryPaths()
@@ -470,10 +469,10 @@ end
 --- Attempts to open a file at the specified absolute `path`.
 ---
 --- Parameters:
---- * path	- The path to the FCP Library to open.
+---  * path	- The path to the FCP Library to open.
 ---
 --- Returns:
---- * `true` if successful, or `false` if not.
+---  * `true` if successful, or `false` if not.
 function fcp.openLibrary(_, path)
     assert(type(path) == "string", "Please provide a valid path to the FCP Library.")
     if fs.attributes(path) == nil then
@@ -495,10 +494,10 @@ end
 --- Attempts to select an open library with the specified title.
 ---
 --- Parameters:
---- * title - The title of the library to select.
+---  * title - The title of the library to select.
 ---
 --- Returns:
---- * The library row `axuielement`.
+---  * The library row `axuielement`.
 function fcp:selectLibrary(title)
     return self.libraries:selectLibrary(title)
 end
@@ -508,10 +507,10 @@ end
 --- Attempts to close a library with the specified `title`.
 ---
 --- Parameters:
---- * title	- The title of the FCP Library to close.
+---  * title	- The title of the FCP Library to close.
 ---
 --- Returns:
---- * `true` if successful, or `false` if not.
+---  * `true` if successful, or `false` if not.
 function fcp:closeLibrary(title)
     if self:isRunning() then
         local libraries = self.libraries
@@ -1088,8 +1087,7 @@ end
 
 --- cp.apple.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
 --- Method
---- Finds a shortcut from the Active Command Set with the specified ID and returns a table
---- of `hs.commands.shortcut`s for the specified command, or `nil` if it doesn't exist.
+--- Finds a shortcut from the Active Command Set with the specified ID and returns a table of `hs.commands.shortcut`s for the specified command, or `nil` if it doesn't exist.
 ---
 --- Parameters:
 ---  * id - The unique ID for the command.

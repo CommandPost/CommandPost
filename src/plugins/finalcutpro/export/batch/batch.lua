@@ -118,7 +118,6 @@ mod.ignoreBackgroundTasks = config.prop("batchExportIgnoreBackgroundTasks", fals
 ---
 --- Parameters:
 ---  * clips - table of selected Clips
----  * sendToCompressor - `true` if sending to Compressor, otherwise `false`
 ---
 --- Returns:
 ---  * `true` if successful otherwise `false`

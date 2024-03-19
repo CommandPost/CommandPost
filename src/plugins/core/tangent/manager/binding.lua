@@ -11,19 +11,17 @@ local parameter         = require "parameter"
 local format            = string.format
 local insert            = table.insert
 
-
 local binding = class "core.tangent.manager.binding"
 
---- plugins.core.tangent.manager.binding(id[, name]) -> binding
+--- plugins.core.tangent.manager.binding(name) -> binding
 --- Constructor
 --- Creates a new `Binding` instance.
 ---
 --- Parameters:
---- * id        - The ID number of the binding.
---- * name      - The name of the binding.
+---  * name - The name of the binding.
 ---
 --- Returns:
---- * the new `binding`.
+---  * the new `binding`.
 function binding:initialize(name)
     self._name = name
     self._members = {}
@@ -34,7 +32,7 @@ end
 --- Returns the `name` of this binding.
 ---
 --- Parameters:
----   * None
+---  * None
 ---
 --- Returns:
 ---  * The name.
@@ -44,14 +42,13 @@ end
 
 --- plugins.core.tangent.manager.binding:member(parameter) -> self
 --- Method
---- Adds a `parameter` as a member of the Binding group. The order is significant
---- - it will determine the order the parameters are applied to group controls in the Mapper.
+--- Adds a `parameter` as a member of the Binding group. The order is significant - it will determine the order the parameters are applied to group controls in the Mapper.
 ---
 --- Parameters:
---- * param     - The `parameter` to add to the binding.
+---  * param     - The `parameter` to add to the binding.
 ---
 --- Returns:
---- * The `binding` instance.
+---  * The `binding` instance.
 function binding:member(param)
     assert(parameter.is(param))
     insert(self._members, param)
@@ -63,10 +60,10 @@ end
 --- Adds the list of parameters to this binding.
 ---
 --- Parameters:
---- * ...   - the list of parameters to bind.
+---  * ...   - the list of parameters to bind.
 ---
 --- Returns:
---- * The `binding` instance.
+---  * The `binding` instance.
 function binding:members(...)
     for i = 1,select("#", ...) do
         self:member(select(i, ...))
@@ -79,10 +76,10 @@ end
 --- Returns the `xml` configuration for the Binding.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `xml` for the Binding.
+---  * The `xml` for the Binding.
 function binding:xml()
     return x.Binding { name = self:name() } (
         function()

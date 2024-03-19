@@ -8,29 +8,15 @@ local require           = require
 
 local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
+local Menu              = require "cp.ui.Menu"
 local go                = require "cp.rx.go"
 local just              = require "cp.just"
-local Menu              = require "cp.ui.Menu"
-local tools             = require "cp.tools"
-
-local semver            = require "semver"
 
 local find              = string.find
 local If                = go.If
 local WaitUntil         = go.WaitUntil
 
 local MenuButton = Element:subclass("cp.ui.MenuButton")
-
---------------------------------------------------------------------------------
- -- macOS Ventura uses AXDescription for the AXRadioButton labels, whereas
- -- earlier versions of macOS use AXTitle:
- --------------------------------------------------------------------------------
- local macOSVersion = semver(tools.macOSVersion())
- local macOSVentura = semver("13.0.0")
- local attributeForLabel = "AXTitle"
- if macOSVersion >= macOSVentura then
-     attributeForLabel = "AXDescription"
- end
 
 -- TIMEOUT_AFTER -> number
 -- Constant
@@ -55,8 +41,8 @@ end
 --- Creates a new MenuButton.
 ---
 --- Parameters:
---- * parent        - The parent object. Should have an `isShowing` property.
---- * uiFinder      - A `cp.prop` or function which will return a `hs.axuielement`, or `nil` if it's not available.
+---  * parent        - The parent object. Should have an `isShowing` property.
+---  * uiFinder      - A `cp.prop` or function which will return a `hs.axuielement`, or `nil` if it's not available.
 
 --- cp.ui.MenuButton.value <cp.prop: anything>
 --- Field
@@ -209,8 +195,13 @@ end
 function MenuButton:selectItemMatching(pattern)
     local ui = self:UI()
     if ui then
-        local title = ui:attributeValue(attributeForLabel)
-        if string.match(title, pattern) then
+        local title = ui:attributeValue("AXTitle")
+        --------------------------------------------------------------------------------
+        -- NOTE: For some reason on macOS Ventura this title can sometimes be nil.
+        --       This problem doesn't happen on macOS Monterey. Hence we check that
+        --       `title` is valid below:
+        --------------------------------------------------------------------------------
+        if title and string.match(title, pattern) then
             -- Don't bother selecting if it's already selected.
             return true
         end

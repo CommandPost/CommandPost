@@ -41,8 +41,7 @@ PropertyRow.static.intersectBuffer = 2
 
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
 --- Function
---- Returns the `cp.prop` which finds the `hs.axuielement` that contains property rows from the parent.
---- This needs to be configured first by calling the `prepareParent` function with the `parent` and finder function.
+--- Returns the `cp.prop` which finds the `hs.axuielement` that contains property rows from the parent. This needs to be configured first by calling the `prepareParent` function with the `parent` and finder function.
 ---
 --- Parameters:
 ---  * parent        - The parent which has a finder assigned.
@@ -55,9 +54,7 @@ end
 
 --- cp.ui.PropertyRow.prepareParent(parent, uiFinder) -> none
 --- Function
---- Call this to make `parent` table ready to be a parent of `PropertyRow`s.
---- Essentially, this lets `PropertyRow` instances ask the parent for the
---- `hs.axuielement` that contains the property row details.
+--- Call this to make `parent` table ready to be a parent of `PropertyRow`s. Essentially, this lets `PropertyRow` instances ask the parent for the `hs.axuielement` that contains the property row details.
 ---
 --- Parameters:
 ---  * parent    - The parent table.
@@ -100,13 +97,15 @@ end
 --- cp.ui.PropertyRow.matches(element) -> boolean
 --- Function
 --- Checks if the provided `axuielement` could be a property row.
---- Note: this does not guarantee that it *is* a property row element, just that it could be.
 ---
 --- Parameters:
 ---  * element   - The element to check.
 ---
 --- Returns:
 ---  * `true` if the element could be a property row.
+---
+--- Notes:
+---  * This does not guarantee that it *is* a property row element, just that it could be.
 function PropertyRow.static.matches(element)
     return element ~= nil
 end
@@ -115,9 +114,6 @@ end
 --- Constructor
 --- Creates a new `PropertyRow` with the specified parent and label key.
 ---
---- If you have more than one row with the same label, specify the `index` - specifying `2` will
---- match with the second instance, for example.
----
 --- Parameters:
 ---  * parent        - The parent object.
 ---  * labelKey      - The key of the label that the row will map to.
@@ -125,6 +121,9 @@ end
 ---
 --- Returns:
 ---  * The new `PropertyRow` instance.
+---
+--- Notes:
+---  * If you have more than one row with the same label, specify the `index` - specifying `2` will match with the second instance, for example.
 function PropertyRow:initialize(parent, labelKey, index)
     local uiFinder = PropertyRow.parentUIFinder(parent)
     if not uiFinder then
@@ -169,8 +168,7 @@ end
 
 --- cp.ui.PropertyRow:extend(extendFn) -> cp.ui.PropertyRow
 --- Method
---- This method will call the provided function, passing it the current `PropertyRow`.
---- This can be used to add addtional tweaks to the row, such as adding custom Elements.
+--- This method will call the provided function, passing it the current `PropertyRow`. This can be used to add addtional tweaks to the row, such as adding custom Elements.
 ---
 --- Parameters:
 ---  * extendFn     - A `function` that will be passed the current row.

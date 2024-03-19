@@ -100,7 +100,7 @@ end
 ---  * `events`		- A table of functions, one for each event to watch.
 ---
 --- Returns:
---- * A unique ID that can be passed to `unwatch` to stop watching.
+---  * A unique ID that can be passed to `unwatch` to stop watching.
 function mod.mt:watch(events)
     local id = uuid()
     self._watchers[id] = self:_prepareWatcher(events)

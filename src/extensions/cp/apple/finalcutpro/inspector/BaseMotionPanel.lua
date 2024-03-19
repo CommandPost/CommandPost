@@ -34,10 +34,10 @@ end
 --- Checks if the provided element could be a BaseMotionPanel.
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 function BaseMotionPanel.static.matches(element)
     local scrollArea = findContentUI(element)
     local title = scrollArea and #scrollArea > 1 and childWithRole(scrollArea, "AXStaticText")

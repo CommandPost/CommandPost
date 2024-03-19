@@ -69,6 +69,7 @@
     "alphaAdd": "ਅਲਫ਼ਾ ਐਡ",
     "alphaAdd9": "ਅਲਫ਼ਾ ਐਡ",
     "alreadyWatched": "ਇਹ ਫੋਲਡਰ ਪਹਿਲਾਂ ਹੀ ਦੇਖਿਆ ਜਾ ਰਿਹਾ ਹੈ.",
+    "alternative": "ਵਿਕਲਪਿਕ",
     "always": "ਹਮੇਸ਼ਾ",
     "alwaysOnTop": "ਹਮੇਸ਼ਾ ਚੋਟੀ 'ਤੇ",
     "ambience": "ਮਾਹੌਲ",
@@ -190,6 +191,7 @@
     "betterPerformance": "ਬਿਹਤਰ ਪ੍ਰਦਰਸ਼ਨ",
     "betterQuality": "ਬਿਹਤਰ ਗੁਣਵੱਤਾ",
     "black": "ਬਲੈਕ",
+    "blackPoint": "ਬਲੈਕ ਪੁਆਇੰਟ",
     "blade": "ਬਲੇਡ",
     "blendMode": "ਬਲੇਡ ਮੋਡ",
     "blendMode9": "ਬਲੇਂਡਮੋਡ",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "ਕੋਡ ਨੂੰ ਇੱਕ ਕਾਰਜ ਵਾਪਸ ਕਰਨ ਦੀ ਜ਼ਰੂਰਤ ਹੈ.",
     "cold": "ਠੰਡਾ",
     "color": "ਰੰਗ",
+    "colorAdjustments": "ਰੰਗ ਸਮਾਯੋਜਨ",
+    "colorAdjustments_group": "ਰੰਗ ਸਮਾਯੋਜਨ",
     "colorAndEffects": "ਰੰਗ ਅਤੇ ਪਰਭਾਵ",
     "colorBoard": "ਰੰਗ ਬੋਰਡ",
     "colorBoard2": "ਸੀਬੀ",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਯੂਜ਼ਰ ਇੰਟਰਫੇਸ ਐਲੀਮੈਂਟ (ਸੰਪੂਰਨ) ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ",
     "controlFCPUIElementRelative": "ਫਾਈਨਲ ਕਟ ਪ੍ਰੋ ਯੂਜ਼ਰ ਇੰਟਰਫੇਸ ਐਲੀਮੈਂਟ (ਰੀਲੇਟਿਵ) ਕੰਟ੍ਰੋਲ ਕਰੋ",
     "controlFCPUIElementRelativeNote": "ਇੱਕ UI ਐਲੀਮੈਂਟ ਤੇ ਮਾਉਸ ਨੂੰ ਹਿਵਰਓ, ਕੰਟਰੋਲ ਲਵੋ, ਫਿਰ ਰਜਿਸਟਰ ਕਰਨ ਲਈ MIDI Knob / Fader ਨੂੰ ਵਿਵਸਥਿਤ ਕਰੋ.",
+    "controlRange": "ਕੰਟਰੋਲ ਰੇਂਜ",
     "controlSurfaces": "ਸਤਹ ਕੰਟਰੋਲ ਕਰੋ",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਆਡੀਓ ਇੰਸਪੈਕਟਰ ਵਿੱਚ ਵਾਲੀਅਮ ਨੂੰ ਕੰਟਰੋਲ ਕਰਦਾ ਹੈ",
     "controlsTimelineZoomViaTheAppearancePopup": "ਦਿੱਖ ਪੌਪ-ਅਪ ਦੁਆਰਾ ਟਾਈਮਲਾਈਨ ਜ਼ੂਮ ਨੂੰ ਨਿਯੰਤਰਿਤ ਕਰਦਾ ਹੈ",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "ਟੈਂਜੈਂਟ ਹੱਬ ਡਾਊਨਲੋਡ ਕਰੋ",
     "dragAndDropFileAction": "ਫਾਈਲ ਐਕਸ਼ਨ ਨੂੰ ਖਿੱਚੋ ਅਤੇ ਸੁੱਟੋ",
     "dragAndDropTextAction": "ਡਰੈਗ ਐਂਡ ਡ੍ਰੌਪ ਟੈਕਸਟ ਐਕਸ਼ਨ",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਇੰਟਰਫੇਸ ਤੋਂ ਆਪਣੇ ਪ੍ਰੋਜੈਕਟ ਨੂੰ ਖਿੱਚੋ ਅਤੇ ਇੱਥੇ ਸੁੱਟੋ",
     "draggable": "ਖਿੱਚਣਯੋਗ",
     "draggableGuides": "ਖਿੱਚਣ ਯੋਗ ਗਾਈਡ",
     "driveManagement": "ਡ੍ਰਾਈਵ ਪ੍ਰਬੰਧਨ",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "ਕਾਰਡ ਅਣਡਿੱਠ ਕਰੋ",
     "finalcutpro_import_preferences_label": "ਪਸੰਦ ਨੂੰ ਆਯਾਤ ਕਰੋ",
     "finalcutpro_inspector_audio_label": "ਇੰਸਪੈਕਟਰ: ਆਡੀਓ",
+    "finalcutpro_inspector_coloradjustments_label": "ਇੰਸਪੈਕਟਰ: ਰੰਗ ਵਿਵਸਥਾ",
+    "finalcutpro_inspector_colourlabai_label": "ਇੰਸਪੈਕਟਰ: ਕਲੋਰਲੈਬ ਏ.ਆਈ",
     "finalcutpro_inspector_info_label": "ਇੰਸਪੈਕਟਰ: ਜਾਣਕਾਰੀ",
     "finalcutpro_inspector_show_label": "ਇੰਸਪੈਕਟਰ: ਵਾਧੂ ਕਾਰਵਾਈਆਂ",
     "finalcutpro_inspector_text_label": "ਇੰਸਪੈਕਟਰ: ਪਾਠ",
+    "finalcutpro_inspector_title_label": "ਇੰਸਪੈਕਟਰ: ਸਿਰਲੇਖ",
     "finalcutpro_inspector_video_label": "ਇੰਸਪੈਕਟਰ: ਵੀਡੀਓ",
     "finalcutpro_language_label": "ਫਾਈਨਲ ਕਟ ਪ੍ਰੋ ਭਾਸ਼ਾਵਾਂ",
     "finalcutpro_loupedeckplugin_label": "Loupedeck ਪਲੱਗਇਨ",
@@ -1282,6 +1291,8 @@
     "highlights": "ਹਾਈਲਾਈਟਸ",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "ਹਾਈਲਾਈਟਸ ਟਿੰਟ",
+    "highlightsWarmth": "ਨਿੱਘ ਨੂੰ ਉਜਾਗਰ ਕਰਦਾ ਹੈ",
     "histogram": "ਹਿਸਟੋਗ੍ਰਾਮ",
     "history": "ਇਤਿਹਾਸ",
     "historyIsEmpty": "ਇਤਿਹਾਸ ਖਾਲੀ ਹੈ",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "ਕੁੰਜੀ ਦੁਹਰਾਓ",
     "keyboard": "ਕੀਬੋਰਡ",
     "keyboardShortcut": "ਕੀਬੋਰਡ ਸ਼ੌਰਟਕਟ",
+    "keyboardShortcutAlternativeDescription": "ਇੱਕ ਵਿਕਲਪਿਕ ਵਿਧੀ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹੋਏ ਇੱਕ ਵਰਚੁਅਲ ਕੀਬੋਰਡ ਪ੍ਰੈੱਸ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ (ਬਲੈਂਡਰ, ਆਦਿ ਵਿੱਚ ਵਰਤੋਂ ਲਈ)",
     "keyboardShortcutDescription": "ਵਰਚੁਅਲ ਕੀਬੋਰਡ ਪ੍ਰੈਸ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ",
     "keyboardShortcuts": "ਕੀਬੋਰਡ ਸ਼ੌਰਟਕਟਸ",
     "keyframe": "ਕੀਫ੍ਰੇਮ",
@@ -1423,6 +1435,7 @@
     "learnMore": "ਜਿਆਦਾ ਜਾਣੋ",
     "leaveFilesInPlaceOnImport": "ਆਯਾਤ ਤੇ ਸਥਾਨ ਵਿੱਚ ਫਾਈਲਾਂ ਛੱਡੋ",
     "ledAlwaysOn": "LED ਹਮੇਸ਼ਾ ਚਾਲੂ",
+    "ledBrightness": "LED ਚਮਕ",
     "ledColor": "LED ਰੰਗ",
     "left": "ਖੱਬੇ ਪਾਸੇ",
     "leftDoubleMouseClick": "ਖੱਬਾ ਡਬਲ ਮਾouseਸ ਕਲਿਕ",
@@ -1455,6 +1468,7 @@
     "location": "ਸਥਾਨ",
     "long": "ਲੰਬੀ",
     "longPress": "ਲੰਬੀ ਦਬਾਓ",
+    "longPressAction": "ਲੰਬੀ ਪ੍ਰੈਸ ਐਕਸ਼ਨ",
     "longPressDuration": "ਲੰਬੀ ਪ੍ਰੈੱਸ ਦੀ ਮਿਆਦ",
     "look": "ਦੇਖੋ",
     "loopPlayback": "ਲੂਪ ਪਲੇਬੈਕ",
@@ -1555,6 +1569,8 @@
     "midtones": "ਮਿਡਟੋਨਜ਼",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "ਮਿਡਟੋਨਸ ਟਿੰਟ",
+    "midtonesWarmth": "ਮਿਡਟੋਨਸ ਨਿੱਘ",
     "mins": {
         "one": "ਮਿੰਟ",
         "other": "mins"
@@ -2109,6 +2125,8 @@
     "shadows": "ਸ਼ੈਡੋ",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "ਸ਼ੈਡੋਜ਼ ਰੰਗਤ",
+    "shadowsWarmth": "ਪਰਛਾਵੇਂ ਨਿੱਘ",
     "share": "ਸਾਂਝਾ ਕਰੋ",
     "shareDetails_Facebook": "ਕਿਸਮ: ਫੇਸਬੁੱਕ\nਲਾਗਇਨ: %{login}\nਟਾਈਟਲ: %{title}",
     "shareDetails_Tudou": "ਕਿਸਮ: Tudou\nਲਾਗਇਨ: %{login}\nਟਾਈਟਲ: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "ਸ਼ੇਅਰਡ ਪੇਸਟਬੋਰਡ ਪਾਥ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ. ਕੀ ਤੁਸੀਂ ਇੱਕ ਨਵੀਂ ਥਾਂ ਚੁਣਨਾ ਚਾਹੋਗੇ?",
     "sharedPasteboardRootFolder": "ਸ਼ੇਅਰਡ ਪੇਸਟਬੋਰਡ ਰੂਟ ਫੋਲਡਰ",
     "sharp": "ਤਿੱਖੀ",
+    "shiftAnchorDownPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
     "shiftPositionDownPixels": {
         "one": "ਸ਼ਿਫਟ ਸਥਿਤੀ ਹੇਠਾਂ %{amount} ਪਿਕਸਲ",
         "other": "ਸ਼ਿਫਟ ਸਥਿਤੀ ਹੇਠਾਂ %{amount} ਪਿਕਸਲ"
@@ -2156,7 +2190,24 @@
         "one": "%{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸਿਫਟ ਸਕੇਲ",
         "other": "%{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਸਿਫਟ ਸਕੇਲ"
     },
+    "shiftScaleXDown": {
+        "one": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftScaleXUp": {
+        "one": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ X ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftScaleYDown": {
+        "one": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਦੁਆਰਾ ਹੇਠਾਂ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftScaleYUp": {
+        "one": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਸਕੇਲ Y ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
     "short": "ਛੋਟਾ",
+    "shortPressAction": "ਛੋਟੀ ਪ੍ਰੈਸ ਕਾਰਵਾਈ",
     "shortcutAlreadyInUse": "ਇਹ ਸ਼ਾਰਟਕਟ ਪਹਿਲਾਂ ਹੀ ਵਰਤੋਂ ਵਿੱਚ ਹੈ.",
     "shortcutAlreadyInUseByMacOS": "ਇਹ ਸ਼ਾਰਟਕੱਟ ਮਿਸ਼ਰਨ ਇਸ ਸਮੇਂ ਮਾਈਕੌਸ ਦੁਆਰਾ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ (ਜਿਵੇਂ ਕਿ ਇਹ ਸਕ੍ਰੀਨ ਕੈਪਚਰ, ਯੂਨੀਵਰਸਲ ਐਕਸੈਸ, ਅਤੇ ਕੀਬੋਰਡ ਨੇਵੀਗੇਸ਼ਨ ਕੁੰਜੀਆਂ ਦੁਆਰਾ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਹੈ).",
     "shortcutCouldNotBeTriggered": "ਇਹ ਸ਼ਾਰਟਕੱਟ ਚਾਲੂ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ.\n\nਕਿਰਪਾ ਕਰਕੇ ਜਾਂਚ ਕਰੋ ਕਿ ਤੁਸੀ ਫਾਈਨਲ ਕਟ ਪ੍ਰੋ ਕਮਾਂਡ ਐਡੀਟਰ ਵਿੱਚ ਟਰਿੱਗਰ ਕਰਨ ਦੀ ਕੋਸਿਸ਼ ਕੀਤੀ ਕਮਾਡ ਲਈ ਨਿਰਧਾਰਤ ਕੀਤੀਆਂ ਸ਼ਾਰਟਕਟ ਕੁੰਜੀਆਂ ਠੀਕ ਕੀਤੀਆਂ ਹਨ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ.",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "Final Cut Pro ਤੋਂ DaVinci Resolve ਤੱਕ।",
     "sonyTimecodeFixerDescriptionTwo": "ਇਹ ਟੂਲਬਾਕਸ XML ਸਾਈਡਕਾਰ ਫਾਈਲ ਤੋਂ ਸਹੀ ਟਾਈਮਕੋਡ ਮੁੱਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਇੱਕ FCPXML ਨੂੰ ਅੱਪਡੇਟ ਕਰੇਗਾ, ਤਾਂ ਜੋ ਤੁਸੀਂ ਹੋਰ ਆਸਾਨੀ ਨਾਲ ਟਾਈਮਲਾਈਨ ਭੇਜ ਸਕੋ।",
     "sonyTimecodeRepair": "ਸੋਨੀ ਟਾਈਮਕੋਡ ਮੁਰੰਮਤ",
+    "sonyTimecodeRepairDescriptionFive": "ਇਹ ਟੂਲਬਾਕਸ ਅਲਿਸਟਰ ਰੋਬੀ ਲਈ ਇਕੱਠੇ ਸੁੱਟਿਆ ਗਿਆ ਸੀ। ਧੰਨਵਾਦ ਜਾਰਜ ਏਲੀਅਸ, ਜੈਮੀ ਲੇਜੇਨ ਅਤੇ ਵੈਲੇਰੀਓ ਡੀ'ਐਂਡਰਾਸੀ।",
     "sonyTimecodeRepairDescriptionFour": "ਇਹ ਟੂਲਬਾਕਸ ਅਲਿਸਟਰ ਰੋਬੀ ਲਈ ਇਕੱਠੇ ਸੁੱਟਿਆ ਗਿਆ ਸੀ। ਜੈਮੀ ਲੀਜੇਨ ਦੀ ਜਾਂਚ ਕਰਨ ਲਈ ਧੰਨਵਾਦ!",
     "sonyTimecodeRepairDescriptionOne": "ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਵਰਤਮਾਨ ਵਿੱਚ ਕੁਝ ਸੋਨੀ ਕੈਮਰਿਆਂ ਤੋਂ ਟਾਈਮਕੋਡ ਦੀ ਸਹੀ ਵਿਆਖਿਆ ਨਹੀਂ ਕਰਦਾ ਹੈ ਜੋ ਇੱਕ MP4 ਰੈਪਰ ਵਿੱਚ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹਨ।",
     "sonyTimecodeRepairDescriptionThree": "ਤਾਂ ਜੋ ਤੁਸੀਂ Final Cut Pro ਤੋਂ DaVinci Resolve, Baselight ਜਾਂ Adobe Premiere (XtoCC ਦੇ ਨਾਲ) ਨੂੰ ਹੋਰ ਆਸਾਨੀ ਨਾਲ ਟਾਈਮਲਾਈਨ ਭੇਜ ਸਕੋ।",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "ਐਪਲ ਨੂੰ ਮੋਸ਼ਨ ਫੀਚਰ ਸੁਝਾਓ",
     "support": "ਸਹਿਯੋਗ",
     "swipe": "ਸਵਾਈਪ ਕਰੋ",
+    "swipeLeftAction": "ਖੱਬੇ ਕਿਰਿਆ ਨੂੰ ਸਵਾਈਪ ਕਰੋ",
+    "swipeRightAction": "ਸੱਜੇ ਕਿਰਿਆ ਨੂੰ ਸਵਾਈਪ ਕਰੋ",
     "switchBetweenInsideOutsideMarks": "ਅੰਦਰ / ਬਾਹਰ ਮਾਸਕ ਵਿਚਕਾਰ ਸਵਿਚ ਕਰੋ",
     "switchDaVinciResolveControlSurfaceTo": "DaVinci ਰੈਜ਼ੋਲਵ ਕੰਟਰੋਲ ਸਰਫੇਸ ਨੂੰ ਇਸ 'ਤੇ ਸਵਿਚ ਕਰੋ",
     "switchLoupedeckCTTo": "ਬਦਲੋ",

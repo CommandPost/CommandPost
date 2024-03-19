@@ -47,9 +47,6 @@ end
 --- cp.fn.args.pack(...) -> table, boolean
 --- Function
 --- Packs the arguments into a table.
---- If the number of arguments is 1 and the first argument is a table,
---- and the table has a size of 1 or more, it will be returned.
---- Otherwise, the arguments are packed into a table.
 ---
 --- Parameters:
 ---  * ... - The arguments to pack.
@@ -57,6 +54,10 @@ end
 --- Returns:
 ---  * A table containing the arguments.
 ---  * A boolean indicating whether the arguments were packed into a table.
+---
+--- Notes:
+---  * If the number of arguments is 1 and the first argument is a table, and the table has a size of 1 or more, it will be returned.
+---  * Otherwise, the arguments are packed into a table.
 function mod.pack(...)
     local argCount = select("#", ...)
     if argCount == 1 then
@@ -71,8 +72,6 @@ end
 --- cp.fn.args.unpack(args, packed) -> ... | table
 --- Function
 --- Unpacks the arguments from a table.
---- If the arguments were packed, the table is unpacked first.
---- Otherwise, the arguments are returned unchanged.
 ---
 --- Parameters:
 ---  * args - The arguments to unpack.
@@ -80,6 +79,10 @@ end
 ---
 --- Returns:
 ---  * The arguments, unpacked if necessary.
+---
+--- Notes:
+---  * If the arguments were packed, the table is unpacked first.
+--- * Otherwise, the arguments are returned unchanged.
 function mod.unpack(args, packed)
     if packed then
         return unpack(args)

@@ -81,10 +81,10 @@ end
 --- Attempts to hide the Sheet (if visible) by pressing the [Cancel](#cancel) button.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
+---  * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
 function Sheet.lazy.method:doHide()
     return If(self.isShowing):Then(
         self:doCancel()
@@ -98,10 +98,10 @@ end
 --- Attempts to hide the Sheet (if visible) by pressing the [Cancel](#cancel) button.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
+---  * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
 function Sheet.lazy.method:doCancel()
     return self.cancel:doPress()
 end
@@ -111,10 +111,10 @@ end
 --- Attempts to press the `default` [Button](cp.ui.Button.md).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
+---  * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
 function Sheet.lazy.method:doDefault()
     return self.default:doPress()
 end
@@ -124,10 +124,10 @@ end
 --- Attempts to press the indicated button from left-to-right, if it can be found.
 ---
 --- Parameters:
---- * buttonFromLeft    - The number of the button from left-to-right.
+---  * buttonFromLeft    - The number of the button from left-to-right.
 ---
 --- Returns:
---- * a [Statement](cp.rx.go.Statement.md) to execute, resolving in `true` if the button was found and pressed, otherwise `false`.
+---  * a [Statement](cp.rx.go.Statement.md) to execute, resolving in `true` if the button was found and pressed, otherwise `false`.
 function Sheet:doPress(buttonFromLeft)
     return If(self.UI):Then(function(ui)
         local button = axutils.childFromLeft(ui, 1, Button.matches)

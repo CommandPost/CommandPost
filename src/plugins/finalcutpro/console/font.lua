@@ -103,14 +103,13 @@ local function loadFinalCutProFonts()
     end
 end
 
---- plugins.finalcutpro.console.font.onActivate() -> none
+--- plugins.finalcutpro.console.font.onActivate(_, action) -> none
 --- Function
 --- Handles Console Activations.
 ---
 --- Parameters:
----  * handler - Handler instance.
+---  * _ - Placeholder
 ---  * action - Action table.
----  * text - Selected text from the Console.
 ---
 --- Returns:
 ---  * None
@@ -244,10 +243,10 @@ end
 --- Adds available choices to the selection.
 ---
 --- Parameters:
---- * `choices` - The optional `cp.choices` to add choices to.
+---  * `choices` - The optional `cp.choices` to add choices to.
 ---
 --- Returns:
---- * None
+---  * None
 function mod.onChoices(choices)
 
     --------------------------------------------------------------------------------
@@ -320,10 +319,10 @@ end
 --- Get ID.
 ---
 --- Parameters:
---- * action - The action table.
+---  * action - The action table.
 ---
 --- Returns:
---- * The ID as a string.
+---  * The ID as a string.
 function mod.getId(action)
     return string.format("%s:%s", "fcpx_fonts", action.id)
 end
@@ -333,10 +332,10 @@ end
 --- On Execute.
 ---
 --- Parameters:
---- * action - The action table.
+---  * action - The action table.
 ---
 --- Returns:
---- * None
+---  * None
 function mod.onExecute(action)
     if not mod._consoleFontCount then mod.onChoices() end
     mod.onActivate(nil, action)

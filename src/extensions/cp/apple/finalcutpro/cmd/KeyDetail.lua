@@ -1,4 +1,4 @@
-    --- === cp.apple.finalcutpro.cmd.KeyDetail ===
+--- === cp.apple.finalcutpro.cmd.KeyDetail ===
 ---
 --- This class provides a UI for displaying the details of a key when it is selected on the keyboard layout.
 

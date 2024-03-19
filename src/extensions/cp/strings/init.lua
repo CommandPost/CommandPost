@@ -8,7 +8,7 @@
 --- ```
 ---
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
---- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
+--- Notes: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
 local require = require
 
@@ -33,21 +33,20 @@ local UNFOUND = {}
 
 --- cp.strings:context([context]) -> table | self
 --- Method
---- Gets or sets a context to be set for the strings. This typically includes a `language`, which
---- provides the default language code, but may have other source-specific properties.
---- Calling this method may may clear caches, etc.
+--- Gets or sets a context to be set for the strings. This typically includes a `language`, which provides the default language code, but may have other source-specific properties. Calling this method may may clear caches, etc.
 ---
---- Eg:
+--- Parameters:
+---  * context   - A table with values which may be used by the source.
+---
+--- Returns:
+---  * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
+---
+--- Notes:
+---  * For example:
 ---
 --- ```lua
 --- string:context({language = "fr"}) -- set the default language to French.
 --- ```
----
---- Parameters:
---- * context   - A table with values which may be used by the source.
----
---- Returns:
---- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
 function mod.mt:context(context)
     if context ~= nil then
         self._context = extend({}, context)
@@ -82,7 +81,7 @@ end
 --- Convenience method for adding a `plist` source to the strings instance.
 ---
 --- Parameters:
----  * `pathPattern`	- The path to load from. May contain a special `${language}` marker which will be replace with the provided langauge when searching.
+---  * `pathPattern` - The path to load from. May contain a special `${language}` marker which will be replace with the provided langauge when searching.
 ---
 --- Returns:
 ---  * The current `cp.strings` instance.

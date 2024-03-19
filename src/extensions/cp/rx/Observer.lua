@@ -29,8 +29,8 @@ end
 --- Creates a new Observer.
 ---
 --- Parameters:
----  * onNext      - Called when the Observable produces a value.
----  * onError     - Called when the Observable terminates due to an error.
+---  * onNext - Called when the Observable produces a value.
+---  * onError - Called when the Observable terminates due to an error.
 ---  * onCompleted - Called when the Observable completes normally.
 ---
 --- Returns:
@@ -51,7 +51,7 @@ end
 --- Pushes zero or more values to the Observer.
 ---
 --- Parameters:
----  * ...     - The list of values to send.
+---  * ... - The list of values to send.
 ---
 --- Returns:
 ---  * Nothing
@@ -66,7 +66,7 @@ end
 --- Notify the Observer that an error has occurred.
 ---
 --- Parameters:
----  * message  - A string describing what went wrong.
+---  * message - A string describing what went wrong.
 ---
 --- Returns:
 ---  * Nothing

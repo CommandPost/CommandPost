@@ -47,11 +47,10 @@ local asyncTimeout = 10
 
 --- cp.spec.Run.This.defaultTimeout([timeout]) -> number
 --- Function
---- Gets and/or sets the default timeout for asynchronous tests.
---- Defaults to 60 seconds.
+--- Gets and/or sets the default timeout for asynchronous tests. Defaults to 60 seconds.
 ---
 --- Parameters:
----  * timeout       - (optional) the new timeout, in seconds.
+---  * timeout - (optional) the new timeout, in seconds.
 ---
 --- Returns:
 ---  * The current default timeout, in seconds.
@@ -100,16 +99,17 @@ end
 --- cp.spec.Run:expectFail([messagePattern]) -> Run
 --- Method
 --- Indicates that this spec is expecting an assert/fail to occur.
---- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
---- fail doesn't occur, it will raise a failure at the end of the run.
---- The `messagePattern` can be used to ensure it's the fail you expect.
---- This should be called before the actual assert/fail would occur.
 ---
 --- Parameters:
 ---  * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
 ---
 --- Returns:
 ---  * The same `Run` instance.
+---
+--- Notes:
+---  * When this is expected, it doesn't log the problem as a 'fail'. In fact, if the fail doesn't occur, it will raise a failure at the end of the run.
+---  * The `messagePattern` can be used to ensure it's the fail you expect.
+---  * This should be called before the actual assert/fail would occur.
 function Run:expectFail(messagePattern)
     self._expectFail = true
     self._expectFailPattern = messagePattern
@@ -120,16 +120,17 @@ end
 --- cp.spec.Run.This:expectFail([messagePattern]) -> Run.This
 --- Method
 --- Indicates that this spec is expecting an assert/fail to occur.
---- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
---- fail doesn't occur, it will raise a failure at the end of the run.
---- The `messagePattern` can be used to ensure it's the fail you expect.
---- This should be called before the actual assert/fail would occur.
 ---
 --- Parameters:
 ---  * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
 ---
 --- Returns:
 ---  * The same `Run.This` instance.
+---
+--- Notes:
+---  * When this is expected, it doesn't log the problem as a 'fail'. In fact, if the fail doesn't occur, it will raise a failure at the end of the run.
+---  * The `messagePattern` can be used to ensure it's the fail you expect.
+---  * This should be called before the actual assert/fail would occur.
 function Run.This:expectFail(messagePattern)
     self:run():expectFail(messagePattern)
     return self
@@ -137,8 +138,7 @@ end
 
 --- cp.spec.Run:isExpectingFail() -> boolean, string or nil
 --- Method
---- Checks if the run is expecting a fail to occur.
---- If so, it will return the expected message pattern, if specified.
+--- Checks if the run is expecting a fail to occur. If so, it will return the expected message pattern, if specified.
 ---
 --- Parameters:
 ---  * None
@@ -186,16 +186,17 @@ end
 --- cp.spec.Run:expectAbort([messagePattern]) -> Run
 --- Method
 --- Indicates that this spec is expecting an abort/`error` to occur.
---- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
---- it doesn't occur at some point during the run, it will raise a failure at the end of the run.
---- The `messagePattern` can be used to ensure it's the fail you expect.
---- This should be called before the actual abort/`error` would occur.
 ---
 --- Parameters:
 ---  * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
 ---
 --- Returns:
 ---  * The same `Run` instance.
+---
+--- Notes:
+---  * When this is expected, it doesn't log the problem as a 'fail'. In fact, if the it doesn't occur at some point during the run, it will raise a failure at the end of the run.
+---  * The `messagePattern` can be used to ensure it's the fail you expect.
+---  * This should be called before the actual abort/`error` would occur.
 function Run:expectAbort(messagePattern)
     self._expectAbort = true
     self._expectAbortPattern = messagePattern
@@ -206,16 +207,17 @@ end
 --- cp.spec.Run.This:expectAbort([messagePattern]) -> Run.This
 --- Method
 --- Indicates that this spec is expecting an abort/`error` to occur.
---- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
---- it doesn't occur at some point during the run, it will raise a failure at the end of the run.
---- The `messagePattern` can be used to ensure it's the fail you expect.
---- This should be called before the actual abort/`error` would occur.
 ---
 --- Parameters:
 ---  * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
 ---
 --- Returns:
 ---  * The same `Run.This` instance.
+---
+--- Notes:
+---  * When this is expected, it doesn't log the problem as a 'fail'. In fact, if the it doesn't occur at some point during the run, it will raise a failure at the end of the run.
+---  * The `messagePattern` can be used to ensure it's the fail you expect.
+---  * This should be called before the actual abort/`error` would occur.
 function Run.This:expectAbort(messagePattern)
     self:run():expectAbort(messagePattern)
     return self
@@ -223,8 +225,7 @@ end
 
 --- cp.spec.Run:isExpectingAbort() -> boolean, string or nil
 --- Method
---- Checks if the run is expecting a abort/error to occur.
---- If so, it will return the expected message pattern as the second value, if specified.
+--- Checks if the run is expecting a abort/error to occur. If so, it will return the expected message pattern as the second value, if specified.
 ---
 --- Parameters:
 ---  * None
@@ -246,8 +247,7 @@ end
 
 -- cp.spec.Run:_checkExpectedAbort(message[, reset]) -> boolean
 -- Method
--- Checks if the provided message matches an expected abort/error. If so, the expected
--- fail is reset, and `true` is returned.
+-- Checks if the provided message matches an expected abort/error. If so, the expected fail is reset, and `true` is returned.
 --
 -- Parameters:
 -- * message - The fail message to check.
@@ -271,14 +271,20 @@ end
 
 --- cp.spec.Run.This:toObserver([onNext[, onError[, onCompleted]]) -> cp.rx.Observer
 --- Method
---- Creates an [Observer](cp.rx.Observer.md). If the `onNext`/`onError`/`onCompleted` functions are
---- not provided, then it will provide defaults. `onNext` will be logged, `onError` will throw an error,
---- and `onCompleted` will trigger [done](#done).
+--- Creates an [Observer](cp.rx.Observer.md).
 ---
 --- Parameters:
 ---  * onNext - The `next` handler.
 ---  * onError - The `error` handler.
 ---  * onCompleted - The `completed` handler.
+---
+--- Returns:
+---  * cp.rx.Observer
+---
+--- Notes:
+--- If the `onNext`/`onError`/`onCompleted` functions are
+--- not provided, then it will provide defaults. `onNext` will be logged, `onError` will throw an error,
+--- and `onCompleted` will trigger [done](#done).
 function Run.This:toObserver(onNext, onError, onCompleted)
     onNext = onNext or function(value) self:log("onNext: %s", inspect(value)) end
     onError = onError or print
@@ -299,13 +305,15 @@ function Run.This:isActive()
     return self.state == Run.This.state.running or self.state == Run.This.state.waiting
 end
 
---- cp.spec.Run.This:wait([timeout])
+--- cp.spec.Run.This:wait([timeout]) -> none
 --- Method
---- Indicates that the test is continuing asynchronously, and will
---- be completed by calling [done](#done).
+--- Indicates that the test is continuing asynchronously, and will be completed by calling [done](#done).
 ---
 --- Parameters:
----  * timeout       - (optional) The number of seconds to wait before timing out.
+---  * timeout - (optional) The number of seconds to wait before timing out.
+---
+--- Returns:
+---  * None
 ---
 --- Notes:
 ---  * If not provided, [Run.This.defaultTimeout()](cp.spec.Run.This.md#defaultTimeout) is used.
@@ -324,8 +332,7 @@ end
 
 --- cp.spec.Run.This:isWaiting() -> boolean
 --- Method
---- Checks if the [Run](cp.spec.Run.md) is waiting for this execution to complete via the
---- [done](cp.spec.Run.This.md#done) method.
+--- Checks if the [Run](cp.spec.Run.md) is waiting for this execution to complete via the [done](cp.spec.Run.This.md#done) method.
 ---
 --- Parameters:
 ---  * None
@@ -563,7 +570,7 @@ Run.static.result = {
     aborted = "aborted",
 }
 
---- cp.spec.Run(name) -> cp.spec.Run
+--- cp.spec.Run(name, source) -> cp.spec.Run
 --- Constructor
 --- Creates a new test run.
 ---
@@ -854,11 +861,10 @@ end
 
 --- cp.spec.Run:verbose([isVerbose]) -> boolean | self
 --- Method
---- Either sets the `verbose` value and returns itself for further chaining, or returns
---- the current verbose status.
+--- Either sets the `verbose` value and returns itself for further chaining, or returns the current verbose status.
 ---
 --- Parameters:
----  * isVerbose     - (optional) if `true` or `false` will update the verbose status and return this `Run`.
+---  * isVerbose - (optional) if `true` or `false` will update the verbose status and return this `Run`.
 ---
 --- Returns:
 ---  * The current `verbose` status, or this `Run` if `isVerbose` is provided.
@@ -881,7 +887,10 @@ end
 --- Adds a callback function to run prior to executing the actual test.
 ---
 --- Parameters:
----  * actionFn      - The function to run, passed this `Run.This` as the first parameter.
+---  * actionFn - The function to run, passed this `Run.This` as the first parameter.
+---
+--- Returns:
+---  * self
 function Run:onBefore(beforeFn)
     return self:_addAction(Run.phase.before, beforeFn)
 end
@@ -891,7 +900,10 @@ end
 --- Adds a callback function to run during the test.
 ---
 --- Parameters:
----  * runningFn     - The function to run, passed [Run.This](cp.spec.Run.This.md) as the first parameter.
+---  * runningFn - The function to run, passed [Run.This](cp.spec.Run.This.md) as the first parameter.
+---
+--- Returns:
+---  * self
 function Run:onRunning(runningFn)
     return self:_addAction(Run.phase.running, runningFn)
 end
@@ -902,6 +914,9 @@ end
 ---
 --- Parameters:
 ---  * actionFn      - The function to run, passed this `Run` as the first parameter.
+---
+--- Returns:
+---  * self
 function Run:onAfter(actionFn)
     return self:_addAction(Run.phase.after, actionFn)
 end

@@ -45,10 +45,10 @@ local HueSaturationCurves = Element:subclass("cp.apple.finalcutpro.inspector.col
 --- Checks if the specified element is the Color Curves element.
 ---
 --- Parameters:
---- * element	- The element to check
+---  * element	- The element to check
 ---
 --- Returns:
---- * `true` if the element is the Color Curves.
+---  * `true` if the element is the Color Curves.
 function HueSaturationCurves.static.matches(element)
     if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
     and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"

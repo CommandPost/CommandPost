@@ -12,10 +12,10 @@ local SearchField = TextField:subclass("cp.ui.SearchField")
 --- Checks to see if an element is a `AXTextField` with a subrole of `AXSearchField`.
 ---
 --- Parameters:
---- * element - An `axuielementObject` to check.
+---  * element - An `axuielementObject` to check.
 ---
 --- Returns:
---- * `true` if matches, otherwise `false`.
+---  * `true` if matches, otherwise `false`.
 function SearchField.static.matches(element)
     return TextField.matches(element) and element:attributeValue("AXSubrole") == "AXSearchField"
 end
@@ -23,18 +23,6 @@ end
 --- cp.ui.SearchField(parent, uiFinder[, convertFn]) -> cp.ui.SearchField
 --- Method
 --- Creates a new SearchField. They have a parent and a finder function.
---- Additionally, an optional `convert` function can be provided, with the following signature:
----
---- `function(textValue) -> anything`
----
---- The `value` will be passed to the function before being returned, if present. All values
---- passed into `value(x)` will be converted to a `string` first via `tostring`.
----
---- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
----
---- ```lua
---- local numberField = SearchField(parent, function() return ... end, tonumber)
---- ```
 ---
 --- Parameters:
 ---  * parent	- The parent object.
@@ -43,6 +31,18 @@ end
 ---
 --- Returns:
 ---  * The new `SearchField`.
+---
+--- Notes:
+---  * Additionally, an optional `convert` function can be provided, with the following signature:
+---
+--- `function(textValue) -> anything`
+---
+---  * The `value` will be passed to the function before being returned, if present. All values passed into `value(x)` will be converted to a `string` first via `tostring`.
+---  * For example, to have the value be converted into a `number`, simply use `tonumber` like this:
+---
+--- ```lua
+--- local numberField = SearchField(parent, function() return ... end, tonumber)
+--- ```
 function SearchField:initialize(parent, uiFinder, converterFn)
     TextField.initialize(self, parent, uiFinder, converterFn)
 end

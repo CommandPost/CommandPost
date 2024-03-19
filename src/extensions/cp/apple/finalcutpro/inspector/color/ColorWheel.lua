@@ -40,10 +40,10 @@ ColorWheel.static.HUE_SHIFT = 4183333/6000000
 --- Checks if the specified element is a Color Well.
 ---
 --- Parameters:
---- * element	- The element to check
+---  * element	- The element to check
 ---
 --- Returns:
---- * `true` if the element is a Color Well.
+---  * `true` if the element is a Color Well.
 function ColorWheel.static.matches(element)
     if Group.matches(element) and #element == 4 then
         return childMatching(element, ValueIndicator.matches) ~= nil
@@ -57,11 +57,11 @@ end
 --- Creates a new `ColorWheel` instance, with the specified parent and type.
 ---
 --- Parameters:
---- * parent	- The parent object.
---- * type		- The type of color wheel. Must be one of the `ColorWheel.TYPE` values.
+---  * parent	- The parent object.
+---  * type		- The type of color wheel. Must be one of the `ColorWheel.TYPE` values.
 ---
 --- Returns:
---- * A new `ColorWheel` instance.
+---  * A new `ColorWheel` instance.
 function ColorWheel:initialize(parent, type)
     local UI = parent.contentUI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
@@ -147,7 +147,7 @@ end
 ---  * None
 ---
 --- Returns:
---- * The same `ColorWheel` instance, for chaining.
+---  * The same `ColorWheel` instance, for chaining.
 function ColorWheel:show()
     self:parent():show()
     -- ensure the wheel type is correct, if visible.
@@ -166,7 +166,7 @@ end
 ---  * None
 ---
 --- Returns:
---- * The `Statement`, resolving to `true` if shown, `false` if not.
+---  * The `Statement`, resolving to `true` if shown, `false` if not.
 function ColorWheel.lazy.method:doShow()
     local wheelType = self:parent().wheelType
     return Do(self:parent():doShow())
@@ -200,7 +200,7 @@ end
 ---  * None
 ---
 --- Returns:
---- * The `Statement`, resolving to `true` if selected, otherwise `false`.
+---  * The `Statement`, resolving to `true` if selected, otherwise `false`.
 function ColorWheel.lazy.method:doSelect()
     return Do(self:doShow())
     :Then(function()
@@ -214,10 +214,10 @@ end
 --- Returns the `ColorWell` for this ColorWheel.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `ColorWell` instance.
+---  * The `ColorWell` instance.
 function ColorWheel.lazy.value:colorWell()
     return ColorWell(self, function()
         return axutils.childMatching(self:UI(), ColorWell.matches)
@@ -229,10 +229,10 @@ end
 --- Returns the saturation `ValueIndicator` for this ColorWheel.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The saturation `ValueIndicator` instance.
+---  * The saturation `ValueIndicator` instance.
 function ColorWheel.lazy.value:saturation()
     return ValueIndicator(self,
         self.UI:mutate(function(original)
@@ -253,10 +253,10 @@ end
 --- Returns the brightness `ValueIndicator` for this ColorWheel.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The brightness `ValueIndicator` instance.
+---  * The brightness `ValueIndicator` instance.
 function ColorWheel.lazy.value:brightness()
     return ValueIndicator(self,
         self.UI:mutate(function(original)
@@ -284,15 +284,14 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(right, up) -> self
 --- Method
---- Nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left,
---- negative `up` values shift down. You may have decimal shift values.
+--- Nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left, negative `up` values shift down. You may have decimal shift values.
 ---
 --- Parameters:
 ---  * `right` - The number of steps to shift right. May be negative to shift left.
 ---  * `up` - The number of pixels to shift down. May be negative to shift down.
 ---
 --- Returns:
---- * The `ColorWheel` instance.
+---  * The `ColorWheel` instance.
 function ColorWheel:nudgeColor(right, up)
     self.colorWell:nudge(right, up)
     return self
@@ -300,15 +299,14 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:doNudgeColor(right, up) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that nudges the `colorPosition` by `right`/`up` values.
---- Negative `right` values shift left, negative `up` values shift down. You may have decimal shift values.
+--- A [Statement](cp.rx.go.Statement.md) that nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left, negative `up` values shift down. You may have decimal shift values.
 ---
 --- Parameters:
 ---  * `right` - The number of steps to shift right. May be negative to shift left.
 ---  * `up` - The number of pixels to shift down. May be negative to shift down.
 ---
 --- Returns:
---- * The `Statement`, resolving to `true` if successful.
+---  * The `Statement`, resolving to `true` if successful.
 function ColorWheel:doNudgeColor(right, up)
     return self.colorWell:doNudge(right, up)
     :Label("cp.apple.finalcutpro.inspector.color.ColorWheel:doNudgeColor(right, up)")

@@ -118,10 +118,7 @@ end
 
 -- cp.localized.readLocalizedName(path, name, locale) -> string
 -- Function
--- Returns the localized `name` for the `path` in the specified `locale`. It will check
--- for common aliases for locale codes (e.g. 'en' is sometimes 'English'). If no localization
--- for the specified locale is available, it will try English, and if all else fails, the
--- original `name` is returned.
+-- Returns the localized `name` for the `path` in the specified `locale`.
 --
 -- Parameters:
 --  * `path`            - The full path to the folder
@@ -130,6 +127,9 @@ end
 --
 -- Returns:
 --  * The localized name, or `name` if not available.
+--
+-- Notes:
+--  * It will check for common aliases for locale codes (e.g. 'en' is sometimes 'English'). If no localization for the specified locale is available, it will try English, and if all else fails, the original `name` is returned.
 local function readLocalizedName(path, name, locale)
     locale = localeID(locale)
     local localizedPath = path .. "/.localized/"
@@ -146,8 +146,7 @@ end
 
 --- cp.localized.getLocalizedName(path[, locale]) -> string, string
 --- Function
---- Returns the localized name for the `path` in the specified `locale`. If all else fails, the
---- original folder name is returned. The 'unlocalized' folder name is returned as the second value, without `.localized` at the end, if it was present.
+--- Returns the localized name for the `path` in the specified `locale`. If all else fails, the original folder name is returned. The 'unlocalized' folder name is returned as the second value, without `.localized` at the end, if it was present.
 ---
 --- Parameters:
 ---  * `path`           - The full path to the folder

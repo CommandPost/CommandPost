@@ -38,6 +38,8 @@ mod._strings = strings.new()
 :fromPlist("/System/Library/Frameworks/AppKit.framework/Resources/${locale}.lproj/DictationManager.strings") -- Dictation Strings
 :fromPlist("/System/Library/Frameworks/Carbon.framework/Frameworks/HIToolbox.framework/Resources/${locale}.lproj/Menus.strings") -- Emoji & Symbols
 :fromPlist("/System/Library/Frameworks/Foundation.framework/Versions/C/Resources/${locale}.lproj/Undo.strings") -- System Wide Undo/Redo
+:fromPlist("/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Resources/${locale}.lproj/schema.strings") -- Spotlight Strings
+
 --------------------------------------------------------------------------------
 -- Load the FCPX specific strings:
 --------------------------------------------------------------------------------
@@ -141,8 +143,7 @@ end
 
 --- cp.apple.finalcutpro.strings:find(key[, locale][, quiet]]) -> string
 --- Method
---- Looks up an application string with the specified `key`.
---- If no `context` value is provided, the [current context](#context) is used.
+--- Looks up an application string with the specified `key`. If no `context` value is provided, the [current context](#context) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.

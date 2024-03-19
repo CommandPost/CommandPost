@@ -37,7 +37,7 @@ end
 ---  * uiFinder		- A function which will return the `hs.axuielement` the button belongs to, or `nil` if not available.
 ---
 --- Returns:
---- The new `Button` instance.
+---  * The new `Button` instance.
 function Button:initialize(parent, uiFinder)
     Element.initialize(self, parent, uiFinder)
 end
@@ -68,8 +68,7 @@ end
 
 --- cp.ui.Button:doPress() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will press the button when executed, if available at the time.
---- If not an `error` is sent.
+--- Returns a `Statement` that will press the button when executed, if available at the time. If not an `error` is sent.
 ---
 --- Parameters:
 ---  * None

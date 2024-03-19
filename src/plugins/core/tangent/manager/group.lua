@@ -25,15 +25,18 @@ local format            = string.format
 
 local group = class "core.tangent.manager.group" :include(lazy)
 
---- plugins.core.tangent.manager.group(name, manager, [, parent[, localActive]])
+--- plugins.core.tangent.manager.group(name, manager, parent, localActive) -> None
 --- Constructor
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
----  * name      - The name of the group.
----  * manager   - The Tangent Manager.
----  * parent    - The parent group.
+---  * name - The name of the group.
+---  * manager - The Tangent Manager.
+---  * parent - The parent group.
 ---  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
+---
+--- Returns:
+---  * None
 function group:initialize(name, manager, parent, localActive)
     if is.blank(name) then
         error("Group names cannot be empty")
@@ -138,13 +141,13 @@ function group:controls()
     end
 end
 
---- plugins.core.tangent.manager.group:group(name[, localActive]) -> group
+--- plugins.core.tangent.manager.group:group(name, [localActive]) -> group
 --- Method
 --- Adds a subgroup to this group.
 ---
---- Parameters
----  * name  - the name of the new sub-group
----  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
+--- Parameters:
+---  * name - the name of the new sub-group
+---  * localActive - An optional boolean. If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
 ---
 --- Returns:
 ---  * The new `group`
@@ -187,7 +190,7 @@ end
 --- Method
 --- Adds an `action` to this group.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new action
 ---  * name  - The name of the action.
 ---  * localActive - If true, the parent group's `active` state is ignored when determining if this action is active.
@@ -213,7 +216,7 @@ end
 --- Method
 --- Adds an `parameter` to this group.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new parameter
 ---  * name  - The name of the parameter.
 ---
@@ -238,7 +241,7 @@ end
 --- Method
 --- Adds an `menu` to this group.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new menu
 ---  * name  - The name of the menu.
 ---
@@ -263,7 +266,7 @@ end
 --- Method
 --- Adds an `binding` to this group.
 ---
---- Parameters
+--- Parameters:
 ---  * id    - The ID number of the new binding
 ---  * name  - The name of the binding.
 ---
@@ -284,8 +287,7 @@ end
 
 --- plugins.core.tangent.manager.group:reset() -> self
 --- Method
---- This will remove all parameters, actions, menus and bindings from
---- the group. It does not remove sub-groups. Use with care!
+--- This will remove all parameters, actions, menus and bindings from the group. It does not remove sub-groups. Use with care!
 ---
 --- Parameters:
 ---  * None

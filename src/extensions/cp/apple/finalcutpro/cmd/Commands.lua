@@ -5,7 +5,7 @@
 
 local require                   = require
 
---- local log                      = require "hs.logger".new "Commands"
+-- local log                      = require "hs.logger".new "Commands"
 
 local fn                        = require "cp.fn"
 local ax                        = require "cp.fn.ax"
@@ -26,10 +26,10 @@ local Commands = ScrollArea:subclass("cp.apple.finalcutpro.cmd.Commands")
 --- Checks if the element matches the criteria for this class.
 ---
 --- Parameters:
---- * element - An `axuielementObject` to check.
+---  * element - An `axuielementObject` to check.
 ---
 --- Returns:
---- * `true` if the element matches the criteria for this class.
+---  * `true` if the element matches the criteria for this class.
 Commands.static.matches = ax.matchesIf(ScrollArea.matches, chain // ax.childMatching(Table.matches))
 
 function Commands:initialize(parent, uiFinder)
@@ -84,6 +84,8 @@ function Commands.Header.lazy.value:key()
 end
 
 --- === cp.apple.finalcutpro.cmd.Commands.Row ===
+---
+--- Commands Row.
 
 Commands.Row = Row:subclass("cp.apple.finalcutpro.cmd.Commands.Row")
 
@@ -111,6 +113,5 @@ end
 function Commands.Row.lazy.value:key()
     return self.children[3]
 end
-
 
 return Commands

@@ -41,10 +41,10 @@ end
 --- Constructs a new Browser Marker Popover
 ---
 --- Parameters:
---- * parent - The parent object
+---  * parent - The parent object
 ---
 --- Returns:
---- * The new `BrowserMarkerPopover` instance.
+---  * The new `BrowserMarkerPopover` instance.
 function BrowserMarkerPopover:initialize(parent)
     local UI = parent.UI:mutate(function(original)
         return cache(self, "_ui", function()

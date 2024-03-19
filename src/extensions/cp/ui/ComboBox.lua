@@ -54,21 +54,9 @@ function ComboBox.lazy.value:menuList()
     )
 end
 
---- cp.ui.ComboBox(parent, uiFinder, listAdaptorFn, [, getConvertFn[, setConvertFn]]) -> ComboBox
+--- cp.ui.ComboBox(parent, uiFinder, listAdaptorFn [, getConvertFn[, setConvertFn]]) -> ComboBox
 --- Method
 --- Creates a new ComboBox. They have a parent and a finder function.
---- Additionally, an optional `convert` function can be provided, with the following signature:
----
---- `function(textValue) -> anything`
----
---- The `value` will be passed to the function before being returned, if present. All values
---- passed into `value(x)` will be converted to a `string` first via `tostring`.
----
---- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
----
---- ```lua
---- local numberField = ComboBox(parent, function() return ... end, tonumber, tostring)
---- ```
 ---
 --- Parameters:
 ---  * parent   - The parent object.
@@ -79,6 +67,18 @@ end
 ---
 --- Returns:
 ---  * The new `ComboBox`.
+---
+--- Notes:
+---  * Additionally, an optional `convert` function can be provided, with the following signature:
+---
+--- `function(textValue) -> anything`
+---
+---  * The `value` will be passed to the function before being returned, if present. All values passed into `value(x)` will be converted to a `string` first via `tostring`.
+---  * For example, to have the value be converted into a `number`, simply use `tonumber` like this:
+---
+--- ```lua
+--- local numberField = ComboBox(parent, function() return ... end, tonumber, tostring)
+--- ```
 function ComboBox:initialize(parent, uiFinder, listAdaptorFn, getConvertFn, setConvertFn)
     self._listAdaptorFn = listAdaptorFn
     TextField.initialize(self, parent, uiFinder, getConvertFn, setConvertFn)

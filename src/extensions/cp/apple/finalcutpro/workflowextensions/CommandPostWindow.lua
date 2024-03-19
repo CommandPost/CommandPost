@@ -68,7 +68,7 @@ function CommandPostWindow.lazy.value:reloadButton()
     end))
 end
 
---- cp.apple.finalcutpro.prefs.CommandPostWindow:reload() -> none
+--- cp.apple.finalcutpro.workflowextensions.CommandPostWindow:reload() -> none
 --- Method
 --- Press the Reload Button.
 ---
@@ -83,7 +83,7 @@ function CommandPostWindow:reload()
     end
 end
 
---- cp.apple.finalcutpro.prefs.CommandPostWindow:hasStalled() -> boolean
+--- cp.apple.finalcutpro.workflowextensions.CommandPostWindow:hasStalled() -> boolean
 --- Method
 --- Has the Workflow Extension stalled?
 ---
@@ -96,7 +96,7 @@ function CommandPostWindow:hasStalled()
     return self.reloadButton:isShowing()
 end
 
---- cp.apple.finalcutpro.prefs.CommandPostWindow:show() -> CommandPostWindow
+--- cp.apple.finalcutpro.workflowextensions.CommandPostWindow:show() -> CommandPostWindow
 --- Method
 --- Attempts to show the CommandPost Workflow Extension window.
 ---
@@ -123,7 +123,7 @@ function CommandPostWindow:show()
     return self
 end
 
---- cp.apple.finalcutpro.prefs.CommandPostWindow:doShow() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.workflowextensions.CommandPostWindow:doShow() -> cp.rx.go.Statement
 --- Method
 --- A `Statement` that attempts to show the CommandPost Workflow Extension window.
 ---
@@ -140,7 +140,7 @@ function CommandPostWindow.lazy.method:doShow()
     )
 end
 
---- cp.apple.finalcutpro.prefs.CommandPostWindow:hide() -> CommandPostWindow
+--- cp.apple.finalcutpro.workflowextensions.CommandPostWindow:hide() -> CommandPostWindow
 --- Method
 --- Attempts to hide the CommandPost Workflow Extension window.
 ---
@@ -159,7 +159,7 @@ function CommandPostWindow:hide()
     return self
 end
 
---- cp.apple.finalcutpro.prefs.CommandPostWindow:doHide() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.workflowextensions.CommandPostWindow:doHide() -> cp.rx.go.Statement
 --- Method
 --- A `Statement` that attempts to hide the CommandPost Workflow Extension window.
 ---

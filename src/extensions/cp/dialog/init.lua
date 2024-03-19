@@ -300,6 +300,7 @@ end
 ---
 --- Parameters:
 ---  * whatError - The message you want to display as a string
+---  * optionalButtons - Optional buttons
 ---
 --- Returns:
 ---  * None

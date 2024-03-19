@@ -46,6 +46,14 @@ end
 --- cp.rx.go.If(value) -> If
 --- Constructor
 --- Creates a new `If` `Statement` which will check the first result of `value`.
+---
+--- Parameters:
+---  * value  - a `resolvable` value that will be checked.
+---
+--- Returns:
+---  * The `Statement` instance which will check if the `resolvable` matches the requirement.
+---
+--- Notes:
 --- By default, it will check if the value is `truthy` - not `nil` and not `false`.
 --- Other checks can be specified via the `If:Is/IsNot/Matches` methods.
 --- If the check passes, the `If:Then(...)` method is processed. If not, the `Otherwise` method
@@ -60,12 +68,6 @@ end
 ---     function() ... end
 --- )
 --- ```
----
---- Parameters:
----  * value  - a `resolvable` value that will be checked.
----
---- Returns:
----  * The `Statement` instance which will check if the `resolvable` matches the requirement.
 local If = Statement.named("If")
 :onInit(function(context, value)
     assert(value ~= nil, "The 'If' value may  not be `nil`.")
@@ -121,6 +123,14 @@ end)
 --- cp.rx.go.If:Then(...) -> If.Then
 --- Method
 --- Call this to define what will happen if value resolves successfully.
+---
+--- Parameters:
+---  * ...  - The list of `resolveable` values to process for the successful `If` result.
+---
+--- Returns:
+---  * The `Then` `Statement.Modifier`.
+---
+--- Notes:
 --- The parameters can be any `resolvable` type.
 ---
 --- For example:
@@ -131,12 +141,6 @@ end)
 ---     return true
 --- end)
 --- ```
----
---- Parameters:
----  * ...  - The list of `resolveable` values to process for the successful `If` result.
----
---- Returns:
----  * The `Then` `Statement.Modifier`.
 If.modifier("Then")
 :onInit(function(context, ...)
     insert(context.thens, pack(...))
@@ -161,7 +165,15 @@ If.Then.allow(If.Then)
 --- cp.rx.go.If.Then:Otherwise(...) -> If.Then.Otherwise
 --- Method
 --- Call this to define what will happen if value doesn't resolve successfully.
---- The parameters can be any `resolvable` type.
+---
+--- Parameters:
+---  * ...  - The list of `resolveable` values to process for the unsuccessful `If` result.
+---
+--- Returns:
+---  * The `Then` `Statement.Modifier`.
+---
+--- Notes:
+---  * The parameters can be any `resolvable` type.
 ---
 --- For example:
 --- ```lua
@@ -172,12 +184,6 @@ If.Then.allow(If.Then)
 --- end)
 --- :Otherwise(false)
 --- ```
----
---- Parameters:
----  * ...  - The list of `resolveable` values to process for the unsuccessful `If` result.
----
---- Returns:
----  * The `Then` `Statement.Modifier`.
 If.Then.modifier("Otherwise")
 :onInit(function(context, ...)
     insert(context.otherwises, pack(...))
@@ -324,16 +330,17 @@ If.AreNot.allow(If.Then)
 --- Method
 --- Specifies the predicate function that will check the `value` results.
 ---
---- Example:
---- ```lua
---- If(someObservable):Matches(function(value) return value % 2 == 0 end):Then(doSomething())
---- ```
----
 --- Parameters:
 ---  * predicate  - The function that will get called to determine if it has been found.
 ---
 --- Returns:
 ---  * The [Matches](cp.rx.go.If.Matches.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
+---
+--- Notes:
+---  * Example:
+--- ```lua
+--- If(someObservable):Matches(function(value) return value % 2 == 0 end):Then(doSomething())
+--- ```
 If.modifier("Matches")
 :onInit(function(context, predicate)
     if type(predicate) ~= "function" then

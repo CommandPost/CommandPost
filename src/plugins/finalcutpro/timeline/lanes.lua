@@ -31,7 +31,7 @@ function mod.selectClipAtLane(whichLane)
     local playheadX = content.playhead:position()
 
     local clips = content:clipsUI(false, function(clip)
-        local frame = clip:frame()
+        local frame = clip:attributeValue("AXFrame")
         return playheadX >= frame.x and playheadX < (frame.x + frame.w)
     end)
 
@@ -47,7 +47,7 @@ function mod.selectClipAtLane(whichLane)
     --------------------------------------------------------------------------------
     -- Sort the table:
     --------------------------------------------------------------------------------
-    table.sort(clips, function(a, b) return a:position().y > b:position().y end)
+    table.sort(clips, function(a, b) return a:attributeValue("AXPosition").y > b:attributeValue("AXPosition").y end)
 
     content:selectClip(clips[whichLane])
 

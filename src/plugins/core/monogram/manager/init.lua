@@ -47,7 +47,7 @@ local MONOGRAM_CREATOR_INTEGRATIONS_PATH = os.getenv("HOME") .. "/Library/Applic
 --- plugins.core.monogram.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
 --- Number of favourites
-mod.NUMBER_OF_FAVOURITES = 20
+mod.NUMBER_OF_FAVOURITES = 50
 
 --- plugins.core.monogram.manager.favourites <cp.prop: table>
 --- Variable
@@ -140,11 +140,12 @@ end
 local function callbackFn(data, sockAddress)
     if data then
         local decodedData = json.decode(data)
+
         local action = mod.performAction[decodedData.input]
         if action then
             action(decodedData)
         else
-            log.ef("Unknown Monogram Message:\n%s\n%s", decodedData and inspect(decodedData))
+            log.ef("Unknown Monogram Message:\n%s", decodedData and inspect(decodedData))
         end
 
         --------------------------------------------------------------------------------
@@ -338,7 +339,7 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Register favourites:
+    -- Register press favourites:
     --------------------------------------------------------------------------------
     for i=1, mod.NUMBER_OF_FAVOURITES do
         mod.registerAction("CommandPost Favourites.Favourite " .. string.format("%02d", i), function()
@@ -360,6 +361,52 @@ function plugin.init(deps)
         end)
     end
 
+    --------------------------------------------------------------------------------
+    -- Register turn favourites:
+    --------------------------------------------------------------------------------
+    for i=1, mod.NUMBER_OF_FAVOURITES do
+        mod.registerAction("CommandPost Favourites.Turn Favourite " .. string.format("%02d", i), function(data)
+            if not data then
+                log.ef("Missing data when attempting to do Monogram Turn Favourite")
+                return
+            end
+
+            local actionType
+            if data.operation == "+" then
+                local value = data.params and data.params[1]
+                if type(value) == "number" then
+                    if value >= 1 then
+                        actionType = "left_"
+                    else
+                       actionType = "right_"
+                    end
+                end
+            elseif data.operation == "=" then
+                actionType = ""
+            end
+
+            if actionType == nil then
+                log.ef("Failed to determine action type for Monogram Turn Favourite:\n%s", data and inspect(data))
+                return
+            end
+
+            local faves = mod.favourites()
+            local fave = faves[actionType .. tostring(i)]
+            if fave then
+                local handler = deps.actionManager.getHandler(fave.handlerID)
+                if handler then
+                    if not handler:execute(fave.action) then
+                        log.ef("Unable to execute Monogram Turn Favourite #%s: %s", i, fave and inspect(fave))
+                    end
+                else
+                    log.ef("Unable to find handler to execute Monogram Turn Favourite #%s: %s", i, fave and inspect(fave))
+                end
+            else
+                log.ef("No action is assigned to the turn favourite in the Monogram Control Surfaces Panel in CommandPost.")
+                playErrorSound()
+            end
+        end)
+    end
     return mod
 end
 

@@ -19,8 +19,7 @@ end
 
 --- cp.fn.string.match(pattern) -> function(str) -> ...
 --- Function
---- Creates a function that matches the given pattern.
---- Any groups in the pattern will be returned as multiple values.
+--- Creates a function that matches the given pattern. Any groups in the pattern will be returned as multiple values.
 ---
 --- Parameters:
 ---  * pattern - The pattern to match.

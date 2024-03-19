@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.AudioRole ==
 ---
---- *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
+---  *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
 ---
 --- A [Role](cp.apple.finalcutpro.timeline.Role.md) representing Audio.
 
@@ -37,11 +37,11 @@ end
 --- Creates a new instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * parent - the parent `Element`.
+---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
 ---
 --- Returns:
---- * The new `Row`.
+---  * The new `Row`.
 function AudioRole:initialize(parent, uiFinder)
     Role.initialize(self, parent, uiFinder, Role.TYPE.AUDIO)
 end
@@ -60,7 +60,7 @@ end
 --- A [CheckButton](cp.ui.CheckButton.md) that toggles whether the roles are visible in the Index.
 ---
 --- Notes:
---- * Unlike the [VideoRole](cp.finalcutpro.apple.timeline.VideoRole.md) and [CaptionsRole](cp.apple.finalcutpro.timeline.CaptionsRole.md), this is a [CheckBox](cp.ui.CheckBox.md) and is always visible.
+---  * Unlike the [VideoRole](cp.finalcutpro.apple.timeline.VideoRole.md) and [CaptionsRole](cp.apple.finalcutpro.timeline.CaptionsRole.md), this is a [CheckBox](cp.ui.CheckBox.md) and is always visible.
 function AudioRole.lazy.value:subrolesExpanded()
     return CheckBox(self, self.cellUI:mutate(function(original)
         return childFromRight(original(), 2, CheckBox.matches)

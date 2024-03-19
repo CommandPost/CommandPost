@@ -2,12 +2,10 @@
 ---
 --- Controls sections for the CommandPost menu.
 
-local require = require
+local require   = require
 
-local config = require("cp.config")
-
-local fnutils = require("hs.fnutils")
-
+local config    = require "cp.config"
+local fnutils   = require "hs.fnutils"
 
 local section = {}
 
@@ -224,8 +222,7 @@ end
 
 --- plugins.core.menu.manager.section:addMenu(priority, titleFn) -> section
 --- Method
---- Adds a new sub-menu with the specified priority. The section that will contain
---- the items in the menu is returned.
+--- Adds a new sub-menu with the specified priority. The section that will contain the items in the menu is returned.
 ---
 --- Parameters:
 ---  * `priority`	- The priority of the item within the section. Lower numbers appear first.
@@ -244,7 +241,7 @@ function section:addMenu(priority, titleFn)
     return menuSection
 end
 
---- plugins.core.menu.manager.section:addSection(priority, itemFn) -> section
+--- plugins.core.menu.manager.section:addSection(priority) -> section
 --- Method
 --- Adds a new sub-section with the specified priority. The new sub-section is returned.
 ---

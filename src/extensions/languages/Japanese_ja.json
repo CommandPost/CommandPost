@@ -69,6 +69,7 @@
     "alphaAdd": "アルファ追加",
     "alphaAdd9": "アルファ追加",
     "alreadyWatched": "このフォルダは既に監視されています。",
+    "alternative": "別",
     "always": "常に",
     "alwaysOnTop": "常にトップに",
     "ambience": "雰囲気",
@@ -190,6 +191,7 @@
     "betterPerformance": "よりよい性能",
     "betterQuality": "より良い品質",
     "black": "ブラック",
+    "blackPoint": "黒点",
     "blade": "刃",
     "blendMode": "ブレンドモード",
     "blendMode9": "BlendMode",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "コードは関数を返す必要があります。",
     "cold": "コールド",
     "color": "色",
+    "colorAdjustments": "色の調整",
+    "colorAdjustments_group": "色の調整",
     "colorAndEffects": "色と効果",
     "colorBoard": "カラーボード",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Final Cut Proユーザーインターフェイス要素を制御する（絶対）",
     "controlFCPUIElementRelative": "Final Cut Proのユーザーインターフェイス要素を制御する（相対）",
     "controlFCPUIElementRelativeNote": "UIエレメントの上にマウスを置いて、CONTROLを押したまま、MIDIノブ/フェーダーを調整して登録します。",
+    "controlRange": "制御範囲",
     "controlSurfaces": "操縦翼面",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "FinalCutProオーディオインスペクタで音量を制御します",
     "controlsTimelineZoomViaTheAppearancePopup": "外観ポップアップを介してタイムラインズームを制御します",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Tangent Hubをダウンロード",
     "dragAndDropFileAction": "ドラッグ アンド ドロップ ファイル アクション",
     "dragAndDropTextAction": "ドラッグ アンド ドロップ テキスト アクション",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "プロジェクトを Final Cut Pro インターフェイスからドラッグして、ここにドロップします",
     "draggable": "ドラッグ可能",
     "draggableGuides": "ドラッグ可能なガイド",
     "driveManagement": "ドライブ管理",
@@ -1006,9 +1012,12 @@
     "finalcutpro_import_ignorecard_label": "カードを無視する",
     "finalcutpro_import_preferences_label": "インポート設定",
     "finalcutpro_inspector_audio_label": "インスペクター：オーディオ",
+    "finalcutpro_inspector_coloradjustments_label": "インスペクター: カラー調整",
+    "finalcutpro_inspector_colourlabai_label": "インスペクター：カラーラボAi",
     "finalcutpro_inspector_info_label": "インスペクター：情報",
     "finalcutpro_inspector_show_label": "インスペクタ：追加のアクション",
     "finalcutpro_inspector_text_label": "インスペクタ：テキスト",
+    "finalcutpro_inspector_title_label": "検査官: 役職",
     "finalcutpro_inspector_video_label": "インスペクタ：ビデオ",
     "finalcutpro_language_label": "Final Cut Proの言語",
     "finalcutpro_loupedeckplugin_label": "Loupedeckプラグイン",
@@ -1278,6 +1287,8 @@
     "highlights": "ハイライト",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "ハイライトの色合い",
+    "highlightsWarmth": "ハイライトの暖かさ",
     "histogram": "ヒストグラム",
     "history": "歴史",
     "historyIsEmpty": "履歴は空です",
@@ -1396,6 +1407,7 @@
     "keyRepeat": "キーリピート",
     "keyboard": "キーボード",
     "keyboardShortcut": "キーボードショートカット",
+    "keyboardShortcutAlternativeDescription": "別の方法を使用して仮想キーボードの押下をトリガーします (Blender などで使用するため)",
     "keyboardShortcutDescription": "仮想キーボードの押下をトリガーします",
     "keyboardShortcuts": "キーボードショートカット",
     "keyframe": "キーフレーム",
@@ -1418,6 +1430,7 @@
     "learnMore": "もっと詳しく知る",
     "leaveFilesInPlaceOnImport": "インポート時にファイルをそのまま残す",
     "ledAlwaysOn": "LED常時点灯",
+    "ledBrightness": "LEDの明るさ",
     "ledColor": "LEDの色",
     "left": "左",
     "leftDoubleMouseClick": "マウスの左ダブルクリック",
@@ -1450,6 +1463,7 @@
     "location": "ロケーション",
     "long": "長いです",
     "longPress": "長押し",
+    "longPressAction": "長押しアクション",
     "longPressDuration": "長押し時間",
     "look": "見て",
     "loopPlayback": "ループ再生",
@@ -1550,6 +1564,8 @@
     "midtones": "ミドルトン",
     "midtones2": "MT",
     "midtones4": "ミッド",
+    "midtonesTint": "ミッドトーンの色合い",
+    "midtonesWarmth": "中間色の暖かさ",
     "mins": {
         "other": "最小"
     },
@@ -2101,6 +2117,8 @@
     "shadows": "影",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "シャドウティント",
+    "shadowsWarmth": "影の温かさ",
     "share": "シェア",
     "shareDetails_Facebook": "タイプ：Facebook\nログイン：％{login}\nタイトル：％{title}",
     "shareDetails_Tudou": "タイプ：Tudou\nログイン：％{login}\nタイトル：％{title}",
@@ -2116,6 +2134,18 @@
     "sharedPasteboardPathMissing": "共有ペーストボードパスは存在しません。新しい場所を選択しますか？",
     "sharedPasteboardRootFolder": "共有ペーストボードのルートフォルダ",
     "sharp": "シャープ",
+    "shiftAnchorDownPixels": {
+        "other": "アンカーを %{amount} ピクセル下に移動"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "アンカーを %{amount} ピクセル左に移動"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "アンカーを %{amount} ピクセル右に移動"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "アンカーを %{amount} ピクセル上にシフト"
+    },
     "shiftPositionDownPixels": {
         "other": "位置を下にシフト％{amount}ピクセル"
     },
@@ -2140,7 +2170,20 @@
     "shiftScaleUp": {
         "other": "シフトスケールアップ％{amount}ピクセル"
     },
+    "shiftScaleXDown": {
+        "other": "スケール X を %{amount} ピクセル下にシフト"
+    },
+    "shiftScaleXUp": {
+        "other": "スケール X を %{amount} ピクセル上にシフト"
+    },
+    "shiftScaleYDown": {
+        "other": "Y スケールを %{amount} ピクセル下にシフト"
+    },
+    "shiftScaleYUp": {
+        "other": "スケール Y を %{amount} ピクセル分上にシフト"
+    },
     "short": "短い",
+    "shortPressAction": "短押しアクション",
     "shortcutAlreadyInUse": "このショートカットはすでに使用されています。",
     "shortcutAlreadyInUseByMacOS": "このショートカットの組み合わせは、現在MacOSで使用されています（つまり、Screen Capture、Universal Access、およびKeyboard Navigationキーで使用できます）。",
     "shortcutCouldNotBeTriggered": "このショートカットを起動できませんでした。\n\nFinal Cut Proコマンドエディタでトリガしようとしたコマンドに割り当てられた有効なショートカットキーが選択されていることを確認して、もう一度やり直してください。",
@@ -2224,6 +2267,7 @@
     "sonyTimecodeFixerDescriptionThree": "Final Cut Pro から DaVinci Resolve まで。",
     "sonyTimecodeFixerDescriptionTwo": "このツールボックスは、XML サイドカー ファイルからの正しいタイムコード値を使用するように FCPXML を更新し、タイムラインをより簡単に送信できるようにします。",
     "sonyTimecodeRepair": "ソニーのタイムコード修理",
+    "sonyTimecodeRepairDescriptionFive": "このツールボックスは、アリスター ロビーのために一緒に投げられました。 George Elias、Jamie LeJeune、Valerio D'Andrassi に感謝します。",
     "sonyTimecodeRepairDescriptionFour": "このツールボックスは、アリスター ロビーのために一緒に投げられました。ジェイミー・ルジューンをテストしてくれてありがとう！",
     "sonyTimecodeRepairDescriptionOne": "現在、Final Cut Pro は、MP4 ラッパーに記録している特定の Sony カメラからのタイムコードを常に正しく解釈するとは限りません。",
     "sonyTimecodeRepairDescriptionThree": "これにより、Final Cut Pro から DaVinci Resolve、Baselight、または Adobe Premiere (XtoCC を使用) にタイムラインをより簡単に送信できるようになります。",
@@ -2284,6 +2328,8 @@
     "suggestMotionFeatureToApple": "Appleにモーション機能を提案する",
     "support": "サポート",
     "swipe": "スワイプ",
+    "swipeLeftAction": "左スワイプアクション",
+    "swipeRightAction": "右スワイプアクション",
     "switchBetweenInsideOutsideMarks": "内側/外側マスクの切り替え",
     "switchDaVinciResolveControlSurfaceTo": "DaVinciResolveコントロールサーフェスをに切り替えます",
     "switchLoupedeckCTTo": "LoupedeckCTをに切り替えます",

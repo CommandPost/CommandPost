@@ -281,8 +281,7 @@ end
 
 --- plugins.core.action.activator:preloadChoices([afterSeconds]) -> activator
 --- Method
---- Indicates the activator should preload the choices after a number of seconds.
---- Defaults to 0 seconds if no value is provided.
+--- Indicates the activator should preload the choices after a number of seconds. Defaults to 0 seconds if no value is provided.
 ---
 --- Parameters:
 ---  * `afterSeconds`    - The number of seconds to wait before preloading.
@@ -326,8 +325,7 @@ end
 
 --- plugins.core.action.activator:allowHandlers(...) -> self
 --- Method
---- Specifies that only the handlers with the specified IDs will be active in
---- this activator. By default all handlers are allowed.
+--- Specifies that only the handlers with the specified IDs will be active in this activator. By default all handlers are allowed.
 ---
 --- Parameters:
 ---  * `...`     - The list of Handler ID strings to allow.
@@ -404,8 +402,7 @@ end
 
 --- plugins.core.action.activator:enableHandlers(groupID) -> none
 --- Method
---- Enables the all allowed handlers of a specific group, and disables the
---- everything else.
+--- Enables the all allowed handlers of a specific group, and disables the everything else.
 ---
 --- Parameters:
 ---  * groupID - The group ID to enable
@@ -785,8 +782,7 @@ end
 
 --- plugins.core.action.activator:sortChoices() -> boolean
 --- Method
---- Sorts the current set of choices in the activator. It takes into account
---- whether it's a favorite (first priority) and its overall popularity.
+--- Sorts the current set of choices in the activator. It takes into account whether it's a favorite (first priority) and its overall popularity.
 ---
 --- Parameters:
 ---  * None
@@ -802,8 +798,7 @@ end
 
 --- plugins.core.action.activator:allChoices() -> table
 --- Method
---- Returns a table of all available choices, even if hidden. Choices from
---- disabled action handlers are not included.
+--- Returns a table of all available choices, even if hidden. Choices from disabled action handlers are not included.
 ---
 --- Parameters:
 ---  * None
@@ -819,9 +814,7 @@ end
 
 --- plugins.core.action.activator:activeChoices() -> table
 --- Method
---- Returns a table with active choices. If a `query` is set, only choices containing the provided substring are returned.
---- If [showHidden](#showHidden) is set to `true`  hidden
---- items are returned, otherwise they are not.
+--- Returns a table with active choices. If a `query` is set, only choices containing the provided substring are returned. If [showHidden](#showHidden) is set to `true`  hidden items are returned, otherwise they are not.
 ---
 --- Parameters:
 ---  * None
@@ -978,12 +971,12 @@ end
 --- plugins.core.action.activator:refresh() -> none
 --- Method
 --- Clears the existing set of choices and requests new ones from enabled action handlers.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function activator:refresh()
     self._choices = nil
 end
@@ -1354,8 +1347,7 @@ activator._refreshWatchers = {}
 
 --- plugins.core.action.activator:show() -> boolean
 --- Method
---- Shows a chooser listing the available actions. When selected by the user,
---- the [onActivate](#onActivate) function is called.
+--- Shows a chooser listing the available actions. When selected by the user, the [onActivate](#onActivate) function is called.
 ---
 --- Parameters:
 ---  * None
@@ -1484,21 +1476,20 @@ end
 
 --- plugins.core.action.activator:onActivate(activateFn) -> activator
 --- Method
---- Registers the provided function to handle 'activate' actions, when the user selects
---- an item in the main chooser.
----
---- By default, the activator will 'execute' the action, but you can choose to provide an
---- alternative action. It will get passed the `handler` object and the `action` table. Eg:
----
---- ```lua
---- activator:onActivate(function(handler, action))
---- ```
+--- Registers the provided function to handle 'activate' actions, when the user selects an item in the main chooser.
 ---
 --- Parameters:
 ---  * `activateFn`      - The function to call when an item is activated.
 ---
 --- Returns:
 ---  * The activator.
+---
+--- Notes:
+---  * By default, the activator will 'execute' the action, but you can choose to provide an alternative action. It will get passed the `handler` object and the `action` table. Eg:
+---
+--- ```lua
+--- activator:onActivate(function(handler, action))
+--- ```
 function activator:onActivate(activateFn)
     self._onActivate = activateFn
     return self

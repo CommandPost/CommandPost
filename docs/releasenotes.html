@@ -9,6 +9,196 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+            <h1>CommandPost 1.4.26</h1>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>In Final Cut Pro 10.6.6, Apple merged the "Masks" and "Keying" Effects Categories into a single "Masks and Keying" Effects Category, which we never accounted for. CommandPost now correctly applies the "Masks and Keying" effects in Final Cut Pro 10.6.6 and later. However, if you already have a shortcut key or control surface button for any of these actions (such as "Draw Mask"), you may have to select the "Scan Motion Templates" button in the "Final Cut Pro" panel in CommandPost Preferences to re-scan all your effects, then reapply the action to your keyboard shortcut or button. Thanks for reporting Димитър Маратилов!</li>
+			</ul>
+
+    		<hr />
+
+            <h1>CommandPost 1.4.25</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Increased the default number of banks from 15 to 30. Thanks for suggesting Daniel Rejowski!</li>
+                <li>Updated from csv2notion v0.3.9 to CSV2Notion Neo v1.2.1. Thanks Vigneswaran Rajkumar!</li>
+                <li>Added a new "Notion Workspace" field in the Notion & Shot Data Toolboxes. Thanks Vigneswaran Rajkumar!</li>
+			</ul>
+
+    		<hr />
+
+            <h1>CommandPost 1.4.24</h1>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a regression which prevented "Open File or Folder" dialog boxes from opening. Thanks for reporting Jason Sheldon!</li>
+                <li>We've rolled back from CSV2Notion Neo v1.2.0 to csv2notion v0.3.9 for the time being due to some changes in CSV2Notion Neo. Thanks for reporting Vigneswaran Rajkumar!</li>
+			</ul>
+
+    		<hr />
+
+            <h1>CommandPost 1.4.23</h1>
+
+    		<h2>🎉 New Features</h2>
+            <ul>
+                <li>Added actions for the Video Inspector Orientation controls. Thanks for suggesting Holger Kartes!</li>
+                <li>Added support for the latest Stream Deck XL hardware.</li>
+            </ul>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added an explanation as to why CommandPost needs to access data from others apps on macOS Sonoma. CommandPost needs to be able to read files contained in other applications containers. For example, CommandPost's reads the files within Keyboard Maestro's folder to get a list of macros, and within Final Cut Pro's folders to get a list of Share Destinations. You can click 'Allow' to approve permission for this session, or alternatively grant CommandPost 'Full Disk Access' in System Settings to avoid getting this request each time CommandPost restarts.</li>
+                <li>Renamed the "Execute Code" button in the Scripting panel to "Test Snippet" to make it easier to understand what it does.</li>
+                <li>Added a "Open Control Surfaces" button to the Scripting panel. Thanks for suggesting Florian Duffe!</li>
+                <li>Updated from csv2notion v0.3.8 to CSV2Notion Neo v1.2.0. Thanks Vigneswaran Rajkumar!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug where "Titles to Keywords" could fail on some clips from Sync-N-Link. Thanks for reporting Rainer Nigrelli!</li>
+			</ul>
+
+    		<hr />
+
+		    <h1>CommandPost 1.4.22</h1>
+
+		    <h2>🎉 New Features</h2>
+			<ul>
+                <li>Added actions to Toggle Individual Video Inspector Keyframes. Thanks for suggesting Tony Tang, Ernesto Garza & Dani Ditu!</li>
+                <li>Added actions to Monogram Creator to Toggle Individual Video Inspector Keyframes.</li>
+                <li>Added actions to Monogram Creator to control the Video Inspector Distort Controls. Thanks for suggesting Jason McNamara!</li>
+                <li>Added an action to toggle the MotionVFX Title Animation Amount Keyframe.</li>
+                <li>Added an action to Monogram Creator to toggle the MotionVFX Title Animation Amount Keyframe.</li>
+			</ul>
+
+            <hr />
+
+            <h1>CommandPost 1.4.21</h1>
+
+		    <h2>🎉 New Features</h2>
+			<ul>
+                <li>Monogram Favourites has been improved, and there are now seperate actions for Press, Turn Left and Turn Right. This makes it a lot easier to assign whatever you want to a Monogram knob or slider. Thanks for suggesting Jason McNamara!</li>
+                <li>Increased the amount of Monogram Favourites from 20 to 50.</li>
+                <li>Added actions for "MotionVFX Title - Animation Amount". This can be used to control the "Animation Amount" for a lot of MotionVFX's mMusic Video 2 titles. Thanks for suggesting Jason McNamara!</li>
+                <li>Added "Title Inspector > MotionVFX Title > Animation Amount" to Monogram Creator. This can be used to control the "Animation Amount" for a lot of MotionVFX's mMusic Video 2 titles. Thanks for suggesting Jason McNamara!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>The Colour Adjustments actions now only load if you're running Final Cut Pro 10.6.6 or later. This prevents a potential error message from displaying in the Debug Console.</li>
+                <li>Fixed a bug in the "Distort Bottom Right Y" and "Distort Top Right Y" actions. Thanks for reporting Jason McNamara!</li>
+                <li>Updated various website links in CommandPost to point to the new centralised CommandPost website.</li>
+			</ul>
+
+			<hr />
+
+            <h1>CommandPost 1.4.20</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added support for the latest Loupedeck CT hardware. Thanks for reporting Marshall Fife!</li>
+			</ul>
+
+			<hr />
+
+            <h1>CommandPost 1.4.19</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added actions to control all the parameters for a <b>Colourlab Ai</b> Effect in the Final Cut Pro Video Inspector. Thanks for suggesting Jackson Strafford!</li>
+                <li>Added support for Spotlight's <code>fileName</code> and <code>displayName</code> in Final Cut Pro Info Inspector API. Thanks for suggesting pravdomil!</li>
+			</ul>
+
+			<hr />
+
+		    <h1>CommandPost 1.4.18</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added support for FCPXML v1.11.</li>
+                <li>Added actions for Scale X and Scale Y. Thanks for suggesting Undertaker01!</li>
+                <li>Added actions for Color Adjustments.</li>
+                <li>Added a "Search Console" menu item to the top of the menubar for easy access.</li>
+                <li>Updated csv2notion to v0.3.8. Thanks for your amazing work Vladilen Zhdanov!</li>
+			</ul>
+
+			<h2>💪 Changes</h2>
+			<ul>
+                <li>Removed the Vimeo Toolbox. This functionality is now included in Marker Toolbox on the Mac App Store.</li>
+                <li>Updated all the website links to point to the newly designed CommandPost website.</li>
+			</ul>
+
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed the "Set Camera LUT to None" action on macOS Ventura. Thanks for reporting Oli Frost!</li>
+                <li>Fixed the "Player Background" actions. Thanks for reporting Kes Akalaonu!</li>
+                <li>Fixed how we save items to the Pasteboard Buffer. Previously you had to save something to buffer two, before you could save to buffer three, etc. This is now fixed, and you can save and recall from any buffer slot. Thanks for reporting Dimitar Maratilov!</li>
+                <li>Added missing Search Console labels for "Shift Anchor" actions.</li>
+                <li>It seems that version 2 models of the Loupedeck Live, when running the latest firmware, now work the same as a Razer Stream Controller. We now determine which display method to use based on the firmware version. Thanks for reporting Alexander Przemysław Kamiński!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.4.17</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Increase Pasteboard Buffer Actions from 9 to 50. Thanks for suggesting Dimitar Maratilov!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Take 3! It seems we've been playing cat and mouse with Apple. "Save Timeline Index to CSV" should now work on both macOS Monterey and all versions of macOS Ventura. Thanks for reporting Larry Jordan!</li>
+			</ul>
+
+		    <hr />
+
+		    <h1>CommandPost 1.4.16</h1>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Updated from Lua v5.4.3 to v5.4.4. Thanks Chris Jones & Lua Team!</li>
+                <li>The Debug Console is now limited to 100,000 characters by default. Thanks Chris Jones!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed bug in "Select Clip at Lane" actions. Thanks for reporting Christopher Tasti!</li>
+			</ul>
+
+		    <hr />
+
+            <h1>CommandPost 1.4.15</h1>
+
+            <h2>🎉 New Features</h2>
+			<ul>
+                <li>Added support for the Stream Deck Plus.</li>
+                <li>Added support for the latest Stream Deck Mini.</li>
+                <li>Added actions for controlling the Loupedeck Screen and LED brightness. Thanks for suggesting anarchy!</li>
+			</ul>
+
+		    <h2>🔨 Improvements</h2>
+			<ul>
+                <li>Updated csv2notion from v0.3.5 to v0.3.7. Thanks for your amazing work Vladilen Zhdanov!</li>
+                <li>In the Shot Data Toolbox, we now save and restore the "Export Destination" with the settings. Thanks for suggesting Vigneswaran Rajkumar!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug where the clip duration was incorrect when using the Vimeo Toolbox. Thanks for reporting Noah Leon!</li>
+                <li>Fixed a bug which prevented "Reveal in Keyword Collection" actions from working. Thanks for reporting Eric Lami!</li>
+                <li>Fixed a bug in the Titles to Keywords Toolbox where we never considered that a sync-clip might actually contain a spine, if there's a gap clip at the start of the sync-clip. Thanks Olivier Galliano & Sam Pluemacher!</li>
+                <li>Fixed Logic bug in Stream Deck Banks. Thanks aj752!</li>
+                <li>Fixed logic bug in Resolve Control Surface Banks. Thanks KotzendesEinhorn-rgb!</li>
+                <li>Reverted changes we made in v1.4.14 to fix macOS Ventura bugs, as Apple has seemed to fix them in a later Ventura update.</li>
+                <li>Fixed a nil error in the Keywords action within the Loupedeck Plugin if no existing Keyword Shortcuts are allocated.</li>
+			</ul>
+
+		    <hr />
+
 		    <h1>CommandPost 1.4.14</h1>
 
         	<h2>⚠️ Important Changes</h2>

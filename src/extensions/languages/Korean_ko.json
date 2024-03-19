@@ -69,6 +69,7 @@
     "alphaAdd": "알파 추가",
     "alphaAdd9": "알파 추가",
     "alreadyWatched": "이 폴더는 이미 감시 중입니다.",
+    "alternative": "대안",
     "always": "항상",
     "alwaysOnTop": "항상 상단에",
     "ambience": "분위기",
@@ -190,6 +191,7 @@
     "betterPerformance": "더 나은 성능",
     "betterQuality": "더 좋은 품질",
     "black": "검은",
+    "blackPoint": "블랙 포인트",
     "blade": "잎",
     "blendMode": "혼합 모드",
     "blendMode9": "혼합 모드",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "코드는 함수를 반환해야합니다.",
     "cold": "춥다",
     "color": "색깔",
+    "colorAdjustments": "색상 조정",
+    "colorAdjustments_group": "색상 조정",
     "colorAndEffects": "색상 및 효과",
     "colorBoard": "컬러 보드",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Final Cut Pro 사용자 인터페이스 요소 제어 (절대)",
     "controlFCPUIElementRelative": "Final Cut Pro 사용자 인터페이스 요소 제어 (상대)",
     "controlFCPUIElementRelativeNote": "UI 요소 위로 마우스를 가져 가고 CONTROL을 누른 상태에서 MIDI 노브 / 페이더를 조정하여 등록하십시오.",
+    "controlRange": "제어 범위",
     "controlSurfaces": "컨트롤 표면",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Final Cut Pro Audio Inspector에서 볼륨을 제어합니다.",
     "controlsTimelineZoomViaTheAppearancePopup": "Appearance Popup을 통해 타임 라인 확대 / 축소 제어",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "탄젠트 허브 다운로드",
     "dragAndDropFileAction": "드래그 앤 드롭 파일 작업",
     "dragAndDropTextAction": "드래그 앤 드롭 텍스트 작업",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Final Cut Pro 인터페이스에서 프로젝트를 끌어다 여기에 놓습니다.",
     "draggable": "드래그 가능",
     "draggableGuides": "드래그 가능한 가이드",
     "driveManagement": "드라이브 관리",
@@ -1006,9 +1012,12 @@
     "finalcutpro_import_ignorecard_label": "카드 무시",
     "finalcutpro_import_preferences_label": "가져 오기 환경 설정",
     "finalcutpro_inspector_audio_label": "인스펙터 : 오디오",
+    "finalcutpro_inspector_coloradjustments_label": "검사기: 색상 조정",
+    "finalcutpro_inspector_colourlabai_label": "검사기: Colourlab Ai",
     "finalcutpro_inspector_info_label": "인스펙터 : 정보",
     "finalcutpro_inspector_show_label": "인스펙터 : 추가 액션",
     "finalcutpro_inspector_text_label": "인스펙터 : 텍스트",
+    "finalcutpro_inspector_title_label": "검사관: 직함",
     "finalcutpro_inspector_video_label": "인스펙터 : 비디오",
     "finalcutpro_language_label": "Final Cut Pro 언어",
     "finalcutpro_loupedeckplugin_label": "루페덱 플러그인",
@@ -1278,6 +1287,8 @@
     "highlights": "하이라이트",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "하이라이트 틴트",
+    "highlightsWarmth": "하이라이트 따뜻함",
     "histogram": "히스토그램",
     "history": "역사",
     "historyIsEmpty": "역사는 비어있다",
@@ -1396,6 +1407,7 @@
     "keyRepeat": "키 반복",
     "keyboard": "건반",
     "keyboardShortcut": "키보드 단축키",
+    "keyboardShortcutAlternativeDescription": "대체 방법을 사용하여 가상 키보드 누르기를 트리거합니다(Blender 등에서 사용).",
     "keyboardShortcutDescription": "가상 키보드 누르기를 트리거합니다.",
     "keyboardShortcuts": "키보드 단축키",
     "keyframe": "키 프레임",
@@ -1418,6 +1430,7 @@
     "learnMore": "더 알아보기",
     "leaveFilesInPlaceOnImport": "가져올 파일을 그대로 둡니다",
     "ledAlwaysOn": "LED 항상 켜짐",
+    "ledBrightness": "LED 밝기",
     "ledColor": "LED 색상",
     "left": "왼쪽",
     "leftDoubleMouseClick": "왼쪽 더블 마우스 클릭",
@@ -1450,6 +1463,7 @@
     "location": "위치",
     "long": "긴",
     "longPress": "길게 누르기",
+    "longPressAction": "길게 누르기 동작",
     "longPressDuration": "길게 누르기 시간",
     "look": "보기",
     "loopPlayback": "루프 재생",
@@ -1550,6 +1564,8 @@
     "midtones": "중간 톤",
     "midtones2": "산",
     "midtones4": "미드",
+    "midtonesTint": "미드톤 틴트",
+    "midtonesWarmth": "중간톤 따뜻함",
     "mins": {
         "other": "분"
     },
@@ -2101,6 +2117,8 @@
     "shadows": "그림자",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "그림자 색조",
+    "shadowsWarmth": "그림자 따뜻함",
     "share": "공유",
     "shareDetails_Facebook": "유형 : Facebook\n로그인 : %{login}\n제목 : %{title}",
     "shareDetails_Tudou": "유형 : Tudou\n로그인 : %{login}\n제목 : %{title}",
@@ -2116,6 +2134,18 @@
     "sharedPasteboardPathMissing": "공유 보드 경로가 더 이상 존재하지 않습니다. 새로운 위치를 선택 하시겠습니까?",
     "sharedPasteboardRootFolder": "공유 보드 루트 폴더",
     "sharp": "날카로운",
+    "shiftAnchorDownPixels": {
+        "other": "앵커를 %{amount}픽셀 아래로 이동"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "앵커 왼쪽으로 %{amount}픽셀 이동"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "앵커를 %{amount}픽셀 오른쪽으로 이동"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "앵커를 %{amount}픽셀 위로 이동"
+    },
     "shiftPositionDownPixels": {
         "other": "%{amount} 픽셀 아래로 위치 이동"
     },
@@ -2140,7 +2170,20 @@
     "shiftScaleUp": {
         "other": "%{amount} 픽셀 단위로 확대 이동"
     },
+    "shiftScaleXDown": {
+        "other": "비율 X를 %{amount}픽셀 아래로 이동"
+    },
+    "shiftScaleXUp": {
+        "other": "배율 X 위로 %{amount}픽셀 이동"
+    },
+    "shiftScaleYDown": {
+        "other": "비율 Y를 %{amount}픽셀 아래로 이동"
+    },
+    "shiftScaleYUp": {
+        "other": "비율 Y를 %{amount}픽셀 위로 이동"
+    },
     "short": "짧은",
+    "shortPressAction": "짧게 누르기 동작",
     "shortcutAlreadyInUse": "이 단축키는 이미 사용 중입니다.",
     "shortcutAlreadyInUseByMacOS": "이 단축키 조합은 현재 macOS에서 사용 중입니다 (즉, 화면 캡처, 범용 액세스 및 키보드 탐색 키에서 사용될 수 있음).",
     "shortcutCouldNotBeTriggered": "이 바로 가기를 트리거 할 수 없습니다.\n\nFinal Cut Pro Command Editor에서 트리거하려고 시도한 명령에 할당 된 유효한 바로 가기 키를 확인하고 다시 시도하십시오.",
@@ -2224,6 +2267,7 @@
     "sonyTimecodeFixerDescriptionThree": "Final Cut Pro에서 DaVinci Resolve로.",
     "sonyTimecodeFixerDescriptionTwo": "이 도구 상자는 XML 사이드카 파일의 올바른 타임코드 값을 사용하도록 FCPXML을 업데이트하므로 타임라인을 보다 쉽게 보낼 수 있습니다.",
     "sonyTimecodeRepair": "소니 타임코드 수리",
+    "sonyTimecodeRepairDescriptionFive": "이 도구 상자는 Alister Robbie를 위해 함께 던져졌습니다. George Elias, Jamie LeJeune, Valerio D'Andrassi에게 감사드립니다.",
     "sonyTimecodeRepairDescriptionFour": "이 도구 상자는 Alister Robbie를 위해 함께 던져졌습니다. Jamie LeJeune을 테스트해 주셔서 감사합니다!",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro는 현재 MP4 래퍼에 기록 중인 특정 Sony 카메라의 타임코드를 항상 올바르게 해석하지 않습니다.",
     "sonyTimecodeRepairDescriptionThree": "Final Cut Pro에서 DaVinci Resolve, Baselight 또는 Adobe Premiere(XtoCC 포함)로 타임라인을 보다 쉽게 보낼 수 있습니다.",
@@ -2284,6 +2328,8 @@
     "suggestMotionFeatureToApple": "Apple에 모션 기능 제안",
     "support": "지원하다",
     "swipe": "강타",
+    "swipeLeftAction": "왼쪽으로 스와이프 동작",
+    "swipeRightAction": "오른쪽으로 스와이프 동작",
     "switchBetweenInsideOutsideMarks": "내부 / 외부 마스크 간 전환",
     "switchDaVinciResolveControlSurfaceTo": "DaVinci Resolve 컨트롤 표면을 다음으로 전환",
     "switchLoupedeckCTTo": "Loupedeck CT를",

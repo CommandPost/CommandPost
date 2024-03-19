@@ -15,10 +15,10 @@
 --- ```
 ---
 --- This will return a table containing the following:
---- * `alpha2`      - The 2-character region code, upper-case (eg. "AU", "FR").
---- * `name`        - The name in English (eg. "Australia", "France").
+---  * `alpha2`      - The 2-character region code, upper-case (eg. "AU", "FR").
+---  * `name`        - The name in English (eg. "Australia", "France").
 ---
---- Note: This data was adapted from the [datahub.io list](https://datahub.io/core/country-list)
+--- Notes: This data was adapted from the [datahub.io list](https://datahub.io/core/country-list)
 --- released under a Public Domain license.
 
 local region = {

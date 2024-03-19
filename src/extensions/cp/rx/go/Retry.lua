@@ -13,17 +13,18 @@ local toObservable      = Statement.toObservable
 --- Constructor
 --- Creates a new `Retry` `Statement` that will retry the `resolveable` if it emits an error.
 ---
---- Example:
----
---- ```lua
---- Retry(someObservable)
---- ```
----
 --- Parameters:
 ---  * resolvable  - a `resolvable` value, which will be retried if it sends an `error` signal.
 ---
 --- Returns:
 ---  * The `Statement`.
+---
+--- Notes:
+---  * Example:
+---
+--- ```lua
+--- Retry(someObservable)
+--- ```
 local Retry = Statement.named("Retry")
 :onInit(function(context, resolvable)
     assert(resolvable ~= nil, "The `resolvable` may not be `nil`.")

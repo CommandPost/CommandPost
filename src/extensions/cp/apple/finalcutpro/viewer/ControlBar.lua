@@ -35,10 +35,10 @@ local ControlBar = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar")
 --- Checks if the element is a `ControlBar` instance.
 ---
 --- Parameters:
---- * element       - The `axuielement` to check.
+---  * element       - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it matches the pattern for a `Viewer` `ControlBar`.
+---  * `true` if it matches the pattern for a `Viewer` `ControlBar`.
 function ControlBar.static.matches(element)
     if Group.matches(element) and #element >= 4 then
         -- Note: sorting right-to-left

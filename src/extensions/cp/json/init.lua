@@ -19,12 +19,10 @@ local mod = {}
 
 --- cp.json.read(path) -> table | nil
 --- Function
---- Attempts to read the specified path as a JSON file.
---- If the file cannot be found, `nil` is returned. If the file is
---- not a JSON file, an error will occur.
+--- Attempts to read the specified path as a JSON file. If the file cannot be found, `nil` is returned. If the file is not a JSON file, an error will occur.
 ---
 --- Parameters:
----  * path      - The JSON file path.
+---  * path - The JSON file path.
 ---
 --- Returns:
 ---  * The JSON file converted into table, or `nil`.

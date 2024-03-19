@@ -69,6 +69,7 @@
     "alphaAdd": "Alpha Tilføj",
     "alphaAdd9": "Alpha Tilføj",
     "alreadyWatched": "Denne mappe overvåges allerede.",
+    "alternative": "Alternativ",
     "always": "Altid",
     "alwaysOnTop": "Altid på toppen",
     "ambience": "Ambience",
@@ -190,6 +191,7 @@
     "betterPerformance": "Bedre ydeevne",
     "betterQuality": "Bedre kvalitet",
     "black": "Sort",
+    "blackPoint": "Sort punkt",
     "blade": "Klinge",
     "blendMode": "Blendtilstand",
     "blendMode9": "BlendMode",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Koden skal returnere en funktion.",
     "cold": "Kold",
     "color": "Farve",
+    "colorAdjustments": "Farvejusteringer",
+    "colorAdjustments_group": "Farvejusteringer",
     "colorAndEffects": "Farve & effekter",
     "colorBoard": "Farvebræt",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Kontrol Final Cut Pro brugergrænsefladeelement (absolut)",
     "controlFCPUIElementRelative": "Kontrol Final Cut Pro brugergrænsefladeelement (relativ)",
     "controlFCPUIElementRelativeNote": "Hold musen hen over et UI-element, hold CONTROL, og juster derefter MIDI-drejeknappen / Fader for at registrere.",
+    "controlRange": "Kontrolområde",
     "controlSurfaces": "Kontrol overflader",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Styrer lydstyrken i Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Styrer tidslinjens zoom via pop-up-udseendet",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Download Tangent Hub",
     "dragAndDropFileAction": "Træk og slip filhandling",
     "dragAndDropTextAction": "Træk og slip teksthandling",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Træk dit projekt fra Final Cut Pro-grænsefladen og slip her",
     "draggable": "Draggable",
     "draggableGuides": "Trækbare guider",
     "driveManagement": "Drive Management",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "Ignorer kort",
     "finalcutpro_import_preferences_label": "Importpræferencer",
     "finalcutpro_inspector_audio_label": "Inspektør: Audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspektør: Farvejusteringer",
+    "finalcutpro_inspector_colourlabai_label": "Inspektør: Colourlab Ai",
     "finalcutpro_inspector_info_label": "Inspektør: Info",
     "finalcutpro_inspector_show_label": "Inspektør: Yderligere handlinger",
     "finalcutpro_inspector_text_label": "Inspektør: Tekst",
+    "finalcutpro_inspector_title_label": "Inspektør: Titel",
     "finalcutpro_inspector_video_label": "Inspektør: Video",
     "finalcutpro_language_label": "Final Cut Pro-sprog",
     "finalcutpro_loupedeckplugin_label": "Loupedeck plugin",
@@ -1282,6 +1291,8 @@
     "highlights": "Højdepunkter",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Fremhæver Tint",
+    "highlightsWarmth": "Fremhæver varme",
     "histogram": "Histogram",
     "history": "Historie",
     "historyIsEmpty": "Historik er tom",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "Gentag nøgle",
     "keyboard": "Tastatur",
     "keyboardShortcut": "Tastaturgenvej",
+    "keyboardShortcutAlternativeDescription": "Udløser et virtuelt tastaturtryk ved hjælp af en alternativ metode (til brug i Blender osv.)",
     "keyboardShortcutDescription": "Udløser en virtuel tastaturpresse",
     "keyboardShortcuts": "Tastaturgenveje",
     "keyframe": "keyframe",
@@ -1423,6 +1435,7 @@
     "learnMore": "Lær mere",
     "leaveFilesInPlaceOnImport": "Lad filer være på plads ved import",
     "ledAlwaysOn": "LED altid tændt",
+    "ledBrightness": "LED lysstyrke",
     "ledColor": "LED-farve",
     "left": "Venstre",
     "leftDoubleMouseClick": "Venstre dobbelt museklik",
@@ -1455,6 +1468,7 @@
     "location": "Beliggenhed",
     "long": "Lang",
     "longPress": "Langt tryk",
+    "longPressAction": "Lang tryk handling",
     "longPressDuration": "Lang trykvarighed",
     "look": "Se",
     "loopPlayback": "Loop-afspilning",
@@ -1555,6 +1569,8 @@
     "midtones": "mellemtoner",
     "midtones2": "MT",
     "midtones4": "mids",
+    "midtonesTint": "Mellemtoner Tint",
+    "midtonesWarmth": "Mellemtoner Varme",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2109,6 +2125,8 @@
     "shadows": "Skygger",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "Shadows Tint",
+    "shadowsWarmth": "Skygger Varme",
     "share": "Del",
     "shareDetails_Facebook": "Type: Facebook\nLogin: %{login}\nTitel: %{title}",
     "shareDetails_Tudou": "Type: Tudou\nLogin: %{login}\nTitel: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "Stien til delt pasteboard findes ikke længere. Vil du vælge en ny placering?",
     "sharedPasteboardRootFolder": "Delt pasteboard rodmappe",
     "sharp": "Skarp",
+    "shiftAnchorDownPixels": {
+        "one": "Flyt anker ned med %{amount} Pixel",
+        "other": "Flyt anker ned med %{amount} Pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Skift anker til venstre med %{amount} Pixel",
+        "other": "Skift anker til venstre med %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Skift anker til højre med %{amount} Pixel",
+        "other": "Skift anker til højre med %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Flyt ankeret op med %{amount} Pixel",
+        "other": "Flyt ankeret op med %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "one": "Skift position ned %{amount} Pixel",
         "other": "Skift position ned %{amount} Pixels"
@@ -2156,7 +2190,24 @@
         "one": "Skift skalering op med %{amount} Pixel",
         "other": "Skift skalering op med %{amount} Pixels"
     },
+    "shiftScaleXDown": {
+        "one": "Skift skaler X ned med %{amount} Pixel",
+        "other": "Skift skaler X ned med %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "one": "Skift skala X op med %{amount} Pixel",
+        "other": "Skift skala X op med %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "one": "Skift skaler Y ned med %{amount} Pixel",
+        "other": "Skift skaler Y ned med %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "one": "Skift skala Y op med %{amount} Pixel",
+        "other": "Skift skala Y op med %{amount} Pixel"
+    },
     "short": "Kort",
+    "shortPressAction": "Kort pressehandling",
     "shortcutAlreadyInUse": "Denne genvej er allerede i brug.",
     "shortcutAlreadyInUseByMacOS": "Denne genvejskombination er i øjeblikket i brug af macOS (dvs. den kunne bruges af skærmfangst, Universal Access og tastaturnavigationstaster).",
     "shortcutCouldNotBeTriggered": "Denne genvej kunne ikke udløses.\n\nKontroller, at du har gyldige genvejstaster, der er tildelt den kommando, du har prøvet at udløse i Final Cut Pro Command Editor, og prøv igen.",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "fra Final Cut Pro til DaVinci Resolve.",
     "sonyTimecodeFixerDescriptionTwo": "Denne værktøjskasse vil opdatere en FCPXML til at bruge de korrekte tidskodeværdier fra XML-sidevognsfilen, så du nemmere kan sende tidslinjer",
     "sonyTimecodeRepair": "Sony Timecode Reparation",
+    "sonyTimecodeRepairDescriptionFive": "Denne værktøjskasse blev smidt sammen til Alister Robbie. Tak George Elias, Jamie LeJeune & Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Denne værktøjskasse blev smidt sammen til Alister Robbie. Tak fordi du testede Jamie LeJeune!",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro fortolker i øjeblikket ikke altid korrekt tidskode fra visse Sony-kameraer, der optager i en MP4-indpakning.",
     "sonyTimecodeRepairDescriptionThree": "så du nemmere kan sende tidslinjer fra Final Cut Pro til DaVinci Resolve, Baselight eller Adobe Premiere (med XtoCC).",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "Foreslå bevægelsesfunktion til Apple",
     "support": "Support",
     "swipe": "Stryg",
+    "swipeLeftAction": "Stryg til venstre handling",
+    "swipeRightAction": "Stryg til højre handling",
     "switchBetweenInsideOutsideMarks": "Skift mellem indvendige / udvendige masker",
     "switchDaVinciResolveControlSurfaceTo": "Skift DaVinci Resolve Control Surface til",
     "switchLoupedeckCTTo": "Skift Loupedeck CT til",

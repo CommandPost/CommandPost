@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.CaptionsRole ==
 ---
---- *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
+---  *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
 ---
 --- A [Role](cp.apple.finalcutpro.timeline.Role.md) representing Captions.
 
@@ -38,11 +38,11 @@ end
 --- Creates a new instance with the specified `parent` and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+---  * parent - the parent `Element`.
+---  * uiFinder - a `function` or `cp.prop` containing the `axuielement`
 ---
 --- Returns:
---- * The new `Row`.
+---  * The new `Row`.
 function CaptionsRole:initialize(parent, uiFinder)
     Role.initialize(self, parent, uiFinder, Role.TYPE.CAPTION)
 end

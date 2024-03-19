@@ -81,8 +81,7 @@ end)
 
 --- cp.rx.go.Do:Then(...) -> Do.Then
 --- Method
---- Call this to define what will happen once the `Do` values resolve successfully.
---- The parameters can be any 'resolvable' type.
+--- Call this to define what will happen once the `Do` values resolve successfully. The parameters can be any 'resolvable' type.
 ---
 --- Parameters:
 ---  * ...  - The list of `resolvable` values to process for each `Do` result.

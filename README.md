@@ -1,4 +1,4 @@
-<a href="http://commandpost.io/" ><img src="https://github.com/CommandPost/CommandPost-Website/blob/master/assets/images/CommandPost_512x512@2x.png" align="right"  width="15%" height="15%" /> </a>
+<a href="http://commandpost.io/" ><img src="https://commandpost.io/static/logo.png" align="right"  width="15%" height="15%" /> </a>
 
 # [CommandPost](http://commandpost.io/)
 [![Latest-Release](https://img.shields.io/github/v/release/CommandPost/CommandPost?include_prereleases)](https://github.com/CommandPost/CommandPost/releases) [![Platform](https://img.shields.io/badge/platform-MacOS-lightgrey.svg)](https://commandpost.io/#system-requirements) [![Website](https://img.shields.io/website?down_message=offline&up_message=online&url=https%3A%2F%2Fcommandpost.io)](https://commandpost.io/)
@@ -14,15 +14,15 @@ With the addition of a powerful plugin architecture, the aim of CommandPost is t
 
 ## Download:
 
-You can Download CommandPost [here](https://commandpost.io/#download).
+You can Download CommandPost [here](https://commandpost.io/download/).
 
 ## User Guide:
 
-You can access the User Guide [here](http://help.commandpost.io/).
+You can access the User Guide [here](https://commandpost.io).
 
 ## Developer Guide:
 
-You can access the Developer Guide [here](http://dev.commandpost.io/). This includes information on Installation & Usage.  
+You can access the Developer Guide [here](https://commandpost.io/developer/introduction/). This includes information on Installation & Usage.  
 [![Contributors](https://img.shields.io/github/contributors/CommandPost/CommandPost.svg)](https://github.com/CommandPost/CommandPost/graphs/contributors)
 
 You can participate in the translation [here](https://poeditor.com/join/project/QWvOQlF1Sy).  
@@ -33,6 +33,6 @@ You can also read our Developer Code of Conduct [here](https://github.com/Comman
 
 ## Sponsor:
 
-To help continue CommandPost to grow, evolve, and stay completely free and open-source, we offer the ability to [sponsor CommandPost directly through GitHub](https://github.com/sponsors/commandpost).
+To help continue CommandPost to grow, evolve, and stay completely free and open-source you can find out how to sponsor CommandPost [here](https://commandpost.io/sponsor/).
 
 

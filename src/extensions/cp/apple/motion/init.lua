@@ -65,7 +65,7 @@ prop.bind(motion) {
     --- Field
     --- Is a supported version of Final Cut Pro installed?
     ---
-    --- Note:
+    --- Notes:
     ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.motion.EARLIEST_SUPPORTED_VERSION`
     isSupported = app.version:mutate(function(original)
         local version = original()
@@ -111,10 +111,10 @@ end
 --- Returns a notifier that is tracking the application UI element. It has already been started.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The notifier.
+---  * The notifier.
 function motion:notifier()
     return self.app:notifier()
 end

@@ -77,10 +77,10 @@ end
 --- Returns a `Statement` that will select the toolbar item with the specified title.
 ---
 --- Parameters:
---- * title - The title to select, if present.
+---  * title - The title to select, if present.
 ---
 --- Returns:
---- * A `Statement` that when executed returns `true` if the item was found and selected, otherwise `false`.
+---  * A `Statement` that when executed returns `true` if the item was found and selected, otherwise `false`.
 function Toolbar:doSelect(title)
     return Do(self:doShow())
     :Then(function()

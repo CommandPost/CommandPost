@@ -33,7 +33,7 @@ local mod = {}
 --- plugins.core.controlsurfaces.manager.NUMBER_OF_BANKS -> number
 --- Constant
 --- Number of banks.
-mod.NUMBER_OF_BANKS = 15
+mod.NUMBER_OF_BANKS = 30
 
 --- plugins.core.controlsurfaces.manager.NUMBER_OF_DEVICES -> number
 --- Constant
@@ -164,10 +164,10 @@ end
 --- Returns the panel ID with the highest priority.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The panel ID as a string
+---  * The panel ID as a string
 function mod.currentPanelID()
     local id = mod.lastTab()
     if id and isPanelIDValid(id) then

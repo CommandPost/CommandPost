@@ -91,8 +91,7 @@ end
 
 --- cp.result.from(value, err) -> result
 --- Constructor
---- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua.
---- If the `err` value is not `nil`, it will result in a `failure`, otherwise the `value` is passed to a `success`.
+--- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua. If the `err` value is not `nil`, it will result in a `failure`, otherwise the `value` is passed to a `success`.
 ---
 --- Parameters:
 ---  * value - The value if successful.
@@ -110,8 +109,7 @@ end
 
 --- cp.result.valueErr(value, err) -> result
 --- Constructor
---- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua.
---- If the `err` is not `nil` it will result in a `failure` with the message, otherwise the `value` is passed to a `success`.
+--- Provides a simple wrapper for the common `value, err` pattern of function error handling in Lua. If the `err` is not `nil` it will result in a `failure` with the message, otherwise the `value` is passed to a `success`.
 ---
 --- Parameters:
 ---  * value - The value if successful.
@@ -181,8 +179,7 @@ end
 
 --- cp.result:log([context]) -> cp.result
 --- Method
---- Logs the result to either the default channel (if `success`) or error channel (if `failure`),
---- with the `context` string (if provided).
+--- Logs the result to either the default channel (if `success`) or error channel (if `failure`), with the `context` string (if provided).
 ---
 --- Parameters:
 ---  * context - A `string` that provides context for the logged value.

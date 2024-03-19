@@ -50,10 +50,10 @@ local ColorCurves = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorCu
 --- Checks if the specified element is the Color Curves element.
 ---
 --- Parameters:
---- * element	- The element to check
+---  * element	- The element to check
 ---
 --- Returns:
---- * `true` if the element is the Color Curves.
+---  * `true` if the element is the Color Curves.
 function ColorCurves.static.matches(element)
     if Group.matches(element) and #element == 1 and Group.matches(element[1])
     and #element[1] == 1 and ScrollArea.matches(element[1][1]) then

@@ -26,15 +26,15 @@ local defaultOptions = {
 --- Checks if the provided value matches the search string, given the provided options.
 ---
 --- Parameters:
---- * value         - The value to check.
---- * searchString  - The string values to match.
---- * options       - The table of options.
+---  * value         - The value to check.
+---  * searchString  - The string values to match.
+---  * options       - The table of options.
 ---
 --- Returns:
---- * `true` if the value matches the search string
+---  * `true` if the value matches the search string
 ---
 --- Notes:
---- * Supported options:
+---  * Supported options:
 ---     * caseSensitive - If `true`, the case in the search string must match the value.
 ---     * exact         - If `true`, the search string must match exactly somewhere within the value. If `false`, words separated by spaces can appear anywhere in the value.
 ---     * wholeWords    - If `true`, either the whole string (if `exact` is `true`) or each word (if `exact` is false) must match at word boundaries.

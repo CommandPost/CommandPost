@@ -68,7 +68,7 @@ function PopUpButton.lazy.prop:value()
                             return
                         end
                     end
-                    items:doCancel()
+                    items:performAction("AXCancel")
                 end
             end
         end

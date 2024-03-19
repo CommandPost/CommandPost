@@ -238,9 +238,7 @@ end
 
 --- cp.apple.finalcutpro.main.Browser:doShow() -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that will ensure the Browser is showing.
---- If it's currently showing on the Secondary Screen it will stay there, otherwise
---- it will get shown on the Primary Screen.
+--- A [Statement](cp.rx.go.Statement.md) that will ensure the Browser is showing. If it's currently showing on the Secondary Screen it will stay there, otherwise it will get shown on the Primary Screen.
 ---
 --- Parameters:
 ---  * None

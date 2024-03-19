@@ -45,10 +45,10 @@ end
 --- Constructs a new "Clip Appearance & Filtering Menu" popover.
 ---
 --- Parameters:
---- * parent - The parent object
+---  * parent - The parent object
 ---
 --- Returns:
---- * The new `AppearanceAndFiltering` instance.
+---  * The new `AppearanceAndFiltering` instance.
 function AppearanceAndFiltering:initialize(parent)
     local UI = parent.UI:mutate(function(original)
         return cache(self, "_ui", function()

@@ -300,20 +300,21 @@ end
 --- cp.plugins.initPlugin(id) -> module
 --- Function
 --- Initialises a specific plugin with the specified path.
---- The plugin will only be loaded once, and the result of its `init(...)` function
---- will be cached for future calls.
----
---- Eg:
----
---- ```
---- plugins.initPlugin("cp.plugins.test.helloworld")
---- ```
 ---
 --- Parameters:
 ---  * `id` - The LUA package to look in
 ---
 --- Returns:
 ---  * the result of the plugin's `init(...)` function call.
+---
+--- Notes:
+---  * The plugin will only be loaded once, and the result of its `init(...)` function will be cached for future calls.
+---
+--- Eg:
+---
+--- ```
+--- plugins.initPlugin("cp.plugins.test.helloworld")
+--- ```
 function mod.initPlugin(id)
     -- log.df("Loading plugin '%s'", id)
     local startTime = clock()
@@ -446,7 +447,7 @@ function mod.loadDependencies(thePlugin)
     return dependencies
 end
 
---- cp.plugins.addDependent(id) -> none
+--- cp.plugins.addDependent(id, dependentPlugin) -> none
 --- Function
 --- Adds the `dependentPlugin` as a dependent of the plugin with the specified id.
 ---
@@ -468,7 +469,7 @@ end
 --- Retrieves the list of dependent plugins for the specified plugin id.
 ---
 --- Parameters:
---- * `id`      - The plugin ID.
+---  * `id`      - The plugin ID.
 ---
 --- Returns:
 ---  * The table of dependents.
@@ -559,8 +560,7 @@ end
 
 --- cp.plugins.isDisabled(id) -> boolean
 --- Function
---- Checks if the specified plugin ID is disabled.
---- Plugins are enabled by default.
+--- Checks if the specified plugin ID is disabled. Plugins are enabled by default.
 ---
 --- Parameters:
 ---  * `id` - The plugin package ID.
@@ -595,8 +595,7 @@ end
 
 --- cp.plugins.postInitPlugin(id) -> boolean
 --- Function
---- Runs any post-initialisation functions declared for the specified plugin ID.
---- Any dependencies will be post-initialised prior to the plugin being post-initialised.
+--- Runs any post-initialisation functions declared for the specified plugin ID. Any dependencies will be post-initialised prior to the plugin being post-initialised.
 ---
 --- Parameters:
 ---  * `id` - The plugin package ID.
@@ -654,20 +653,21 @@ end
 --- cp.plugins.init(paths) -> cp.plugins
 --- Function
 --- Initialises the plugin loader to look in the specified file paths for plugins.
---- Plugins in earlier packages will take precedence over those in later paths, if
---- there are duplicates.
----
---- Eg:
----
---- ```lua
---- plugins.init({"~/Library/Application Support/CommandPost/Plugins"})
---- ```
 ---
 --- Parameters:
 ---  * `paths` - An array of paths to search for plugins in.
 ---
 --- Returns:
 ---  * `cp.plugins` - The module.
+---
+--- Notes:
+---  * Plugins in earlier packages will take precedence over those in later paths, if there are duplicates.
+---
+--- Eg:
+---
+--- ```lua
+--- plugins.init({"~/Library/Application Support/CommandPost/Plugins"})
+--- ```
 function mod.init(paths)
 
     mod.paths = fnutils.copy(paths)
@@ -717,17 +717,16 @@ end
 
 --- cp.plugins.scanDirectory(directoryPath) -> cp.plugins
 --- Function
---- Scans the specified directory and loads any plugins in the directory,
---- along with any in sub-directories.
----
---- Plugins can be simple or complex. Simple plugins are a single `*.lua` file,
---- not named `init.lua`. Complex plugins are folders containing an `init.lua` file.
+--- Scans the specified directory and loads any plugins in the directory, along with any in sub-directories.
 ---
 --- Parameters:
 ---  * `directoryPath` - The path to the directory to scan.
 ---
 --- Returns:
 ---  * boolean - `true` if the path was loaded successfully, false if there were any issues.
+---
+--- Notes:
+---  * Plugins can be simple or complex. Simple plugins are a single `*.lua` file, not named `init.lua`. Complex plugins are folders containing an `init.lua` file.
 function mod.scanDirectory(directoryPath)
     -- log.df("Scanning directory: %s", directoryPath)
     local path = fs.pathToAbsolute(directoryPath)
@@ -811,21 +810,21 @@ end
 --- cp.plugins.loadComplexPlugin(path) -> plugin
 --- Function
 --- Loads a 'complex' plugin, which is a folder containing an `init.lua` file.
---- Complex plugins can also have other resources, accessible via an `cp.plugins.env` parameter
---- passed to the `init()` function. For example, an image stored in the `images` folder
---- inside the plugin can be accessed via:
----
---- ```lua
---- function plugin.init(dependencies, env)
----     local imagePath = env:pathToAbsolute("image/example.jpg")
---- end
---- ```
 ---
 --- Parameters:
 ---  * `path` - The plugin package ID.
 ---
 --- Returns:
 ---  * `true` if the plugin is successfully post-initialised.
+---
+--- Notes:
+---  * Complex plugins can also have other resources, accessible via an `cp.plugins.env` parameter passed to the `init()` function. For example, an image stored in the `images` folder inside the plugin can be accessed via:
+---
+--- ```lua
+--- function plugin.init(dependencies, env)
+---     local imagePath = env:pathToAbsolute("image/example.jpg")
+--- end
+--- ```
 function mod.loadComplexPlugin(path)
     local initFile = fs.pathToAbsolute(path .. "/init.lua")
     if not initFile then

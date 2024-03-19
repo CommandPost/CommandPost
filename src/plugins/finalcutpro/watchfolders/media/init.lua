@@ -108,10 +108,15 @@ function mod.saveMediaFolders()
     savedMediaFolders(details)
 end
 
---- plugins.finalcutpro.watchfolders.media.loadMediaFolders()
+--- plugins.finalcutpro.watchfolders.media.loadMediaFolders() -> none
 --- Function
---- Loads the MediaFolder list from storage. Any existing MediaFolder instances
---- will be destroyed before loading.
+--- Loads the MediaFolder list from storage. Any existing MediaFolder instances will be destroyed before loading.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.loadMediaFolders()
     if mediaFolders then
         for _,folder in ipairs(mediaFolders) do

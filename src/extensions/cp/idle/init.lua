@@ -47,17 +47,15 @@ checkTimer = timer.new(1, checkQueue, true)
 
 --- cp.idle.queue(idleSeconds, actionFn[, retryOnError]) -> nothing
 --- Function
---- Adds an action to the idle queue, which will be run after the the computer has been idle
---- for at least the specified number of seconds. It may be longer, if other items are on the queue,
---- or if other tasks are running in the application.
+--- Adds an action to the idle queue, which will be run after the the computer has been idle for at least the specified number of seconds. It may be longer, if other items are on the queue, or if other tasks are running in the application.
 ---
 --- Parameters:
---- * `idleSeconds`		- The number of seconds of idle time must have elapsed run the action
---- * `actionFn`		- The function to execute
---- * `retryOnError`	- Optional. If set to `true`, the action will try running again if there is an error.
+---  * `idleSeconds`		- The number of seconds of idle time must have elapsed run the action
+---  * `actionFn`		- The function to execute
+---  * `retryOnError`	- Optional. If set to `true`, the action will try running again if there is an error.
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function mod.queue(idleSeconds, actionFn, retryOnError)
     insert(queue, {seconds = idleSeconds, action = actionFn, retryOnError = retryOnError})
     if not checkTimer:running() then

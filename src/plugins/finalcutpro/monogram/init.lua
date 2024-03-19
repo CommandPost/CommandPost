@@ -614,6 +614,25 @@ function mod._registerActions(manager)
     registerAction("Timeline.Clip Height", makeTimelineClipHeightHandler())
 
     --------------------------------------------------------------------------------
+    -- Toggle Keyframes:
+    --------------------------------------------------------------------------------
+    registerAction("Video Inspector.Compositing.Opacity.Toggle Keyframe", function() fcp.inspector.video:compositing():opacity():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Transform.Position.Toggle Keyframe", function() fcp.inspector.video:transform():position():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Transform.Rotation.Toggle Keyframe", function() fcp.inspector.video:transform():rotation():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Transform.Scale All.Toggle Keyframe", function() fcp.inspector.video:transform():scaleAll():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Transform.Scale X.Toggle Keyframe", function() fcp.inspector.video:transform():scaleX():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Transform.Scale Y.Toggle Keyframe", function() fcp.inspector.video:transform():scaleY():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Transform.Anchor.Toggle Keyframe", function() fcp.inspector.video:transform():anchor():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Crop.Left.Toggle Keyframe", function() fcp.inspector.video:crop():left():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Crop.Right.Toggle Keyframe", function() fcp.inspector.video:crop():right():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Crop.Top.Toggle Keyframe", function() fcp.inspector.video:crop():top():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Crop.Bottom.Toggle Keyframe", function() fcp.inspector.video:crop():bottom():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Distort.Bottom Left.Toggle Keyframe", function() fcp.inspector.video:distort():bottomLeft():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Distort.Bottom Right.Toggle Keyframe", function() fcp.inspector.video:distort():bottomRight():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Distort.Top Right.Toggle Keyframe", function() fcp.inspector.video:distort():topRight():show():keyframe():addKeyframe() end)
+    registerAction("Video Inspector.Distort.Top Left.Toggle Keyframe", function() fcp.inspector.video:distort():topLeft():show():keyframe():addKeyframe() end)
+
+    --------------------------------------------------------------------------------
     -- Colour Wheel Controls:
     --------------------------------------------------------------------------------
     local colourWheels = {
@@ -690,6 +709,19 @@ function mod._registerActions(manager)
     registerAction("Video Inspector.Crop.Crop Right", makeSliderHandler(function() return fcp.inspector.video.crop():right() end))
     registerAction("Video Inspector.Crop.Crop Top", makeSliderHandler(function() return fcp.inspector.video.crop():top() end))
     registerAction("Video Inspector.Crop.Crop Bottom", makeSliderHandler(function() return fcp.inspector.video.crop():bottom() end))
+
+    registerAction("Video Inspector.Distort.Distort Bottom Left X", makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().x end))
+    registerAction("Video Inspector.Distort.Distort Bottom Left Y", makeSliderHandler(function() return fcp.inspector.video.distort():bottomLeft().y end))
+
+    registerAction("Video Inspector.Distort.Distort Bottom Right X", makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().x end))
+    registerAction("Video Inspector.Distort.Distort Bottom Right Y", makeSliderHandler(function() return fcp.inspector.video.distort():bottomRight().y end))
+
+    registerAction("Video Inspector.Distort.Distort Top Right X", makeSliderHandler(function() return fcp.inspector.video.distort():topRight().x end))
+    registerAction("Video Inspector.Distort.Distort Top Right Y", makeSliderHandler(function() return fcp.inspector.video.distort():topRight().y end))
+
+    registerAction("Video Inspector.Distort.Distort Top Left X", makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().x end))
+    registerAction("Video Inspector.Distort.Distort Top Left Y", makeSliderHandler(function() return fcp.inspector.video.distort():topLeft().y end))
+
 
     for _, v in pairs(fcp.inspector.video.BLEND_MODES) do
         if v.flexoID then
@@ -1712,6 +1744,12 @@ function mod._registerActions(manager)
     registerAction("Command Set Shortcuts.General.Send IMF Package to Compressor", makeShortcutHandler(function() return "SendIMFPackageToCompressor" end))
     registerAction("Command Set Shortcuts.Effects.Add Color Wheels Effect", makeShortcutHandler(function() return "AddColorWheelsEffect" end))
 
+    --------------------------------------------------------------------------------
+    -- MotionVFX - Title - Animation Amount - Monogram Actions:
+    --------------------------------------------------------------------------------
+    registerAction("Title Inspector.MotionVFX Title.Animation Amount", makeSliderHandler(function() return mod.titleManager.motionVFXAnimationAmountSlider end))
+    registerAction("Title Inspector.MotionVFX Title.Animation Amount.Toggle Keyframe", mod.titleManager.toggleMotionVFXAnimationAmountKeyframe)
+
 end
 
 -- plugins.core.monogram.manager._buildMenuItems() -> none
@@ -1766,6 +1804,7 @@ local plugin = {
     required    = true,
     dependencies    = {
         ["core.monogram.manager"] = "manager",
+        ["finalcutpro.inspector.title"] = "titleManager",
     }
 }
 
@@ -1780,6 +1819,11 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local manager = deps.manager
     local registerPlugin = manager.registerPlugin
+
+    --------------------------------------------------------------------------------
+    -- Link to Title Dependency:
+    --------------------------------------------------------------------------------
+    mod.titleManager = deps.titleManager
 
     --------------------------------------------------------------------------------
     -- Register the plugin:

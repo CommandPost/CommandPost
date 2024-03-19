@@ -139,8 +139,7 @@ end
 
 --- cp.ui.DisclosureTriangle:doPress() -> cp.rx.go.Statement
 --- Method
---- Returns a `Statement` that will press the button when executed, if available at the time.
---- If not an `error` is sent.
+--- Returns a `Statement` that will press the button when executed, if available at the time. If not an `error` is sent.
 ---
 --- Parameters:
 ---  * None
@@ -199,8 +198,7 @@ end
 
 --- cp.ui.DisclosureTriangle:saveLayout() -> table
 --- Method
---- Returns a table containing the layout settings.
---- This table may be passed to the `loadLayout` method to restore the saved layout.
+--- Returns a table containing the layout settings. This table may be passed to the `loadLayout` method to restore the saved layout.
 ---
 --- Parameters:
 ---  * None
@@ -218,7 +216,7 @@ end
 --- Applies the settings in the provided layout table.
 ---
 --- Parameters:
----  * layout		- The table containing layout settings. Usually created by the `saveLayout` method.
+---  * layout - The table containing layout settings. Usually created by the `saveLayout` method.
 ---
 --- Returns:
 ---  * nil

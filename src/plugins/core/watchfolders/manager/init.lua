@@ -232,10 +232,10 @@ end
 --- Gets the maximum panel height as a number
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A number
+---  * A number
 function mod.maxPanelHeight()
     local max = mod.DEFAULT_HEIGHT
     for _,v in ipairs(mod._panels) do
@@ -263,10 +263,10 @@ end
 --- Initialises the preferences panel.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function mod.new()
 
     --------------------------------------------------------------------------------

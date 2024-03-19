@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.VideoRole ==
 ---
---- *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
+---  *Extends [Role](cp.apple.finalcutpro.timeline.Role.md)*
 ---
 --- A [Role](cp.apple.finalcutpro.timeline.Role.md) representing Video clips.
 
@@ -51,7 +51,7 @@ end
 --- Field
 --- A [Button](cp.ui.Button.md) that toggles whether the sub-captions are visible.
 ---
---- Note:
+--- Notes:
 ---  * This [Button](cp.ui.Button.md) is only visible when the pointer is hovering over the Role.
 function VideoRole.lazy.value:subrolesExpanded()
     return Button(self, self.cellUI:mutate(function(original)

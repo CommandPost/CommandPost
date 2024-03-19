@@ -142,12 +142,7 @@ end
 
 --- cp.ui.notifier.new(bundleID, elementFinderFn) -> cp.ui.notifier
 --- Constructor
---- Creates a new `cp.ui.notifier` instance with the specified bundle ID and
---- a function that returns the element being observed.
----
---- The function has a signature of `function() -> hs.axuielement`.
---- It simply returns the current element being observed, or `nil` if none is available.
---- The function will be called multiple times over the life of the notifier.
+--- Creates a new `cp.ui.notifier` instance with the specified bundle ID and a function that returns the element being observed.
 ---
 --- Parameters:
 ---  * bundleID          - The application Bundle ID being observed. E.g. "com.apple.FinalCut".
@@ -155,6 +150,11 @@ end
 ---
 --- Returns:
 ---  * A new `cp.ui.notifier` instance.
+---
+--- Notes:
+---  * The function has a signature of `function() -> hs.axuielement`.
+---  * It simply returns the current element being observed, or `nil` if none is available.
+---  * The function will be called multiple times over the life of the notifier.
 function mod.new(bundleID, elementFinderFn)
     assert(type(bundleID) == "string", "Provide a string value for the `bundleID`.")
     assert(type(elementFinderFn) == "function" or prop.is(elementFinderFn), "Provide a function for the `elementFinderFn`.")
@@ -202,8 +202,7 @@ end
 
 --- cp.ui.notifier:watchFor(notification, callbackFn) -> self
 --- Method
---- Registers a function to get called whenever the specified notification type is triggered
---- for the current `axuielement`.
+--- Registers a function to get called whenever the specified notification type is triggered for the current `axuielement`.
 ---
 --- Parameters:
 ---  * notifications     - The `string` or `table of strings` with the notification type(s) to watch for (e.g. "AXValueChanged").
@@ -311,8 +310,7 @@ end
 
 --- cp.ui.notifier:app() -> hs.application
 --- Method
---- Returns the current `hs.application` instance for the app this notifier tracks.
---- May be `nil` if the application is not running.
+--- Returns the current `hs.application` instance for the app this notifier tracks. May be `nil` if the application is not running.
 ---
 --- Parameters:
 ---  * None
@@ -637,8 +635,7 @@ end
 
 --- cp.ui.notifier:debugging([enabled]) -> boolean
 --- Method
---- Enables/disables and reports current debugging status.
---- When enabled, a message will be output for each known notification received.
+--- Enables/disables and reports current debugging status. When enabled, a message will be output for each known notification received.
 ---
 --- Parameters:
 ---  * enabled  - If `true`, debugging notifications will be emitted. If `false`, it will be disabled. If not provided, no change is made.

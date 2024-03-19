@@ -79,10 +79,10 @@ end
 --- Checks if the `value` is an `cp.web.xml` block.
 ---
 --- Parameters:
---- * value		- the value to check
+---  * value		- the value to check
 ---
 --- Returns:
---- * `true` if it is an HTML block, or `false` otherwise.
+---  * `true` if it is an HTML block, or `false` otherwise.
 xml.is = block.is
 
 xml.__index = function(_, name)

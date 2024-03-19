@@ -130,10 +130,10 @@ end
 --- Checks if the aspect has an `angle` property.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if it has an `angle` propery.
+---  * `true` if it has an `angle` propery.
 function ColorBoardAspect:hasAngle()
     return self._hasAngle
 end

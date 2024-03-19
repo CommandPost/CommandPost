@@ -52,10 +52,10 @@ end
 --- Filters the current list of [Role](cp.apple.finalcutpro.timeline.Role.md)s based on the given `matchesFn` predicate.
 ---
 --- Parameters:
---- * matchesFn - the matcher function. If not provided, no additional filtering occurs.
+---  * matchesFn - the matcher function. If not provided, no additional filtering occurs.
 ---
 --- Returns:
---- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md), or `nil` if no UI is currently available.
+---  * The table of [Role](cp.apple.finalcutpro.timeline.Role.md), or `nil` if no UI is currently available.
 function IndexRolesList:filterRoles(matchesFn)
     return self:filterRows(function(e) return Role.is(e) and (matchesFn == nil or matchesFn(e)) end)
 end
@@ -74,10 +74,10 @@ end
 --- Returns the list of all [Role](cp.ui.Role.md)s in the current list.
 ---
 --- Parameters:
---- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---  * includeSubroles - if `true`, include Subroles, otherwise exclude them.
 ---
 --- Returns:
---- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+---  * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
 function IndexRolesList:allRoles(includeSubroles)
     return self:filterRows(rolesFilter(includeSubroles))
 end
@@ -87,10 +87,10 @@ end
 --- Returns the list of all video [Role](cp.ui.Role.md)s in the current list.
 ---
 --- Parameters:
---- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---  * includeSubroles - if `true`, include Subroles, otherwise exclude them.
 ---
 --- Returns:
---- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+---  * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
 function IndexRolesList:videoRoles(includeSubroles)
     return self:filterRows(rolesFilter(includeSubroles, "video"))
 end
@@ -100,10 +100,10 @@ end
 --- Returns the list of all audio [Role](cp.ui.Role.md)s in the current list.
 ---
 --- Parameters:
---- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---  * includeSubroles - if `true`, include Subroles, otherwise exclude them.
 ---
 --- Returns:
---- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+---  * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
 function IndexRolesList:audioRoles(includeSubroles)
     return self:filterRows(rolesFilter(includeSubroles, "audio"))
 end
@@ -113,10 +113,10 @@ end
 --- Returns the list of caption [Role](cp.ui.Role.md)s in the current list.
 ---
 --- Parameters:
---- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---  * includeSubroles - if `true`, include Subroles, otherwise exclude them.
 ---
 --- Returns:
---- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+---  * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
 function IndexRolesList:captionRoles(includeSubroles)
     return self:filterRows(rolesFilter(includeSubroles, "caption"))
 end
@@ -126,13 +126,13 @@ end
 --- Returns the [Role](cp.apple.finalcutpro.timeline.Role.md) with the specified title.
 ---
 --- Parameters:
---- * title - The title of the role to find.
+---  * title - The title of the role to find.
 ---
 --- Returns:
---- * The [Role](cp.apple.finalcutpro.timeline.Role.md), or `nil` if it can't be found.
+---  * The [Role](cp.apple.finalcutpro.timeline.Role.md), or `nil` if it can't be found.
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:findRoleTitled(title)
     --- find the language-specific title
     title = Role.findTitle(title)
@@ -146,13 +146,13 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will activate the provided role, if it is available.
 ---
 --- Parameters:
---- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:doActivate(title)
     return If(function() return self:findRoleTitled(title) end)
     :Then(function(role)
@@ -167,13 +167,13 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will deactivate the provided role, if it is available.
 ---
 --- Parameters:
---- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to deactivate.
+---  * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to deactivate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:doDeactivate(title)
     return If(function() return self:findRoleTitled(title) end)
     :Then(function(role)
@@ -188,13 +188,13 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will focus the provided [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md), if it is available.
 ---
 --- Parameters:
---- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:doFocusInTimeline(title)
     return If(function() return self:findRoleTitled(title) end)
     :Then(function(role)
@@ -209,13 +209,13 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will unfocus the provided [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md), if it is available.
 ---
 --- Parameters:
---- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---  * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:doUnfocusInTimeline(title)
     return If(function() return self:findRoleTitled(title) end)
     :Then(function(role)
@@ -230,13 +230,13 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will show subrole lanes for the provided [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md), if it is available.
 ---
 --- Parameters:
---- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
+---  * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:doShowSubroleLanes(title)
     return If(function() return self:findRoleTitled(title) end)
     :Then(function(role)
@@ -251,13 +251,13 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will hide subrole lanes for the provided [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md), if it is available.
 ---
 --- Parameters:
---- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
+---  * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
+---  * The [Statement](cp.rx.go.Statement.md)
 ---
 --- Notes:
---- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+---  * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRolesList:doHideSubroleLanes(title)
     return If(function() return self:findRoleTitled(title) end)
     :Then(function(role)

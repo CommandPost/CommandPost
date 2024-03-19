@@ -224,14 +224,13 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:current() -> ColorBoardAspect
 --- Method
---- Returns the currently-selected 'aspect' of the Color Board - either the `color`, `saturation` or `exposure`.
---- If the color board is not currently visible, it returns the `color` aspect by default.
+--- Returns the currently-selected 'aspect' of the Color Board - either the `color`, `saturation` or `exposure`. If the color board is not currently visible, it returns the `color` aspect by default.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The currently active `ColorBoardAspect`, or the `color` aspect if none is showing.
+---  * The currently active `ColorBoardAspect`, or the `color` aspect if none is showing.
 function ColorBoard:current()
     if self.saturation:isShowing() then
         return self.saturation
@@ -243,14 +242,13 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:doResetCurrent([range]) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that will reset the current 'active' aspect (e.g. `color`) in the Color Board.
---- If the `range` is provided, only that subset (`master`, `shadows`, `midtones`, `highlights`) will be reset.
+--- A [Statement](cp.rx.go.Statement.md) that will reset the current 'active' aspect (e.g. `color`) in the Color Board. If the `range` is provided, only that subset (`master`, `shadows`, `midtones`, `highlights`) will be reset.
 ---
 --- Parameters:
---- * range     - Optional range to reset in the current aspect.
+---  * range     - Optional range to reset in the current aspect.
 ---
 --- Returns:
---- * The `Statement`, resolving with `true` if completed or an error if not.
+---  * The `Statement`, resolving with `true` if completed or an error if not.
 function ColorBoard:doResetCurrent(range)
     return Do(self:doShow())
     :Then(function()
@@ -292,14 +290,13 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:doSelectAspect(index) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that will attempt to select the specified aspect `index`.
---- If the `index` is not between `1` and `3`, and error will be thrown.
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to select the specified aspect `index`. If the `index` is not between `1` and `3`, and error will be thrown.
 ---
 --- Parameters:
---- * index     - The index to select.
+---  * index     - The index to select.
 ---
 --- Returns:
---- * The `Statement`, which will resolve to `true` if successful, or throw an error if not.
+---  * The `Statement`, which will resolve to `true` if successful, or throw an error if not.
 function ColorBoard:doSelectAspect(index)
     return Do(self:doShow())
     :Then(self.aspectGroup:doSelectOption(index))

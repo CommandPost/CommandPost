@@ -453,8 +453,7 @@ end
 
 --- cp.app.menu:getMenuTitles([locales]) -> table
 --- Method
---- Returns a table with the available menus, items and sub-menu, in the specified locales (if available).
---- If no `locales` are specified, the app's current locale is loaded.
+--- Returns a table with the available menus, items and sub-menu, in the specified locales (if available). If no `locales` are specified, the app's current locale is loaded.
 ---
 --- Parameters:
 ---  * locales       - An optional single `localeID` or a list of `localeID`s to ensure are loaded.
@@ -637,9 +636,7 @@ end
 
 --- cp.app.menu:addMenuFinder(finder) -> nothing
 --- Method
---- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find'
---- step and return either the matching child, or `nil` if it can't be found.
---- It is used by the [addMenuFinder](#addMenuFinder) function.
+--- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find' step and return either the matching child, or `nil` if it can't be found. It is used by the [addMenuFinder](#addMenuFinder) function.
 ---
 --- Parameters:
 ---  * `finder`     - The finder function
@@ -656,7 +653,6 @@ end
 ---   * childName     - The name of the next child to find, in the specified locale. E.g. `"Libraries"`.
 ---   * locale        - The `cp.i18n.localeID` that the menu titles are in.
 ---   * childItem     - The `AXMenuItem` that was found, or `nil` if not found.
-
 function menu:addMenuFinder(finder)
     self._itemFinders[#self._itemFinders + 1] = finder
 end
@@ -825,17 +821,17 @@ end
 --- cp.app.menu:findMenuUI(path[, options]) -> Menu UI, table
 --- Method
 --- Finds a specific Menu UI element for the provided path.
---- E.g. `findMenuUI({"Edit", "Copy"})` returns the 'Copy' menu item in the 'Edit' menu.
 ---
 --- Parameters:
----  * path         - The path list to search for.
----  * options      - (Optional) The table of options.
+---  * path - The path list to search for.
+---  * options - (Optional) The table of options.
 ---
 --- Returns:
 ---  * The Menu UI, or `nil` if it could not be found.
 ---  * The full list of Menu UIs for the path in a table.
 ---
 --- Notes:
+---  * E.g. `findMenuUI({"Edit", "Copy"})` returns the 'Copy' menu item in the 'Edit' menu.
 ---  * Each step on the path can be either one of:
 ---   * a string     - The exact name of the menu item.
 ---   * a number     - The menu item number, starting from 1.
@@ -980,8 +976,7 @@ end
 
 --- cp.app.menu:visitMenuItems(visitFn[, options]]) -> nil
 --- Method
---- Walks the menu tree, calling the `visitFn` on all the 'item' values - that is,
---- `AXMenuItem`s that don't have any sub-menus.
+--- Walks the menu tree, calling the `visitFn` on all the 'item' values - that is, `AXMenuItem`s that don't have any sub-menus.
 ---
 --- Parameters:
 ---  * visitFn - The function called for each menu item.

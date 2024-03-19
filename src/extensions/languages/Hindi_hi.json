@@ -69,6 +69,7 @@
     "alphaAdd": "अल्फा जोड़ें",
     "alphaAdd9": "अल्फा जोड़ें",
     "alreadyWatched": "यह फ़ोल्डर पहले से ही देखा जा रहा है।",
+    "alternative": "विकल्प",
     "always": "हमेशा",
     "alwaysOnTop": "हमेशा शिखर पर",
     "ambience": "माहौल",
@@ -190,6 +191,7 @@
     "betterPerformance": "बेहतर प्रदर्शन",
     "betterQuality": "बेहतर गुणवत्ता",
     "black": "काली",
+    "blackPoint": "काला बिन्दु",
     "blade": "ब्लेड",
     "blendMode": "मिश्रण मोड",
     "blendMode9": "मिश्रण मोड",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "कोड को एक फ़ंक्शन वापस करने की आवश्यकता है।",
     "cold": "सर्दी",
     "color": "रंग",
+    "colorAdjustments": "रंग समायोजन",
+    "colorAdjustments_group": "रंग समायोजन",
     "colorAndEffects": "रंग और प्रभाव",
     "colorBoard": "रंग बोर्ड",
     "colorBoard2": "colorBoard2",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "controlFCPUIElementAbsolute",
     "controlFCPUIElementRelative": "controlFCPUIElementRelative",
     "controlFCPUIElementRelativeNote": "controlFCPUIElementRelativeNote",
+    "controlRange": "नियंत्रण सीमा",
     "controlSurfaces": "नियंत्रण सतहों",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "फाइनल कट प्रो ऑडियो इंस्पेक्टर में वॉल्यूम को नियंत्रित करता है",
     "controlsTimelineZoomViaTheAppearancePopup": "नियंत्रण पॉपअप के माध्यम से समयरेखा ज़ूम को नियंत्रित करता है",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "स्पर्शरेखा हब डाउनलोड करें",
     "dragAndDropFileAction": "फ़ाइल क्रिया खींचें और छोड़ें",
     "dragAndDropTextAction": "टेक्स्ट एक्शन खींचें और छोड़ें",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "अपने प्रोजेक्ट को फाइनल कट प्रो इंटरफेस से ड्रैग करें और यहां ड्रॉप करें",
     "draggable": "खींचने योग्य",
     "draggableGuides": "draggableGuides",
     "driveManagement": "driveManagement",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "कार्ड पर ध्यान न दें",
     "finalcutpro_import_preferences_label": "प्राथमिकताएं आयात करें",
     "finalcutpro_inspector_audio_label": "इंस्पेक्टर: ऑडियो",
+    "finalcutpro_inspector_coloradjustments_label": "इंस्पेक्टर: रंग समायोजन",
+    "finalcutpro_inspector_colourlabai_label": "इंस्पेक्टर: कलरलैब ऐ",
     "finalcutpro_inspector_info_label": "इंस्पेक्टर: जानकारी",
     "finalcutpro_inspector_show_label": "इंस्पेक्टर: अतिरिक्त कार्रवाई",
     "finalcutpro_inspector_text_label": "इंस्पेक्टर: पाठ",
+    "finalcutpro_inspector_title_label": "इंस्पेक्टर: शीर्षक",
     "finalcutpro_inspector_video_label": "finalcutpro_inspector_video_label",
     "finalcutpro_language_label": "अंतिम कट प्रो भाषाएँ",
     "finalcutpro_loupedeckplugin_label": "लूपेडेक प्लगइन",
@@ -1282,6 +1291,8 @@
     "highlights": "हाइलाइट",
     "highlights2": "Highlights2",
     "highlights4": "Highlights4",
+    "highlightsTint": "हाइलाइट्स टिंट",
+    "highlightsWarmth": "गर्माहट पर प्रकाश डाला गया",
     "histogram": "हिस्टोग्राम",
     "history": "इतिहास",
     "historyIsEmpty": "इतिहास खाली है",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "कुंजी दोहराएँ",
     "keyboard": "कीबोर्ड",
     "keyboardShortcut": "कुंजीपटल संक्षिप्त रीति",
+    "keyboardShortcutAlternativeDescription": "एक वैकल्पिक विधि (ब्लेंडर, आदि में उपयोग के लिए) का उपयोग करके वर्चुअल कीबोर्ड प्रेस को ट्रिगर करता है",
     "keyboardShortcutDescription": "ट्रिगर एक वर्चुअल कीबोर्ड प्रेस",
     "keyboardShortcuts": "कुंजीपटल अल्प मार्ग",
     "keyframe": "मुख्य-फ़्रेम",
@@ -1423,6 +1435,7 @@
     "learnMore": "और अधिक जानें",
     "leaveFilesInPlaceOnImport": "आयात पर जगह में फ़ाइलें छोड़ें",
     "ledAlwaysOn": "एलईडी हमेशा चालू",
+    "ledBrightness": "एलईडी चमक",
     "ledColor": "एलईडी रंग",
     "left": "बाएं",
     "leftDoubleMouseClick": "बायाँ डबल माउस क्लिक",
@@ -1455,6 +1468,7 @@
     "location": "स्थान",
     "long": "लंबा",
     "longPress": "देर तक दबाना",
+    "longPressAction": "लॉन्ग प्रेस एक्शन",
     "longPressDuration": "लंबी प्रेस अवधि",
     "look": "देखिए",
     "loopPlayback": "प्लेबैक पर लूप करें",
@@ -1555,6 +1569,8 @@
     "midtones": "मि़डटॉन",
     "midtones2": "midtones2",
     "midtones4": "midtones4",
+    "midtonesTint": "मिडटोन टिंट",
+    "midtonesWarmth": "मिडटोन्स वार्मथ",
     "mins": {
         "one": "मिनट",
         "other": "mins"
@@ -2109,6 +2125,8 @@
     "shadows": "छैया छैया",
     "shadows2": "shadows2",
     "shadows4": "shadows4",
+    "shadowsTint": "छाया टिंट",
+    "shadowsWarmth": "छाया की गर्मी",
     "share": "शेयर",
     "shareDetails_Facebook": "प्रकार: फेसबुक\nलॉग इन करें: %{login}\nशीर्षक: %{title}",
     "shareDetails_Tudou": "Type: Tudou\nLogin: %{login}\nTitle: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "sharedPasteboardPathMissing",
     "sharedPasteboardRootFolder": "sharedPasteboardRootFolder",
     "sharp": "तेज़",
+    "shiftAnchorDownPixels": {
+        "one": "एंकर को %{amount} पिक्सेल नीचे शिफ़्ट करें",
+        "other": "एंकर को %{amount} पिक्सेल नीचे शिफ़्ट करें"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "एंकर को %{amount} पिक्सेल तक लेफ्ट में शिफ्ट करें",
+        "other": "एंकर को %{amount} पिक्सेल तक लेफ्ट में शिफ्ट करें"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "एंकर को %{amount} पिक्सेल से दाएँ शिफ्ट करें",
+        "other": "एंकर को %{amount} पिक्सेल से दाएँ शिफ्ट करें"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "शिफ़्ट एंकर को %{amount} पिक्सेल तक बढ़ाएँ",
+        "other": "शिफ़्ट एंकर को %{amount} पिक्सेल तक बढ़ाएँ"
+    },
     "shiftPositionDownPixels": {
         "one": "शिफ्ट स्थिति नीचे %{amount} पिक्सेल",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2156,7 +2190,24 @@
         "one": "%{amount} पिक्सेल द्वारा शिफ्ट स्केल",
         "other": "%{amount} पिक्सेल द्वारा शिफ्ट स्केल"
     },
+    "shiftScaleXDown": {
+        "one": "स्केल X को %{amount} पिक्सेल से घटाएं",
+        "other": "स्केल X को %{amount} पिक्सेल से घटाएं"
+    },
+    "shiftScaleXUp": {
+        "one": "शिफ़्ट स्केल X %{amount} पिक्सेल से ऊपर",
+        "other": "शिफ़्ट स्केल X %{amount} पिक्सेल से ऊपर"
+    },
+    "shiftScaleYDown": {
+        "one": "शिफ़्ट स्केल Y को %{amount} पिक्सेल से नीचे करें",
+        "other": "शिफ़्ट स्केल Y को %{amount} पिक्सेल से नीचे करें"
+    },
+    "shiftScaleYUp": {
+        "one": "Shift स्केल Y %{amount} पिक्सेल से ऊपर",
+        "other": "Shift स्केल Y %{amount} पिक्सेल से ऊपर"
+    },
     "short": "छोटा",
+    "shortPressAction": "शॉर्ट प्रेस एक्शन",
     "shortcutAlreadyInUse": "यह शॉर्टकट पहले से उपयोग में है",
     "shortcutAlreadyInUseByMacOS": "यह शॉर्टकट संयोजन वर्तमान में मैकोज़ (यानी स्क्रीन कैप्चर, यूनिवर्सल एक्सेस और कीबोर्ड नेविगेशन कुंजियों द्वारा उपयोग किया जा सकता है) द्वारा उपयोग में है।",
     "shortcutCouldNotBeTriggered": "इस शॉर्टकट को ट्रिगर नहीं किया जा सका\n\nकृपया जांचें कि आप कमांड प्रॉम्प्ट करने के लिए फ़ाइनल कट प्रो कमांड एडिटर में ट्रिगर करने के लिए आवंटित किए गए वैध शॉर्टकट कीज़ को पुनः प्रयास करें।",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "फ़ाइनल कट प्रो से लेकर दाविंची रिज़ॉल्यूशन तक।",
     "sonyTimecodeFixerDescriptionTwo": "यह टूलबॉक्स XML साइडकार फ़ाइल से सही टाइमकोड मानों का उपयोग करने के लिए एक fcpxml को अपडेट करेगा, ताकि आप अधिक आसानी से टाइमलाइन भेज सकें",
     "sonyTimecodeRepair": "सोनी टाइमकोड मरम्मत",
+    "sonyTimecodeRepairDescriptionFive": "इस टूलबॉक्स को एलीस्टर रोबी के लिए एक साथ फेंका गया था। धन्यवाद जॉर्ज एलियास, जेमी लेज्यून और वेलेरियो डी'आंद्रासी।",
     "sonyTimecodeRepairDescriptionFour": "यह टूलबॉक्स एलिस्टर रॉबी के लिए एक साथ फेंका गया था। जेमी लेज्यून के परीक्षण के लिए धन्यवाद!",
     "sonyTimecodeRepairDescriptionOne": "फ़ाइनल कट प्रो वर्तमान में हमेशा कुछ सोनी कैमरों से टाइमकोड की सही व्याख्या नहीं करता है जो एक MP4 रैपर में रिकॉर्ड कर रहे हैं।",
     "sonyTimecodeRepairDescriptionThree": "ताकि आप फ़ाइनल कट प्रो से DaVinci Resolve, Baselight या Adobe Premiere (XtoCC के साथ) में अधिक आसानी से टाइमलाइन भेज सकें।",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "Apple को मोशन फीचर सुझाएं",
     "support": "समर्थन",
     "swipe": "कड़ी चोट",
+    "swipeLeftAction": "स्वाइप लेफ्ट एक्शन",
+    "swipeRightAction": "स्वाइप राइट एक्शन",
     "switchBetweenInsideOutsideMarks": "switchBetweenInsideOutsideMarks",
     "switchDaVinciResolveControlSurfaceTo": "DaVinci समाधान नियंत्रण सतह को स्विच करें",
     "switchLoupedeckCTTo": "लौपेडेक सीटी को स्विच करें",

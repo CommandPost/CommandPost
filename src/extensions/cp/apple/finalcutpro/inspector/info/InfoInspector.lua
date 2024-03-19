@@ -103,6 +103,12 @@ function InfoInspector:initialize(parent)
 
         audioOutputChannels     = staticText "Audio Channel Count",
         audioSampleRate         = staticText "Audio Sample Rate",
+
+        --------------------------------------------------------------------------------
+        -- Spotlight:
+        --------------------------------------------------------------------------------
+        fileName                = staticText "kMDItemFSName",
+        displayName             = staticText "kMDItemDisplayName",
     }
 end
 

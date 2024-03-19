@@ -23,8 +23,8 @@ end
 --- Initialises the loader.
 ---
 --- Parameters:
---- * id - The full extension id up to this value. Eg. "cp"
---- * path - The full path pointing to this extension to search for directories. Eg. "/Applications/CommandPost.app/Resources/extensions/cp".
+---  * id - The full extension id up to this value. Eg. "cp"
+---  * path - The full path pointing to this extension to search for directories. Eg. "/Applications/CommandPost.app/Resources/extensions/cp".
 function loader.new(id, path)
     return loader.extend({}, id, path)
 end
@@ -34,10 +34,10 @@ end
 --- Checks if the `thing` is a `loader` instance.
 ---
 --- Parameters:
---- * thing - The thing to check.
+---  * thing - The thing to check.
 ---
 --- Returns:
---- * `true` if it is, `false` otherwise.
+---  * `true` if it is, `false` otherwise.
 function loader.is(thing)
     return type(thing) == "table" and getmetatable(thing) == loader.mt
 end
@@ -49,10 +49,10 @@ end
 --- extension called `"foo.bar"`, the table will be `{ "bar" }`, not `{ "foo.bar" }`.
 ---
 --- Parameters:
---- * aLoader - the loader to check.
+---  * aLoader - the loader to check.
 ---
 --- Returns:
---- * `table` with a list of strings of extensions under this loader.
+---  * `table` with a list of strings of extensions under this loader.
 function loader.availableExtensions(aLoader)
     assert(loader.is(aLoader), "Please provide a `loader` instance.")
 

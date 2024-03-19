@@ -20,8 +20,7 @@ ReplaySubject.__tostring = util.constant('ReplaySubject')
 --- Creates a new `ReplaySubject`.
 ---
 --- Parameters:
----  * bufferSize      - The number of values to send to new subscribers. If `nil`, an infinite
----                     buffer is used (note that this could lead to memory issues).
+---  * bufferSize - The number of values to send to new subscribers. If `nil`, an infinite buffer is used (note that this could lead to memory issues).
 ---
 --- Returns:
 ---  * The new `ReplaySubject.
@@ -38,16 +37,14 @@ function ReplaySubject.create(n)
   return setmetatable(self, ReplaySubject)
 end
 
---- cp.rx.RelaySubject:subscribe([observer | onNext[, onError[, onCompleted]]]) -> cp.rx.Reference
+--- cp.rx.RelaySubject:subscribe([observer [, onError[, onCompleted]]]) -> cp.rx.Reference
 --- Method
---- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `ReplaySubject`.
---- Immediately broadcasts the most recent contents of the buffer to the Observer.
+--- Creates a new [Observer](cp.rx.Observer.md) and attaches it to the `ReplaySubject`. Immediately broadcasts the most recent contents of the buffer to the Observer.
 ---
 --- Parameters:
----  * observer | onNext     - Either an [Observer](cp.rx.Observer.md), or a
----                           `function` to call when the `ReplaySubject` produces a value.
----  * onError               - A `function` to call when the `ReplaySubject` terminates due to an error.
----  * onCompleted           - A `function` to call when the ReplaySubject completes normally.
+---  * observer - Either an [Observer](cp.rx.Observer.md), or a `function` to call when the `ReplaySubject` produces a value.
+---  * onError - A `function` to call when the `ReplaySubject` terminates due to an error.
+---  * onCompleted - A `function` to call when the ReplaySubject completes normally.
 ---
 --- Returns:
 ---  * The [Reference](cp.rx.Reference.md).
@@ -83,7 +80,10 @@ end
 --- Pushes zero or more values to the `ReplaySubject`. They will be broadcasted to all [Observers](cp.rx.Observer.md).
 ---
 --- Parameters:
----  * ...   - The values to send.
+---  * ... - The values to send.
+---
+--- Returns:
+---  * None
 function ReplaySubject:onNext(...)
   if not self.stopped then
     self.buffer:pushRight(util.pack(...))

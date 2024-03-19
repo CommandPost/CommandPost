@@ -26,6 +26,7 @@ local resolve = class("cp.blackmagic.resolve")
 resolve.EARLIEST_SUPPORTED_VERSION = v("16.2.7")
 
 function resolve:initialize()
+
 --- cp.blackmagic.resolve.app <cp.app>
 --- Constant
 --- The `cp.app` for DaVinci Resolve.
@@ -104,7 +105,7 @@ end
 --- Field
 --- Is a supported version of DaVinci Resolve installed?
 ---
---- Note:
+--- Notes:
 ---  * Supported version refers to any version of DaVinci Resolve equal or higher to `cp.blackmagic.resolve.EARLIEST_SUPPORTED_VERSION`
 function resolve.lazy.prop:isSupported()
     return self.app.version:mutate(function(original)
@@ -145,7 +146,7 @@ end
 --- Field
 --- Is an unsupported version of DaVinci Resolve installed?
 ---
---- Note:
+--- Notes:
 ---  * Supported version refers to any version of DaVinci Resolve equal or higher to cp.blackmagic.resolve.EARLIEST_SUPPORTED_VERSION
 function resolve.lazy.prop:isUnsupported()
     return self.isInstalled:AND(self.isSupported:NOT())
@@ -156,10 +157,10 @@ end
 --- Returns the Bundle ID for the app.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The Bundle ID
+---  * The Bundle ID
 function resolve:bundleID()
     return self.app:bundleID()
 end
@@ -169,10 +170,10 @@ end
 --- Returns a notifier that is tracking the application UI element. It has already been started.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The notifier.
+---  * The notifier.
 function resolve:notifier()
     return self.app:notifier()
 end

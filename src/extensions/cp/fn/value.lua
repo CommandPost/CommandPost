@@ -16,16 +16,13 @@ local mod = {}
 
 --- cp.fn.value.default(...) -> function(...) -> ...
 --- Function
---- A combinator that takes a list of default values and returns a function
---- that accepts a list of values and returns the same number of values, with either
---- the value passed in or the default value if that value is `nil`.
+--- A combinator that takes a list of default values and returns a function that accepts a list of values and returns the same number of values, with either the value passed in or the default value if that value is `nil`.
 ---
 --- Parameters:
 ---  * ... - A list of default values.
 ---
 --- Returns:
----  * A function that accepts a list of values and returns the same number of values, with either
----  the value passed in or the default value if that value is `nil`.
+---  * A function that accepts a list of values and returns the same number of values, with either the value passed in or the default value if that value is `nil`.
 ---
 --- Notes:
 ---  * Example: `cp.fn.value.default(1, 2, 3)(5, nil, 6) -- returns 5, 2, 6`
@@ -97,8 +94,7 @@ end
 
 --- cp.fn.value.is(other) -> function(value) -> boolean
 --- Function
---- Returns a function that returns `true` if the value is equal to the other value.
---- If `other` is a function, then it will be called with no arguments and the result will be compared.
+--- Returns a function that returns `true` if the value is equal to the other value. If `other` is a function, then it will be called with no arguments and the result will be compared.
 ---
 --- Parameters:
 ---  * other - A value or a function that returns a value.
@@ -111,6 +107,5 @@ function mod.is(other)
         return value == other()
     end
 end
-
 
 return mod

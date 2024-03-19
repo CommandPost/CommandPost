@@ -48,24 +48,7 @@ end
 
 --- cp.i18n.localeID.parse(code) -> string, string, string
 --- Function
---- Parses a `language ID` into three possible string components:
---- 1. The ISO 693-1 language code
---- 2. The ISO 15924 script code
---- 3. The ISO 3166-1 region code
----
---- This is one of the following patterns:
----
----  * `[language]` - eg. `"en"`, or `"fr"`. This covers the language across all languages and scripts. We also allow the full name (eg. "English" or "French") since this seems common in Apple's I18N management.
----  * `[language]_[region]` - eg. "en_AU" for Australian English, "fr_CA" for Canadian French, etc.
----  * `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
----  * `[language]-[script]_[region]` - eg. "en-Latin-AU"
----
---- It will then return the matched component in three return values: language, script, region.
---- If a `region` is specified, the `script` will be `nil`. Eg.:
----
---- ```lua
---- local lang, scrpt, rgn = localeID.parse("en_AU") -- results in "en", nil, "AU"
---- ```
+--- This function will first attempt to determine the language, script and region by using `hs.host.locale.details()`. If that fails, it will use Lua patterns as described below.
 ---
 --- Parameters:
 ---  * code      - The `locale ID` code. Eg. "en_AU".
@@ -76,9 +59,22 @@ end
 ---  * script    - the four-character mixed-case alpha script code.
 ---
 --- Notes:
----  * This function will first attempt to determine the language, script and region by
----    using `hs.host.locale.details()`. If that fails, it will use Lua patterns
----    as described above.
+---  * This function will first attempt to determine the language, script and region by using `hs.host.locale.details()`. If that fails, it will use Lua patterns as described below.
+---  *  Parses a `language ID` into three possible string components:
+---   ** The ISO 693-1 language code
+---   ** The ISO 15924 script code
+---   ** The ISO 3166-1 region code
+---  * This is one of the following patterns:
+---   ** `[language]` - eg. `"en"`, or `"fr"`. This covers the language across all languages and scripts. We also allow the full name (eg. "English" or "French") since this seems common in Apple's I18N management.
+---   ** `[language]_[region]` - eg. "en_AU" for Australian English, "fr_CA" for Canadian French, etc.
+---   ** `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
+---   ** `[language]-[script]_[region]` - eg. "en-Latin-AU"
+---  * It will then return the matched component in three return values: language, script, region.
+---  * If a `region` is specified, the `script` will be `nil`. Eg.:
+---
+--- ```lua
+--- local lang, scrpt, rgn = localeID.parse("en_AU") -- results in "en", nil, "AU"
+--- ```
 function mod.parse(code)
     --------------------------------------------------------------
     -- First let macOS determine the locale ID:
@@ -110,14 +106,14 @@ end
 --- Constructor
 --- Creates, or retrieves from the cache, a `localeID` instance for the specified `code`.
 ---
---- If the code can't be parsed, or if the actual language/region/script codes don't exist,
---- `nil` is returned.
----
 --- Parameters:
 ---  * code      - The language ID code.
 ---
 --- Returns:
 ---  * The matching `langaugeID`, or `nil`.
+---
+--- Notes:
+---  * If the code can't be parsed, or if the actual language/region/script codes don't exist, `nil` is returned.
 function mod.forCode(code)
     local id = cache[code]
     if not id then
@@ -190,12 +186,18 @@ end
 
 --- cp.i18n.localeID:matches(otherLocale) -> number
 --- Method
---- This compares the `otherLocale` to this locale and returns a number indicating the 'strength'
---- of the match. It will be a value between `0` and `3`. The `script` and `region` in any locale
---- are optional, and if they are not provided, they are considered "open" and will match with another locale which
---- has the script or region defined. However, it is considered to be a weaker match.
+--- This compares the `otherLocale` to this locale and returns a number indicating the 'strength' of the match.
 ---
---- For example:
+--- Parameters:
+---  * otherLocale       - The other locale to compare to.
+---
+--- Returns:
+---  * A number from `0` to `3` indicating the match strength.
+---
+--- Notes:
+---  * It will be a value between `0` and `3`. The `script` and `region` in any locale are optional, and if they are not provided, they are considered "open" and will match with another locale which has the script or region defined. However, it is considered to be a weaker match.
+---  * For example:
+---
 --- ```lua
 --- local l = localeID.forCode
 --- local en, en_AU, en_Latn, en_Latn_AU, en_NZ, de = l("en"), l("en_AU"), l("en-Latn"), l("en-Latn_AU"), l("en_NZ"), l("de")
@@ -213,13 +215,7 @@ end
 --- en_AU:matches(en_Latn_AU)   == 2.5  -- language and region match exactly, and the optional `script` value is different.
 --- ```
 ---
---- The higher the match value, the closer they are to matching. If selecting a from multiple locales which match you will generally want the highest-ranking match.
----
---- Parameters:
----  * otherLocale       - The other locale to compare to.
----
---- Returns:
----  * A number from `0` to `3` indicating the match strength.
+---  * The higher the match value, the closer they are to matching. If selecting a from multiple locales which match you will generally want the highest-ranking match.
 function mod.mt:matches(otherLocale)
     local score = 0
     otherLocale = mod(otherLocale)

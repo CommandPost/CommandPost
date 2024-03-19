@@ -161,8 +161,7 @@ end
 
 --- cp.app.prefs.get(prefs, key[, defaultValue]) -> value
 --- Function
---- Retrieves the specifed `key` from the provided `prefs`.
---- If there is no current value, the `defaultValue` is returned.
+--- Retrieves the specifed `key` from the provided `prefs`. If there is no current value, the `defaultValue` is returned.
 ---
 --- Parameters:
 ---  * prefs         - The `prefs` instance.
@@ -222,8 +221,7 @@ end
 
 --- cp.app.prefs.prop(prefs, key[, defaultValue[, deepTable]]) -> cp.prop
 --- Function
---- Retrieves the `cp.prop` for the specified key. It can be `watched` for changes.
---- Subsequent calls will return the same `cp.prop` instance.
+--- Retrieves the `cp.prop` for the specified key. It can be `watched` for changes. Subsequent calls will return the same `cp.prop` instance.
 ---
 --- Parameters:
 ---  * prefs         - The `prefs` instance.

@@ -69,6 +69,7 @@
     "alphaAdd": "Thêm Alpha",
     "alphaAdd9": "Thêm Alpha",
     "alreadyWatched": "Thư mục này đã được xem.",
+    "alternative": "Thay thế",
     "always": "Luôn luôn",
     "alwaysOnTop": "Luôn luôn trên đầu trang",
     "ambience": "Môi trường xung quanh",
@@ -190,6 +191,7 @@
     "betterPerformance": "Hiệu suất tốt hơn",
     "betterQuality": "Chất lượng tốt hơn",
     "black": "Đen",
+    "blackPoint": "Điểm đen",
     "blade": "Lưỡi",
     "blendMode": "Chế độ hòa trộn",
     "blendMode9": "Chế độ hòa trộn",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "Mã cần trả về một hàm.",
     "cold": "Lạnh",
     "color": "Màu",
+    "colorAdjustments": "Điều chỉnh màu",
+    "colorAdjustments_group": "Điều chỉnh màu",
     "colorAndEffects": "Màu sắc & hiệu ứng",
     "colorBoard": "Bảng màu",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Kiểm soát phần tử giao diện người dùng cuối cùng của phần tử điều khiển cắt (Tuyệt đối)",
     "controlFCPUIElementRelative": "Kiểm soát phần tử giao diện người dùng cuối cùng của phần tử điều khiển cắt (tương đối)",
     "controlFCPUIElementRelativeNote": "Di chuột qua phần tử giao diện người dùng, giữ CONTROL, sau đó điều chỉnh MIDI Knob / Fader để đăng ký.",
+    "controlRange": "Phạm vi kiểm soát",
     "controlSurfaces": "Kiểm soát bề mặt",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Kiểm soát Âm lượng trong Trình kiểm tra âm thanh Final Cut Pro",
     "controlsTimelineZoomViaTheAppearancePopup": "Kiểm soát Thu phóng dòng thời gian thông qua Cửa sổ bật lên giao diện",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Tải về Tangent Hub",
     "dragAndDropFileAction": "Hành động kéo và thả tệp",
     "dragAndDropTextAction": "Kéo & Thả Hành động Văn bản",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Kéo dự án của bạn từ giao diện Final Cut Pro và thả vào đây",
     "draggable": "Kéo được",
     "draggableGuides": "Hướng dẫn có thể kéo",
     "driveManagement": "Quản lý Drive",
@@ -1006,9 +1012,12 @@
     "finalcutpro_import_ignorecard_label": "Bỏ qua thẻ",
     "finalcutpro_import_preferences_label": "Tuỳ chọn Nhập",
     "finalcutpro_inspector_audio_label": "Thanh tra: Âm thanh",
+    "finalcutpro_inspector_coloradjustments_label": "Thanh tra: Điều chỉnh màu",
+    "finalcutpro_inspector_colourlabai_label": "Thanh tra: Colourlab Ai",
     "finalcutpro_inspector_info_label": "Thanh tra: Thông tin",
     "finalcutpro_inspector_show_label": "Thanh tra: Hành động bổ sung",
     "finalcutpro_inspector_text_label": "Thanh tra: Văn bản",
+    "finalcutpro_inspector_title_label": "Thanh tra: Chức danh",
     "finalcutpro_inspector_video_label": "Thanh tra: Video",
     "finalcutpro_language_label": "Ngôn ngữ Final Cut Pro",
     "finalcutpro_loupedeckplugin_label": "Plugin Loupedeck",
@@ -1278,6 +1287,8 @@
     "highlights": "Điểm nổi bật",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Màu sắc nổi bật",
+    "highlightsWarmth": "Điểm nổi bật",
     "histogram": "Biểu đồ",
     "history": "Lịch sử",
     "historyIsEmpty": "Lịch sử trống rỗng",
@@ -1396,6 +1407,7 @@
     "keyRepeat": "Lặp lại phím",
     "keyboard": "Bàn phím",
     "keyboardShortcut": "Phim tăt",
+    "keyboardShortcutAlternativeDescription": "Kích hoạt thao tác nhấn bàn phím ảo bằng phương pháp thay thế (để sử dụng trong Blender, v.v.)",
     "keyboardShortcutDescription": "Kích hoạt một phím bấm ảo",
     "keyboardShortcuts": "Các phím tắt bàn phím",
     "keyframe": "Khung hình chính",
@@ -1418,6 +1430,7 @@
     "learnMore": "Tìm hiểu thêm",
     "leaveFilesInPlaceOnImport": "Để tệp ở nơi nhập",
     "ledAlwaysOn": "Đèn LED luôn bật",
+    "ledBrightness": "Độ sáng LED",
     "ledColor": "Màu LED",
     "left": "Trái",
     "leftDoubleMouseClick": "Nhấp đúp chuột trái",
@@ -1450,6 +1463,7 @@
     "location": "Vị trí",
     "long": "Dài",
     "longPress": "Nhấn lâu",
+    "longPressAction": "Hành động nhấn lâu",
     "longPressDuration": "Thời lượng báo chí dài",
     "look": "Nhìn",
     "loopPlayback": "Phát lại vòng lặp",
@@ -1550,6 +1564,8 @@
     "midtones": "Midtones",
     "midtones2": "MT",
     "midtones4": "Mids",
+    "midtonesTint": "tông màu trung tính",
+    "midtonesWarmth": "Âm trung ấm áp",
     "mins": {
         "other": "min"
     },
@@ -2101,6 +2117,8 @@
     "shadows": "Bóng tối",
     "shadows2": "SD",
     "shadows4": "Shdw",
+    "shadowsTint": "bóng tối",
+    "shadowsWarmth": "bóng tối ấm áp",
     "share": "Chia sẻ",
     "shareDetails_Facebook": "Loại: Facebook\nĐăng nhập: %{login}\nTiêu đề: %{title}",
     "shareDetails_Tudou": "Loại: Tudou\nĐăng nhập: %{login}\nTiêu đề: %{title}",
@@ -2116,6 +2134,18 @@
     "sharedPasteboardPathMissing": "Đường dẫn trên bảng chia sẻ không còn tồn tại nữa. Bạn có muốn chọn một vị trí mới không?",
     "sharedPasteboardRootFolder": "Thư mục gốc của bảng gốc được chia sẻ",
     "sharp": "Nhọn",
+    "shiftAnchorDownPixels": {
+        "other": "Dịch chuyển Neo xuống theo %{amount} Pixel"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "Dịch chuyển Neo sang trái bởi %{amount} Pixel"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "Dịch Neo sang phải theo %{amount} Pixel"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "Dịch neo lên trên %{amount} Pixel"
+    },
     "shiftPositionDownPixels": {
         "other": "Shift Vị trí Xuống %{amount} Pixel"
     },
@@ -2140,7 +2170,20 @@
     "shiftScaleUp": {
         "other": "Thay đổi quy mô lên %{amount} Pixel"
     },
+    "shiftScaleXDown": {
+        "other": "Dịch chuyển tỷ lệ X xuống %{amount} Pixel"
+    },
+    "shiftScaleXUp": {
+        "other": "Thay đổi tỷ lệ tăng X lên %{amount} Pixel"
+    },
+    "shiftScaleYDown": {
+        "other": "Dịch chuyển tỷ lệ Y xuống %{amount} Pixel"
+    },
+    "shiftScaleYUp": {
+        "other": "Thay đổi tỷ lệ Y Tăng theo %{amount} Pixel"
+    },
     "short": "Ngắn",
+    "shortPressAction": "Hành động báo chí ngắn",
     "shortcutAlreadyInUse": "Phím tắt này đã được sử dụng.",
     "shortcutAlreadyInUseByMacOS": "Sự kết hợp phím tắt này hiện đang được sử dụng bởi macOS (nghĩa là nó có thể được sử dụng bởi các phím Screen Capture, Universal Access, và Bàn phím Bàn phím).",
     "shortcutCouldNotBeTriggered": "Không thể kích hoạt phím tắt này.\n\nHãy kiểm tra xem bạn có hợp lệ phím tắt được gán cho lệnh bạn đã cố kích hoạt trong Final Cut Pro Editor Editor và thử lại.",
@@ -2224,6 +2267,7 @@
     "sonyTimecodeFixerDescriptionThree": "từ Final Cut Pro đến DaVinci Resolve.",
     "sonyTimecodeFixerDescriptionTwo": "Hộp công cụ này sẽ cập nhật FCPXML để sử dụng các giá trị mã thời gian chính xác từ tệp phụ trợ XML, để bạn có thể dễ dàng gửi tiến trình",
     "sonyTimecodeRepair": "Sửa chữa mã thời gian của Sony",
+    "sonyTimecodeRepairDescriptionFive": "Hộp công cụ này đã được ném cùng nhau cho Alister Robbie. Cảm ơn George Elias, Jamie LeJeune & Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Hộp công cụ này đã được ném cùng nhau cho Alister Robbie. Cảm ơn bạn đã thử Jamie LeJeune!",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro hiện không phải lúc nào cũng diễn giải chính xác mã thời gian từ một số Máy ảnh Sony đang ghi vào trình bao bọc MP4.",
     "sonyTimecodeRepairDescriptionThree": "để bạn có thể dễ dàng gửi các mốc thời gian từ Final Cut Pro sang DaVinci Resolve, Baselight hoặc Adobe Premiere (với XtoCC).",
@@ -2284,6 +2328,8 @@
     "suggestMotionFeatureToApple": "Đề xuất tính năng chuyển động cho Apple",
     "support": "Ủng hộ",
     "swipe": "Vuốt",
+    "swipeLeftAction": "Hành động vuốt sang trái",
+    "swipeRightAction": "Thao tác vuốt sang phải",
     "switchBetweenInsideOutsideMarks": "Chuyển đổi giữa các mặt nạ bên trong / bên ngoài",
     "switchDaVinciResolveControlSurfaceTo": "Chuyển DaVinci Resolve Control Surface thành",
     "switchLoupedeckCTTo": "Chuyển Loupedeck CT thành",

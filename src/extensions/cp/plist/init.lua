@@ -210,9 +210,6 @@ end
 --- cp.plist.fileToTable(plistFileName) -> table | nil, string
 --- Function
 --- Converts plist data from a binary or XML file into a LUA Table.
---- It will check the file prior to loading to determine which type it is.
---- If you know which type of file you're dealing with in advance, you can use
---- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead.
 ---
 --- Parameters:
 ---  * plistFileName    - Path & Filename of the XML File
@@ -220,6 +217,10 @@ end
 --- Returns:
 ---  * data             - A table of plist data, or `nil` if there was a problem.
 ---  * err              - The error message, or `nil` if there were no problems.
+---
+--- Notes:
+---  * It will check the file prior to loading to determine which type it is.
+---  * If you know which type of file you're dealing with in advance, you can use cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead.
 function plist.fileToTable(plistFileName)
     if not plistFileName then
         return nil, "No plistFileName provided."

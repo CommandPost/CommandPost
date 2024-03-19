@@ -654,6 +654,104 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Scale X:
+    --------------------------------------------------------------------------------
+    local scaleX = transform:scaleX()
+    local shiftScaleXUpdating = false
+    local shiftScaleXValue = 0
+    local updateShiftScaleX = deferred.new(0.01):action(function()
+        return If(function() return not shiftScaleXUpdating and shiftScaleXValue ~= 0 end)
+        :Then(
+            Do(scaleX:doShow())
+            :Then(function()
+                shiftScaleXUpdating = true
+                local currentValue = scaleX:value()
+                if currentValue then
+                    scaleX:value(currentValue + shiftScaleXValue)
+                    shiftScaleXValue = 0
+                end
+                shiftScaleXUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateShiftScaleX")
+        :Now()
+    end)
+    local shiftScale = function(value)
+        shiftScaleXValue = shiftScaleXValue + value
+        updateShiftScaleX()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftScaleXUp" .. shiftAmount)
+            :titled(i18n("shiftScaleXUp", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount) end)
+            :whenRepeated(function() shiftScale(shiftAmount) end)
+
+        fcpxCmds:add("shiftScaleXDown" .. shiftAmount)
+            :titled(i18n("shiftScaleXDown", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount * -1) end)
+            :whenRepeated(function() shiftScale(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetScaleX")
+        :titled(i18n("reset") .. " " .. i18n("scale") .. " X " .. i18n("all"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            scaleX:show()
+            scaleX:value(100)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Scale Y:
+    --------------------------------------------------------------------------------
+    local scaleY = transform:scaleY()
+    local shiftScaleYUpdating = false
+    local shiftScaleYValue = 0
+    local updateShiftScaleY = deferred.new(0.01):action(function()
+        return If(function() return not shiftScaleYUpdating and shiftScaleYValue ~= 0 end)
+        :Then(
+            Do(scaleY:doShow())
+            :Then(function()
+                shiftScaleYUpdating = true
+                local currentValue = scaleY:value()
+                if currentValue then
+                    scaleY:value(currentValue + shiftScaleYValue)
+                    shiftScaleYValue = 0
+                end
+                shiftScaleYUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateShiftScaleY")
+        :Now()
+    end)
+    local shiftScale = function(value)
+        shiftScaleYValue = shiftScaleYValue + value
+        updateShiftScaleY()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftScaleUpY" .. shiftAmount)
+            :titled(i18n("shiftScaleYUp", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount) end)
+            :whenRepeated(function() shiftScale(shiftAmount) end)
+
+        fcpxCmds:add("shiftScaleDownY" .. shiftAmount)
+            :titled(i18n("shiftScaleYDown", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount * -1) end)
+            :whenRepeated(function() shiftScale(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetScaleY")
+        :titled(i18n("reset") .. " " .. i18n("scale") .. " Y " .. i18n("all"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            scaleY:show()
+            scaleY:value(100)
+        end)
+
+    --------------------------------------------------------------------------------
     -- Rotation:
     --------------------------------------------------------------------------------
     local rotation = fcp.inspector.video:transform():rotation()
@@ -689,6 +787,289 @@ function plugin.init(deps)
         :whenPressed(function()
             rotation:show()
             rotation:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Reorient - Tilt:
+    --------------------------------------------------------------------------------
+    local tilt = fcp.inspector.video:reorient():tilt()
+
+    local shiftTiltValue = 0
+    local updateShiftTilt = deferred.new(0.01):action(function()
+        tilt:show()
+        local original = tilt:value()
+        tilt:value(original + shiftTiltValue)
+        shiftTiltValue = 0
+    end)
+    local shiftTilt = function(value)
+        shiftTiltValue = shiftTiltValue + value
+        updateShiftTilt()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftReorientTiltLeft" .. shiftAmount)
+            :titled(i18n("shiftReorientTiltLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftTilt(shiftAmount) end)
+            :whenRepeated(function() shiftTilt(shiftAmount) end)
+
+        fcpxCmds:add("shiftReorientTiltRight" .. shiftAmount)
+            :titled(i18n("shiftReorientTiltRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftTilt(shiftAmount * -1) end)
+            :whenRepeated(function() shiftTilt(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetReorientTilt")
+        :titled(i18n("reset") .. " " .. i18n("reorient") .. " " .. i18n("tilt"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            tilt:show()
+            tilt:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Reorient - Pan:
+    --------------------------------------------------------------------------------
+    local pan = fcp.inspector.video:reorient():pan()
+
+    local shiftPanValue = 0
+    local updateShiftPan = deferred.new(0.01):action(function()
+        pan:show()
+        local original = pan:value()
+        pan:value(original + shiftPanValue)
+        shiftPanValue = 0
+    end)
+    local shiftPan = function(value)
+        shiftPanValue = shiftPanValue + value
+        updateShiftPan()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftReorientPanLeft" .. shiftAmount)
+            :titled(i18n("shiftReorientPanLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftPan(shiftAmount) end)
+            :whenRepeated(function() shiftPan(shiftAmount) end)
+
+        fcpxCmds:add("shiftReorientPanRight" .. shiftAmount)
+            :titled(i18n("shiftReorientPanRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftPan(shiftAmount * -1) end)
+            :whenRepeated(function() shiftPan(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetReorientPan")
+        :titled(i18n("reset") .. " " .. i18n("reorient") .. " " .. i18n("pan"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            pan:show()
+            pan:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Reorient - Roll:
+    --------------------------------------------------------------------------------
+    local roll = fcp.inspector.video:reorient():roll()
+
+    local shiftRollValue = 0
+    local updateShiftRoll = deferred.new(0.01):action(function()
+        roll:show()
+        local original = roll:value()
+        roll:value(original + shiftRollValue)
+        shiftRollValue = 0
+    end)
+    local shiftRoll = function(value)
+        shiftRollValue = shiftRollValue + value
+        updateShiftRoll()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftReorientRollLeft" .. shiftAmount)
+            :titled(i18n("shiftReorientRollLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftRoll(shiftAmount) end)
+            :whenRepeated(function() shiftRoll(shiftAmount) end)
+
+        fcpxCmds:add("shiftReorientRollRight" .. shiftAmount)
+            :titled(i18n("shiftReorientRollRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftRoll(shiftAmount * -1) end)
+            :whenRepeated(function() shiftRoll(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetReorientRoll")
+        :titled(i18n("reset") .. " " .. i18n("reorient") .. " " .. i18n("roll"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            roll:show()
+            roll:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Orientation - Tilt:
+    --------------------------------------------------------------------------------
+    local tilt = fcp.inspector.video:orientation():tilt()
+
+    local shiftTiltValue = 0
+    local updateShiftTilt = deferred.new(0.01):action(function()
+        tilt:show()
+        local original = tilt:value()
+        tilt:value(original + shiftTiltValue)
+        shiftTiltValue = 0
+    end)
+    local shiftTilt = function(value)
+        shiftTiltValue = shiftTiltValue + value
+        updateShiftTilt()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftOrientationTiltLeft" .. shiftAmount)
+            :titled(i18n("shiftOrientationTiltLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftTilt(shiftAmount) end)
+            :whenRepeated(function() shiftTilt(shiftAmount) end)
+
+        fcpxCmds:add("shiftOrientationTiltRight" .. shiftAmount)
+            :titled(i18n("shiftOrientationTiltRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftTilt(shiftAmount * -1) end)
+            :whenRepeated(function() shiftTilt(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetOrientationTilt")
+        :titled(i18n("reset") .. " " .. i18n("orientation") .. " " .. i18n("tilt"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            tilt:show()
+            tilt:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Orientation - Pan:
+    --------------------------------------------------------------------------------
+    local pan = fcp.inspector.video:orientation():pan()
+
+    local shiftPanValue = 0
+    local updateShiftPan = deferred.new(0.01):action(function()
+        pan:show()
+        local original = pan:value()
+        pan:value(original + shiftPanValue)
+        shiftPanValue = 0
+    end)
+    local shiftPan = function(value)
+        shiftPanValue = shiftPanValue + value
+        updateShiftPan()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftOrientationPanLeft" .. shiftAmount)
+            :titled(i18n("shiftOrientationPanLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftPan(shiftAmount) end)
+            :whenRepeated(function() shiftPan(shiftAmount) end)
+
+        fcpxCmds:add("shiftOrientationPanRight" .. shiftAmount)
+            :titled(i18n("shiftOrientationPanRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftPan(shiftAmount * -1) end)
+            :whenRepeated(function() shiftPan(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetOrientationPan")
+        :titled(i18n("reset") .. " " .. i18n("orientation") .. " " .. i18n("pan"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            pan:show()
+            pan:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Orientation - Roll:
+    --------------------------------------------------------------------------------
+    local roll = fcp.inspector.video:orientation():roll()
+
+    local shiftRollValue = 0
+    local updateShiftRoll = deferred.new(0.01):action(function()
+        roll:show()
+        local original = roll:value()
+        roll:value(original + shiftRollValue)
+        shiftRollValue = 0
+    end)
+    local shiftRoll = function(value)
+        shiftRollValue = shiftRollValue + value
+        updateShiftRoll()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftOrientationRollLeft" .. shiftAmount)
+            :titled(i18n("shiftOrientationRollLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftRoll(shiftAmount) end)
+            :whenRepeated(function() shiftRoll(shiftAmount) end)
+
+        fcpxCmds:add("shiftOrientationRollRight" .. shiftAmount)
+            :titled(i18n("shiftOrientationRollRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftRoll(shiftAmount * -1) end)
+            :whenRepeated(function() shiftRoll(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetOrientationRoll")
+        :titled(i18n("reset") .. " " .. i18n("orientation") .. " " .. i18n("roll"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            roll:show()
+            roll:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Orientation - Field of View:
+    --------------------------------------------------------------------------------
+    local fieldOfView = fcp.inspector.video:orientation():fieldOfView()
+
+    local shiftFieldOfViewValue = 0
+    local updateShiftFieldOfView = deferred.new(0.01):action(function()
+        fieldOfView:show()
+        local original = fieldOfView:value()
+        fieldOfView:value(original + shiftFieldOfViewValue)
+        shiftFieldOfViewValue = 0
+    end)
+    local shiftFieldOfView = function(value)
+        shiftFieldOfViewValue = shiftFieldOfViewValue + value
+        updateShiftFieldOfView()
+    end
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
+        fcpxCmds:add("shiftOrientationFieldOfViewLeft" .. shiftAmount)
+            :titled(i18n("shiftOrientationFieldOfViewLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftFieldOfView(shiftAmount) end)
+            :whenRepeated(function() shiftFieldOfView(shiftAmount) end)
+
+        fcpxCmds:add("shiftOrientationFieldOfViewRight" .. shiftAmount)
+            :titled(i18n("shiftOrientationFieldOfViewRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftFieldOfView(shiftAmount * -1) end)
+            :whenRepeated(function() shiftFieldOfView(shiftAmount * -1) end)
+    end
+
+    fcpxCmds:add("resetOrientationFieldOfView")
+        :titled(i18n("reset") .. " " .. i18n("reorient") .. " " .. i18n("fieldOfView"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fieldOfView:show()
+            fieldOfView:value(0)
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Orientation - Mapping:
+    --------------------------------------------------------------------------------
+    fcpxCmds:add("setOrientationMappingToNormal")
+        :titled(i18n("orientationMapping") .. " - " .. i18n("normal"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:orientation():mapping():value(fcp:string("FFOrientationMappingNormal"))
+        end)
+
+    fcpxCmds:add("setOrientationMappingToTinyPlanet")
+        :titled(i18n("orientationMapping") .. " - " .. i18n("tinyPlanet"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:orientation():mapping():value(fcp:string("FFOrientationMappingTinyPlanet"))
         end)
 
     --------------------------------------------------------------------------------
@@ -1014,7 +1395,7 @@ function plugin.init(deps)
         fcpxCmds:add("distortBottomRightYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("bottom") .. " " .. i18n("right") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                distortBottomRightYValue = distortBottomRightYValue + c
+                distortBottomRightYValue = distortBottomRightYValue - c
                 updateDistortBottomRightY()
             end)
 
@@ -1070,7 +1451,7 @@ function plugin.init(deps)
         fcpxCmds:add("distortTopRightYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("top") .. " " .. i18n("right") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                distortTopRightYValue = distortTopRightYValue + c
+                distortTopRightYValue = distortTopRightYValue - c
                 updateDistortTopRightY()
             end)
     end
@@ -1194,6 +1575,113 @@ function plugin.init(deps)
             anchor:y(0)
         end)
 
+    --------------------------------------------------------------------------------
+    -- Toggle Keyframes:
+    --------------------------------------------------------------------------------
+    fcpxCmds:add("toggleKeyframeOpacity")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("opacity"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:compositing():opacity():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframePosition")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("position"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:transform():position():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeRotation")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("rotation"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:transform():rotation():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeScaleAll")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("scale") .. " - " .. i18n("all"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:transform():scaleAll():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeScaleX")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("scale") .. " - X")
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:transform():scaleX():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeScaleY")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("scale") .. " - Y")
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:transform():scaleY():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeAnchor")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("anchor"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:transform():anchor():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeCropLeft")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("crop") .. " - " .. i18n("left"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:crop():left():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeCropRight")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("crop") .. " - " .. i18n("right"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:crop():right():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeCropTop")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("crop") .. " - " .. i18n("top"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:crop():top():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeCropBottom")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("crop") .. " - " .. i18n("bottom"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:crop():bottom():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeDistortBottomLeft")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("distort") .. " - " .. i18n("bottom") .. " - " .. i18n("left"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:distort():bottomLeft():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeDistortBottomRight")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("distort") .. " - " .. i18n("bottom") .. " - " .. i18n("right"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:distort():bottomRight():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeDistortTopRight")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("distort") .. " - " .. i18n("top") .. " - " .. i18n("right"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:distort():topRight():show():keyframe():addKeyframe()
+        end)
+
+    fcpxCmds:add("toggleKeyframeDistortTopLeft")
+        :titled(i18n("toggleKeyframe") .. " - " .. i18n("distort") .. " - " .. i18n("top") .. " - " .. i18n("left"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            fcp.inspector.video:distort():bottomRight():show():keyframe():addKeyframe()
+        end)
 end
 
 return plugin

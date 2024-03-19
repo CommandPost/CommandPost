@@ -3,7 +3,7 @@
 --- Represents the Tool Palette Menu Button in the Timeline.
 ---
 --- Extends:
---- * [MenuButton](cp.ui.MenuButton.md)
+---  * [MenuButton](cp.ui.MenuButton.md)
 
 local require                   = require
 

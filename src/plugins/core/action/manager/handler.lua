@@ -26,7 +26,7 @@ local handler = {}
 handler.mt = {}
 handler.mt.__index = handler.mt
 
---- plugins.core.action.handler.new(id, group) -> handler
+--- plugins.core.action.handler.new(id, group, label) -> handler
 --- Constructor
 --- Creates a new handler with the specified ID.
 ---
@@ -49,8 +49,7 @@ end
 
 --- plugins.core.action.handler:onExecute(executeFn) -> handler
 --- Method
---- Configures the function to call when a choice is executed. This will be passed
---- the choice parameters in a single table.
+--- Configures the function to call when a choice is executed. This will be passed the choice parameters in a single table.
 ---
 --- Parameters:
 ---  * `executeFn`       - The function to call when executing.
@@ -64,9 +63,7 @@ end
 
 --- plugins.core.action.handler:onChoices(choicesFn) -> handler
 --- Method
---- Adds a callback function which will receive the `cp.choices` instance to add
---- choices to. This will only get called when required - the results will be cached
---- if the [cached](#cached) property is set to `true`.
+--- Adds a callback function which will receive the `cp.choices` instance to add choices to. This will only get called when required - the results will be cached if the [cached](#cached) property is set to `true`.
 ---
 --- Parameters:
 ---  * `choicesFn`       - The function with the signature of `function(choices) -> nothing`
@@ -80,8 +77,7 @@ end
 
 --- plugins.core.action.handler:onActionId(actionFn) -> handler
 --- Method
---- Configures a function to handle converting an action to unique ID.
---- The function is passed the `action` table and should return a string.
+--- Configures a function to handle converting an action to unique ID. The function is passed the `action` table and should return a string.
 ---
 --- Parameters:
 ---  * `actionFn`    - The function with a signature of `function(action) -> string`
@@ -193,6 +189,12 @@ end
 --- plugins.core.action.handler:actionId(action) -> string
 --- Method
 --- Returns a string that can be used as a unique ID for the action details.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function handler.mt:actionId(action)
     return self._onActionId(action)
 end

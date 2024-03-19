@@ -29,10 +29,10 @@ end
 --- Checks if the provided `axuielement` is a RadioGroup.
 ---
 --- Parameters:
---- * element	- The element to check.
+---  * element	- The element to check.
 ---
 --- Returns:
---- * `true` if the element is a RadioGroup.
+---  * `true` if the element is a RadioGroup.
 function RadioGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioGroup"
 end
@@ -70,7 +70,7 @@ end
 --- A `cp.prop` containing `table` of `axuielement` options available in the radio group.
 ---
 --- Returns:
---- * The `cp.prop` of options.
+---  * The `cp.prop` of options.
 function RadioGroup.lazy.prop:optionsUI()
     return self.UI:mutate(function(original)
         local ui = original()
@@ -83,7 +83,7 @@ end
 --- A `table` containing `cp.ui.Element` available in the radio group.
 ---
 --- Returns:
---- * The `cp.prop` of options.
+---  * The `cp.prop` of options.
 function RadioGroup.lazy.value:options()
     local optionsUI = self:optionsUI()
 
@@ -137,10 +137,10 @@ end
 --- A [Statement](cp.rx.go.Statement.md) which will attempt to select the option at the specified `index`.
 ---
 --- Parameters:
---- * index     - The index to select. Must be between 1 and [optionCount](#optionCount).
+---  * index     - The index to select. Must be between 1 and [optionCount](#optionCount).
 ---
 --- Returns:
---- * The `Statement`, which will resolve to `true` if successful or send an error if not.
+---  * The `Statement`, which will resolve to `true` if successful or send an error if not.
 function RadioGroup:doSelectOption(index)
     return If(self.isEnabled)
     :Then(function()
@@ -162,10 +162,10 @@ end
 --- Selects the next option in the group. Cycles from the last to the first option.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `RadioGroup`.
+---  * The `RadioGroup`.
 function RadioGroup:nextOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
@@ -178,14 +178,13 @@ end
 
 --- cp.ui.RadioGroup:doNextOption() -> cp.rx.go.Statement<boolean>
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that selects the next option in the group.
---- Cycles from the last to the first option.
+--- A [Statement](cp.rx.go.Statement.md) that selects the next option in the group. Cycles from the last to the first option.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, that resolves to `true` if successful or sends an error if not.
+---  * The `Statement`, that resolves to `true` if successful or sends an error if not.
 function RadioGroup.lazy.method:doNextOption()
     return If(self.isEnabled)
     :Then(function()
@@ -202,10 +201,10 @@ end
 --- Selects the previous option in the group. Cycles from the first to the last item.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `RadioGroup`.
+---  * The `RadioGroup`.
 function RadioGroup:previousOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
@@ -218,14 +217,13 @@ end
 
 --- cp.ui.RadioGroup:doPreviousOption() -> cp.rx.go.Statement<boolean>
 --- Method
---- A [Statement](cp.rx.go.Statement.md) that selects the previous option in the group.
---- Cycles from the first to the last item.
+--- A [Statement](cp.rx.go.Statement.md) that selects the previous option in the group. Cycles from the first to the last item.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Statement`, which resolves to `true` if successful or sends an error if not..
+---  * The `Statement`, which resolves to `true` if successful or sends an error if not..
 function RadioGroup.lazy.method:doPreviousOption()
     return If(self.isEnabled)
     :Then(function()

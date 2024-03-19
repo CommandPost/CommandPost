@@ -236,8 +236,7 @@ end
 
 --- cp.ui.OldTable:rowsUI([filterFn]) -> table of axuielements | nil
 --- Method
---- Returns the list of rows in the table. An optional filter function may be provided.
---- It will be passed a single `AXRow` element and should return `true` if the row should be included.
+--- Returns the list of rows in the table. An optional filter function may be provided. It will be passed a single `AXRow` element and should return `true` if the row should be included.
 ---
 --- Parameters:
 ---  * `filterFn`   - An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
@@ -262,8 +261,7 @@ end
 
 --- cp.ui.OldTable:topRowsUI(filterFn) -> table of axuielements | nil
 --- Method
---- Returns a list of top-level rows in the table. An optional filter function may be provided.
---- It will be passed a single `AXRow` element and should return `true` if the row should be included.
+--- Returns a list of top-level rows in the table. An optional filter function may be provided. It will be passed a single `AXRow` element and should return `true` if the row should be included.
 ---
 --- Parameters:
 ---  * `filterFn`   - An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
@@ -370,7 +368,7 @@ end
 --- Parameters:
 ---  * None
 ---
---- Return:
+--- Returns:
 ---  * The frame in the form of a `hs.geometry` rect object.
 function Table:viewFrame()
     local ui = self:UI()
@@ -401,7 +399,7 @@ end
 --- Parameters:
 ---  * rowUI - The `hs.axuielement` object of the row you want to show.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:showRow(rowUI)
     local ui = self:UI()
@@ -443,7 +441,7 @@ end
 --- Parameters:
 ---  * index - The index of the row you wish to show.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:showRowAt(index)
     local rows = self:rowsUI()
@@ -462,7 +460,7 @@ end
 --- Parameters:
 ---  * rowUI - The `hs.axuielement` object of the row you want to select.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:selectRow(rowUI) -- luacheck: ignore
     if rowUI then
@@ -480,7 +478,7 @@ end
 --- Parameters:
 ---  * index - The index of the row you wish to select.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:selectRowAt(index)
     local ui = self:rowsUI()
@@ -497,7 +495,7 @@ end
 --- Parameters:
 ---  * rowUI - The `hs.axuielement` object of the row you want to deselect.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:deselectRow(rowUI) -- luacheck: ignore
     if rowUI then
@@ -515,7 +513,7 @@ end
 --- Parameters:
 ---  * index - The index of the row you wish to deselect.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:deselectRowAt(index)
     local ui = self:rowsUI()
@@ -532,7 +530,7 @@ end
 --- Parameters:
 ---  * rowUI - A table of `hs.axuielement` objects for the rows you want to select.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:selectAll(rowsUI)
     rowsUI = rowsUI or self:rowsUI()
@@ -551,7 +549,7 @@ end
 --- Parameters:
 ---  * rowUI - A table of `hs.axuielement` objects for the rows you want to deselect.
 ---
---- Return:
+--- Returns:
 ---  * `true` if successful, otherwise `false`.
 function Table:deselectAll(rowsUI)
     rowsUI = rowsUI or self:selectedRowsUI()

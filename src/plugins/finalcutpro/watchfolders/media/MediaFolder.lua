@@ -36,7 +36,7 @@ local MediaFolder = {}
 MediaFolder.mt = {}
 MediaFolder.mt.__index = MediaFolder.mt
 
---- plugins.finalcutpro.watchfolders.media.MediaFolder.new() -> MediaFolder
+--- plugins.finalcutpro.watchfolders.media.MediaFolder.new(mod, path, videoTag, audioTag, imageTag) -> MediaFolder
 --- Constructor
 --- Creates a new Media Folder.
 ---
@@ -66,11 +66,10 @@ end
 
 --- plugins.finalcutpro.watchfolders.media.MediaFolder.thaw(details) -> MediaFolder
 --- Constructor
---- Creates a new MediaFolder based on the details provided.
---- The details have typically come from a call to `MediaFolder.freeze(...)`
+--- Creates a new MediaFolder based on the details provided. The details have typically come from a call to `MediaFolder.freeze(...)`
 ---
 --- Parameters:
----  * details   - The table with details of the media folder when it was frozen.
+---  * details - The table with details of the media folder when it was frozen.
 ---
 --- Returns:
 ---  * A new MediaFolder instance with the specified details.
@@ -85,8 +84,7 @@ end
 
 --- plugins.finalcutpro.watchfolders.media.MediaFolder.freeze(mediaFolder) -> table
 --- Function
---- Returns a table with the details of the `MediaFolder`, ready to be stored.
---- It can be brought back via the `MediaFolder.thaw(...)` function.
+--- Returns a table with the details of the `MediaFolder`, ready to be stored. It can be brought back via the `MediaFolder.thaw(...)` function.
 ---
 --- Parameters:
 ---  * mediaFolder   - The `MediaFolder` to freeze.
@@ -108,7 +106,7 @@ MediaFolder.mt.freeze = MediaFolder.freeze
 --- Method
 --- Initialises the folder, getting any watchers, notifications, etc. running.
 ---
----- Parameters:
+--- Parameters:
 ---  * None
 ---
 --- Returns:
@@ -148,7 +146,7 @@ end
 --- Method
 --- Tags a table of files.
 ---
----- Parameters:
+--- Parameters:
 ---  * None
 ---
 --- Returns:
@@ -237,7 +235,7 @@ end
 --- Method
 --- Checks Notifications.
 ---
----- Parameters:
+--- Parameters:
 ---  * None
 ---
 --- Returns:
@@ -250,7 +248,7 @@ function MediaFolder.mt:checkNotifications()
     end
 end
 
---- plugins.finalcutpro.watchfolders.media.MediaFolder:processFiles() -> none
+--- plugins.finalcutpro.watchfolders.media.MediaFolder:processFiles(files, fileFlags) -> none
 --- Method
 --- Process files.
 ---

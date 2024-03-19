@@ -67,12 +67,12 @@ function commands.group(id)
     return commands._groups[id]
 end
 
---- cp.commands.groups() -> table of cp.commands
+--- cp.commands.groups(id) -> table of cp.commands
 --- Function
 --- Returns a table with the set of commands.
 ---
 --- Parameters:
----  * `id`      - The ID to retrieve
+---  * `id` - The ID to retrieve
 ---
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
@@ -85,7 +85,7 @@ end
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
 ---
 --- Parameters:
----  * `id`     - The unique ID for this command group.
+---  * `id` - The unique ID for this command group.
 ---
 --- Returns:
 ---  * cp.commands - The command group that was created.
@@ -100,6 +100,7 @@ function commands.new(id)
     }, commands.mt)
 
     prop.bind(o) {
+
 --- cp.commands.enabled <cp.prop: boolean>
 --- Field
 --- If enabled, the commands in the group will be active as well.
@@ -137,18 +138,19 @@ end
 
 --- cp.commands:add(commandId) -> cp.commands.command
 --- Method
---- Adds a new command with the specified ID to this group. Additional configuration
---- should be applied to the returned `command` instance. Eg:
----
---- ```lua
---- myCommands:add("fooBar"):groupedBy("foo"):whenActivated(function() ... end)`
---- ```
+--- Adds a new command with the specified ID to this group. Additional configuration should be applied to the returned `command` instance. Eg:
 ---
 --- Parameters:
 ---  * `commandId`   - The unique ID for the new command.
 ---
 --- Returns:
 ---  * The new `cp.commands.command` instance.
+---
+--- Notes:
+---  * For example:
+--- ```lua
+--- myCommands:add("fooBar"):groupedBy("foo"):whenActivated(function() ... end)`
+--- ```
 function commands.mt:add(commandId)
     local cmd = command.new(commandId, self)
     self._commands[commandId] = cmd
@@ -162,7 +164,7 @@ end
 --- Returns the command with the specified ID, or `nil` if none exists.
 ---
 --- Parameters:
----  * `commandId`   - The command ID to retrieve.
+---  * `commandId` - The command ID to retrieve.
 ---
 --- Returns:
 ---  * The `cp.commands.command`, or `nil`.
@@ -172,19 +174,22 @@ end
 
 --- cp.commands:getAll() -> table of cp.commands.command
 --- Method
---- Returns the table of commands, with the key being the ID and the value being the command instance. Eg:
----
---- ```lua
---- for id,cmd in pairs(myCommands:getAll()) do
----     ...
---- end
---- ```
+--- Returns the table of commands, with the key being the ID and the value being the command instance.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * A table
+---
+--- Notes:
+---  * For example:
+---
+--- ```lua
+--- for id,cmd in pairs(myCommands:getAll()) do
+---     ...
+--- end
+--- ```
 function commands.mt:getAll()
     return self._commands
 end
@@ -294,8 +299,7 @@ end
 
 --- cp.commands:activate(successFn, failureFn) -> nil
 --- Method
---- Will trigger an 'activate' event, and then execute either the `successFn` or `failureFn` if the
---- command group is not enabled within 5 seconds.
+--- Will trigger an 'activate' event, and then execute either the `successFn` or `failureFn` if the command group is not enabled within 5 seconds.
 ---
 --- Parameters:
 ---  * successFn     - the function to call if successfully activated.
@@ -328,8 +332,7 @@ end
 
 --- cp.commands:saveShortcuts() -> table
 --- Method
---- Returns a table that is approprate to be saved to file that contains the shortuct
---- for all contained `cp.commands.command` instances.
+--- Returns a table that is approprate to be saved to file that contains the shortuct for all contained `cp.commands.command` instances.
 ---
 --- Parameters:
 ---  * None
@@ -354,8 +357,7 @@ end
 
 --- cp.commands:loadShortcuts(data) -> nil
 --- Method
---- Loads the shortcut details in the data table and applies them to the commands in this group.
---- The data should probably come from the `saveShortcuts` method.
+--- Loads the shortcut details in the data table and applies them to the commands in this group. The data should probably come from the `saveShortcuts` method.
 ---
 --- Parameters:
 ---  * data      - The data table containing shortcuts.

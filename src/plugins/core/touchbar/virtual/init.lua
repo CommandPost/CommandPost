@@ -277,7 +277,7 @@ function mod.hide()
     end
 end
 
---- plugins.core.touchbar.virtual.callback() -> none
+--- plugins.core.touchbar.virtual.callback(_, message) -> none
 --- Function
 --- Callback Function for the Virtual Touch Bar
 ---

@@ -187,6 +187,7 @@ local plugin = {
     dependencies    = {
         ["core.preferences.manager"] = "manager",
         ["core.action.manager"] = "actionmanager",
+        ["core.controlsurfaces.manager"] = "controlSurfaceManager",
     }
 }
 
@@ -197,6 +198,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     mod._manager = deps.manager
     local actionmanager = deps.actionmanager
+    local controlSurfaceManager = deps.controlSurfaceManager
 
     --------------------------------------------------------------------------------
     -- Setup a global shortcut function for trigger actions:
@@ -257,7 +259,7 @@ function plugin.init(deps, env)
             {
                 label 	    = "Learn More...",
                 width       = 100,
-                onclick	    = function() execute("open 'https://help.commandpost.io/advanced/controlling_commandpost'") end,
+                onclick	    = function() execute("open 'https://commandpost.io/scripting/applescript/'") end,
             }
         )
 
@@ -276,7 +278,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local controllerCallback = function(_, params)
         if params["type"] == "examples" then
-            os.execute('open "http://help.commandpost.io/advanced/snippets"')
+            os.execute('open "https://commandpost.io/scripting/snippets-for-actions/"')
         elseif params["type"] == "new" then
             --------------------------------------------------------------------------------
             -- New Snippet:
@@ -421,6 +423,11 @@ function plugin.init(deps, env)
                     webviewAlert(webview, function() end, i18n("noSnippetExists"), "", i18n("ok"))
                 end
             end
+        elseif params["type"] == "openControlSurfaces" then
+            --------------------------------------------------------------------------------
+            -- Open Control Surfaces:
+            --------------------------------------------------------------------------------
+            controlSurfaceManager.show()
         end
     end
     deps.manager.addHandler("snippets", controllerCallback)

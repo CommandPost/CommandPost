@@ -98,13 +98,23 @@ Statement.mt.__index = Statement.mt
 
 --- cp.rx.go.Statement.toObservable(thing[, params]) -> cp.rx.Observable
 --- Function
---- Converts the `thing` into an `Observable`. It converts the following:
+--- Converts the `thing` into an `Observable`.
 ---
---- * `Observable`          - Returned unchanged.
---- * `cp.rx.go.Statement`  - Returns the result of the `toObservable()` method. Note: this will cancel any scheduled executions for the Statement.
---- * `cp.prop`             - Returns the `cp.prop:toObservable()` value.
---- * `function`            - Executes the function, passing in the `params` as a list of values, returning the results converted to an `Observable`.
---- * Other values          - Returned via `Observable.of(thing)`.
+--- Parameters:
+---  * thing    - The thing to convert.
+---  * params   - Optional table list to pass as parameters for the `thing` if it's a `function`.
+---
+--- Returns:
+---  * The `Observable`.
+---
+--- Notes:
+--- It converts the following:
+---
+---  * `Observable`          - Returned unchanged.
+---  * `cp.rx.go.Statement`  - Returns the result of the `toObservable()` method. Note: this will cancel any scheduled executions for the Statement.
+---  * `cp.prop`             - Returns the `cp.prop:toObservable()` value.
+---  * `function`            - Executes the function, passing in the `params` as a list of values, returning the results converted to an `Observable`.
+---  * Other values          - Returned via `Observable.of(thing)`.
 ---
 --- Note that with `functions`, the function is not executed immediately, but it will be passed the params as
 --- a list when the resulting `Observable` is subscribed to. For example:
@@ -117,13 +127,6 @@ Statement.mt.__index = Statement.mt
 --- -- now the function has been executed
 --- ```
 --- This results in printing `6`.
----
---- Parameters:
----  * thing    - The thing to convert.
----  * params   - Optional table list to pass as parameters for the `thing` if it's a `function`.
----
---- Returns:
----  * The `Observable`.
 function Statement.toObservable(thing, params)
     local obs
     if type(thing) == "function" then
@@ -156,6 +159,15 @@ end
 --- Function
 --- Converts a list of things into a list of `Observables` of those things.
 ---
+--- Parameters:
+---  * things       - a table list of things to convert to `Observables`.
+---  * params       - an optional table list of parameters to pass to any `function` things.
+---
+--- Returns:
+---  * A table list of the things, converted to `Observable`.
+---
+--- Notes:
+---
 --- For example:
 --- ```lua
 --- result = toObservables({1, 2, 3})
@@ -173,12 +185,6 @@ end
 ---
 --- Any type supported by [toObservable](#toObservable) can be included in the `things` array.
 ---
---- Parameters:
----  * things       - a table list of things to convert to `Observables`.
----  * params       - an optional table list of parameters to pass to any `function` things.
----
---- Returns:
----  * A table list of the things, converted to `Observable`.
 function Statement.toObservables(things, params)
     local observables = {}
     for _,thing in ipairs(things) do
@@ -237,14 +243,16 @@ end
 --- cp.rx.go.Statement.Definition:onInit(initFn) -> Statement.Definition
 --- Method
 --- Defines the function which will be called to initialise the context.
---- The function will be passed the `context` table as the first parameter,
---- and any other parameters passed to the statement follow.
 ---
 --- Parameters:
 ---  * initFn       - The init function.
 ---
 --- Returns:
 ---  * The Statement Definition
+---
+--- Notes:
+--- * The function will be passed the `context` table as the first parameter,
+---   and any other parameters passed to the statement follow.
 function Statement.Definition.mt:onInit(initFn)
     assert(type(initFn) == "function", "Parameter #1 must be a function")
     self._onInit = initFn
@@ -253,9 +261,7 @@ end
 
 --- cp.rx.go.Statement.Definition:onObservable(observableFn) -> Statement.Definition
 --- Method
---- Defines the function which will be called to create the [Observable](cp.rx.Observable.md)
---- for the [Statement](cp.rx.go.Statement.md).
---- The function will be passed the `context` table and must return an `Observable`.
+--- Defines the function which will be called to create the [Observable](cp.rx.Observable.md) for the [Statement](cp.rx.go.Statement.md). The function will be passed the `context` table and must return an `Observable`.
 ---
 --- Parameters:
 ---  * observableFn     - The observable creator function.
@@ -377,8 +383,7 @@ local defaultObserverFactory = simpleObserverFactory
 
 --- cp.rx.go.Statement.defaultObserverFactory([factoryFn]) -> nil
 --- Function
---- Gets/sets the factory function which creates a new `Observer` for Statements which are executed without one being provided.
---- By default, an `Observer` which only outputs errors via the standard `error` function is provided.
+--- Gets/sets the factory function which creates a new `Observer` for Statements which are executed without one being provided. By default, an `Observer` which only outputs errors via the standard `error` function is provided.
 ---
 --- Parameters:
 ---  * factoryFn     - if provided, replaces the current default factory function.
@@ -446,9 +451,7 @@ end
 
 --- cp.rx.go.Statement:Label(label) -> Statement
 --- Method
---- Sets the custom `label` for the Statement. This will
---- be used instead of the `name` when outputting it as a `string`
---- if set. Defaults to `nil`.
+--- Sets the custom `label` for the Statement. This will be used instead of the `name` when outputting it as a `string` if set. Defaults to `nil`.
 ---
 --- Parameters:
 ---  * label - Optional new value for the label. If provided, the `Statement` is returned.
@@ -480,14 +483,15 @@ end
 --- cp.rx.go.Statement:Finally(handler) -> Statement
 --- Method
 --- Provides a function handler to get called when the statement is done, either via an `onError` or `onComplete` signal.
---- The original signal will be passed on without modification. This will trigger after any [Catch](#Catch) handler, so
---- will be affected by the results of that.
 ---
 --- Parameters:
---- * handler   - The handler function.
+---  * handler   - The handler function.
 ---
 --- Returns:
---- * The same `Statement` instance.
+---  * The same `Statement` instance.
+---
+--- Notes:
+---  * The original signal will be passed on without modification. This will trigger after any [Catch](#Catch) handler, so will be affected by the results of that.
 function Statement.mt:Finally(handler)
     local context = self:context()
     context._finally = handler
@@ -497,13 +501,15 @@ end
 --- cp.rx.go.Statement:Catch(handler) -> cp.rx.go.Statement
 --- Method
 --- Assigns a handler which will be applied at the end of the Statement.
---- The function will receive the error signal and the returned value will be pass onwards.
 ---
 --- Parameters:
 ---  * handler  - The handler function
 ---
 --- Returns:
 ---  * The same `Statement`.
+---
+--- Notes:
+---  * The function will receive the error signal and the returned value will be pass onwards.
 function Statement.mt:Catch(handler)
     self:context()._catcher = handler
     return self
@@ -511,9 +517,7 @@ end
 
 --- cp.rx.go.Statement:ThenYield() -> cp.rx.go.Statement
 --- Method
---- Indicates that the `Statement` will "yield" to allow other pending operations to happen,
---- then pick up as soon as possible afterwards. This will happen after any `TimeoutAfter`/`Catch`/`Debug`
---- actions.
+--- Indicates that the `Statement` will "yield" to allow other pending operations to happen, then pick up as soon as possible afterwards. This will happen after any `TimeoutAfter`/`Catch`/`Debug` actions.
 ---
 --- Parameters:
 ---  * None
@@ -526,9 +530,7 @@ end
 
 --- cp.rx.go.Statement:ThenDelay(millis) -> cp.rx.go.Statement
 --- Method
---- Indicates that there will be a delay after this statement by the
---- specified number of `millis`. This will happen after any `TimeoutAfter`/`Catch`/`Debug`
---- actions.
+--- Indicates that there will be a delay after this statement by the specified number of `millis`. This will happen after any `TimeoutAfter`/`Catch`/`Debug` actions.
 ---
 --- Parameters:
 ---  * millis   - the amount of time to delay, in millisecods.
@@ -543,10 +545,6 @@ end
 --- cp.rx.go.Statement:TimeoutAfter(millis[, next][, scheduler]) -> cp.rx.go.Statement
 --- Method
 --- Indicates that this statement should time out after the specified number of milliseconds.
---- This can be called multiple times before the statement is executed, and the most recent
---- configuration will be used at that time.
---- The `next` value may be either a string to send as the error, or a `resolvable` value to
---- pass on instead of failing. If nothing is provided, a default error message is output.
 ---
 --- Parameters:
 ---  * millis       - A `number` or a `function` returning the number of milliseconds to wait before timing out.
@@ -555,6 +553,10 @@ end
 ---
 --- Returns:
 ---  * The same `Statement`.
+---
+--- Notes:
+---  * This can be called multiple times before the statement is executed, and the most recent configuration will be used at that time.
+---  * The `next` value may be either a string to send as the error, or a `resolvable` value to pass on instead of failing. If nothing is provided, a default error message is output.
 function Statement.mt:TimeoutAfter(millis, next, scheduler)
     self:context()._timeout = {
         millis = millis,
@@ -566,8 +568,7 @@ end
 
 --- cp.rx.go.Statement:toObservable([preserveTimer]) -> cp.rx.Observable
 --- Method
---- Returns a new `Observable` instance for the `Statement`. Unless `preserveTimer` is `true`, this will
---- cancel any scheduled execution of the statement via [After](#After)
+--- Returns a new `Observable` instance for the `Statement`. Unless `preserveTimer` is `true`, this will cancel any scheduled execution of the statement via [After](#After)
 ---
 --- Parameters:
 ---  * preserveTimer    - If a timer has been set via [After](#After), don't cancel it. Defaults to `false`.
@@ -632,10 +633,10 @@ end
 --- Executes the statment immediately.
 ---
 --- Parameters:
---- * observer      - An observer to watch the resulting `Observable`. Defaults to the default observer factory.
+---  * observer - An observer to watch the resulting `Observable`. Defaults to the default observer factory.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function Statement.mt:Now(onNext, onError, onCompleted)
     local obs = self:toObservable()
     if Observable.is(obs) then
@@ -676,7 +677,6 @@ function Statement.mt:After(millis, observer, scheduler)
         self._timer = scheduler:schedule(function() self:Now(observer) end, millis)
     end
 end
-
 
 -----------------------------------------------------------
 -- Statement.Modifier and Statement.Modifier Definition
@@ -866,13 +866,15 @@ end
 --- cp.rx.go.Statement.Modifier:context() -> table
 --- Method
 --- Returns the `context` table for the `Statement.Modifier`.
---- The `context` is shared between the `Statement` and all `Statement.Modifiers` when being executed.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `context` table.
+---
+--- Notes:
+---  * The `context` is shared between the `Statement` and all `Statement.Modifiers` when being executed.
 function Statement.Modifier.mt:context()
     return self._parent:context()
 end

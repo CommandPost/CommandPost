@@ -69,6 +69,7 @@
     "alphaAdd": "আলফা অ্যাড",
     "alphaAdd9": "আলফা অ্যাড",
     "alreadyWatched": "এই ফোল্ডারটি ইতিমধ্যেই দেখা হচ্ছে।",
+    "alternative": "বিকল্প",
     "always": "সর্বদা",
     "alwaysOnTop": "সর্বদা শীর্ষে",
     "ambience": "বাতাবরণ",
@@ -190,6 +191,7 @@
     "betterPerformance": "ভালো পারফরমেন্স",
     "betterQuality": "ভালো মানের",
     "black": "কালো",
+    "blackPoint": "কালো বিন্দু",
     "blade": "ব্লেড",
     "blendMode": "মিশ্রন মোড",
     "blendMode9": "BlendMode",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "কোডটির কোনও ফাংশন ফিরিয়ে নেওয়া দরকার।",
     "cold": "ঠান্ডা",
     "color": "রঙ",
+    "colorAdjustments": "রঙ সমন্বয়",
+    "colorAdjustments_group": "রঙ সমন্বয়",
     "colorAndEffects": "রঙ ও প্রভাবসমূহ",
     "colorBoard": "রঙ বোর্ড",
     "colorBoard2": "সিবি",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "ফাইনাল কাট প্রো ইউজার ইন্টারফেস এলিমেন্ট (সম্পূর্ণ) নিয়ন্ত্রণ করুন",
     "controlFCPUIElementRelative": "কন্ট্রোল চূড়ান্ত কাট প্রো ইউজার ইন্টারফেস এলিমেন্ট (আপেক্ষিক)",
     "controlFCPUIElementRelativeNote": "একটি UI এলিমেন্টের উপর মাউস ধরে রাখুন, নিয়ন্ত্রণ রাখুন, তারপর রেজিস্টার করতে MIDI knob / Fader সমন্বয় করুন।",
+    "controlRange": "কন্ট্রোল রেঞ্জ",
     "controlSurfaces": "সারফেস নিয়ন্ত্রণ করুন",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "ফাইনাল কাট প্রো অডিও ইন্সপেক্টরে ভলিউম নিয়ন্ত্রণ করে",
     "controlsTimelineZoomViaTheAppearancePopup": "উপস্থিতি পপআপের মাধ্যমে টাইমলাইন জুম নিয়ন্ত্রণ করে",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "ট্যানজেন্ট হাব ডাউনলোড করুন",
     "dragAndDropFileAction": "ফাইল অ্যাকশন টেনে আনুন",
     "dragAndDropTextAction": "ড্র্যাগ অ্যান্ড ড্রপ টেক্সট অ্যাকশন",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "ফাইনাল কাট প্রো ইন্টারফেস থেকে আপনার প্রকল্প টেনে আনুন এবং এখানে ড্রপ করুন",
     "draggable": "টেনে আনার যোগ্য",
     "draggableGuides": "Draggable গাইডসমূহ",
     "driveManagement": "ড্রাইভ ম্যানেজমেন্ট",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "কার্ড উপেক্ষা করুন",
     "finalcutpro_import_preferences_label": "আমদানি পছন্দগুলি",
     "finalcutpro_inspector_audio_label": "পরিদর্শক: অডিও",
+    "finalcutpro_inspector_coloradjustments_label": "ইন্সপেক্টর: কালার অ্যাডজাস্টমেন্ট",
+    "finalcutpro_inspector_colourlabai_label": "পরিদর্শক: Colourlab Ai",
     "finalcutpro_inspector_info_label": "পরিদর্শক: তথ্য",
     "finalcutpro_inspector_show_label": "পরিদর্শক: অতিরিক্ত কর্ম",
     "finalcutpro_inspector_text_label": "ইন্সপেক্টর: টেক্সট",
+    "finalcutpro_inspector_title_label": "পরিদর্শক: উপাধি",
     "finalcutpro_inspector_video_label": "ইন্সপেক্টর: ভিডিও",
     "finalcutpro_language_label": "ফাইনাল কাট প্রো ভাষা",
     "finalcutpro_loupedeckplugin_label": "লুপেডেক প্লাগইন",
@@ -1282,6 +1291,8 @@
     "highlights": "হাইলাইট",
     "highlights2": "ঐ খ",
     "highlights4": "Hlgt",
+    "highlightsTint": "হাইলাইট টিন্ট",
+    "highlightsWarmth": "হাইলাইট উষ্ণতা",
     "histogram": "বারলেখ",
     "history": "ইতিহাস",
     "historyIsEmpty": "ইতিহাস খালি",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "কী পুনরাবৃত্তি",
     "keyboard": "কীবোর্ড",
     "keyboardShortcut": "কীবোর্ড শর্টকাট",
+    "keyboardShortcutAlternativeDescription": "একটি বিকল্প পদ্ধতি ব্যবহার করে একটি ভার্চুয়াল কীবোর্ড প্রেস ট্রিগার করে (ব্লেন্ডারে ব্যবহারের জন্য, ইত্যাদি)",
     "keyboardShortcutDescription": "একটি ভার্চুয়াল কীবোর্ড প্রেস ট্রিগার করে",
     "keyboardShortcuts": "কীবোর্ড শর্টকাটগুলি",
     "keyframe": "কীফ্রেম",
@@ -1423,6 +1435,7 @@
     "learnMore": "আরও জানুন",
     "leaveFilesInPlaceOnImport": "আমদানী রাখুন ফাইলের মধ্যে ফাইল ছেড়ে দিন",
     "ledAlwaysOn": "LED সর্বদা চালু",
+    "ledBrightness": "LED উজ্জ্বলতা",
     "ledColor": "এলইডি রঙ",
     "left": "বাম",
     "leftDoubleMouseClick": "বাম ডাবল মাউস ক্লিক করুন",
@@ -1455,6 +1468,7 @@
     "location": "অবস্থান",
     "long": "দীর্ঘ",
     "longPress": "দীর্ঘ চাপ",
+    "longPressAction": "দীর্ঘ প্রেস অ্যাকশন",
     "longPressDuration": "দীর্ঘ প্রেসের সময়কাল",
     "look": "দেখুন",
     "loopPlayback": "লুপ প্লেব্যাক",
@@ -1555,6 +1569,8 @@
     "midtones": "মিডটোনস",
     "midtones2": "এমটি",
     "midtones4": "Mids",
+    "midtonesTint": "মিডটোনস টিন্ট",
+    "midtonesWarmth": "মিডটোন উষ্ণতা",
     "mins": {
         "one": "সর্বনিম্ন",
         "other": "সর্বনিম্ন"
@@ -2109,6 +2125,8 @@
     "shadows": "ছায়া",
     "shadows2": "এসডি",
     "shadows4": "Shdw",
+    "shadowsTint": "শ্যাডোস টিন্ট",
+    "shadowsWarmth": "ছায়া উষ্ণতা",
     "share": "ভাগ",
     "shareDetails_Facebook": "টাইপ: ফেসবুক\nলগইন: %{login}\nশিরোনাম: %{title}",
     "shareDetails_Tudou": "প্রকার: Tudou\nলগইন: %{login}\nশিরোনাম: %{title}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "ভাগ করা পেস্টবোর্ড পথ আর বিদ্যমান নেই। আপনি কি একটি নতুন অবস্থান নির্বাচন করতে চান?",
     "sharedPasteboardRootFolder": "ভাগ করা পেস্টবোর্ড রুট ফোল্ডার",
     "sharp": "তীব্র",
+    "shiftAnchorDownPixels": {
+        "one": "%{amount} পিক্সেল দ্বারা নোঙ্গর নিচে নামান",
+        "other": "%{amount} পিক্সেল দ্বারা নোঙ্গর নিচে নামান"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "%{amount} পিক্সেল দ্বারা বাঁদিকে অ্যাঙ্কর সরান",
+        "other": "%{amount} পিক্সেল দ্বারা বাঁদিকে অ্যাঙ্কর সরান"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "%{amount} পিক্সেল দ্বারা ডানদিকে অ্যাঙ্কর শিফট করুন",
+        "other": "%{amount} পিক্সেল দ্বারা ডানদিকে অ্যাঙ্কর শিফট করুন"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "%{amount} পিক্সেল দ্বারা ডানদিকে অ্যাঙ্কর শিফট করুন",
+        "other": "%{amount} পিক্সেল দ্বারা ডানদিকে অ্যাঙ্কর শিফট করুন"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2156,7 +2190,24 @@
         "one": "Shift Scale Up by %{amount} Pixel",
         "other": "Shift Scale Up by %{amount} Pixels"
     },
+    "shiftScaleXDown": {
+        "one": "স্কেল X %{amount} পিক্সেলের নিচে শিফট করুন",
+        "other": "স্কেল X %{amount} পিক্সেলের নিচে শিফট করুন"
+    },
+    "shiftScaleXUp": {
+        "one": "স্কেল X %{amount} পিক্সেল দ্বারা শিফট করুন",
+        "other": "স্কেল X %{amount} পিক্সেল দ্বারা শিফট করুন"
+    },
+    "shiftScaleYDown": {
+        "one": "স্কেল X %{amount} পিক্সেল দ্বারা শিফট করুন",
+        "other": "স্কেল Y %{amount} পিক্সেল দ্বারা শিফট করুন"
+    },
+    "shiftScaleYUp": {
+        "one": "স্কেল Y %{amount} পিক্সেল দ্বারা শিফট করুন",
+        "other": "স্কেল Y %{amount} পিক্সেল দ্বারা শিফট করুন"
+    },
     "short": "সংক্ষিপ্ত",
+    "shortPressAction": "শর্ট প্রেস অ্যাকশন",
     "shortcutAlreadyInUse": "এই শর্টকাট ইতিমধ্যেই ব্যবহার করা হচ্ছে।",
     "shortcutAlreadyInUseByMacOS": "এই শর্টকাট সমন্বয় বর্তমানে ম্যাকোএস দ্বারা ব্যবহৃত হচ্ছে (যেমন এটি স্ক্রিন ক্যাপচার, ইউনিভার্সাল অ্যাকসেস এবং কীবোর্ড নেভেবেনি কীগুলির দ্বারা ব্যবহার করা যেতে পারে)।",
     "shortcutCouldNotBeTriggered": "এই শর্টকাটটি ট্রিগার করা যায়নি।\n\nঅনুগ্রহ করে চেক করুন যে আপনি কমান্ডের জন্য নির্দিষ্ট শর্টকাট কীগুলি আপনি ফিনলেট কাট প্রো কমান্ড সম্পাদককে ট্রিগার করার চেষ্টা করেছেন এবং আবার চেষ্টা করুন।",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "Final Cut Pro থেকে DaVinci Resolve পর্যন্ত।",
     "sonyTimecodeFixerDescriptionTwo": "এই টুলবক্সটি XML সাইডকার ফাইল থেকে সঠিক টাইমকোড মান ব্যবহার করার জন্য একটি FCPXML আপডেট করবে, যাতে আপনি আরও সহজে টাইমলাইন পাঠাতে পারেন",
     "sonyTimecodeRepair": "সনি টাইমকোড মেরামত",
+    "sonyTimecodeRepairDescriptionFive": "এই টুলবক্সটি অ্যালিস্টার রবির জন্য একসাথে নিক্ষেপ করা হয়েছিল। ধন্যবাদ জর্জ ইলিয়াস, জেমি লেজিউন এবং ভ্যালেরিও ডি'আন্দ্রাসি।",
     "sonyTimecodeRepairDescriptionFour": "এই টুলবক্সটি অ্যালিস্টার রবির জন্য একসাথে নিক্ষেপ করা হয়েছিল। Jamie LeJeune পরীক্ষার জন্য ধন্যবাদ!",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro বর্তমানে সবসময় সঠিকভাবে কিছু Sony ক্যামেরা থেকে টাইমকোড ব্যাখ্যা করে না যা একটি MP4 র‍্যাপারে রেকর্ড করা হয়।",
     "sonyTimecodeRepairDescriptionThree": "যাতে আপনি আরও সহজে Final Cut Pro থেকে DaVinci Resolve, Baselight বা Adobe Premiere (XtoCC সহ) টাইমলাইন পাঠাতে পারেন।",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "অ্যাপল মোশন বৈশিষ্ট্য সুপারিশ",
     "support": "সমর্থন",
     "swipe": "সোয়াইপ করুন",
+    "swipeLeftAction": "বাম অ্যাকশন সোয়াইপ করুন",
+    "swipeRightAction": "ডান অ্যাকশন সোয়াইপ করুন",
     "switchBetweenInsideOutsideMarks": "ভিতরে / বাইরের মাস্ক মধ্যে স্যুইচ করুন",
     "switchDaVinciResolveControlSurfaceTo": "DaVinci Resolve Control Surface-এ স্যুইচ করুন",
     "switchLoupedeckCTTo": "লুপেডেক সিটি তে স্যুইচ করুন",

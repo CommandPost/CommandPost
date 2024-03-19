@@ -27,17 +27,18 @@ end
 --- Constructor
 --- Creates a new `List` `Statement` that will loop through the provided table as a list.
 ---
---- Example:
----
---- ```lua
---- List(someTable)
---- ```
----
 --- Parameters:
 ---  * values  - a `table` value, or a `function` which returns a table.
 ---
 --- Returns:
 ---  * The `Statement` which will return the first value when executed.
+---
+--- Notes:
+---  * Example:
+---
+--- ```lua
+--- List(someTable)
+--- ```
 local List = Statement.named("List")
 :onInit(function(context, values)
     assert(isIterable(values) or isCallable(values), "The values must be a table/userdata or a function returning a table/userdata.")
@@ -74,16 +75,17 @@ end
 --- Method
 --- Indicates the List should be sorted by its natural order before being sent out individually.
 ---
---- For example:
---- ```lua
---- Sort(9,2,5):Sorted()
---- ```
----
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `Sorted` `Statement.Modifier`.
+---
+--- Notes:
+---  * For example:
+--- ```lua
+--- Sort(9,2,5):Sorted()
+--- ```
 List.modifier("Sorted")
 :onInit(function(context)
     context.sort = naturalSort
@@ -102,16 +104,17 @@ end)
 --- Method
 --- Indicates the List should be sorted by the provided `function`.
 ---
---- For example:
---- ```lua
---- Sort(9,2,5):SortedBy(function(a, b) return b < a)
---- ```
----
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `SortedBy` `Statement.Modifier`.
+---
+--- Notes:
+---  * For example:
+--- ```lua
+--- Sort(9,2,5):SortedBy(function(a, b) return b < a)
+--- ```
 List.modifier("SortedBy")
 :onInit(function(context, sortFn)
     assert(type(sortFn) == "function", "Please provide a function to sort with.")

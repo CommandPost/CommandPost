@@ -955,7 +955,7 @@ function mod.requestKeywordShortcuts()
     local keywords = fcp.preferences.FFKeywordGroups
 
     for i=1, 9 do
-        local keyword = keywords[i] and keywords[i][1] or i18n("unassigned")
+        local keyword = keywords and keywords[i] and keywords[i][1] or i18n("unassigned")
         keywordShortcuts[i .. ": Keyword Shortcut"] = keyword
     end
 

@@ -153,18 +153,21 @@ end
 --- Function
 --- Returns values so that the construction
 ---
---- ```lua
----      for p, c in utf16.codes(s) do body end
---- ```
----
---- will iterate over all characters in string `s`, with `p` being the position (in bytes) and `c` the code point of each character. It raises an error if it meets any invalid byte sequence.
----
 --- Parameters:
 ---  * `bigEndian`		- If `true`, the provided string is in 'big-endian' encoding.
 ---  * `s`				- The string to iterate through.
 ---
 --- Returns:
 ---  * An iterator
+---
+--- Notes:
+---  * For example:
+--- ```lua
+---      for p, c in utf16.codes(s) do body end
+--- ```
+---
+--- will iterate over all characters in string `s`, with `p` being the position (in bytes) and `c` the code point of each character. It raises an error if it meets any invalid byte sequence.
+
 local function codes(bigEndian, s)
     local count = s:len()
     local pos, code, length = 1, nil, 0
@@ -224,10 +227,6 @@ end
 --- Function
 --- Returns the position (in bytes) where the encoding of the `n`-th character of `s` (counting from position `i`) starts. A negative `n` gets characters before position `i`. The default for `i` is 1 when `n` is non-negative and `#s + 1` otherwise, so that `utf8.offset(s, -n)` gets the offset of the `n`-th character from the end of the string. If the specified character is neither in the subject nor right after its end, the function returns nil.
 ---
---- As a special case, when `n` is 0 the function returns the start of the encoding of the character that contains the `i`-th byte of `s`.
----
---- This function assumes that `s` is a valid UTF-16 string
----
 --- Parameters:
 ---  * `bigEndian`		- If `true`, the encoding is 'big-endian'. Defaults to `false`
 ---  * `s`				- The string
@@ -236,6 +235,10 @@ end
 ---
 --- Returns:
 ---  * The index
+---
+--- Notes:
+---  * As a special case, when `n` is 0 the function returns the start of the encoding of the character that contains the `i`-th byte of `s`.
+---  * This function assumes that `s` is a valid UTF-16 string
 local function offset(bigEndian, s, n, i)
     if not s then
         error("bad argument #2 to 'offset' (string expected, got nil)")

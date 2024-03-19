@@ -19,7 +19,7 @@ function plugin.init(deps)
         :addItem(9999998.1, function()
             return {
                 title = i18n("sponsorCommandPost"),
-                fn = function() os.execute('open "https://commandpost.io/#sponsor"') end,
+                fn = function() os.execute('open "https://commandpost.io/sponsor/"') end,
             }
         end)
         :addSeparator(9999998.2)

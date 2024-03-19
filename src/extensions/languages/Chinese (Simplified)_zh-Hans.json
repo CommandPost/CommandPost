@@ -69,6 +69,7 @@
     "alphaAdd": "Alpha添加",
     "alphaAdd9": "Alpha添加",
     "alreadyWatched": "此文件夹已被监视。",
+    "alternative": "选择",
     "always": "总是",
     "alwaysOnTop": "总在最前面",
     "ambience": "环境",
@@ -190,6 +191,7 @@
     "betterPerformance": "更好的性能",
     "betterQuality": "更好的质量",
     "black": "黑色",
+    "blackPoint": "黑点",
     "blade": "刀",
     "blendMode": "混合模式",
     "blendMode9": "混合模式",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "代码需要返回一个函数。",
     "cold": "冷",
     "color": "颜色",
+    "colorAdjustments": "颜色调整",
+    "colorAdjustments_group": "颜色调整",
     "colorAndEffects": "颜色和效果",
     "colorBoard": "色板",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "控制Final Cut Pro用户界面元素（绝对）",
     "controlFCPUIElementRelative": "控制Final Cut Pro用户界面元素（相对）",
     "controlFCPUIElementRelativeNote": "将鼠标悬停在UI元素上，按住CONTROL，然后调整MIDI旋钮/推子进行注册。",
+    "controlRange": "控制范围",
     "controlSurfaces": "控制面",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "在 Final Cut Pro 音频检查器中控制音量",
     "controlsTimelineZoomViaTheAppearancePopup": "通过外观弹出窗口控制时间轴缩放",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "下载Tangent Hub",
     "dragAndDropFileAction": "拖放文件操作",
     "dragAndDropTextAction": "拖放文本操作",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "将您的项目从 Final Cut Pro 界面拖放到此处",
     "draggable": "可拖动",
     "draggableGuides": "可拖动参考线",
     "driveManagement": "驱动管理",
@@ -1006,9 +1012,12 @@
     "finalcutpro_import_ignorecard_label": "忽略卡片",
     "finalcutpro_import_preferences_label": "导入首选项",
     "finalcutpro_inspector_audio_label": "检查员：音频",
+    "finalcutpro_inspector_coloradjustments_label": "检查员：颜色调整",
+    "finalcutpro_inspector_colourlabai_label": "检验员：Colourlab艾",
     "finalcutpro_inspector_info_label": "检查员：信息",
     "finalcutpro_inspector_show_label": "检查员：其他行动",
     "finalcutpro_inspector_text_label": "检查员：文字",
+    "finalcutpro_inspector_title_label": "检查员： 职称",
     "finalcutpro_inspector_video_label": "检查员：视频",
     "finalcutpro_language_label": "Final Cut Pro语言",
     "finalcutpro_loupedeckplugin_label": "Loupedeck 插件",
@@ -1278,6 +1287,8 @@
     "highlights": "强调",
     "highlights2": "HL",
     "highlights4": "HLGT",
+    "highlightsTint": "亮点色调",
+    "highlightsWarmth": "亮点温馨",
     "histogram": "直方图",
     "history": "历史",
     "historyIsEmpty": "历史是空的",
@@ -1396,6 +1407,7 @@
     "keyRepeat": "键重复",
     "keyboard": "键盘",
     "keyboardShortcut": "键盘快捷键",
+    "keyboardShortcutAlternativeDescription": "使用替代方法触发虚拟键盘按下（用于 Blender 等）",
     "keyboardShortcutDescription": "触发虚拟键盘按下",
     "keyboardShortcuts": "键盘快捷键",
     "keyframe": "关键帧",
@@ -1418,6 +1430,7 @@
     "learnMore": "学到更多",
     "leaveFilesInPlaceOnImport": "在导入时将文件保留在原位",
     "ledAlwaysOn": "LED 常亮",
+    "ledBrightness": "LED亮度",
     "ledColor": "LED颜色",
     "left": "剩下",
     "leftDoubleMouseClick": "鼠标左键双击",
@@ -1450,6 +1463,7 @@
     "location": "位置",
     "long": "长",
     "longPress": "长按",
+    "longPressAction": "长按操作",
     "longPressDuration": "长按时间",
     "look": "看",
     "loopPlayback": "循环播放",
@@ -1550,6 +1564,8 @@
     "midtones": "中间调",
     "midtones2": "公吨",
     "midtones4": "MIDS",
+    "midtonesTint": "中间色调",
+    "midtonesWarmth": "中间调温暖",
     "mins": {
         "other": "分钟"
     },
@@ -2101,6 +2117,8 @@
     "shadows": "阴影",
     "shadows2": "SD",
     "shadows4": "SHDW",
+    "shadowsTint": "阴影色调",
+    "shadowsWarmth": "阴影温暖",
     "share": "分享",
     "shareDetails_Facebook": "类型：Facebook\n登录：％{login}\n标题：％{title}",
     "shareDetails_Tudou": "类型：土豆网\n登录：％{login}\n标题：％{title}",
@@ -2116,6 +2134,18 @@
     "sharedPasteboardPathMissing": "共享粘贴板路径不再存在。你想选择一个新的位置吗？",
     "sharedPasteboardRootFolder": "共享的粘贴板根文件夹",
     "sharp": "尖锐",
+    "shiftAnchorDownPixels": {
+        "other": "将锚点向下移动 %{amount} 像素"
+    },
+    "shiftAnchorLeftPixels": {
+        "other": "向左移动锚点 %{amount} 像素"
+    },
+    "shiftAnchorRightPixels": {
+        "other": "将锚向右移动 %{amount} 像素"
+    },
+    "shiftAnchorUpPixels": {
+        "other": "将锚点向上移动 %{amount} 像素"
+    },
     "shiftPositionDownPixels": {
         "other": "将位置向下移动 %{amount} 像素"
     },
@@ -2140,7 +2170,20 @@
     "shiftScaleUp": {
         "other": "Shift Scale Up %{amount} 像素"
     },
+    "shiftScaleXDown": {
+        "other": "将比例 X 向下移动 %{amount} 像素"
+    },
+    "shiftScaleXUp": {
+        "other": "将 X 向上移动 %{amount} 像素"
+    },
+    "shiftScaleYDown": {
+        "other": "将 Y 比例向下移动 %{amount} 像素"
+    },
+    "shiftScaleYUp": {
+        "other": "将 Y 向上移动 %{amount} 像素"
+    },
     "short": "短的",
+    "shortPressAction": "短按动作",
     "shortcutAlreadyInUse": "此快捷方式已在使用中。",
     "shortcutAlreadyInUseByMacOS": "此快捷方式组合当前由macOS使用（即，它可以由屏幕捕获，通用访问和键盘导航键使用）。",
     "shortcutCouldNotBeTriggered": "无法触发此快捷方式。\n\n请检查分配给您尝试在Final Cut Pro Command Editor中触发的命令的有效快捷键，然后重试。",
@@ -2224,6 +2267,7 @@
     "sonyTimecodeFixerDescriptionThree": "从 Final Cut Pro 到 DaVinci Resolve。",
     "sonyTimecodeFixerDescriptionTwo": "此工具箱将更新 FCPXML 以使用 XML sidecar 文件中的正确时间码值，以便您可以更轻松地发送时间线",
     "sonyTimecodeRepair": "索尼时间码修复",
+    "sonyTimecodeRepairDescriptionFive": "这个工具箱是为 Alister Robbie 拼凑而成的。感谢 George Elias、Jamie LeJeune 和 Valerio D'Andrassi。",
     "sonyTimecodeRepairDescriptionFour": "这个工具箱是为 Alister Robbie 拼凑起来的。感谢您测试 Jamie LeJeune！",
     "sonyTimecodeRepairDescriptionOne": "Final Cut Pro 目前并不总是能正确解释来自某些正在录制到 MP4 包装器中的 Sony 摄像机的时间码。",
     "sonyTimecodeRepairDescriptionThree": "这样您就可以更轻松地将时间线从 Final Cut Pro 发送到 DaVinci Resolve、Baselight 或 Adobe Premiere（使用 XtoCC）。",
@@ -2284,6 +2328,8 @@
     "suggestMotionFeatureToApple": "向Apple提出动画功能",
     "support": "支持",
     "swipe": "滑动",
+    "swipeLeftAction": "向左滑动动作",
+    "swipeRightAction": "向右滑动动作",
     "switchBetweenInsideOutsideMarks": "在内部/外部面罩之间切换",
     "switchDaVinciResolveControlSurfaceTo": "将 DaVinci Resolve Control Surface 切换到",
     "switchLoupedeckCTTo": "将Loupedeck CT切换到",

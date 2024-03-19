@@ -69,6 +69,7 @@
     "alphaAdd": "Alpha Add",
     "alphaAdd9": "Alpha Add",
     "alreadyWatched": "Esta carpeta ya está siendo observada.",
+    "alternative": "Alternativa",
     "always": "Siempre",
     "alwaysOnTop": "Siempre en la cima",
     "ambience": "Ambiente",
@@ -190,6 +191,7 @@
     "betterPerformance": "Mejor interpretación",
     "betterQuality": "Mejor calidad",
     "black": "Negro",
+    "blackPoint": "Punto negro",
     "blade": "Espada",
     "blendMode": "Modo de mezcla",
     "blendMode9": "Modo de mezcla",
@@ -284,6 +286,8 @@
     "codeNeedsToReturnAFunction": "El código debe devolver una función.",
     "cold": "Frío",
     "color": "Color",
+    "colorAdjustments": "Ajustes de color",
+    "colorAdjustments_group": "Ajustes de color",
     "colorAndEffects": "Color y efectos",
     "colorBoard": "Tablero de color",
     "colorBoard2": "CB",
@@ -335,6 +339,7 @@
     "controlFCPUIElementAbsolute": "Elemento de interfaz de usuario Control Final Cut Pro (Absoluto)",
     "controlFCPUIElementRelative": "Elemento de interfaz de usuario Control Final Cut Pro (relativo)",
     "controlFCPUIElementRelativeNote": "Coloque el mouse sobre un elemento UI, sostenga CONTROL, luego ajuste MIDI Knob / Fader para registrarse.",
+    "controlRange": "Rango de control",
     "controlSurfaces": "Superficies de control",
     "controlsTheVolumeInTheFinalCutProAudioInspector": "Controla el volumen en Final Cut Pro Audio Inspector",
     "controlsTimelineZoomViaTheAppearancePopup": "Controla el zoom de la línea de tiempo a través de la ventana emergente de apariencia",
@@ -764,6 +769,7 @@
     "downloadTangentHub": "Descargar Tangent Hub",
     "dragAndDropFileAction": "Acción de arrastrar y soltar archivo",
     "dragAndDropTextAction": "Acción de arrastrar y soltar texto",
+    "dragYourProjectFromTheFinalCutProInterfaceAndDropHere": "Arrastra tu proyecto desde la interfaz de Final Cut Pro y suéltalo aquí",
     "draggable": "Arrastrable",
     "draggableGuides": "Guías arrastrables",
     "driveManagement": "Drive Management",
@@ -1010,9 +1016,12 @@
     "finalcutpro_import_ignorecard_label": "Ignorar tarjetas",
     "finalcutpro_import_preferences_label": "Preferencias de importación",
     "finalcutpro_inspector_audio_label": "Inspector: audio",
+    "finalcutpro_inspector_coloradjustments_label": "Inspector: Ajustes de color",
+    "finalcutpro_inspector_colourlabai_label": "Inspector: Colourlab Ai",
     "finalcutpro_inspector_info_label": "Inspector: Información",
     "finalcutpro_inspector_show_label": "Inspector: Acciones Adicionales",
     "finalcutpro_inspector_text_label": "Inspector: texto",
+    "finalcutpro_inspector_title_label": "Inspector: Título",
     "finalcutpro_inspector_video_label": "Inspector: Video",
     "finalcutpro_language_label": "Final Cut Pro Idiomas",
     "finalcutpro_loupedeckplugin_label": "Complemento Loupedeck",
@@ -1282,6 +1291,8 @@
     "highlights": "Reflejos",
     "highlights2": "HL",
     "highlights4": "Hlgt",
+    "highlightsTint": "Tono de reflejos",
+    "highlightsWarmth": "Destaca Calidez",
     "histogram": "Histograma",
     "history": "Historia",
     "historyIsEmpty": "La historia esta vacia",
@@ -1401,6 +1412,7 @@
     "keyRepeat": "Repetición de tecla",
     "keyboard": "Teclado",
     "keyboardShortcut": "Atajo de teclado",
+    "keyboardShortcutAlternativeDescription": "Activa una pulsación de teclado virtual usando un método alternativo (para usar en Blender, etc.)",
     "keyboardShortcutDescription": "Activa una pulsación de teclado virtual",
     "keyboardShortcuts": "Atajos de teclado",
     "keyframe": "Fotograma clave",
@@ -1423,6 +1435,7 @@
     "learnMore": "Aprende más",
     "leaveFilesInPlaceOnImport": "Deje los archivos en su lugar al importar",
     "ledAlwaysOn": "LED siempre encendido",
+    "ledBrightness": "Brillo LED",
     "ledColor": "LED de color",
     "left": "Izquierda",
     "leftDoubleMouseClick": "Doble clic izquierdo del mouse",
@@ -1455,6 +1468,7 @@
     "location": "Ubicación",
     "long": "Largo",
     "longPress": "Pulsación larga",
+    "longPressAction": "Acción de pulsación larga",
     "longPressDuration": "Duración de pulsación larga",
     "look": "Mira",
     "loopPlayback": "Reproducción en bucle",
@@ -1555,6 +1569,8 @@
     "midtones": "Tonos medios",
     "midtones2": "MONTE",
     "midtones4": "Medio",
+    "midtonesTint": "Tinte de tonos medios",
+    "midtonesWarmth": "Calidez de tonos medios",
     "mins": {
         "one": "min",
         "other": "mins"
@@ -2109,6 +2125,8 @@
     "shadows": "Oscuridad",
     "shadows2": "Dakota del Sur",
     "shadows4": "Shdw",
+    "shadowsTint": "Tinte de sombras",
+    "shadowsWarmth": "Calidez de las sombras",
     "share": "Compartir",
     "shareDetails_Facebook": "Tipo: Facebook\nLogin: %{login}\nTítulo: %{título}",
     "shareDetails_Tudou": "Tipo: Tudou\nLogin: %{login}\nTítulo: %{título}",
@@ -2124,6 +2142,22 @@
     "sharedPasteboardPathMissing": "La ruta de la tableta compartida ya no existe. ¿Le gustaría seleccionar una nueva ubicación?",
     "sharedPasteboardRootFolder": "Carpeta raíz de pastboard compartido",
     "sharp": "Agudo",
+    "shiftAnchorDownPixels": {
+        "one": "Desplazar ancla hacia abajo en %{amount} píxel",
+        "other": "Desplazar ancla hacia abajo en %{amount} píxel"
+    },
+    "shiftAnchorLeftPixels": {
+        "one": "Desplazar ancla a la izquierda por %{amount} píxel",
+        "other": "Desplazar ancla a la izquierda por %{amount} píxel"
+    },
+    "shiftAnchorRightPixels": {
+        "one": "Desplazar ancla a la derecha por %{amount} píxel",
+        "other": "Desplazar ancla a la derecha por %{amount} píxel"
+    },
+    "shiftAnchorUpPixels": {
+        "one": "Desplazar ancla hacia arriba en %{amount} píxel",
+        "other": "Desplazar ancla hacia arriba en %{amount} píxel"
+    },
     "shiftPositionDownPixels": {
         "one": "Desplazar posición hacia abajo %{amount} Pixel",
         "other": "Desplazar posición hacia abajo %{amount} Pixel"
@@ -2156,7 +2190,24 @@
         "one": "Shift Scale Up en %{amount} Pixel",
         "other": "Shift Scale Up en %{amount} Pixel"
     },
+    "shiftScaleXDown": {
+        "one": "Desplazar la escala X hacia abajo en %{amount} píxel",
+        "other": "Desplazar la escala X hacia abajo en %{amount} píxel"
+    },
+    "shiftScaleXUp": {
+        "one": "Desplazar escalar X hacia arriba en %{amount} píxel",
+        "other": "Desplazar escalar X hacia arriba en %{amount} píxel"
+    },
+    "shiftScaleYDown": {
+        "one": "Desplazar la escala Y hacia abajo en %{amount} píxel",
+        "other": "Desplazar la escala Y hacia abajo en %{amount} píxel"
+    },
+    "shiftScaleYUp": {
+        "one": "Desplazar escalar Y hacia arriba en %{amount} píxel",
+        "other": "Desplazar escalar Y hacia arriba en %{amount} píxel"
+    },
     "short": "Corto",
+    "shortPressAction": "Acción de pulsación corta",
     "shortcutAlreadyInUse": "Este atajo ya está en uso.",
     "shortcutAlreadyInUseByMacOS": "Esta combinación de acceso directo está actualmente en uso por macOS (es decir, podría ser utilizada por Captura de pantalla, Acceso universal y Teclas de navegación del teclado).",
     "shortcutCouldNotBeTriggered": "Este atajo no pudo ser activado.\n\nCompruebe que tenga las teclas de acceso directo válidas asignadas al comando que intentó activar en el Editor de comandos de Final Cut Pro y vuelva a intentarlo.",
@@ -2240,6 +2291,7 @@
     "sonyTimecodeFixerDescriptionThree": "desde Final Cut Pro hasta DaVinci Resolve.",
     "sonyTimecodeFixerDescriptionTwo": "Esta caja de herramientas actualizará un FCPXML para usar los valores de código de tiempo correctos del archivo XML sidecar, para que pueda enviar líneas de tiempo más fácilmente.",
     "sonyTimecodeRepair": "Reparación de código de tiempo de Sony",
+    "sonyTimecodeRepairDescriptionFive": "Esta caja de herramientas se armó para Alister Robbie. Gracias George Elias, Jamie LeJeune y Valerio D'Andrassi.",
     "sonyTimecodeRepairDescriptionFour": "Esta caja de herramientas se armó para Alister Robbie. ¡Gracias por probar a Jamie LeJeune!",
     "sonyTimecodeRepairDescriptionOne": "Actualmente, Final Cut Pro no siempre interpreta correctamente el código de tiempo de ciertas cámaras Sony que están grabando en un envoltorio MP4.",
     "sonyTimecodeRepairDescriptionThree": "para que puedas enviar líneas de tiempo más fácilmente desde Final Cut Pro a DaVinci Resolve, Baselight o Adobe Premiere (con XtoCC).",
@@ -2300,6 +2352,8 @@
     "suggestMotionFeatureToApple": "Sugerir función de movimiento a Apple",
     "support": "Apoyo",
     "swipe": "Golpe fuerte",
+    "swipeLeftAction": "Deslizar hacia la izquierda Acción",
+    "swipeRightAction": "Acción Deslizar hacia la derecha",
     "switchBetweenInsideOutsideMarks": "Cambiar entre máscaras interiores / exteriores",
     "switchDaVinciResolveControlSurfaceTo": "Cambia la superficie de control de DaVinci Resolve a",
     "switchLoupedeckCTTo": "Cambie Loupedeck CT a",

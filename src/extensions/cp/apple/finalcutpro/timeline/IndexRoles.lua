@@ -273,8 +273,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doActivate(title) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will activate the provided role, if it is available.
---- This will automatically show and hide the Index if it is not currently visible.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will activate the provided role, if it is available. This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
 ---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
@@ -294,8 +293,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doDeactivate(title) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will deactivate the provided role, if it is available.
---- This will automatically show and hide the Index if it is not currently visible.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will deactivate the provided role, if it is available. This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
 ---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
@@ -324,8 +322,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doFocusInTimeline(title) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will focus the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
---- This will automatically show and hide the Index if it is not currently visible.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will focus the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md). This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
 ---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
@@ -345,8 +342,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doUnfocusInTimeline(title) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will unfocus the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
---- This will automatically show and hide the Index if it is not currently visible.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will unfocus the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md). This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
 ---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
@@ -366,8 +362,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doShowSubroleLanes(title) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will show subrole lanes for the role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
---- This will automatically show and hide the Index if it is not currently visible.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will show subrole lanes for the role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md). This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
 ---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
@@ -387,8 +382,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doHideSubroleLanes(title) -> cp.rx.go.Statement
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will hide the subrole lanes for the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
---- This will automatically show and hide the Index if it is not currently visible.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will hide the subrole lanes for the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md). This will automatically show and hide the Index if it is not currently visible.
 ---
 --- Parameters:
 ---  * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).

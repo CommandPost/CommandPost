@@ -3,25 +3,25 @@
 --- Share Inspector Module.
 ---
 --- Section Rows (`compositing`, `transform`, etc.) have the following properties:
---- * enabled   - (cp.ui.CheckBox) Indicates if the section is enabled.
---- * toggle    - (cp.ui.Button) Will toggle the Hide/Show button.
---- * reset     - (cp.ui.Button) Will reset the contents of the section.
---- * expanded  - (cp.prop <boolean>) Get/sets whether the section is expanded.
+---  * enabled   - (cp.ui.CheckBox) Indicates if the section is enabled.
+---  * toggle    - (cp.ui.Button) Will toggle the Hide/Show button.
+---  * reset     - (cp.ui.Button) Will reset the contents of the section.
+---  * expanded  - (cp.prop <boolean>) Get/sets whether the section is expanded.
 ---
 --- Property Rows depend on the type of property:
 ---
 --- Menu Property:
---- * value     - (cp.ui.PopUpButton) The current value of the property.
+---  * value     - (cp.ui.PopUpButton) The current value of the property.
 ---
 --- Slider Property:
---- * value     - (cp.ui.Slider) The current value of the property.
+---  * value     - (cp.ui.Slider) The current value of the property.
 ---
 --- XY Property:
---- * x         - (cp.ui.TextField) The current 'X' value.
---- * y         - (cp.ui.TextField) The current 'Y' value.
+---  * x         - (cp.ui.TextField) The current 'X' value.
+---  * y         - (cp.ui.TextField) The current 'Y' value.
 ---
 --- CheckBox Property:
---- * value     - (cp.ui.CheckBox) The currently value.
+---  * value     - (cp.ui.CheckBox) The currently value.
 ---
 --- For example:
 --- ```lua
@@ -66,10 +66,10 @@ local ShareInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.ShareI
 --- Checks if the provided element could be a ShareInspector.
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 function ShareInspector.static.matches(element)
     if BasePanel.matches(element) then
         if element:attributeValue("AXRole") == "AXGroup" and #element > 1 then

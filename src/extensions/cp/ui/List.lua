@@ -19,7 +19,7 @@ local List = Element:subclass("cp.ui.List")
 ---  * element  - The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it is an `AXList`, otherwise `false`.
+---  * `true` if it is an `AXList`, otherwise `false`.
 function List.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXList"
 end
@@ -29,8 +29,9 @@ end
 --- Creates a new List.
 ---
 --- Parameters:
----  * parent       - The parent table. Should have a `isShowing` property.
----  * uiFinder      - The `function` or `cp.prop` that provides the current `hs.axuielement`.
+---  * parent - The parent table. Should have a `isShowing` property.
+---  * uiFinder - The `function` or `cp.prop` that provides the current `hs.axuielement`.
+---  * itemAdaptorFn - Item adapter function
 ---
 --- Returns:
 ---  * The new `List` instance.

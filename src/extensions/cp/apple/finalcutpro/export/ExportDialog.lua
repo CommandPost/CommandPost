@@ -85,7 +85,7 @@ local destinationFormat = "(.+)…"
 ---  * If an error occurred, the message is returned as the second value
 ---
 --- Notes:
---- * If providing a function, it will be passed one item - the name of the destination, and should return `true` to indicate a match. The name will not contain " (default)" if present.
+---  * If providing a function, it will be passed one item - the name of the destination, and should return `true` to indicate a match. The name will not contain " (default)" if present.
 function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, ignoreInvalidCaptions, quiet)
     if not self:isShowing() then
         if destinationSelect == nil then

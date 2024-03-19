@@ -34,18 +34,7 @@ end
 
 --- cp.web.ui.javascript(script[, context][, naked]) -> cp.web.html
 --- Function
---- Generates an HTML script element which will execute the provided
---- JavaScript immediately. The script is self-contained and only has
---- access to global variables. Any local `var` values will not be available
---- to other scripts.
----
---- The script will be evaluated as a `resty.template`, and variables can be
---- injected from the `context` table. For example, this will create a script
---- that will display an alert saying "Hello world!":
----
---- ```lua
---- ui.javascript([[ alert("{{ message }}") ]], { message = "Hello world!"})
---- ```
+--- Generates an HTML script element which will execute the provided JavaScript immediately.
 ---
 --- Parameters:
 ---  * script   - String containing the JavaScript to execute.
@@ -54,6 +43,14 @@ end
 ---
 --- Returns:
 ---  * a `cp.web.html` element representing the JavaScript block.
+---
+--- Notes:
+---  * The script is self-contained and only has access to global variables. Any local `var` values will not be available to other scripts.
+---  * The script will be evaluated as a `resty.template`, and variables can be injected from the `context` table. For example, this will create a script that will display an alert saying "Hello world!":
+---
+--- ```lua
+--- ui.javascript([[ alert("{{ message }}") ]], { message = "Hello world!"})
+--- ```
 function ui.javascript(script, context, naked)
     if type(context) == "boolean" then
         naked = context
@@ -71,20 +68,19 @@ end
 --- Function
 --- Generates an HTML `style` element which will contain the provided rules.
 ---
---- The `rules` will be evaluated as a `resty.template`, and variables can be
---- injected from the `context` table. For example, this will create a set of rules
---- that injects the provided color:
----
---- ```lua
---- ui.style([[ body { color: {{ bodyColor }}; } ]], { bodyColor = "#FFFFFF"})
---- ```
----
 --- Parameters:
 ---  * rules    - String containing the CSS rules.
 ---  * context  - (optional) Table containing any values to inject into the script.
 ---
 --- Returns:
 ---  * a `cp.web.html` element representing the JavaScript block.
+---
+--- Notes:
+---  * The `rules` will be evaluated as a `resty.template`, and variables can be injected from the `context` table. For example, this will create a set of rules that injects the provided color:
+---
+--- ```lua
+--- ui.style([[ body { color: {{ bodyColor }}; } ]], { bodyColor = "#FFFFFF"})
+--- ```
 function ui.style(rules, context)
     local t = compile(rules, "no-cache", true)
     return html.style { type = "text/css" } (
@@ -255,8 +251,7 @@ end
 
 --- cp.web.ui.select(params) -> cp.web.html
 --- Function
---- Generates a `cp.web.html` `select` element. The `data` should be a table or a function returning a table
---- that matches the details in the notes below.
+--- Generates a `cp.web.html` `select` element. The `data` should be a table or a function returning a table that matches the details in the notes below.
 ---
 --- Parameters:
 ---  * `params`     - A table or function returning a table with the checkbox data.
