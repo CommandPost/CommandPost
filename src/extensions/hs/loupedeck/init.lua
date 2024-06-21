@@ -337,16 +337,22 @@ end
 --- Returns:
 ---  * None
 function mod.mt:initaliseDevice()
+    --------------------------------------------------------------------------------
     -- This must be executed before writing to the main Touch Screen:
+    --------------------------------------------------------------------------------
     self:resetDevice()
 
+    --------------------------------------------------------------------------------
     -- Reset all the buttons to black:
+    --------------------------------------------------------------------------------
     local black = 0x000000
     for _,id in pairs(mod.buttonID) do
         self:buttonColor(id, black)
     end
 
+    --------------------------------------------------------------------------------
     -- Reset all the screens to black:
+    --------------------------------------------------------------------------------
     local b = drawing.color.hammerspoon.black
 
     if self.deviceType == mod.deviceTypes.LIVE_S then
@@ -362,33 +368,73 @@ function mod.mt:initaliseDevice()
     end
 
     --------------------------------------------------------------------------------
+    -- Trigger the device ready callback:
+    --------------------------------------------------------------------------------
+    self:triggerCallback {
+        action = "device_ready",
+    }
+end
+
+--- hs.loupedeck:checkFirmwareVersion() -> None
+--- Method
+--- Checks the Firmware Version of the Device, then triggers the initialisation.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.mt:checkFirmwareVersion()
+    --------------------------------------------------------------------------------
     -- Check the Loupedeck Firmware:
     --------------------------------------------------------------------------------
     if not self.loupedeckDeviceIsUsingRazerFirmwareCheckDone and (self.deviceType == mod.deviceTypes.LIVE or self.deviceType == mod.deviceTypes.CT) then
-        log.df("Loupedeck CT or Live connected, so lets check the firmware version...")
+        --log.df("Loupedeck CT or Live connected, so lets check the firmware version...")
         self:requestFirmwareVersion(function(data)
             local firmwareVersion = data and data.b and semver(data.b)
             if firmwareVersion then
                 self.loupedeckDeviceIsUsingRazerFirmwareCheckDone = true
-                log.df("Loupedeck device is using firmware version: v%s", firmwareVersion)
-                if firmwareVersion > semver("0.2.5") then
-                    log.df("Loupedeck device is running firmware greater than v0.2.5, so using Razer screen format.")
-                    self.loupedeckDeviceIsUsingRazerFirmware = true
+                log.df("Loupedeck device is using firmware version: v%s (c: v%s, i: v%s)", firmwareVersion, data.c, data.i)
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the screen:
-                    --------------------------------------------------------------------------------
-                    self:initaliseDevice()
-                else
-                    --log.df("Loupedeck Live is running firmware lower than v0.2.5")
-                    self.loupedeckDeviceIsUsingRazerFirmware = false
+                --------------------------------------------------------------------------------
+                -- If the firmware is running v0.1.2 or later on a Loupedeck CT, and the `i`
+                -- firmware version is v0.0.0, then it's using the single screen/Razer screen
+                -- format.
+                --
+                -- Loupedeck CT (Type: LDD-1903, Version 02.00)
+                -- b = "0.1.2" (Firmware Version)
+                -- c = "0.9.0"
+                -- i = "0.0.0"
+                --------------------------------------------------------------------------------
+                local iVersion = data and data.i and semver(data.i)
+                if self.deviceType == mod.deviceTypes.CT and iVersion == semver("0.0.0") and firmwareVersion >= semver("0.1.2") then
+                    log.df("Loupedeck CT (Type: LDD-1903, Version 02.00) detected, so using single screen format.")
+                    self.loupedeckDeviceIsUsingRazerFirmware = true
+                end
+
+                --------------------------------------------------------------------------------
+                -- If the firmware is above v0.2.5 on a Loupedeck CT or Live, then it's
+                -- using the single screen/Razer screen format:
+                --------------------------------------------------------------------------------
+                if firmwareVersion > semver("0.2.5") then
+                    log.df("Loupedeck device is running firmware greater than v0.2.5, so using single screen format.")
+                    self.loupedeckDeviceIsUsingRazerFirmware = true
                 end
             else
-                log.df("Failed to get the Loupedeck Live firmware version.")
+                log.ef("Failed to get the Loupedeck firmware version.")
             end
-        end)
-    end
 
+            --------------------------------------------------------------------------------
+            -- Initialise the device:
+            --------------------------------------------------------------------------------
+            self:initaliseDevice()
+        end)
+    else
+        --------------------------------------------------------------------------------
+        -- Initialise the device:
+        --------------------------------------------------------------------------------
+        self:initaliseDevice()
+    end
 end
 
 --- hs.loupedeck:callback([callbackFn]) -> boolean
@@ -451,8 +497,7 @@ local events = {
     -- WEBSOCKET OPENED:
     --------------------------------------------------------------------------------
     opened = function(obj)
-        --log.df("Initalising device...")
-        obj:initaliseDevice()
+        obj:checkFirmwareVersion()
         obj:triggerCallback {
             action = "websocket_opened",
         }

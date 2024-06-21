@@ -1869,6 +1869,9 @@ function mod.mt:callback(data, deviceNumber)
         --log.df("Loupedeck websocket closing for %s (Unit %s)...", self.configFolder, deviceNumber)
         return
     elseif data.action == "websocket_opened" then
+        --log.df("Loupedeck websocket opened for %s (Unit %s)...", self.configFolder, deviceNumber)
+        return
+    elseif data.action == "device_ready" then
         self.connected[deviceNumber](true)
         self:clearCache(deviceNumber)
         self:refresh(deviceNumber)
