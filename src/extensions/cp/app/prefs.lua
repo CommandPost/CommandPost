@@ -16,7 +16,7 @@
 --- end
 --- ```
 
--- local log           = require "hs.logger" .new "prefs"
+local log           = require "hs.logger" .new "prefs"
 
 local require       = require
 
@@ -61,6 +61,22 @@ end
 local function prefsFilePath(self)
     local data = metadata(self)
     local filePath = data.filePath
+
+    --------------------------------------------------------------------------------
+    -- If the bundle identifier has a slash in it, it's already a file path.
+    -- We pass in a full path instead of just a bundle identifier when working
+    -- with sandbox applications (i.e. Final Cut Pro 11).
+    --
+    -- For example:
+    --
+    -- /Users/chrishocking/Library/Containers/com.apple.FinalCut/Data/Library/Preferences/com.apple.FinalCut
+    --------------------------------------------------------------------------------
+    local bundleID = data.bundleID
+    if not filePath and bundleID and bundleID:find("/") then
+        filePath = bundleID .. ".plist"
+        data.filePath = filePath
+    end
+
     if not filePath then
         local path = prefsPath(self)
         if path then
@@ -140,6 +156,12 @@ local function watchFiles(prefs)
     local data = metadata(prefs)
     if not data.pathwatcher then
         local path = prefsFilePath(prefs)
+
+        if not path then
+            log.ef("[cp.app.prefs] Failed to determine property list path for bundle identifier: '%s'", data and data.bundleID)
+            return
+        end
+
         data.pathwatcher = pathwatcher.new(path, function(files)
             for _,file in pairs(files) do
                 local fileName = file:match(PLIST_MATCH)

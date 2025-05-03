@@ -16,6 +16,11 @@ local Do                    = go.Do
 local If                    = go.If
 local Throw                 = go.Throw
 
+local cache                 = axutils.cache
+local childFromTop          = axutils.childFromTop
+local childWithID           = axutils.childWithID
+local childWithRole         = axutils.childWithRole
+
 local ColorBoard = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorBoard")
 
 -- CORRECTION_TYPE -> string
@@ -46,8 +51,23 @@ function ColorBoard.matches(element)
     if Element.matches(element) and #element == 1 then
         local scroll = element[1]
         if scroll:attributeValue("AXRole") == "AXScrollArea" then
-            local aspectGroup = axutils.childFromTop(scroll, 2)
-            return RadioGroup.matches(aspectGroup)
+            --------------------------------------------------------------------------------
+            -- Final Cut Pro 11:
+            --------------------------------------------------------------------------------
+            local aspectGroup = childFromTop(scroll, 3)
+            local radioGroup = RadioGroup.matches(aspectGroup)
+            if radioGroup then
+                return radioGroup
+            end
+
+            --------------------------------------------------------------------------------
+            -- Final Cut Pro 10.8.1 and earlier:
+            --------------------------------------------------------------------------------
+            aspectGroup = childFromTop(scroll, 2)
+            radioGroup = RadioGroup.matches(aspectGroup)
+            if radioGroup then
+                return radioGroup
+            end
         end
     end
     return false
@@ -66,7 +86,7 @@ function ColorBoard:initialize(parent)
     self._child = {}
 
     local UI = parent.correctorUI:mutate(function(original)
-        return axutils.cache(self, "_ui", function()
+        return cache(self, "_ui", function()
             local ui = original()
             if ui and ui[1] then
                 local board = ui[1]
@@ -84,7 +104,7 @@ end
 --- Returns the `hs.axuielement` object for the Color Board's content.
 function ColorBoard.lazy.prop:contentUI()
     return self.UI:mutate(function(original)
-        return axutils.cache(self, "_content", function()
+        return cache(self, "_content", function()
             local ui = original()
             -----------------------------------------------------------------------
             -- Returns the appropriate UI depending on the version:
@@ -189,9 +209,9 @@ end
 --- Returns:
 ---  * An `hs.axuielement` object
 function ColorBoard:childUI(axID)
-    return axutils.cache(self._child, "_"..axID, function()
+    return cache(self._child, "_"..axID, function()
         local ui = self:contentUI()
-        return ui and axutils.childWithID(ui, axID)
+        return ui and childWithID(ui, axID)
     end)
 end
 
@@ -284,7 +304,7 @@ end
 --- either "Color", "Saturation", or "Exposure".
 function ColorBoard.lazy.value:aspectGroup()
     return RadioGroup(self, function()
-        return axutils.childWithRole(self:contentUI(), "AXRadioGroup")
+        return childWithRole(self:contentUI(), "AXRadioGroup")
     end)
 end
 

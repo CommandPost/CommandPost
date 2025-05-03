@@ -74,6 +74,7 @@ local characterStringKeyCodeMap = {
     NSEndFunctionKey                = "end",
     NSPageUpFunctionKey             = "pageup",
     NSCarriageReturnCharacter       = "return",
+    NSClearLineFunctionKey          = "padclear",
 }
 
 --- cp.apple.commandeditor.characterStringToKeyCode() -> string

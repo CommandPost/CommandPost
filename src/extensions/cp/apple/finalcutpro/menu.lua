@@ -42,11 +42,19 @@ menu:addMenuFinder(function(parentItem, path, childName)
 end)
 
 ----------------------------------------------------------------------------------------
+-- Work out if we're running in trial mode or not:
+----------------------------------------------------------------------------------------
+local menuName = "Final Cut Pro"
+if fcpApp:bundleID() == "com.apple.FinalCutTrial" then
+    menuName = "Final Cut Pro Trial"
+end
+
+----------------------------------------------------------------------------------------
 -- Add a finder for missing menus:
 ----------------------------------------------------------------------------------------
 local missingMenuMap = {
-    { path = {"Final Cut Pro"},                 child = "Commands",                 key = "CommandSubmenu" },
-    { path = {"Final Cut Pro", "Commands"},     child = "Customize…",               key = "Customize" },
+    { path = {menuName},                        child = "Commands",                 key = "CommandSubmenu" },
+    { path = {menuName, "Commands"},            child = "Customize…",               key = "Customize" },
     { path = {"Clip"},                          child = "Open Clip",                key = "FFOpenInTimeline" },
     { path = {"Clip"},                          child = "Open in Angle Editor",     key = "FFOpenInAngleEditor" },
     { path = {"Window", "Show in Workspace"},   child = "Sidebar",                  key = "PEEventsLibrary" },
@@ -59,7 +67,7 @@ local missingMenuMap = {
     { path = {"Edit"},                          child = "Redo",                     key = "Redo %@" },
     { path = {"Window", "Workspaces"},          child = "Update ‘.*’ Workspace",    key = "PEWorkspacesMenuUpdateWithName" },
     { path = {"Window", "Extensions"} },
-    { path = {"Final Cut Pro", "Commands"} },
+    { path = {menuName, "Commands"} },
     { path = {"Window", "Workspaces"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language", "English"} },

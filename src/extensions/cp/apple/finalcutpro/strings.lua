@@ -49,6 +49,7 @@ mod._strings = strings.new()
 :fromPlist("${appPath}/Contents/Frameworks/Ozone.framework/Resources/${locale}.lproj/Localizable.strings") -- Text
 :fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${locale}.lproj/Localizable.strings") -- Added for Final Cut Pro 10.4
 :fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings") -- Command Editor Strings (load last)
+
 --------------------------------------------------------------------------------
 -- Load any extra strings we insert via CommandPost:
 --------------------------------------------------------------------------------

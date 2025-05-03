@@ -37,7 +37,7 @@ local UI_FINDER_LABEL = "PropertyRow UI Finder"
 --- cp.ui.PropertyRow.intersectBuffer
 --- Constant
 --- Defines the buffer for intersections with the `labelUI`.
-PropertyRow.static.intersectBuffer = 2
+PropertyRow.static.intersectBuffer = 4
 
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
 --- Function

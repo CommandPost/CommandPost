@@ -913,6 +913,14 @@ local function processFCPXML(path)
     local xmlOutput = document:xmlString(nodeOptions)
 
     --------------------------------------------------------------------------------
+    -- Downgrade the FCPXML:
+    --------------------------------------------------------------------------------
+    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version="1.12">]], [[<fcpxml version="1.11">]])
+    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version='1.12'>]], [[<fcpxml version='1.11'>]])
+    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version="1.13">]], [[<fcpxml version="1.11">]])
+    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version='1.13'>]], [[<fcpxml version='1.11'>]])
+
+    --------------------------------------------------------------------------------
     -- Output a temporary file:
     --------------------------------------------------------------------------------
     local outputPath = os.tmpname() .. ".fcpxml"

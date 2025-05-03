@@ -18,6 +18,8 @@ local Group             = require "cp.ui.Group"
 local Image             = require "cp.ui.Image"
 local StaticText        = require "cp.ui.StaticText"
 
+local semver            = require "semver"
+
 local rightToLeft       = axutils.compare.rightToLeft
 local cache             = axutils.cache
 local childFromBottom   = axutils.childFromBottom
@@ -30,6 +32,8 @@ local ninjaMouseClick   = tools.ninjaMouseClick
 
 local ControlBar = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar")
 
+local macOSVersion      = tools.macOSVersion()
+
 --- cp.apple.finalcutpro.viewer.ControlBar.matches(element) -> boolean
 --- Function
 --- Checks if the element is a `ControlBar` instance.
@@ -41,20 +45,75 @@ local ControlBar = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar")
 ---  * `true` if it matches the pattern for a `Viewer` `ControlBar`.
 function ControlBar.static.matches(element)
     if Group.matches(element) and #element >= 4 then
-        -- Note: sorting right-to-left
+        --------------------------------------------------------------------------------
+        -- NOTE: sorting right-to-left
+        --------------------------------------------------------------------------------
         local children = axutils.children(element, rightToLeft)
+
+        --------------------------------------------------------------------------------
+        -- macOS 15 Sequoia seems to have a slightly different window layout:
+        --------------------------------------------------------------------------------
+        if semver(macOSVersion) >= semver("15.0.0") then
+
+            --[[
+            Normal Control Bar:
+            children: {
+                <userdata 1> -- hs.axuielement: AXButton (0x600003040578),
+                <userdata 2> -- hs.axuielement: AXButton (0x600003043ef8),
+                <userdata 3> -- hs.axuielement: AXButton (0x6000030404f8),
+                <userdata 4> -- hs.axuielement: AXStaticText (0x600003040478),
+                <userdata 5> -- hs.axuielement: AXButton (0x6000030401b8),
+                <userdata 6> -- hs.axuielement: AXMenuButton (0x600003043cf8),
+                <userdata 7> -- hs.axuielement: AXMenuButton (0x600003043d38),
+                <userdata 8> -- hs.axuielement: AXRadioGroup (0x600003043cb8)
+            }
+
+            Timecode Entry Mode:
+            children: {
+                <userdata 1> -- hs.axuielement: AXButton (0x600003355878),
+                <userdata 2> -- hs.axuielement: AXButton (0x6000033558b8),
+                <userdata 3> -- hs.axuielement: AXStaticText (0x6000033556b8),
+                <userdata 4> -- hs.axuielement: AXImage (0x600003355678)
+            }
+            --]]
+			return  Button.matches(children[1])
+				and Button.matches(children[2])
+				and (
+					(
+					    --------------------------------------------------------------------------------
+						-- Normal Control Bar:
+						--------------------------------------------------------------------------------
+						Button.matches(children[3])
+						and StaticText.matches(children[4])
+						and Button.matches(children[5])
+					)
+					or
+					(
+					    --------------------------------------------------------------------------------
+						-- Timecode Entry Mode:
+						--------------------------------------------------------------------------------
+						StaticText.matches(children[3])
+						and Image.matches(children[4])
+					)
+				)
+        end
+
         return  Button.matches(children[1])
             and Button.matches(children[2])
             and StaticText.matches(children[3])
             and (
                 (
+                    --------------------------------------------------------------------------------
                     -- Normal Control Bar:
+                    --------------------------------------------------------------------------------
                     Button.matches(children[4])
                     and Button.matches(children[5])
                 )
                 or
                 (
+                    --------------------------------------------------------------------------------
                     -- Timecode Entry Mode:
+                    --------------------------------------------------------------------------------
                     Image.matches(children[4])
                 )
             )
@@ -211,9 +270,12 @@ function ControlBar.lazy.prop:timecode()
                 --------------------------------------------------------------------------------
                 -- Wait until the click has been registered (give it 5 seconds):
                 --------------------------------------------------------------------------------
-                local toolbar = self:UI()
                 local ready = doUntil(function()
-                    return toolbar and #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
+                    local toolbar               = self:UI()
+                    local toolbarReady          = toolbar and #toolbar < 5
+                    local currentValue          = original and original()
+                    local timecodeValueIsZero   = currentValue and find(currentValue, "00:00:00[:;]00") ~= nil
+                    return toolbarReady and timecodeValueIsZero
                 end, 5)
                 if not ready then
                     log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: The toolbar was never ready.")

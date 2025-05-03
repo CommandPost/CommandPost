@@ -24,6 +24,8 @@ local lazy                      = require "cp.lazy"
 
 local PrimaryWindow = class("cp.apple.finalcutpro.main.PrimaryWindow"):include(lazy)
 
+local finalCutProMenuTitle = "Final Cut Pro"
+
 --- cp.apple.finalcutpro.main.PrimaryWindow.matches(w) -> boolean
 --- Function
 --- Checks to see if a window matches the PrimaryWindow requirements
@@ -36,7 +38,7 @@ local PrimaryWindow = class("cp.apple.finalcutpro.main.PrimaryWindow"):include(l
 function PrimaryWindow.static.matches(w)
     if w ~= nil then
         local subrole = w:attributeValue("AXSubrole")
-        return w:attributeValue("AXTitle") == "Final Cut Pro" and (subrole == "AXStandardWindow" or subrole == "AXDialog")
+        return w:attributeValue("AXTitle") == finalCutProMenuTitle and (subrole == "AXStandardWindow" or subrole == "AXDialog")
     end
     return false
 end
@@ -52,6 +54,11 @@ end
 ---  * PrimaryWindow
 function PrimaryWindow:initialize(app)
     self._app = app
+
+    --------------------------------------------------------------------------------
+    -- Set the Final Cut Pro Menu Title:
+    --------------------------------------------------------------------------------
+    finalCutProMenuTitle = app:mainMenuName()
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow:app() -> cp.apple.finalcutpro

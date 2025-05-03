@@ -4,7 +4,7 @@
 
 local require           = require
 
---local log               = require "hs.logger".new "snippets"
+local log               = require "hs.logger".new "snippets"
 
 local hs                = _G.hs
 
@@ -371,7 +371,9 @@ function plugin.init(deps, env)
 
                         if type(v) == "table" then
                             s = s .. key .. "=" .. processTable(v) .. ","
-                        else
+                        elseif type(v) == "number" then
+                            s = s .. key .. "=" .. v .. ","
+                        elseif type(v) == "string" then
                             --------------------------------------------------------------------------------
                             -- If the value contains a slash or quotes put it in brackets:
                             --------------------------------------------------------------------------------
@@ -383,6 +385,9 @@ function plugin.init(deps, env)
                             end
 
                             s = s .. key .. "=" .. value .. ","
+                        else
+                            log.ef("Bug in insertAction - Unknown type: %s ('%s')", type(v), v)
+                            return
                         end
                     end
                     if s:sub(-1) == "," then

@@ -113,7 +113,7 @@ local FindAndReplaceTitleText	                = require "cp.apple.finalcutpro.ma
 
 local CommandPostWorkflowExtension              = require "cp.apple.finalcutpro.workflowextensions.CommandPostWindow"
 
-local v											= require "semver"
+local semver   								    = require "semver"
 local class                                     = require "middleclass"
 local lazy                                      = require "cp.lazy"
 local delegator                                 = require "cp.delegator"
@@ -206,7 +206,7 @@ end
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION -> string
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-fcp.EARLIEST_SUPPORTED_VERSION = v("10.4.4")
+fcp.EARLIEST_SUPPORTED_VERSION = semver("10.4.4")
 
 --- cp.apple.finalcutpro.PASTEBOARD_UTI -> string
 --- Constant
@@ -322,6 +322,23 @@ function fcp.lazy.prop:isUnsupported()
     return self.isInstalled:AND(self.isSupported:NOT())
 end
 
+--- cp.apple.finalcutpro:mainMenuName() -> string
+--- Method
+--- Returns the main "Final Cut Pro" menubar label.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string, either "Final Cut Pro" or "Final Cut Pro Trial"
+function fcp:mainMenuName()
+    local bundleID = self:bundleID()
+    if bundleID == "com.apple.FinalCutTrial" then
+        return "Final Cut Pro Trial"
+    end
+    return "Final Cut Pro"
+end
+
 --- cp.apple.finalcutpro:string(key[, locale[, quiet]]) -> string
 --- Method
 --- Looks up an application string with the specified `key`. If no `locale` value is provided, the [current locale](#currentLocale) is used.
@@ -362,10 +379,37 @@ end
 ---  * None
 ---
 --- Returns:
----  * A string containing Final Cut Pro's filesystem path, or nil if Final Cut Pro's path could not be determined.
+---  * A string containing Final Cut Pro's filesystem path, or `nil` if Final Cut Pro's path could not be determined.
 function fcp:getPath()
     return self.app:path()
 end
+
+--- cp.apple.finalcutpro:preferencesPath() -> string or nil
+--- Method
+--- Path to the Final Cut Pro Preferences file.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string containing Final Cut Pro's Preferences filesystem path, or `nil` if Final Cut Pro's Preferences path could not be determined.
+function fcp:preferencesPath()
+
+    local userFolder = pathToAbsolute("~")
+    local bundleID = self:bundleID()
+    local version = self:version()
+
+    if userFolder and bundleID and version then
+        if version >= semver("11.0.0") then
+            return string.format("%s/Library/Containers/%s/Data/Library/Preferences/%s.plist", userFolder, bundleID, bundleID)
+        else
+            return string.format("%s/Library/Preferences/%s.plist", userFolder, bundleID, bundleID)
+        end
+    end
+
+    return nil
+end
+
 ----------------------------------------------------------------------------------------
 --
 -- LIBRARIES
@@ -383,7 +427,8 @@ end
 ---  * A table containing any active library paths.
 function fcp:activeLibraryPaths()
     local paths = {}
-    local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local preferencesPath = self:preferencesPath()
+    local fcpPlist = plist.read(preferencesPath)
     local FFActiveLibraries = fcpPlist and fcpPlist.FFActiveLibraries
     if FFActiveLibraries and #FFActiveLibraries >= 1 then
         for i=1, #FFActiveLibraries do
@@ -429,7 +474,8 @@ end
 ---  * A table containing any recent library paths.
 function fcp:recentLibraryPaths()
     local paths = {}
-    local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local preferencesPath = self:preferencesPath()
+    local fcpPlist = plist.read(preferencesPath)
     local FFRecentLibraries = fcpPlist and fcpPlist.FFRecentLibraries
     if FFRecentLibraries and #FFRecentLibraries >= 1 then
         for i=1, #FFRecentLibraries do
@@ -927,17 +973,16 @@ end
 --- Returns:
 ---  * A boolean value indicating whether the AppleScript succeeded or not
 function fcp:importXML(path)
-    --if self:isRunning() then
-        local appleScript = [[
-            set whichSharedXMLPath to "]] .. path .. [["
-            tell application "Final Cut Pro"
-                activate
-                open POSIX file whichSharedXMLPath as string
-            end tell
-        ]]
-        local bool, _, _ = osascript.applescript(appleScript)
-        return bool
-    --end
+    local appName = self:mainMenuName()
+    local appleScript = [[
+        set whichSharedXMLPath to "]] .. path .. [["
+        tell application "]] .. appName .. [["
+            activate
+            open POSIX file whichSharedXMLPath as string
+        end tell
+    ]]
+    local bool, _, _ = osascript.applescript(appleScript)
+    return bool
 end
 
 --- cp.apple.finalcutpro:openAndSavePanelDefaultPath <cp.prop: string>
@@ -951,7 +996,8 @@ function fcp.lazy.prop:openAndSavePanelDefaultPath()
     --       future.
     ----------------------------------------------------------------------------------------
     return prop(function()
-        local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+        local preferencesPath = self:preferencesPath()
+        local fcpPlist = plist.read(preferencesPath)
         local bookmark = fcpPlist and fcpPlist.FFLMOpenSavePanelDefaultURL
         return bookmark and pathFromBookmark(bookmark)
     end, function(path)

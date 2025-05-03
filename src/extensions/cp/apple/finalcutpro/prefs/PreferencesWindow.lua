@@ -109,8 +109,9 @@ end
 function PreferencesWindow:show()
     if not self:isShowing() then
         -- open the window
-        if self:app().menu:isEnabled({"Final Cut Pro", "Preferences…"}) then
-            self:app().menu:selectMenu({"Final Cut Pro", "Preferences…"})
+        local menuName = self:app():mainMenuName()
+        if self:app().menu:isEnabled({menuName, "Preferences…"}) then
+            self:app().menu:selectMenu({menuName, "Preferences…"})
             -- wait for it to open.
             just.doUntil(function() return self:UI() end)
         end
@@ -128,8 +129,9 @@ end
 --- Returns:
 ---  * The `Statement`.
 function PreferencesWindow.lazy.method:doShow()
+    local menuName = self:app():mainMenuName()
     return If(self.isShowing):Is(false):Then(
-        self:app().menu:doSelectMenu({"Final Cut Pro", "Preferences…"})
+        self:app().menu:doSelectMenu({menuName, "Preferences…"})
     ):Then(
         WaitUntil(self.isShowing)
     )

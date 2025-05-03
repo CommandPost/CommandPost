@@ -185,7 +185,8 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
             --------------------------------------------------------------------------------
             -- Ignore the "Services" list:
             --------------------------------------------------------------------------------
-            if v.params and v.params.path and v.params.path[1] == "Final Cut Pro" and v.params.path[2] == "Services" then
+            local mainMenuName = fcp:mainMenuName()
+            if v.params and v.params.path and v.params.path[1] == mainMenuName and v.params.path[2] == "Services" then
                 match = true
                 break
             end
@@ -244,6 +245,8 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     local fcpLocaleCode = fcp:currentLocale().code
     local actualFCPLocaleCode = fcpLocaleCode
 
+    local mainMenuName = fcp:mainMenuName()
+
     --------------------------------------------------------------------------------
     -- Add workaround for Chinese:
     --------------------------------------------------------------------------------
@@ -256,7 +259,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     local userCommandSets = fcp:userCommandSets()
     for _, title in pairs(userCommandSets) do
-        local path = {"Final Cut Pro", "Commands"}
+        local path = {mainMenuName, "Commands"}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title })
         params.locale = en
@@ -274,7 +277,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     do
         local title = fcp:string("Customize")
-        local path = {"Final Cut Pro", "Commands"}
+        local path = {mainMenuName, "Commands"}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
         params.locale = en
@@ -292,7 +295,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     do
         local title = fcp:string("Import")
-        local path = {"Final Cut Pro", "Commands"}
+        local path = {mainMenuName, "Commands"}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
         params.locale = en
@@ -310,7 +313,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     do
         local title = fcp:string("Export")
-        local path = {"Final Cut Pro", "Commands"}
+        local path = {mainMenuName, "Commands"}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
         params.locale = en

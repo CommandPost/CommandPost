@@ -150,20 +150,22 @@ local function notifyWatch(cpProp, notifications)
     return cpProp
 end
 
---- cp.app.forBundleID(bundleID)
+--- cp.app.forBundleID(bundleID, [preferencesID])
 --- Constructor
 --- Returns the `cp.app` for the specified Bundle ID. If the app has already been created, the same instance of `cp.app` will be returned on subsequent calls.
 ---
 --- Parameters:
----  * bundleID      - The application bundle ID to find the app for.
+---  * bundleID        - The application bundle ID to find the app for.
+---  * [preferencesID] - An optional identifier used to look up the preferences. If not supplied, the bundle ID will be used.
 ---
 --- Returns:
 ---  * The `cp.app` for the bundle.
-function app.static.forBundleID(bundleID)
+function app.static.forBundleID(bundleID, preferencesID)
     assert(type(bundleID) == "string", "`bundleID` must be a string")
     local theApp = apps[bundleID]
     if not theApp then
-        theApp = app:new(bundleID)
+        --log.df("Creating new cp.app: %s, %s", bundleID, preferencesID)
+        theApp = app:new(bundleID, preferencesID or bundleID)
         apps[bundleID] = theApp
     end
 
@@ -174,18 +176,21 @@ end
 -- cp.app instance configuration
 --------------------------------------------------------------
 
--- cp.app:initialize(bundleID) -> cp.app
+-- cp.app:initialize(bundleID, [preferencesID]) -> cp.app
 -- Constructor
 -- Initializes new `cp.app` instances. This should not be called directly.
 -- Rather, get them via the [forBundleID](#forBundleID) function.
 --
 -- Parameters:
 --  * bundleID - The BundleID for the app
+--  * [preferencesID] - An optional identifier used to look up the preferences. If not supplied, the bundle ID will be used.
 --
 -- Returns:
 --  * The new `cp.app`.
-function app:initialize(bundleID)
+function app:initialize(bundleID, preferencesID)
     self._bundleID = bundleID
+    self._preferencesID = preferencesID or bundleID
+
     self._windowClasses = {}
     self._windowCache = {}
 
@@ -206,6 +211,19 @@ end
 ---  * The Bundle ID.
 function app:bundleID()
     return self._bundleID
+end
+
+--- cp.app:preferencesID() -> string
+--- Method
+--- Returns the Preferences ID for the app.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Preferences ID.
+function app:preferencesID()
+    return self._preferencesID
 end
 
 --- cp.app:icon() -> image
@@ -239,7 +257,7 @@ end
 --- Field
 --- The current [preferences](cp.app.prefs.md) for the application.
 function app.lazy.value:preferences()
-    return prefs(self:bundleID())
+    return prefs(self:preferencesID())
 end
 
 --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>

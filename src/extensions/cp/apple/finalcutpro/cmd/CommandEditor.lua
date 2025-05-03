@@ -139,8 +139,9 @@ end
 function CommandEditor:show()
     if not self:isShowing() then
         -- open the window
-        if self:app().menu:isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
-            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+        local menuName = self:app():mainMenuName()
+        if self:app().menu:isEnabled({menuName, "Commands", "Customize…"}) then
+            self:app().menu:selectMenu({menuName, "Commands", "Customize…"})
             just.doUntil(function() return self:UI() end)
         end
     end
@@ -157,11 +158,12 @@ end
 --- Returns:
 ---  * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
 function CommandEditor.lazy.method:doShow()
+    local menuName = self:app():mainMenuName()
     return If(self:app().isRunning)
     :Then(self:app():doShow())
     :Then(
         If(self.isShowing):Is(false):Then(
-            self:app().menu:doSelectMenu({"Final Cut Pro", "Commands", "Customize…"})
+            self:app().menu:doSelectMenu({menuName, "Commands", "Customize…"})
         ):Then(
             WaitUntil(self.isShowing)
         ):Otherwise(true)

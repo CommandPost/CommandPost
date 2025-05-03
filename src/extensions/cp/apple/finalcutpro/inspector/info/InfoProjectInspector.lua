@@ -104,7 +104,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if successful and sending an error if not.
 function InfoProjectInspector.lazy.method:doShow()
-    return Do(self:app():doSelectMenu({"Window", "Project Properties…"}))
+    return Do(self:app():doSelectMenu({"Window", "Project Properties"}))
     :Then(
         Retry(function()
             if self.isShowing() then

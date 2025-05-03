@@ -2,6 +2,17 @@
 ---
 --- Provides access to the list of Share Destinations configured for the user.
 ---
+--- UPDATE (5th DECEMBER 2024):
+--- ===========================
+---
+--- Final Cut Pro 11.0.0 is now sandboxed, so the file path has changed.
+---
+--- I'm also now seeing:
+---  * `com.apple.FinalCut.UserDestinations5.plist`
+---  * `com.apple.FinalCut.UserDestinations6.plist`
+---  * `com.apple.FinalCut.UserDestinations7.plist`
+---  * `com.apple.FinalCut.UserDestinations8.plist`
+---
 --- UPDATE (11th JUNE 2021):
 --- ========================
 ---
@@ -81,6 +92,7 @@ local plist                 = require "cp.plist"
 local tools                 = require "cp.tools"
 
 local moses                 = require "moses"
+local semver                = require "semver"
 
 local detect                = moses.detect
 local dir                   = fs.dir
@@ -146,7 +158,19 @@ end
 ---  * The table of Share Destination names, or `nil` if an error has occurred.
 ---  * An error message as a string.
 function mod.names()
+
     local path = "~/Library/Preferences/com.apple.FinalCut.UserDestinations%s.plist"
+    if fcpApp:version() >= semver("11.0.0") then
+        -----------------------------------------------------
+        -- Final Cut Pro 11:
+        --
+        -- Note that in FCP11 trial, it still users the same filename:
+        -- ~/Library/Containers/com.apple.FinalCutTrial/Data/Library/Preferences/com.apple.FinalCut.UserDestinations8.plist
+        -----------------------------------------------------
+        local containerPath = string.format("~/Library/Containers/%s/Data/Library/Preferences/", fcpApp:bundleID())
+        path = containerPath .. "com.apple.FinalCut.UserDestinations%s.plist"
+    end
+
     local defaultPath   = fcpApp:path() .. "/Contents/Resources/DefaultDestinations.plist"
     local userPath      = os.getenv("HOME") .. "/Library/Application Support/ProApps/Share Destinations/"
     local systemPath    = "/Library/Application Support/ProApps/Share Destinations/"

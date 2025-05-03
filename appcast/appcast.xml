@@ -6,6 +6,58 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.5.2</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>Wed, 18 Dec 2024 17:10:02 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.5.2/CommandPost_1.5.2.dmg"
+				sparkle:version="8087"
+                sparkle:shortVersionString="1.5.2"
+				sparkle:dsaSignature="MCwCFEGUb97rFR1rKQCx8ZFjsj2odercAhRkS80k9eU5JPJmroFlgfqAdObSQg=="
+				sparkle:edSignature="ydeS9KsLFkgt5CsN9682zbwyyg9aAlOBAHfxUo6BzmIvT9ayxTPYWSlbcJTlzd2ITSgE4k8OrAOWWaAmiX6GAw==" length="68270839"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.5.1</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>Fri,  6 Dec 2024 13:44:07 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.5.1/CommandPost_1.5.1.dmg"
+				sparkle:version="8086"
+                sparkle:shortVersionString="1.5.1"
+				sparkle:dsaSignature="MC0CFDDIpIzu7hsLjTOv5EU6bSiOJGE6AhUAkIzI+ou0brEJ2TD0UySr8PqlkKA="
+				sparkle:edSignature="NQCQy537gHYMZxkBq+BvOMVXlDpPovjQF1d1OQb9+sbPTo/g+O7MkyIQnvjj2naTErHOpZ5wKl7TkeWin3X2Aw==" length="68269413"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.5.0</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>Thu, 21 Nov 2024 23:28:55 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.5.0/CommandPost_1.5.0.dmg"
+				sparkle:version="8081"
+                sparkle:shortVersionString="1.5.0"
+				sparkle:dsaSignature="MC0CFHsKWFiqmUuKp/NY5aP22HaGS0MgAhUAxTQxx3aU83ihofF63SavQ6IG154="
+				sparkle:edSignature="NwD14Fk5DEKbYTYCcLYua5Ig8HDyYLqrkOlP3+7GoC77zGg9snRyKZBY5iYy+hj59Kf6wHv4vubdoRbeXEmuDg==" length="68307963"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.4.27</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>Sat, 22 Jun 2024 12:25:06 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.4.27/CommandPost_1.4.27.dmg"
+				sparkle:version="8020"
+                sparkle:shortVersionString="1.4.27"
+				sparkle:dsaSignature="MCwCFAECQgvu33wxqft7f5g8GlZQgq9nAhRY8EjWQlyAUqeO298uRyyhnqvlyw=="
+				sparkle:edSignature="gbcyiU43I7fRDynhKsGEbALRW6YPEMIs3wxQdbMMofotDxtFOvf601ndC6i0q+b+Rj77e/wDq6WWYsLc+plkBQ==" length="67397365"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.4.26</title>
 			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
 			<pubDate>Mon, 22 Jan 2024 22:28:34 +1100</pubDate>

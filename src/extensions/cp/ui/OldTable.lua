@@ -18,6 +18,7 @@ local MenuButton                        = require "cp.ui.MenuButton"
 local StaticText                        = require "cp.ui.StaticText"
 local TextField                         = require "cp.ui.TextField"
 
+local childWithRole                     = axutils.childWithRole
 local childMatching                     = axutils.childMatching
 
 local set                               = fn.table.set
@@ -62,6 +63,20 @@ function Table.static.cellTextValue(cell)
                 textValue = cellValue
             end
         end
+
+        -----------------------------------------------------------------------
+        -- If we still don't have something, let's dig deeper...
+        --
+        -- In Final Cut Pro 11, if the `AXCell` within the `AXRow` has no
+        -- `AXValue`, then we should check for a `AXCell` within the `AXCell`,
+        -- and if it exists, use the `AXStaticText` value:
+        -----------------------------------------------------------------------
+        if textValue == nil then
+            local subCell = childWithRole(cell, "AXCell")
+            local staticText = subCell and childWithRole(subCell, "AXStaticText")
+            textValue = staticText and staticText:attributeValue("AXValue")
+        end
+
         return textValue
     end
 end

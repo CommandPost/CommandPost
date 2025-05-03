@@ -17,7 +17,7 @@ local mod = {}
 
 function mod.checkFrontmostApp()
     local frontmostApplication = application.frontmostApplication()
-    local bundleID = frontmostApplication:bundleID()
+    local bundleID = frontmostApplication and frontmostApplication:bundleID()
     if bundleID and bundleID == fcp:bundleID() then
         mod.cmds:isEnabled(true)
     else

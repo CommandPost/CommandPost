@@ -9,6 +9,69 @@
 		<div class="head-title-fixed"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="head-title"><strong>CommandPost</strong> - Workflow Enhancements for Creatives<span></span></div>
 		<div class="content">
+            <h1>CommandPost 1.5.2</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added a <strong>Set Speed Rate to 2000%</strong> action for Final Cut Pro. Thanks for suggesting Aad Straathof!</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed Color Board Actions in Final Cut Pro 11. Thanks for reporting Eric Badura!</li>
+                <li>Fixed a bug where we were incorrectly detecting the Viewer Control Bar when in Timecode Entry Mode in macOS Sequoia.</li>
+                <li>Fixed a bug where we weren't able to watch for file-system level Preferences changes in Final Cut Pro 11.</li>
+                <li>Fixed a bug in Loupedeck's button LED colour controls where you weren't able to adjust the brightness correctly. Thanks for reporting Eric Badura!</li>
+                <li>Fixed a bug in the Loupedeck Preferences UI where the LED colour <strong>Examples</strong> button wasn't visible on macOS Sequoia.</li>
+                <li>Fixed a bug in the Final Cut Pro Inspector where incorrect buttons were being triggered. For example, the action to add a keyframe for the Rotation property, would incorrectly select the Position property in Final Cut Pro 11. Thanks for reporting Dani Ditu!</li>
+                <li>Fixed a bug where Audio Inspector actions were no longer working - such as pan mode - in Final Cut Pro 11. Thanks for reporting Dani Ditu!</li>
+			</ul>
+
+    		<hr />
+
+            <h1>CommandPost 1.5.1</h1>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Fixed a bug in the <strong>Modify Project</strong> action for Final Cut Pro. Thanks for reporting Adam Schoales!</li>
+                <li>Fixed how CommandPost reads and writes Final Cut Pro 11's sandboxed preferences. This fixes features such as <strong>Enable Rendering During Playback</strong>.</li>
+                <li>Fixed how CommandPost reads Final Cut Pro 11's sandboxed User Destinations.</li>
+                <li>Fixed a bug which prevented CommandPost from sending FCPXMLs back to Final Cut Pro. Thanks for reporting Martin Turner!</li>
+			</ul>
+
+    		<hr />
+
+            <h1>CommandPost 1.5.0</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>Updated to Lua v5.4.7.</li>
+                <li>Added support for FCPXML v1.13 used by Final Cut Pro 11.</li>
+                <li>Increased the number of banks from 30 to 50. Thanks for suggesting Todd Hallam!</li>
+                <li>We now force the Sony Timecode Repair Toolbox to use FCPXML v1.11, so that it can be more easily imported into older versions of DaVinci Resolve.</li>
+			</ul>
+
+			<h2>🐞 Bug Fixes</h2>
+			<ul>
+                <li>Added support for Clear Key in Final Cut Pro Command Sets. Thanks for reporting Iain Anderson!</li>
+                <li>Fixed an error on macOS Sequoia, where macOS would return no frontmost windows (which shouldn't technically be possible). Thanks for reporting Iain Anderson!</li>
+                <li>Fixed a bug where <strong>Insert Action</strong> in the Scripting panel would fail to import some actions. Thanks for reporting Ermal Rexhepi!</li>
+                <li>Fixed a bug in Final Cut Pro 11 and macOS Sequoia where CommandPost could fail to apply Effects, Transitions, Titles and Generators. Thanks for reporting Kurt Farr!</li>
+                <li>We now correctly trigger <strong>Final Cut Pro Trial</strong> menubar items when running the trial version of Final Cut Pro.</li>
+			</ul>
+
+    		<hr />
+
+            <h1>CommandPost 1.4.27</h1>
+
+			<h2>🔨 Improvements</h2>
+			<ul>
+                <li>Added support for FCPXML v1.12 used by Final Cut Pro 10.8. Thanks for reporting Sam Pluemacher!</li>
+                <li>Updated from CSV2Notion v1.2.1 to v1.3.1.</li>
+			</ul>
+
+    		<hr />
+
             <h1>CommandPost 1.4.26</h1>
 
 			<h2>🐞 Bug Fixes</h2>

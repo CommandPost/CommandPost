@@ -1325,7 +1325,7 @@ function mod.mt:refresh(deviceNumber, dueToAppChange)
 
             local hsbLEDColor = colorExtension.asHSB(newLEDColor)
 
-            hsbLEDColor.brightness = self.ledBacklightLevel() / 10
+            hsbLEDColor.brightness = hsbLEDColor.brightness * (self.ledBacklightLevel() / 10)
 
             if not self.cachedLEDButtonValues[deviceNumber] then
                 self.cachedLEDButtonValues[deviceNumber] = {}
