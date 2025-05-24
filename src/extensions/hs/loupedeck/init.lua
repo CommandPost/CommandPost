@@ -374,7 +374,9 @@ function mod.mt:initaliseDevice()
                 if firmwareVersion > semver("0.2.5") then
                     log.df("Loupedeck device is running firmware greater than v0.2.5, so using Razer screen format.")
                     self.loupedeckDeviceIsUsingRazerFirmware = true
-
+                elseif firmwareVersion == semver("0.1.2") then -- firmwareVersion 0.1.2 is newer than 0.2.5 go figure
+                    log.df("Loupedeck device is running newest firmware v0.1.2, so using Razer screen format.")
+                    self.loupedeckDeviceIsUsingRazerFirmware = true
                     --------------------------------------------------------------------------------
                     -- Refresh the screen:
                     --------------------------------------------------------------------------------
