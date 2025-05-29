@@ -400,6 +400,11 @@ function mod.new(deviceType)
             )
     end
 
+    --------------------------------------------------------------------------------
+    -- Load Saved Preferences:
+    --------------------------------------------------------------------------------
+    o.firmwareOverride = config.get("loupedeckFirmwareOverride", "auto")
+
     o.panel
         :addCheckbox(9.1,
             {
@@ -420,6 +425,7 @@ function mod.new(deviceType)
                     mod._deviceManager.lastApplication(lastApplication)
                     mod._deviceManager.lastBank(lastBank)
 
+
                     --------------------------------------------------------------------------------
                     -- Refresh all devices:
                     --------------------------------------------------------------------------------
@@ -427,6 +433,48 @@ function mod.new(deviceType)
                         for deviceNumber=1, mod._deviceManager.NUMBER_OF_DEVICES do
                             device:clearCache(deviceNumber)
                             device:refresh(deviceNumber)
+                        end
+                    end
+                end,
+            }
+        )
+        
+        --------------------------------------------------------------------------------
+        -- Firmware Override:
+        --------------------------------------------------------------------------------
+
+        -- Later in the code where you define the select element:
+        :addSelect(9.2,
+            {
+                label       = i18n("loupedeckFirmwareOverride"),
+                value       = o.firmwareOverride,
+                options     = 
+                {
+                    { value = "auto", label = i18n("loupedeckFirmwareOverride_auto") },
+                    { value = "razer", label = i18n("loupedeckFirmwareOverride_razer") },
+                    { value = "standard", label = i18n("loupedeckFirmwareOverride_standard") }
+                },
+                onchange    = function(_, params)
+                    o.firmwareOverride = params.value
+                    config.set("loupedeckFirmwareOverride", params.value)
+                    
+                    -- Get the Loupedeck module
+                    local loupedeck = require("hs.loupedeck")
+                    
+                    -- Set the firmware override flag on the module
+                    if params.value == "razer" then
+                        loupedeck.loupedeckDeviceIsUsingRazerFirmware = true
+                    elseif params.value == "standard" then
+                        loupedeck.loupedeckDeviceIsUsingRazerFirmware = false
+                    end
+                    
+                    -- Force a refresh of all devices to apply firmware changes
+                    if mod._deviceManager then
+                        for _, device in pairs(mod._deviceManager.devices) do
+                            for deviceNumber = 1, mod._deviceManager.NUMBER_OF_DEVICES do
+                                device:clearCache(deviceNumber)
+                                device:refresh(deviceNumber)
+                            end
                         end
                     end
                 end,

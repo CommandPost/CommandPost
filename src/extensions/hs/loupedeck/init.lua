@@ -362,31 +362,50 @@ function mod.mt:initaliseDevice()
     end
 
     --------------------------------------------------------------------------------
-    -- Check the Loupedeck Firmware:
+    -- Check for Firmware Override Preference:
     --------------------------------------------------------------------------------
-    if not self.loupedeckDeviceIsUsingRazerFirmwareCheckDone and (self.deviceType == mod.deviceTypes.LIVE or self.deviceType == mod.deviceTypes.CT) then
-        log.df("Loupedeck CT or Live connected, so lets check the firmware version...")
-        self:requestFirmwareVersion(function(data)
-            local firmwareVersion = data and data.b and semver(data.b)
-            if firmwareVersion then
-                self.loupedeckDeviceIsUsingRazerFirmwareCheckDone = true
-                log.df("Loupedeck device is using firmware version: v%s", firmwareVersion)
-                if firmwareVersion > semver("0.2.5") then
-                    log.df("Loupedeck device is running firmware greater than v0.2.5, so using Razer screen format.")
-                    self.loupedeckDeviceIsUsingRazerFirmware = true
+    local config = require("cp.config")
+    local firmwareOverride = config.get("loupedeckFirmwareOverride", "auto")
+    
+    if firmwareOverride ~= "auto" then
+        -- Use the firmware override preference instead of auto-detection
+        self.loupedeckDeviceIsUsingRazerFirmwareCheckDone = true
+        
+        if firmwareOverride == "razer" then
+            log.df("Using Razer firmware mode based on user preference.")
+            self.loupedeckDeviceIsUsingRazerFirmware = true
+        elseif firmwareOverride == "standard" then
+            log.df("Using standard firmware mode based on user preference.")
+            self.loupedeckDeviceIsUsingRazerFirmware = false
+        end
+    else
+        --------------------------------------------------------------------------------
+        -- Check the Loupedeck Firmware (Auto-detect mode):
+        --------------------------------------------------------------------------------
+        if not self.loupedeckDeviceIsUsingRazerFirmwareCheckDone and (self.deviceType == mod.deviceTypes.LIVE or self.deviceType == mod.deviceTypes.CT) then
+            log.df("Loupedeck CT or Live connected, so lets check the firmware version...")
+            self:requestFirmwareVersion(function(data)
+                local firmwareVersion = data and data.b and semver(data.b)
+                if firmwareVersion then
+                    self.loupedeckDeviceIsUsingRazerFirmwareCheckDone = true
+                    log.df("Loupedeck device is using firmware version: v%s", firmwareVersion)
+                    if firmwareVersion > semver("0.2.5") then
+                        log.df("Loupedeck device is running firmware greater than v0.2.5, so using Razer screen format.")
+                        self.loupedeckDeviceIsUsingRazerFirmware = true
 
-                    --------------------------------------------------------------------------------
-                    -- Refresh the screen:
-                    --------------------------------------------------------------------------------
-                    self:initaliseDevice()
+                        --------------------------------------------------------------------------------
+                        -- Refresh the screen:
+                        --------------------------------------------------------------------------------
+                        self:initaliseDevice()
+                    else
+                        --log.df("Loupedeck Live is running firmware lower than v0.2.5")
+                        self.loupedeckDeviceIsUsingRazerFirmware = false
+                    end
                 else
-                    --log.df("Loupedeck Live is running firmware lower than v0.2.5")
-                    self.loupedeckDeviceIsUsingRazerFirmware = false
+                    log.df("Failed to get the Loupedeck Live firmware version.")
                 end
-            else
-                log.df("Failed to get the Loupedeck Live firmware version.")
-            end
-        end)
+            end)
+        end
     end
 
 end
