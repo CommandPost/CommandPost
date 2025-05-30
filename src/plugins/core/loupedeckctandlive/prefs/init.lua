@@ -258,6 +258,11 @@ function mod.new(deviceType)
     --- Last Selected Control Type used in the Preferences Panel.
     o.lastControlType = config.prop(o.id .. ".preferences.lastControlType", "ledButton")
 
+    --- plugins.core.loupedeckctandlive.prefs.firmwareOverride <cp.prop: table>
+    --- Field
+    --- Firmware Override Preference
+    o.firmwareOverride = config.prop(o.id .. ".preferences.firmwareOverride", {})
+
     --- plugins.core.loupedeckctandlive.prefs.automaticallyApplyIconFromAction <cp.prop: boolean>
     --- Field
     --- Automatically Apply Icon from Action
@@ -560,6 +565,59 @@ function mod.new(deviceType)
                 value       =   function() return o.backgroundColour() end,
                 class       =   "restrictRightTopSectionSize imageBackgroundColourOnImport jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'} jscolor-active",
                 onchange    =   function(_, params) o.backgroundColour(params.value) end,
+            }
+        )
+
+        :addSelect(12.4,
+            {
+                id          =   "loupedeckFirmwareOverride",
+                label       =   i18n("loupedeckFirmwareOverride"),
+                class       =   "resizeImagesOnImport restrictRightTopSectionSize",
+                value       =   function()
+                                    local firmwareOverridesForDevice = copy(o.firmwareOverride())
+                                    --log.df("firmwareOverridesForDevice: %s", hs.inspect(firmwareOverridesForDevice))
+
+                                    local deviceID = tostring(o.lastDevice())
+                                    --log.df("deviceID: %s", deviceID)
+
+                                    local result = firmwareOverridesForDevice[deviceID] or "auto"
+                                    --log.df("result: %s", result)
+
+                                    return result
+                                end,
+                options     =   function()
+                                    local options = {
+                                        { value = "auto",       label = i18n("loupedeckFirmwareOverrideAutomatic") },
+                                        { value = "razer",      label = i18n("loupedeckFirmwareOverrideRazer") },
+                                        { value = "standard",   label = i18n("loupedeckFirmwareOverrideStandard") }
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    local firmwareOverridesForDevice = copy(o.firmwareOverride())
+                                    --log.df("firmwareOverridesForDevice: %s", firmwareOverridesForDevice)
+
+                                    local deviceID = tostring(o.lastDevice())
+                                    --log.df("deviceID: %s", deviceID)
+
+                                    firmwareOverridesForDevice[deviceID] = params.value
+                                    --log.df("params.value: %s", params.value)
+
+                                    o.firmwareOverride(firmwareOverridesForDevice)
+
+                                     -- Force a refresh of all devices to apply firmware changes
+                                     --[[
+                                     if mod._deviceManager then
+                                         for _, device in pairs(mod._deviceManager.devices) do
+                                             for deviceNumber = 1, mod._deviceManager.NUMBER_OF_DEVICES do
+                                                 device:clearCache(deviceNumber)
+                                                 device:refresh(deviceNumber)
+                                             end
+                                         end
+                                     end
+                                     --]]
+                                end,
             }
         )
 
@@ -1206,9 +1264,18 @@ function mod.mt:updateUI(params)
     end
 
     --------------------------------------------------------------------------------
+    -- Firmware Override Dropdown:
+    --------------------------------------------------------------------------------
+    local firmwareOverridesForDevice = copy(self.firmwareOverride())
+    --log.df("firmwareOverridesForDevice: %s", hs.inspect(firmwareOverridesForDevice))
+    --log.df("lastDevice: %s", lastDevice)
+    local loupedeckFirmwareOverride = firmwareOverridesForDevice[lastDevice] or "auto"
+
+    --------------------------------------------------------------------------------
     -- Inject Script:
     --------------------------------------------------------------------------------
     injectScript([[
+        changeValueByID('loupedeckFirmwareOverride', `]] .. escapeTilda(loupedeckFirmwareOverride) .. [[`);
         changeValueByID('unit', `]] .. escapeTilda(lastDevice) .. [[`);
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
