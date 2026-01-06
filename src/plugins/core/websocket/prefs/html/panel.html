@@ -86,8 +86,13 @@
         <!-- Action Query Section -->
         <h3 class="uiItem">动作查询</h3>
 
-        <p class="uiItem" style="text-align: center; padding: 20px 0;">
-            <a id="openActionChooser" href="#" class="button" style="padding: 12px 30px; font-size: 15px;">
+        <p class="uiItem" style="text-align: center; padding: 10px 0;">
+            <label for="actionAppFilter" style="display:block; margin-bottom:8px; font-size:12px; color:#888;">按应用筛选动作：</label>
+            <select id="actionAppFilter" style="width: 60%; padding:6px; margin-right:8px;">
+                <option value="">所有应用</option>
+                <!-- 应用选项由后端注入或在面板打开时更新 -->
+            </select>
+            <a id="openActionChooser" href="#" class="button" style="padding: 8px 18px; font-size: 13px; vertical-align: middle;">
                 🔍 打开动作选择器
             </a>
         </p>
@@ -290,8 +295,17 @@
             var chooserButton = document.getElementById("openActionChooser");
             if (chooserButton) {
                 chooserButton.onclick = function () {
-                    websocketPanelCallback('openActionChooser', {});
+                    var filterElem = document.getElementById('actionAppFilter');
+                    var bundleID = filterElem ? filterElem.value : "";
+                    websocketPanelCallback('openActionChooser', {bundleID: bundleID});
                 };
+            }
+
+            // Request available apps to populate the filter when panel loads
+            try {
+                websocketPanelCallback('requestAppList', {});
+            } catch (e) {
+                console.warn('[WebSocket] requestAppList failed:', e);
             }
         })();
     </script>

@@ -252,7 +252,7 @@ end
 --
 -- Returns:
 --  * None
-local function openActionChooser()
+local function openActionChooser(opts)
     log.df("Opening CommandPost Action Chooser")
 
     -- Create activator if it doesn't exist
@@ -321,6 +321,51 @@ local function openActionChooser()
         end)
 
         mod.actionActivator = activator
+    end
+
+    -- If a bundleID was provided, try to enable handlers for that bundle (group)
+    if opts and type(opts) == "table" and opts.bundleID and opts.bundleID ~= "" then
+        local bundleID = opts.bundleID
+        log.df("openActionChooser: applying bundleID filter: %s", bundleID)
+        local appInfo = nil
+        if mod._appmanager and mod._appmanager.getApplications then
+            local apps = mod._appmanager.getApplications() or {}
+            appInfo = apps[bundleID]
+        end
+
+        local groupID = nil
+        if appInfo and appInfo.legacyGroupID then
+            groupID = appInfo.legacyGroupID
+        else
+            -- Fallback: assume bundleID may itself be a group ID
+            groupID = bundleID
+        end
+
+        -- Try to get an icon for the bundle (best-effort)
+        local icon = nil
+        local displayName = (appInfo and appInfo.displayName) and appInfo.displayName or bundleID
+        local ok, err = pcall(function()
+            if image and image.imageFromAppBundle then
+                icon = image.imageFromAppBundle(bundleID)
+            end
+        end)
+
+        -- Apply filters to activator
+        local applied, applyErr = pcall(function()
+            if groupID and mod.actionActivator and mod.actionActivator.enableHandlers then
+                mod.actionActivator:enableHandlers(groupID)
+            end
+            if mod.actionActivator and mod.actionActivator.setBundleID then
+                if icon then
+                    mod.actionActivator:setBundleID(bundleID, icon, displayName)
+                else
+                    mod.actionActivator:setBundleID(bundleID, nil, displayName)
+                end
+            end
+        end)
+        if not applied then
+            log.df("openActionChooser: bundleID filter apply failed: %s", tostring(applyErr))
+        end
     end
 
     -- Show the activator
@@ -454,8 +499,34 @@ function mod.init(deps, env)
             updateUI()
 
         elseif actionType == "openActionChooser" then
-            log.df("Open Action Chooser requested")
-            openActionChooser()
+            log.df("Open Action Chooser requested - params: %s", inspect(params))
+            -- Pass through optional bundleID filter
+            openActionChooser(params)
+
+        elseif actionType == "requestAppList" then
+            log.df("App list requested from webview")
+            -- Gather registered applications from appmanager
+            local apps = {}
+            if mod._appmanager and mod._appmanager.getApplications then
+                local registered = mod._appmanager.getApplications() or {}
+                for bundleID, info in pairs(registered) do
+                    table.insert(apps, {bundleID = bundleID, displayName = info.displayName or bundleID})
+                end
+            end
+            -- Inject JS to populate select element
+            local injectScript = mod._prefsManager.injectScript
+            if injectScript then
+                local options = ""
+                for _,app in ipairs(apps) do
+                    options = options .. string.format("<option value='%s'>%s</option>", app.bundleID, tools.escapeTilda(app.displayName))
+                end
+                injectScript(string.format([[
+                    var select = document.getElementById('actionAppFilter');
+                    if (select) {
+                        select.innerHTML = '<option value="">所有应用</option>' + `%s`;
+                    }
+                ]], options))
+            end
 
         elseif actionType == "copyToClipboard" then
             log.df("Copy to clipboard requested")
