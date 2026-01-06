@@ -213,7 +213,7 @@ end
 --- Returns:
 ---  * None
 function mod.handleMessage(connection, message)
-    log.df("Received message on connection %s", connection.id)
+    log.df("Received message on connection %s: %s", connection.id, message)
 
     -- Process the message
     local response = messageHandler.handleMessage(connection, message)

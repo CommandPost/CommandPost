@@ -286,13 +286,31 @@ local function openActionChooser(opts)
                    handlerID, rawActionId, fullActionId, actionTitle)
             log.df("Action object: %s", inspect(action))
 
+            -- Determine the actual action ID to use
+            local actualActionId = fullActionId or rawActionId
+
+            -- For fcpx_shortcuts handler: the fullActionId is generic "fcpxShortcuts"
+            -- but the actual CommandSetID is stored in action itself (if it's a string)
+            -- or in action.params (if it's a table)
+            if fullActionId == "fcpxShortcuts" then
+                if type(action) == "string" then
+                    -- action is the CommandSetID directly (e.g., "SelectToolTrim")
+                    actualActionId = action
+                    log.df("Using action string as actualActionId: %s", actualActionId)
+                elseif type(action) == "table" and action.params then
+                    -- action.params contains the CommandSetID
+                    actualActionId = action.params
+                    log.df("Using action.params as actualActionId: %s", actualActionId)
+                end
+            end
+
             -- Update UI to show selected action
             local injectScript = mod._prefsManager.injectScript
             if injectScript then
                 local titleJson = json.encode(actionTitle)
                 local handlerJson = json.encode(handlerID)
                 local rawActionIdJson = json.encode(rawActionId)
-                local fullActionIdJson = json.encode(fullActionId or rawActionId)
+                local actualActionIdJson = json.encode(actualActionId)
 
                 -- Create example JSON message
                 local exampleMsg = json.encode({
@@ -300,7 +318,7 @@ local function openActionChooser(opts)
                     id = "msg-001",
                     payload = {
                         handler = handlerID,
-                        actionId = fullActionId or rawActionId
+                        actionId = actualActionId
                     }
                 })
 
@@ -316,7 +334,7 @@ local function openActionChooser(opts)
                         handler.textContent = "Handler: " + %s + " | Action ID: " + %s;
                         jsonElem.textContent = "WebSocket 消息示例:\n" + %s;
                     }
-                ]], titleJson, handlerJson, fullActionIdJson, json.encode(exampleMsg)))
+                ]], titleJson, handlerJson, actualActionIdJson, json.encode(exampleMsg)))
             end
         end)
 
