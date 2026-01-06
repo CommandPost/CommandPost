@@ -204,14 +204,54 @@ function mod.handleCommand(data)
             -- Format is typically "prefix:commandId" (e.g., "cmds:preferencesfinalcutpro")
             local action
             local colonPos = actionId:find(":")
+            local commandId
             if colonPos then
                 -- Extract the command ID after the colon
-                local commandId = actionId:sub(colonPos + 1)
-                action = { id = commandId }
+                commandId = actionId:sub(colonPos + 1)
             else
                 -- No prefix found, use the raw actionId
-                action = { id = actionId }
+                commandId = actionId
             end
+
+            -- Look up the choice details to get the params
+            -- Access handler's internal choices directly to avoid thread issues
+            local choiceParams = nil
+            local handlerChoices = handler._choices
+            if handlerChoices then
+                local allChoices = handlerChoices:getChoices()
+                for _, choice in ipairs(allChoices) do
+                    if choice.id == commandId then
+                        choiceParams = choice.params
+                        break
+                    end
+                end
+            else
+                -- Choices not yet cached - this might happen in secondary thread
+                -- We'll try to access them via the property, but log a warning
+                log.wf("Handler choices not cached for %s - attempting to access in secondary thread", handlerId)
+                -- Note: This might fail in secondary thread, but we'll try anyway
+                local ok, choicesResult = pcall(function()
+                    return handler:choices()
+                end)
+                if ok and choicesResult then
+                    local allChoices = choicesResult:getChoices()
+                    for _, choice in ipairs(allChoices) do
+                        if choice.id == commandId then
+                            choiceParams = choice.params
+                            break
+                        end
+                    end
+                end
+            end
+
+            -- Create action object with params if found
+            if choiceParams then
+                action = choiceParams
+                action.id = commandId
+            else
+                action = { id = commandId }
+            end
+
             return handler:execute(action)
         else
             -- Execute the handler itself (may open action chooser)
