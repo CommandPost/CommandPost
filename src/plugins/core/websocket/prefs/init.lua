@@ -286,6 +286,51 @@ local function openActionChooser(opts)
                    handlerID, rawActionId, fullActionId, actionTitle)
             log.df("Action object: %s", inspect(action))
 
+            -- For menu actions, try to convert to English actionId for WebSocket compatibility
+            local websocketActionId = fullActionId
+            if handlerID and handlerID:match("_menu$") and fullActionId and fullActionId:match("^menu:") then
+                -- Try to get English path
+                local fcp = require("cp.apple.finalcutpro")
+                if fcp and fcp:isRunning() and action.path and action.locale then
+                    local menu = fcp.menu
+                    if menu then
+                        -- Get menu titles for both current locale and English
+                        local menuTitles = menu:getMenuTitles({"en", action.locale})
+                        if menuTitles then
+                            -- Try to find English equivalents for the path
+                            local enPath = {}
+                            local currentMenu = menuTitles
+                            local success = true
+
+                            for i, localizedPart in ipairs(action.path) do
+                                local found = false
+                                for _, item in ipairs(currentMenu) do
+                                    if item[action.locale] == localizedPart then
+                                        -- Found the item, get its English title
+                                        local enTitle = item["en"] or localizedPart
+                                        table.insert(enPath, enTitle)
+                                        if i < #action.path and item.submenu then
+                                            currentMenu = item.submenu
+                                        end
+                                        found = true
+                                        break
+                                    end
+                                end
+                                if not found then
+                                    success = false
+                                    break
+                                end
+                            end
+
+                            if success and #enPath > 0 then
+                                websocketActionId = "menu:" .. table.concat(enPath, "||")
+                                log.df("Converted to English actionId: %s", websocketActionId)
+                            end
+                        end
+                    end
+                end
+            end
+
             -- Update UI to show selected action
             local injectScript = mod._prefsManager.injectScript
             if injectScript then
@@ -294,13 +339,13 @@ local function openActionChooser(opts)
                 local rawActionIdJson = json.encode(rawActionId)
                 local fullActionIdJson = json.encode(fullActionId or rawActionId)
 
-                -- Create example JSON message
+                -- Create example JSON message (use websocketActionId for menu actions)
                 local exampleMsg = json.encode({
                     type = "command",
                     id = "msg-001",
                     payload = {
                         handler = handlerID,
-                        actionId = fullActionId or rawActionId
+                        actionId = websocketActionId or fullActionId or rawActionId
                     }
                 })
 
@@ -316,7 +361,7 @@ local function openActionChooser(opts)
                         handler.textContent = "Handler: " + %s + " | Action ID: " + %s;
                         jsonElem.textContent = "WebSocket 消息示例:\n" + %s;
                     }
-                ]], titleJson, handlerJson, fullActionIdJson, json.encode(exampleMsg)))
+                ]], titleJson, handlerJson, json.encode(websocketActionId or fullActionId or rawActionId), json.encode(exampleMsg)))
             end
         end)
 
