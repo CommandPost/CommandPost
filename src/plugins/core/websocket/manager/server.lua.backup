@@ -1,0 +1,274 @@
+--- === plugins.core.websocket.manager.server ===
+---
+--- WebSocket Server Mode Implementation
+---
+--- Handles accepting WebSocket client connections, managing multiple clients,
+--- and broadcasting messages.
+
+local require = require
+
+local websocket = require "hs.websocket"
+
+local log       = require("hs.logger").new("ws_server")
+
+local connection = require "connection"
+
+local mod = {}
+
+--- plugins.core.websocket.manager.server.init(manager)
+--- Function
+--- Initializes the server module.
+---
+--- Parameters:
+---  * manager - The websocket manager instance
+---
+--- Returns:
+---  * None
+function mod.init(manager)
+    mod.manager = manager
+    mod.server = nil
+    mod.clients = {}
+end
+
+--- plugins.core.websocket.manager.server.start(port, messageHandler) -> boolean
+--- Function
+--- Starts the WebSocket server.
+---
+--- Parameters:
+---  * port - The port to listen on
+---  * messageHandler - Function to handle incoming messages
+---
+--- Returns:
+---  * true if server started, false otherwise
+---
+--- Notes:
+---  * hs.websocket does not support server mode. This function will fail with an error message.
+---  * Only client mode is supported. Please use client mode instead.
+function mod.start(port, messageHandler)
+    log.ef("WebSocket server mode is not supported by hs.websocket")
+    log.ef("The hs.websocket module only provides client functionality, not server functionality.")
+    log.ef("Please switch to client mode to connect to an external WebSocket server.")
+    return false
+end
+
+--- plugins.core.websocket.manager.server.stop() -> nil
+--- Function
+--- Stops the WebSocket server and disconnects all clients.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.stop()
+    log.df("Stopping WebSocket server")
+
+    -- Disconnect all clients
+    for _, client in pairs(mod.clients) do
+        client:close()
+    end
+    mod.clients = {}
+
+    -- Stop server
+    if mod.server then
+        local ok, err = pcall(function()
+            mod.server:close()
+        end)
+
+        if not ok then
+            log.ef("Error stopping server: %s", err)
+        end
+
+        mod.server = nil
+    end
+
+    -- Notify manager
+    if mod.manager and mod.manager.notifyConnectionStatusChanged then
+        mod.manager.notifyConnectionStatusChanged()
+    end
+end
+
+--- plugins.core.websocket.manager.server.handleNewClient(clientWs, messageHandler) -> nil
+--- Function
+--- Handles a new client connection.
+---
+--- Parameters:
+---  * clientWs - The client WebSocket object
+---  * messageHandler - The message handler function
+---
+--- Returns:
+---  * None
+function mod.handleNewClient(clientWs, messageHandler)
+    log.df("New client connected")
+
+    -- Create connection object
+    local client = connection(clientWs, "server", {
+        onMessage = messageHandler,
+        onClose = function(conn)
+            mod.handleClientDisconnect(conn)
+        end,
+        onError = function(conn, error)
+            log.ef("Client error: %s", error)
+        end,
+    })
+
+    -- Store client
+    mod.clients[client.id] = client
+    client:setState(connection.states.CONNECTED)
+
+    -- Set up event handlers
+    clientWs:setCallback(function(event, message)
+        mod.handleClientEvent(client, event, message, messageHandler)
+    end)
+
+    -- Notify manager
+    if mod.manager and mod.manager.notifyConnectionStatusChanged then
+        mod.manager.notifyConnectionStatusChanged()
+    end
+
+    log.df("Client registered: %s (total clients: %d)", client.id, mod.getClientCount())
+end
+
+--- plugins.core.websocket.manager.server.handleClientEvent(client, event, message, messageHandler) -> nil
+--- Function
+--- Handles events from a client WebSocket.
+---
+--- Parameters:
+---  * client - The connection object
+---  * event - The event type (string: "open", "closed", "fail", "received", "pong")
+---  * message - The message (if any)
+---  * messageHandler - The message handler function
+---
+--- Returns:
+---  * None
+function mod.handleClientEvent(client, event, message, messageHandler)
+    if event == "closed" then
+        log.df("Client disconnected: %s", client.id)
+        mod.handleClientDisconnect(client)
+
+    elseif event == "fail" then
+        log.ef("Client connection failed: %s - %s", client.id, message or "unknown error")
+        client:handleError(message)
+        mod.handleClientDisconnect(client)
+
+    elseif event == "received" then
+        if messageHandler then
+            messageHandler(client, message)
+        end
+    end
+end
+
+--- plugins.core.websocket.manager.server.handleClientDisconnect(client) -> nil
+--- Function
+--- Handles client disconnection.
+---
+--- Parameters:
+---  * client - The connection object
+---
+--- Returns:
+---  * None
+function mod.handleClientDisconnect(client)
+    if mod.clients[client.id] then
+        mod.clients[client.id] = nil
+        log.df("Client removed: %s (remaining clients: %d)", client.id, mod.getClientCount())
+
+        -- Notify manager
+        if mod.manager and mod.manager.notifyConnectionStatusChanged then
+            mod.manager.notifyConnectionStatusChanged()
+        end
+    end
+end
+
+--- plugins.core.websocket.manager.server.broadcast(message) -> number
+--- Function
+--- Broadcasts a message to all connected clients.
+---
+--- Parameters:
+---  * message - The message to broadcast (string or table)
+---
+--- Returns:
+---  * Number of clients the message was sent to
+function mod.broadcast(message)
+    local count = 0
+
+    for _, client in pairs(mod.clients) do
+        if client:send(message) then
+            count = count + 1
+        end
+    end
+
+    log.df("Broadcast message sent to %d clients", count)
+    return count
+end
+
+--- plugins.core.websocket.manager.server.sendToClient(clientId, message) -> boolean
+--- Function
+--- Sends a message to a specific client.
+---
+--- Parameters:
+---  * clientId - The client connection ID
+---  * message - The message to send (string or table)
+---
+--- Returns:
+---  * true if sent successfully, false otherwise
+function mod.sendToClient(clientId, message)
+    local client = mod.clients[clientId]
+
+    if not client then
+        log.wf("Client not found: %s", clientId)
+        return false
+    end
+
+    return client:send(message)
+end
+
+--- plugins.core.websocket.manager.server.isRunning() -> boolean
+--- Function
+--- Checks if the server is running.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * true if server is running, false otherwise
+function mod.isRunning()
+    return mod.server ~= nil
+end
+
+--- plugins.core.websocket.manager.server.getClientCount() -> number
+--- Function
+--- Gets the number of connected clients.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Number of connected clients
+function mod.getClientCount()
+    local count = 0
+    for _ in pairs(mod.clients) do
+        count = count + 1
+    end
+    return count
+end
+
+--- plugins.core.websocket.manager.server.getClientList() -> table
+--- Function
+--- Gets a list of all connected clients.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Array of client info tables
+function mod.getClientList()
+    local list = {}
+
+    for _, client in pairs(mod.clients) do
+        table.insert(list, client:getInfo())
+    end
+
+    return list
+end
+
+return mod

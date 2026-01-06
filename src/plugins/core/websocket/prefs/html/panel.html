@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Control Surface</title>
+    <link rel="stylesheet" href="../css/panel.css">
+</head>
+<body>
+    <div class="websocket-preferences">
+        <!-- Header -->
+        <h3 class="uiItem">WebSocket 控制表面</h3>
+
+        <!-- Enable/Disable -->
+        <p class="uiItem">
+            <label for="enableWebSocket">启用</label>
+            <input type="checkbox"
+                   id="enableWebSocket"
+                   {% if manager.enabled() then %}checked{% end %}
+                   onchange="websocketPanelCallback('enableWebSocket', {checked: this.checked})">
+        </p>
+
+        <hr>
+
+        <!-- Mode Selection -->
+        <p class="uiItem">
+            <label for="mode">运行模式:</label>
+            <select id="mode"
+                    onchange="websocketPanelCallback('mode', {value: this.value}); updateModeVisibility();">
+                <option value="server" {% if manager.mode() == "server" then %}selected{% end %}>服务器模式</option>
+                <option value="client" {% if manager.mode() == "client" then %}selected{% end %}>客户端模式</option>
+            </select>
+        </p>
+
+        <!-- Server Settings -->
+        <div id="serverSettings" class="mode-settings">
+            <p class="uiItem api">
+                <label for="serverPort">服务器端口:</label>
+                <input type="text"
+                       id="serverPort"
+                       value="{{ manager.serverPort() }}"
+                       oninput="console.log('[WebSocket] serverPort input event, value:', this.value)"
+                       onchange="console.log('[WebSocket] serverPort change event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})"
+                       onblur="console.log('[WebSocket] serverPort blur event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})">
+            </p>
+        </div>
+
+        <!-- Client Settings -->
+        <div id="clientSettings" class="mode-settings" style="display: none;">
+            <p class="uiItem api">
+                <label for="clientUrl">服务器地址:</label>
+                <input type="text"
+                       id="clientUrl"
+                       value="{{ manager.clientUrl() }}"
+                       placeholder="ws://localhost:8080"
+                       oninput="console.log('[WebSocket] clientUrl input event, value:', this.value)"
+                       onchange="console.log('[WebSocket] clientUrl change event, value:', this.value); websocketPanelCallback('clientUrl', {value: this.value})"
+                       onblur="console.log('[WebSocket] clientUrl blur event, value:', this.value); websocketPanelCallback('clientUrl', {value: this.value})">
+            </p>
+
+            <p class="uiItem">
+                <label for="autoReconnect">自动重连</label>
+                <input type="checkbox"
+                       id="autoReconnect"
+                       {% if manager.autoReconnect() then %}checked{% end %}
+                       onchange="websocketPanelCallback('autoReconnect', {checked: this.checked})">
+                <label for="reconnectInterval" style="margin-left: 15px;">间隔(秒):</label>
+                <input type="text"
+                       id="reconnectInterval"
+                       value="{{ manager.reconnectInterval() }}"
+                       onblur="websocketPanelCallback('reconnectInterval', {value: this.value})"
+                       onchange="websocketPanelCallback('reconnectInterval', {value: this.value})">
+            </p>
+        </div>
+
+        <hr>
+
+        <!-- Connection Status & Active Connections -->
+        <div class="uiItem status-display">
+            <div id="statusIndicator" class="status-badge status-disconnected">
+                已断开
+            </div>
+            <div id="connectionInfo" class="connection-info"></div>
+            <button onclick="websocketPanelCallback('refreshStatus', {})" class="button-text">
+                刷新
+            </button>
+        </div>
+
+        <div class="uiItem connections-list-container">
+            <div id="connectionsList" class="connections-list">
+                <p class="no-connections">暂无活动连接</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Action Query Section -->
+        <h3 class="uiItem">动作查询</h3>
+
+        <p class="uiItem" style="text-align: center; padding: 20px 0;">
+            <a id="openActionChooser" href="#" class="button" style="padding: 12px 30px; font-size: 15px;">
+                🔍 打开动作选择器
+            </a>
+        </p>
+
+        <p class="uiItem" style="color: #666; font-size: 12px; text-align: center; font-style: italic;">
+            点击上方按钮打开 CommandPost 动作选择器,浏览和搜索所有可用的动作
+        </p>
+
+        <!-- Selected Action Display -->
+        <div class="uiItem" id="selectedActionDisplay" style="display: none;">
+            <div style="background-color: #252525; border: 2px solid #1990ff; border-radius: 6px; padding: 15px; margin-top: 10px;">
+                <p style="margin: 0 0 10px 0; color: #1990ff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    当前选中的动作
+                </p>
+                <p id="selectedActionTitle" style="margin: 0; font-size: 14px; font-weight: 600; color: #fff;"></p>
+                <p id="selectedActionHandler" style="margin: 5px 0 0 0; font-size: 11px; font-family: monospace; color: #888;"></p>
+                <p id="selectedActionJson" style="margin: 10px 0 0 0; font-size: 10px; font-family: monospace; color: #666; white-space: pre-wrap; word-break: break-all;"></p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- WebSocket Message Format -->
+        <h3 class="uiItem">WebSocket 消息格式</h3>
+
+        <div class="uiItem" style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 15px;">
+            <p style="margin: 0 0 10px 0; color: #1990ff; font-size: 12px; font-weight: 600;">
+                发送命令到 WebSocket 服务器
+            </p>
+            <p style="margin: 5px 0; color: #aaa; font-size: 11px;">
+                使用上方选择器选择动作后,发送以下格式的 JSON 消息:
+            </p>
+            <pre style="margin: 10px 0; padding: 10px; background-color: #000; border-radius: 4px; color: #0f0; font-size: 11px; overflow-x: auto;">{
+  "type": "command",
+  "id": "任意唯一ID",
+  "payload": {
+    "handler": "Handler ID",
+    "actionId": "Action ID"
+  }
+}</pre>
+            <p style="margin: 10px 0 5px 0; color: #888; font-size: 10px;">
+                例如,执行 Final Cut Pro 偏好设置:
+            </p>
+            <pre style="margin: 5px 0; padding: 10px; background-color: #000; border-radius: 4px; color: #0f0; font-size: 11px; overflow-x: auto;">{
+  "type": "command",
+  "id": "msg-001",
+  "payload": {
+    "handler": "global_cmds",
+    "actionId": "preferencesfinalcutpro"
+  }
+}</pre>
+        </div>
+    </div>
+
+    <script>
+        // Helper function to send messages via postMessage
+        function websocketPanelCallback(id, params) {
+            console.log('[WebSocket] websocketPanelCallback called - id:', id, 'params:', params);
+            try {
+                var result = {
+                    id: "websocketPanelCallback",
+                    params: Object.assign({type: id}, params),
+                };
+                console.log('[WebSocket] Sending postMessage:', result);
+                postMessage(result);
+            } catch(err) {
+                console.error('[WebSocket] Error in websocketPanelCallback:', err);
+                alert("Error: " + err);
+            }
+        }
+
+        // Update mode visibility based on selection
+        function updateModeVisibility() {
+            var mode = document.getElementById("mode").value;
+            var serverSettings = document.getElementById("serverSettings");
+            var clientSettings = document.getElementById("clientSettings");
+
+            if (mode === "server") {
+                serverSettings.style.display = "block";
+                clientSettings.style.display = "none";
+            } else {
+                serverSettings.style.display = "none";
+                clientSettings.style.display = "block";
+            }
+        }
+
+        // Initialize immediately when script runs
+        (function() {
+            console.log('[WebSocket] Initializing panel JavaScript');
+            updateModeVisibility();
+
+            // Setup Action Chooser button
+            var chooserButton = document.getElementById("openActionChooser");
+            if (chooserButton) {
+                chooserButton.onclick = function() {
+                    websocketPanelCallback('openActionChooser', {});
+                };
+            }
+        })();
+    </script>
+</body>
+</html>
