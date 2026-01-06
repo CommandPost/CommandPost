@@ -457,6 +457,33 @@ function mod.init(deps, env)
             log.df("Open Action Chooser requested")
             openActionChooser()
 
+        elseif actionType == "copyToClipboard" then
+            log.df("Copy to clipboard requested")
+            local text = params.text
+            if text and text ~= "" then
+                -- Put text on the clipboard
+                hs.pasteboard.setContents(text)
+
+                -- Notify JavaScript of success
+                local injectScript = mod._prefsManager.injectScript
+                if injectScript then
+                    injectScript([[
+                        if (typeof onCopySuccess === 'function') {
+                            onCopySuccess();
+                        }
+                    ]])
+                end
+                log.df("Text copied to clipboard successfully")
+            else
+                log.wf("No text to copy")
+
+                -- Notify JavaScript of error
+                local injectScript = mod._prefsManager.injectScript
+                if injectScript then
+                    injectScript([[if (typeof onCopyError === 'function') { onCopyError('No text provided'); }]])
+                end
+            end
+
         else
             log.df("Unknown callback type: %s (id: %s)", actionType, id)
             log.df("params: %s", inspect(params))
