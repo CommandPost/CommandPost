@@ -187,47 +187,13 @@ function mod.handleCommand(data)
 
     log.df("Executing command - Handler: %s, Action ID: %s", handlerId, actionId or "none")
 
-    -- Find the handler
-    local handler = mod.actionManager:getHandler(handlerId)
+    -- Find the handler using direct table access to avoid thread issues
+    local handlersTable = mod.actionManager.handlers()
+    local handler = handlersTable[handlerId]
+
     if not handler then
-        log.wf("Handler not found: %s (len: %d)", handlerId, #handlerId)
-        log.wf("Requested handler ID bytes: %s", {string.byte(handlerId, 1, #handlerId)})
-
-        -- Debug: Try to access the handlers table directly
-        local handlersTable = mod.actionManager.handlers()
-        log.df("Direct handlers table lookup for '%s': %s", handlerId, handlersTable[handlerId] ~= nil)
-
-        -- Try to find similar handlers
-        local handlerIds = mod.actionManager.handlerIds()
-        for _, id in ipairs(handlerIds) do
-            if id:lower():gsub("%s+", "") == handlerId:lower():gsub("%s+", "") then
-                log.df("Found matching handler after normalization: '%s' (requested: '%s')", id, handlerId)
-                log.df("Direct table lookup: %s", handlersTable[id] ~= nil)
-
-                log.df("Trying to get handler with normalized ID...")
-                handler = mod.actionManager:getHandler(id)
-                if handler then
-                    log.df("Successfully retrieved handler with normalized ID: '%s'", id)
-                    handlerId = id  -- Update to the correct ID
-                    break
-                else
-                    log.wf("getHandler still returned nil for ID: '%s' (len: %d)", id, #id)
-                    log.wf("ID bytes: %s", {string.byte(id, 1, #id)})
-                    -- Try direct table access as workaround
-                    handler = handlersTable[id]
-                    if handler then
-                        log.df("Workaround: Retrieved handler directly from table for ID: '%s'", id)
-                        handlerId = id
-                        break
-                    end
-                end
-            end
-        end
-
-        if not handler then
-            log.wf("Available handlers: %s", table.concat(mod.actionManager.handlerIds(), ", "))
-            return mod.createErrorResponse(data.id, "Handler not found: " .. handlerId)
-        end
+        log.wf("Handler not found: %s", handlerId)
+        return mod.createErrorResponse(data.id, "Handler not found: " .. handlerId)
     end
 
     -- Execute the action
@@ -283,19 +249,46 @@ function mod.handleQuery(data)
 
     -- Handle special queries
     if queryType == "handlers" or queryType == "listHandlers" then
-        local handlerIds = mod.actionManager.handlerIds()
+        -- Access handlers() directly instead of handlerIds() to avoid thread issues
+        local handlersTable = mod.actionManager.handlers()
         local handlers = {}
-        for _, id in ipairs(handlerIds) do
-            local handler = mod.actionManager:getHandler(id)
+
+        -- Iterate through the handlers table using pairs
+        for id, handler in pairs(handlersTable) do
             if handler then
-                table.insert(handlers, {
+                local handlerInfo = {
                     id = id,
                     group = handler:group(),
                     label = handler:label()
-                })
+                }
+                table.insert(handlers, handlerInfo)
             end
         end
+
+        log.df("Returning %d handlers in response", #handlers)
         return mod.createSuccessResponse(data.id, {handlers = handlers})
+    elseif queryType == "handlerInfo" then
+        -- Get detailed info about a specific handler
+        local handlerId = data.payload.handler
+        if not handlerId then
+            return mod.createErrorResponse(data.id, "Missing 'handler' field in payload for handlerInfo query")
+        end
+
+        -- Access handlers() directly to avoid thread issues with getHandler()
+        local handlersTable = mod.actionManager.handlers()
+        local handler = handlersTable[handlerId]
+
+        if not handler then
+            return mod.createErrorResponse(data.id, "Handler not found: " .. handlerId)
+        end
+
+        local handlerInfo = {
+            id = handlerId,
+            group = handler:group(),
+            label = handler:label()
+        }
+
+        return mod.createSuccessResponse(data.id, {handler = handlerInfo})
     elseif queryType == "ping" then
         return mod.createSuccessResponse(data.id, {message = "pong"})
     else

@@ -57,8 +57,8 @@ end)
 
 --- plugins.core.websocket.manager.serverPort <cp.prop: number>
 --- Variable
---- Server port (default: 8080)
-mod.serverPort = config.prop("websocket.serverPort", 8080):watch(function(port)
+--- Server port (default: 27480)
+mod.serverPort = config.prop("websocket.serverPort", 27480):watch(function(port)
     log.df("[PROP WATCH] WebSocket server port changed to: %d", port)
     log.df("[PROP WATCH] Current enabled state: %s, mode: %s", tostring(mod.enabled()), mod.mode())
     if mod.enabled() and mod.mode() == mod.MODE.SERVER then
