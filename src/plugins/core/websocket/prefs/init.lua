@@ -243,6 +243,101 @@ function json.encode(data)
     end
 end
 
+-- simplifyActionId(handlerID, actionId) -> string
+-- Function
+-- Simplifies action IDs by removing common path prefixes for FCPX plugins.
+--
+-- Parameters:
+--  * handlerID - The handler ID (e.g., "fcpx_videoEffect")
+--  * actionId  - The full action ID (path or identifier)
+--
+-- Returns:
+--  * Simplified action ID, or original if no simplification needed
+local function simplifyActionId(handlerID, actionId)
+    if not actionId or type(actionId) ~= "string" then
+        return actionId
+    end
+
+    -- Only simplify FCPX plugin paths
+    local fcpxPluginHandlers = {
+        ["fcpx_videoEffect"] = true,
+        ["fcpx_audioEffect"] = true,
+        ["fcpx_generator"] = true,
+        ["fcpx_title"] = true,
+        ["fcpx_transition"] = true
+    }
+
+    if not fcpxPluginHandlers[handlerID] then
+        return actionId
+    end
+
+    -- Handle System Components (e.g., CoreAudio components)
+    -- Pattern: /System/Library/Components/ComponentName.component/...
+    local systemComponentsPrefix = "/System/Library/Components/"
+    if actionId:find(systemComponentsPrefix, 1, true) then
+        local componentName = actionId:match("/System/Library/Components/([^/]+)%.component/")
+        if componentName then
+            return componentName
+        end
+    end
+
+    -- Handle Flexo Framework Effect Bundles
+    -- Pattern: /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles/Name.Category.audio.effectBundle
+    local flexoPrefix = "/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles/"
+    if actionId:find(flexoPrefix, 1, true) then
+        local bundleName = actionId:match("/Effect Bundles/(.+)%.effectBundle$")
+        if bundleName then
+            -- Parse the bundle name: "Name.Category.audio" -> extract Name and Category
+            -- Format can be: "Mud Removal 2.EQ.audio" or similar
+            local name, category = bundleName:match("^(.+)%.([^%.]+)%.[^%.]+$")
+            if name and category then
+                return category .. "/" .. name
+            else
+                -- Fallback: just use the first part before any dot
+                local simpleName = bundleName:match("^([^%.]+)")
+                return simpleName or bundleName
+            end
+        end
+    end
+
+    -- Remove common FCPX plugin path prefix
+    -- Pattern: /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/.../Effects.localized/.../...localized
+    local commonPrefix = "/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/"
+
+    -- Check if it's a full FCPX plugin path
+    local startIdx = actionId:find(commonPrefix, 1, true)
+    if startIdx then
+        -- Find the start of the meaningful path after .fxp/Contents/Resources/
+        -- This handles both "Templates.localized" and "PETemplates.localized"
+        local afterResources = actionId:match(".fxp/Contents/Resources/(.+)$")
+        if afterResources then
+            -- Remove the first directory level (Templates.localized or PETemplates.localized, etc.)
+            -- and get the remaining path
+            local remainingPath = afterResources:match("[^/]+/(.+)$") or afterResources
+
+            -- Extract all path parts and remove .localized suffix from each
+            local parts = {}
+            for part in (remainingPath .. "/"):gmatch("([^/]+)/") do
+                -- Remove .localized suffix if present
+                local cleanPart = part:gsub("%.localized$", "")
+                if cleanPart ~= "" then
+                    table.insert(parts, cleanPart)
+                end
+            end
+
+            -- Join with forward slashes
+            if #parts >= 2 then
+                -- Return at least category/name (e.g., "Blur/Prism")
+                -- or type/category/name (e.g., "Effects/Blur/Prism")
+                local startIndex = #parts >= 3 and 1 or 2
+                return table.concat(parts, "/", startIndex)
+            end
+        end
+    end
+
+    return actionId
+end
+
 --- openActionChooser() -> none
 -- Function
 -- Opens CommandPost's built-in action chooser (activator).
@@ -302,7 +397,29 @@ local function openActionChooser(opts)
                     actualActionId = action.params
                     log.df("Using action.params as actualActionId: %s", actualActionId)
                 end
+            -- For FCPX plugin handlers (video effects, audio effects, generators, etc.):
+            -- The fullActionId is generic (e.g., "fcpx_videoEffect"), but the actual
+            -- unique identifier is stored in action.path or action.name
+            elseif handlerID == "fcpx_videoEffect" or handlerID == "fcpx_audioEffect" or
+                   handlerID == "fcpx_generator" or handlerID == "fcpx_title" or
+                   handlerID == "fcpx_transition" then
+                if type(action) == "table" then
+                    -- Use path as the primary identifier
+                    -- If no path, use category/name format for uniqueness
+                    if action.path then
+                        actualActionId = action.path
+                    elseif action.category and action.name then
+                        actualActionId = action.category .. "/" .. action.name
+                    else
+                        actualActionId = action.name or fullActionId
+                    end
+                    log.df("Using FCPX plugin path/name as actualActionId: %s", actualActionId)
+                end
             end
+
+            -- Simplify actionId for FCPX plugins (remove common path prefixes)
+            local simplifiedActionId = simplifyActionId(handlerID, actualActionId)
+            log.df("Simplified actionId: %s -> %s", actualActionId, simplifiedActionId)
 
             -- Update UI to show selected action
             local injectScript = mod._prefsManager.injectScript
@@ -311,14 +428,15 @@ local function openActionChooser(opts)
                 local handlerJson = json.encode(handlerID)
                 local rawActionIdJson = json.encode(rawActionId)
                 local actualActionIdJson = json.encode(actualActionId)
+                local simplifiedActionIdJson = json.encode(simplifiedActionId)
 
-                -- Create example JSON message
+                -- Create example JSON message with simplified actionId
                 local exampleMsg = json.encode({
                     type = "command",
                     id = "msg-001",
                     payload = {
                         handler = handlerID,
-                        actionId = actualActionId
+                        actionId = simplifiedActionId
                     }
                 })
 
@@ -334,7 +452,7 @@ local function openActionChooser(opts)
                         handler.textContent = "Handler: " + %s + " | Action ID: " + %s;
                         jsonElem.textContent = "WebSocket 消息示例:\n" + %s;
                     }
-                ]], titleJson, handlerJson, actualActionIdJson, json.encode(exampleMsg)))
+                ]], titleJson, handlerJson, simplifiedActionIdJson, json.encode(exampleMsg)))
             end
         end)
 

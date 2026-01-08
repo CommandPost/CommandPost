@@ -38,6 +38,138 @@ function mod.init(actionManager)
     mod.actionManager = actionManager
 end
 
+-- ============================================================================
+-- Helper Functions
+-- ============================================================================
+
+-- expandFCPXActionId(handlerId, actionId) -> string
+-- Function
+-- Expands a simplified FCPX action ID back to full path for matching.
+-- Also accepts full paths and returns them unchanged.
+--
+-- Parameters:
+--  * handlerId - The handler ID (e.g., "fcpx_videoEffect")
+--  * actionId  - The (possibly simplified) action ID
+--
+-- Returns:
+--  * The original actionId if it's a full path, or nil if simplifed (requiring pattern matching)
+local function expandFCPXActionId(handlerId, actionId)
+    if not actionId or type(actionId) ~= "string" then
+        return actionId
+    end
+
+    -- If it starts with "/", it's already a full path
+    if actionId:sub(1, 1) == "/" then
+        return actionId
+    end
+
+    -- Otherwise it's a simplified path (e.g., "Blur/Prism")
+    -- Return nil to indicate pattern matching is needed
+    return nil
+end
+
+-- matchesSimplifiedPath(fullPath, simplifiedPath) -> boolean
+-- Function
+-- Checks if a full FCPX plugin path matches a simplified path.
+--
+-- Parameters:
+--  * fullPath       - The full plugin path (e.g., "/Applications/.../Effects.localized/Blur.localized/Prism.localized")
+--  * simplifiedPath - The simplified path (e.g., "Blur/Prism" or "Effects/Blur/Prism")
+--
+-- Returns:
+--  * true if the simplified path matches the end of the full path
+local function matchesSimplifiedPath(fullPath, simplifiedPath)
+    if not fullPath or not simplifiedPath then
+        return false
+    end
+
+    -- Normalize the full path:
+    -- 1. Remove .localized suffixes (but keep the directory separators)
+    -- 2. Replace multiple consecutive slashes with single slash
+    local normalizedFull = fullPath:gsub("%.localized", "")
+    normalizedFull = normalizedFull:gsub("/+", "/")
+
+    -- Normalize the simplified path
+    local normalizedSimple = simplifiedPath:gsub("%.localized", "")
+    normalizedSimple = normalizedSimple:gsub("/+", "/")
+
+    -- Add trailing slash to both for consistent matching
+    if normalizedFull:sub(-1) ~= "/" then
+        normalizedFull = normalizedFull .. "/"
+    end
+    if normalizedSimple:sub(-1) ~= "/" then
+        normalizedSimple = normalizedSimple .. "/"
+    end
+
+    -- The simplified path should match the end of the normalized full path
+    local result = normalizedFull:sub(-#normalizedSimple) == normalizedSimple
+
+    -- Debug logging for first few comparisons
+    if fullPath:find("Prism") then
+        log.df("Matching: %s", simplifiedPath)
+        log.df("  Full (norm): %s", normalizedFull:sub(-100))
+        log.df("  Simple (norm): %s", normalizedSimple)
+        log.df("  Match result: %s", tostring(result))
+    end
+
+    return result
+end
+
+-- findFCPXPluginBySimplifiedPath(choices, simplifiedPath) -> table | nil
+-- Function
+-- Finds an FCPX plugin choice by matching a simplified path against full paths,
+-- or by matching category/name combination for plugins without paths.
+--
+-- Parameters:
+--  * choices        - Array of choice objects from handler
+--  * simplifiedPath - The simplified path to match (e.g., "Blur/Prism" or "Levels/Adaptive Limiter")
+--
+-- Returns:
+--  * The matching choice object, or nil if not found
+local function findFCPXPluginBySimplifiedPath(choices, simplifiedPath)
+    log.df("Searching %d choices for simplified path: %s", #choices, simplifiedPath)
+
+    for i, choice in ipairs(choices) do
+        if type(choice.params) == "table" then
+            local matched = false
+
+            -- Try matching against full path if available
+            if choice.params.path then
+                matched = matchesSimplifiedPath(choice.params.path, simplifiedPath)
+                if matched then
+                    log.df("Found FCPX plugin by path: %s matches simplified path: %s",
+                           choice.params.path, simplifiedPath)
+                    return choice
+                end
+            end
+
+            -- Try matching against category/name combination for plugins without paths
+            if not matched and choice.params.category and choice.params.name then
+                local categoryName = choice.params.category .. "/" .. choice.params.name
+                if categoryName == simplifiedPath then
+                    log.df("Found FCPX plugin by category/name: %s matches simplified path: %s",
+                           categoryName, simplifiedPath)
+                    return choice
+                end
+            end
+
+            -- Log first few choices for debugging
+            if i <= 3 then
+                if choice.params.path then
+                    log.df("Choice %d (path): %s does not match %s", i,
+                           choice.params.path:sub(-80), simplifiedPath)
+                elseif choice.params.category and choice.params.name then
+                    log.df("Choice %d (cat/name): %s/%s does not match %s", i,
+                           choice.params.category, choice.params.name, simplifiedPath)
+                end
+            end
+        end
+    end
+
+    log.df("No matching plugin found for: %s", simplifiedPath)
+    return nil
+end
+
 --- plugins.core.websocket.manager.message-handler.parseMessage(message) -> table | nil, string
 --- Function
 --- Parses a raw message into a table.
@@ -200,65 +332,137 @@ function mod.handleCommand(data)
     local ok, result = pcall(function()
         if actionId then
             -- Execute specific action within the handler
-            -- Parse the actionId to extract the actual command ID
-            -- Format is typically "prefix:commandId" (e.g., "cmds:preferencesfinalcutpro")
             local action
-            local colonPos = actionId:find(":")
-            local commandId
-            if colonPos then
-                -- Extract the command ID after the colon
-                commandId = actionId:sub(colonPos + 1)
-            else
-                -- No prefix found, use the raw actionId
-                commandId = actionId
-            end
-
-            -- Look up the choice details to get the params
-            -- Access handler's internal choices directly to avoid thread issues
             local choiceParams = nil
-            local handlerChoices = handler._choices
-            if handlerChoices then
-                local allChoices = handlerChoices:getChoices()
-                for _, choice in ipairs(allChoices) do
-                    if choice.id == commandId then
-                        choiceParams = choice.params
-                        break
+
+            -- Check if this is a FCPX plugin handler (video effects, audio effects, etc.)
+            local isFCPXPlugin = handlerId == "fcpx_videoEffect" or handlerId == "fcpx_audioEffect" or
+                                handlerId == "fcpx_generator" or handlerId == "fcpx_title" or
+                                handlerId == "fcpx_transition"
+
+            if isFCPXPlugin then
+                -- For FCPX plugin handlers, actionId can be:
+                -- 1. Full path (e.g., "/Applications/Final Cut Pro.app/.../Prism.localized")
+                -- 2. Simplified path (e.g., "Blur/Prism")
+                log.df("Searching for FCPX plugin by path: %s", actionId)
+
+                -- Check if actionId is a full path or simplified path
+                local isFullPath = actionId:sub(1, 1) == "/"
+
+                local handlerChoices = handler._choices
+                if handlerChoices then
+                    local allChoices = handlerChoices:getChoices()
+
+                    if isFullPath then
+                        -- Direct full path match
+                        for _, choice in ipairs(allChoices) do
+                            if type(choice.params) == "table" and choice.params.path == actionId then
+                                choiceParams = choice.params
+                                log.df("Found matching FCPX plugin (full path): %s", choice.params.name or "unknown")
+                                break
+                            end
+                        end
+                    else
+                        -- Try simplified path matching
+                        local matchingChoice = findFCPXPluginBySimplifiedPath(allChoices, actionId)
+                        if matchingChoice then
+                            choiceParams = matchingChoice.params
+                            log.df("Found matching FCPX plugin (simplified path): %s", choiceParams.name or "unknown")
+                        end
+                    end
+                else
+                    log.wf("Handler choices not cached for %s", handlerId)
+                    local ok, choicesResult = pcall(function()
+                        return handler:choices()
+                    end)
+                    if ok and choicesResult then
+                        local allChoices = choicesResult:getChoices()
+
+                        if isFullPath then
+                            -- Direct full path match
+                            for _, choice in ipairs(allChoices) do
+                                if type(choice.params) == "table" and choice.params.path == actionId then
+                                    choiceParams = choice.params
+                                    log.df("Found matching FCPX plugin (full path): %s", choice.params.name or "unknown")
+                                    break
+                                end
+                            end
+                        else
+                            -- Try simplified path matching
+                            local matchingChoice = findFCPXPluginBySimplifiedPath(allChoices, actionId)
+                            if matchingChoice then
+                                choiceParams = matchingChoice.params
+                                log.df("Found matching FCPX plugin (simplified path): %s", choiceParams.name or "unknown")
+                            end
+                        end
                     end
                 end
+
+                if choiceParams then
+                    -- Use the params directly as the action
+                    action = choiceParams
+                else
+                    log.ef("FCPX plugin not found with path: %s", actionId)
+                    return nil, "Plugin not found: " .. actionId
+                end
             else
-                -- Choices not yet cached - this might happen in secondary thread
-                -- We'll try to access them via the property, but log a warning
-                log.wf("Handler choices not cached for %s - attempting to access in secondary thread", handlerId)
-                -- Note: This might fail in secondary thread, but we'll try anyway
-                local ok, choicesResult = pcall(function()
-                    return handler:choices()
-                end)
-                if ok and choicesResult then
-                    local allChoices = choicesResult:getChoices()
+                -- For other handlers, use the original logic
+                -- Parse the actionId to extract the actual command ID
+                -- Format is typically "prefix:commandId" (e.g., "cmds:preferencesfinalcutpro")
+                local colonPos = actionId:find(":")
+                local commandId
+                if colonPos then
+                    -- Extract the command ID after the colon
+                    commandId = actionId:sub(colonPos + 1)
+                else
+                    -- No prefix found, use the raw actionId
+                    commandId = actionId
+                end
+
+                -- Look up the choice details to get the params
+                -- Access handler's internal choices directly to avoid thread issues
+                local handlerChoices = handler._choices
+                if handlerChoices then
+                    local allChoices = handlerChoices:getChoices()
                     for _, choice in ipairs(allChoices) do
                         if choice.id == commandId then
                             choiceParams = choice.params
                             break
                         end
                     end
-                end
-            end
-
-            -- Create action object with params if found
-            if choiceParams then
-                -- Ensure choiceParams is a table before using it
-                if type(choiceParams) == "table" then
-                    action = choiceParams
-                    action.id = commandId
                 else
-                    -- choiceParams is a string or other type, wrap it in params
-                    action = {
-                        id = commandId,
-                        params = choiceParams
-                    }
+                    -- Choices not yet cached - this might happen in secondary thread
+                    log.wf("Handler choices not cached for %s - attempting to access in secondary thread", handlerId)
+                    local ok, choicesResult = pcall(function()
+                        return handler:choices()
+                    end)
+                    if ok and choicesResult then
+                        local allChoices = choicesResult:getChoices()
+                        for _, choice in ipairs(allChoices) do
+                            if choice.id == commandId then
+                                choiceParams = choice.params
+                                break
+                            end
+                        end
+                    end
                 end
-            else
-                action = { id = commandId }
+
+                -- Create action object with params if found
+                if choiceParams then
+                    -- Ensure choiceParams is a table before using it
+                    if type(choiceParams) == "table" then
+                        action = choiceParams
+                        action.id = commandId
+                    else
+                        -- choiceParams is a string or other type, wrap it in params
+                        action = {
+                            id = commandId,
+                            params = choiceParams
+                        }
+                    end
+                else
+                    action = { id = commandId }
+                end
             end
 
             return handler:execute(action)
