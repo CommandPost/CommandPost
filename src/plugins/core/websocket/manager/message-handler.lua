@@ -246,8 +246,17 @@ function mod.handleCommand(data)
 
             -- Create action object with params if found
             if choiceParams then
-                action = choiceParams
-                action.id = commandId
+                -- Ensure choiceParams is a table before using it
+                if type(choiceParams) == "table" then
+                    action = choiceParams
+                    action.id = commandId
+                else
+                    -- choiceParams is a string or other type, wrap it in params
+                    action = {
+                        id = commandId,
+                        params = choiceParams
+                    }
+                end
             else
                 action = { id = commandId }
             end

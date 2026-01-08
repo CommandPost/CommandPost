@@ -87,12 +87,14 @@
         <h3 class="uiItem">动作查询</h3>
 
         <p class="uiItem" style="text-align: center; padding: 10px 0;">
-            <label for="actionAppFilter" style="display:block; margin-bottom:8px; font-size:12px; color:#888;">按应用筛选动作：</label>
+            <label for="actionAppFilter"
+                style="display:block; margin-bottom:8px; font-size:12px; color:#888;">按应用筛选动作：</label>
             <select id="actionAppFilter" style="width: 60%; padding:6px; margin-right:8px;">
                 <option value="">所有应用</option>
                 <!-- 应用选项由后端注入或在面板打开时更新 -->
             </select>
-            <a id="openActionChooser" href="#" class="button" style="padding: 8px 18px; font-size: 13px; vertical-align: middle;">
+            <a id="openActionChooser" href="#" class="button"
+                style="padding: 8px 18px; font-size: 13px; vertical-align: middle;">
                 🔍 打开动作选择器
             </a>
         </p>
@@ -124,12 +126,12 @@
             </div>
         </div>
 
-        <hr>
+        <!-- <hr> -->
 
         <!-- WebSocket Message Format -->
-        <h3 class="uiItem">WebSocket 消息格式</h3>
+        <!-- <h3 class="uiItem">WebSocket 消息格式</h3> -->
 
-        <div class="uiItem"
+        <!-- <div class="uiItem"
             style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 15px;">
             <p style="margin: 0 0 10px 0; color: #1990ff; font-size: 12px; font-weight: 600;">
                 发送命令到 WebSocket 服务器
@@ -158,7 +160,7 @@
             },
             "id": "msg-001",
         }</pre>
-        </div>
+        </div> -->
     </div>
 
     <script>
@@ -238,10 +240,10 @@
 
                 // Try using navigator.clipboard if available
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(messageString).then(function() {
+                    navigator.clipboard.writeText(messageString).then(function () {
                         showCopySuccess();
                         console.log("[WebSocket] Message copied to clipboard successfully");
-                    }).catch(function(err) {
+                    }).catch(function (err) {
                         console.error("[WebSocket] navigator.clipboard failed:", err);
                         // Fallback to postMessage
                         copyViaPostMessage(messageString);
@@ -258,7 +260,7 @@
 
         // Fallback: copy via postMessage to Lua
         function copyViaPostMessage(text) {
-            websocketPanelCallback('copyToClipboard', {text: text});
+            websocketPanelCallback('copyToClipboard', { text: text });
         }
 
         // Show success feedback
@@ -268,7 +270,7 @@
             copyBtn.innerHTML = "✅ 已复制";
             copyBtn.style.backgroundColor = "#28a745";
 
-            setTimeout(function() {
+            setTimeout(function () {
                 copyBtn.innerHTML = originalText;
                 copyBtn.style.backgroundColor = "#1990ff";
             }, 2000);
@@ -297,7 +299,7 @@
                 chooserButton.onclick = function () {
                     var filterElem = document.getElementById('actionAppFilter');
                     var bundleID = filterElem ? filterElem.value : "";
-                    websocketPanelCallback('openActionChooser', {bundleID: bundleID});
+                    websocketPanelCallback('openActionChooser', { bundleID: bundleID });
                 };
             }
 
