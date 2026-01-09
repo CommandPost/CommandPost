@@ -46,7 +46,7 @@
   },
   "Settings": {
     "mode": "server",
-    "port": 8080,
+    "port": 27480,
     "autoReconnect": true,
     "reconnectInterval": 5,
     "enabled": false

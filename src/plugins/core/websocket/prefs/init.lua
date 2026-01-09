@@ -82,8 +82,8 @@ local function updateUI()
     local manager = mod._manager
 
     -- Log current values from manager
-    log.df("Current manager values - enabled: %s, mode: %s, serverPort: %d, clientUrl: '%s'",
-        tostring(manager.enabled()), manager.mode(), manager.serverPort(), manager.clientUrl())
+    log.df("Current manager values - enabled: %s, mode: %s, serverPort: %d",
+        tostring(manager.enabled()), manager.mode(), manager.serverPort())
 
     -- Update enabled checkbox
     injectScript([[
@@ -110,29 +110,6 @@ local function updateUI()
         }
     ]])
 
-    -- Update client URL
-    injectScript([[
-        var elem = document.getElementById("clientUrl");
-        if (elem) {
-            elem.value = "]] .. tools.escapeTilda(manager.clientUrl()) .. [[";
-        }
-    ]])
-
-    -- Update auto-reconnect
-    injectScript([[
-        var elem = document.getElementById("autoReconnect");
-        if (elem) {
-            elem.checked = ]] .. tostring(manager.autoReconnect()) .. [[;
-        }
-    ]])
-
-    -- Update reconnect interval
-    injectScript([[
-        var elem = document.getElementById("reconnectInterval");
-        if (elem) {
-            elem.value = "]] .. manager.reconnectInterval() .. [[";
-        }
-    ]])
 
     -- Update connection status
     local status = manager.getConnectionStatus()
@@ -141,25 +118,14 @@ local function updateUI()
     local connectionInfo = ""
 
     if status.enabled then
-        if status.mode == "server" then
-            if status.serverRunning then
-                statusText = "服务器运行中"
-                statusClass = "status-connected"
-                local serverAddress = string.format("ws://localhost:%d", status.serverPort)
-                connectionInfo = string.format("地址: %s | 端口: %d | 客户端: %d", serverAddress, status.serverPort, status.clientCount or 0)
-            else
-                statusText = "服务器已停止"
-                statusClass = "status-error"
-            end
+        if status.serverRunning then
+            statusText = "服务器运行中"
+            statusClass = "status-connected"
+            local serverAddress = string.format("ws://localhost:%d", status.serverPort)
+            connectionInfo = string.format("地址: %s | 端口: %d | 客户端: %d", serverAddress, status.serverPort, status.clientCount or 0)
         else
-            if status.clientConnected then
-                statusText = "已连接"
-                statusClass = "status-connected"
-                connectionInfo = "地址: " .. (status.clientUrl or "")
-            else
-                statusText = "已断开"
-                statusClass = "status-disconnected"
-            end
+            statusText = "服务器已停止"
+            statusClass = "status-error"
         end
     end
 
@@ -574,52 +540,16 @@ function mod.init(deps, env)
                     "确定")
             end
 
-        elseif actionType == "clientUrl" then
-            local currentUrl = manager.clientUrl()
-            log.df("Client URL change request - current: '%s', new: '%s'", currentUrl, params.value)
-            if params.value and params.value ~= "" then
-                log.df("Setting client URL to: %s", params.value)
-                manager.clientUrl(params.value)
-                local savedUrl = manager.clientUrl()
-                log.df("Client URL after save: '%s' (saved successfully: %s)", savedUrl, tostring(savedUrl == params.value))
-                updateUI()
-            else
-                webviewAlert(mod._prefsManager.getWebview(), function() end,
-                    "无效的服务器地址",
-                    "请输入有效的 WebSocket 服务器地址 (例如: ws://localhost:8080)",
-                    "确定")
-            end
-
-        elseif actionType == "autoReconnect" then
-            log.df("Auto-reconnect changed: %s", params.checked)
-            manager.autoReconnect(params.checked)
-            updateUI()
-
-        elseif actionType == "reconnectInterval" then
-            local interval = tonumber(params.value)
-            if interval and interval > 0 then
-                log.df("Reconnect interval changed to: %d", interval)
-                manager.reconnectInterval(interval)
-                updateUI()
-            end
 
         elseif actionType == "testConnection" then
             local status = manager.getConnectionStatus()
             local message = ""
 
             if status.enabled then
-                if status.mode == "server" then
-                    if status.serverRunning then
-                        message = string.format("服务器正在运行\n端口: %d\n已连接客户端数: %d", status.serverPort, status.clientCount)
-                    else
-                        message = "服务器未运行"
-                    end
+                if status.serverRunning then
+                    message = string.format("服务器正在运行\n端口: %d\n已连接客户端数: %d", status.serverPort, status.clientCount)
                 else
-                    if status.clientConnected then
-                        message = "已连接到服务器\n地址: " .. (status.clientUrl or "")
-                    else
-                        message = "未连接到服务器"
-                    end
+                    message = "服务器未运行"
                 end
             else
                 message = "WebSocket 控制表面已禁用"
@@ -702,8 +632,7 @@ function mod.init(deps, env)
         log.df("Panel switched to: %s", tabId)
         if tabId == "websocket" then
             -- Log current values before UI update
-            log.df("Before updateUI - serverPort: %d, clientUrl: '%s'",
-                mod._manager.serverPort(), mod._manager.clientUrl())
+            log.df("Before updateUI - serverPort: %d", mod._manager.serverPort())
 
             -- Schedule updateUI to run after HTML is generated and rendered
             log.df("Scheduling updateUI() for WebSocket panel")

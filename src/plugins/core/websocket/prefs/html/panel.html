@@ -22,13 +22,13 @@
         <hr>
 
         <!-- Mode Selection -->
-        <p class="uiItem">
+        <!-- <p class="uiItem">
             <label for="mode">运行模式:</label>
             <select id="mode" onchange="websocketPanelCallback('mode', {value: this.value}); updateModeVisibility();">
                 <option value="server" {% if manager.mode()=="server" then %}selected{% end %}>服务器模式</option>
                 <option value="client" {% if manager.mode()=="client" then %}selected{% end %}>客户端模式</option>
             </select>
-        </p>
+        </p> -->
 
         <!-- Server Settings -->
         <div id="serverSettings" class="mode-settings">
@@ -38,27 +38,6 @@
                     oninput="console.log('[WebSocket] serverPort input event, value:', this.value)"
                     onchange="console.log('[WebSocket] serverPort change event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})"
                     onblur="console.log('[WebSocket] serverPort blur event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})">
-            </p>
-        </div>
-
-        <!-- Client Settings -->
-        <div id="clientSettings" class="mode-settings" style="display: none;">
-            <p class="uiItem api">
-                <label for="clientUrl">服务器地址:</label>
-                <input type="text" id="clientUrl" value="{{ manager.clientUrl() }}" placeholder="ws://localhost:8080"
-                    oninput="console.log('[WebSocket] clientUrl input event, value:', this.value)"
-                    onchange="console.log('[WebSocket] clientUrl change event, value:', this.value); websocketPanelCallback('clientUrl', {value: this.value})"
-                    onblur="console.log('[WebSocket] clientUrl blur event, value:', this.value); websocketPanelCallback('clientUrl', {value: this.value})">
-            </p>
-
-            <p class="uiItem">
-                <label for="autoReconnect">自动重连</label>
-                <input type="checkbox" id="autoReconnect" {% if manager.autoReconnect() then %}checked{% end %}
-                    onchange="websocketPanelCallback('autoReconnect', {checked: this.checked})">
-                <label for="reconnectInterval" style="margin-left: 15px;">间隔(秒):</label>
-                <input type="text" id="reconnectInterval" value="{{ manager.reconnectInterval() }}"
-                    onblur="websocketPanelCallback('reconnectInterval', {value: this.value})"
-                    onchange="websocketPanelCallback('reconnectInterval', {value: this.value})">
             </p>
         </div>
 
@@ -180,20 +159,6 @@
             }
         }
 
-        // Update mode visibility based on selection
-        function updateModeVisibility() {
-            var mode = document.getElementById("mode").value;
-            var serverSettings = document.getElementById("serverSettings");
-            var clientSettings = document.getElementById("clientSettings");
-
-            if (mode === "server") {
-                serverSettings.style.display = "block";
-                clientSettings.style.display = "none";
-            } else {
-                serverSettings.style.display = "none";
-                clientSettings.style.display = "block";
-            }
-        }
 
         // Copy WebSocket message to clipboard
         function copyMessageToClipboard() {
@@ -291,7 +256,6 @@
         // Initialize immediately when script runs
         (function () {
             console.log('[WebSocket] Initializing panel JavaScript');
-            updateModeVisibility();
 
             // Setup Action Chooser button
             var chooserButton = document.getElementById("openActionChooser");

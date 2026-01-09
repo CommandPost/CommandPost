@@ -42,18 +42,12 @@ mod.enabled = config.prop("websocket.enabled", false):watch(function(enabled)
     end
 end)
 
---- plugins.core.websocket.manager.mode <cp.prop: string>
---- Variable
---- Operation mode: "client" or "server"
---- Note: Server mode is not supported by hs.websocket
-mod.mode = config.prop("websocket.mode", mod.MODE.CLIENT):watch(function(mode)
-    log.df("WebSocket mode changed to: %s", mode)
-    if mod.enabled() then
-        -- Restart with new mode
-        mod.stop()
-        mod.start()
-    end
-end)
+--- plugins.core.websocket.manager.mode() -> string
+--- Function
+--- Returns the operation mode (always "server")
+function mod.mode()
+    return mod.MODE.SERVER
+end
 
 --- plugins.core.websocket.manager.serverPort <cp.prop: number>
 --- Variable
@@ -71,35 +65,10 @@ mod.serverPort = config.prop("websocket.serverPort", 27480):watch(function(port)
     end
 end)
 
---- plugins.core.websocket.manager.clientUrl <cp.prop: string>
---- Variable
---- Client connection URL
-mod.clientUrl = config.prop("websocket.clientUrl", "ws://localhost:8080"):watch(function(url)
-    log.df("[PROP WATCH] WebSocket client URL changed to: %s", url)
-    log.df("[PROP WATCH] Current enabled state: %s, mode: %s", tostring(mod.enabled()), mod.mode())
-    if mod.enabled() and mod.mode() == mod.MODE.CLIENT then
-        -- Reconnect to new URL
-        log.df("[PROP WATCH] Reconnecting to new URL")
-        mod.stop()
-        mod.start()
-    else
-        log.df("[PROP WATCH] Not reconnecting (enabled: %s, mode: %s)", tostring(mod.enabled()), mod.mode())
-    end
-end)
-
---- plugins.core.websocket.manager.autoReconnect <cp.prop: boolean>
---- Variable
---- Auto-reconnect on disconnect (client mode)
-mod.autoReconnect = config.prop("websocket.autoReconnect", true)
-
---- plugins.core.websocket.manager.reconnectInterval <cp.prop: number>
---- Variable
---- Reconnect delay in seconds (client mode)
-mod.reconnectInterval = config.prop("websocket.reconnectInterval", 5)
 
 --- plugins.core.websocket.manager.start() -> boolean
 --- Function
---- Starts the WebSocket control surface based on current mode.
+--- Starts the WebSocket server.
 ---
 --- Parameters:
 ---  * None
@@ -112,22 +81,13 @@ function mod.start()
         return false
     end
 
-    local currentMode = mod.mode()
-    log.df("Starting WebSocket control surface in %s mode", currentMode)
-
-    if currentMode == mod.MODE.SERVER then
-        return mod.startServer()
-    elseif currentMode == mod.MODE.CLIENT then
-        return mod.connectClient()
-    else
-        log.ef("Invalid mode: %s", currentMode)
-        return false
-    end
+    log.df("Starting WebSocket server")
+    return mod.startServer()
 end
 
 --- plugins.core.websocket.manager.stop() -> nil
 --- Function
---- Stops the WebSocket control surface.
+--- Stops the WebSocket server.
 ---
 --- Parameters:
 ---  * None
@@ -135,13 +95,8 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    log.df("Stopping WebSocket control surface")
-
-    if mod.mode() == mod.MODE.SERVER then
-        mod.stopServer()
-    elseif mod.mode() == mod.MODE.CLIENT then
-        mod.disconnectClient()
-    end
+    log.df("Stopping WebSocket server")
+    mod.stopServer()
 end
 
 --- plugins.core.websocket.manager.startServer() -> boolean
@@ -173,34 +128,6 @@ function mod.stopServer()
     server.stop()
 end
 
---- plugins.core.websocket.manager.connectClient() -> boolean
---- Function
---- Connects as a WebSocket client.
----
---- Parameters:
----  * None
----
---- Returns:
----  * true if connection initiated, false otherwise
-function mod.connectClient()
-    local url = mod.clientUrl()
-    log.df("Connecting to WebSocket server: %s", url)
-    return client.connect(url, mod.handleMessage)
-end
-
---- plugins.core.websocket.manager.disconnectClient() -> nil
---- Function
---- Disconnects the WebSocket client.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.disconnectClient()
-    log.df("Disconnecting WebSocket client")
-    client.disconnect()
-end
 
 --- plugins.core.websocket.manager.handleMessage(connection, message) -> nil
 --- Function
@@ -231,7 +158,7 @@ end
 
 --- plugins.core.websocket.manager.broadcastMessage(message) -> number
 --- Function
---- Broadcasts a message to all connections (server mode only).
+--- Broadcasts a message to all connections.
 ---
 --- Parameters:
 ---  * message - The message to broadcast (string or table)
@@ -239,17 +166,12 @@ end
 --- Returns:
 ---  * Number of clients the message was sent to
 function mod.broadcastMessage(message)
-    if mod.mode() ~= mod.MODE.SERVER then
-        log.wf("Cannot broadcast: not in server mode")
-        return 0
-    end
-
     return server.broadcast(message)
 end
 
 --- plugins.core.websocket.manager.sendMessage(message) -> boolean
 --- Function
---- Sends a message (client mode) or broadcasts (server mode).
+--- Broadcasts a message to all connections.
 ---
 --- Parameters:
 ---  * message - The message to send (string or table)
@@ -257,11 +179,7 @@ end
 --- Returns:
 ---  * true if sent successfully, false otherwise
 function mod.sendMessage(message)
-    if mod.mode() == mod.MODE.CLIENT then
-        return client.send(message)
-    else
-        return mod.broadcastMessage(message) > 0
-    end
+    return mod.broadcastMessage(message) > 0
 end
 
 --- plugins.core.websocket.manager.sendEvent(eventType, data) -> boolean
@@ -289,23 +207,14 @@ end
 --- Returns:
 ---  * Status table
 function mod.getConnectionStatus()
-    local status = {
+    return {
         enabled = mod.enabled(),
         mode = mod.mode(),
+        serverRunning = server.isRunning(),
+        serverPort = mod.serverPort(),
+        clientCount = server.getClientCount(),
+        clients = server.getClientList()
     }
-
-    if mod.mode() == mod.MODE.SERVER then
-        status.serverRunning = server.isRunning()
-        status.serverPort = mod.serverPort()
-        status.clientCount = server.getClientCount()
-        status.clients = server.getClientList()
-    else
-        status.clientConnected = client.isConnected()
-        status.clientUrl = mod.clientUrl()
-        status.connectionInfo = client.getConnectionInfo()
-    end
-
-    return status
 end
 
 --- plugins.core.websocket.manager.getActiveConnections() -> table
@@ -318,13 +227,7 @@ end
 --- Returns:
 ---  * Array of connection info tables
 function mod.getActiveConnections()
-    if mod.mode() == mod.MODE.SERVER then
-        return server.getClientList()
-    elseif mod.mode() == mod.MODE.CLIENT then
-        local info = client.getConnectionInfo()
-        return info and {info} or {}
-    end
-    return {}
+    return server.getClientList()
 end
 
 --- plugins.core.websocket.manager.notifyConnectionStatusChanged() -> nil
