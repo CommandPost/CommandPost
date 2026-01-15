@@ -275,7 +275,7 @@ function plugin.init(deps, env)
             mod.enabled(true)
         end)
         :groupedBy("commandPost")
-        :titled("启用 WebSocket 控制表面")
+        :titled(i18n("websocketEnableWebSocketControlSurface"))
 
     global
         :add("disableWebSocket")
@@ -283,7 +283,7 @@ function plugin.init(deps, env)
             mod.enabled(false)
         end)
         :groupedBy("commandPost")
-        :titled("禁用 WebSocket 控制表面")
+        :titled(i18n("websocketDisableWebSocketControlSurface"))
 
     global
         :add("toggleWebSocket")
@@ -291,7 +291,7 @@ function plugin.init(deps, env)
             mod.enabled:toggle()
         end)
         :groupedBy("commandPost")
-        :titled("切换 WebSocket 控制表面")
+        :titled(i18n("websocketToggleWebSocketControlSurface"))
 
     return mod
 end

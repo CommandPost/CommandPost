@@ -10,11 +10,11 @@
 <body>
     <div class="websocket-preferences">
         <!-- Header -->
-        <h3 class="uiItem">WebSocket 控制表面</h3>
+        <h3 class="uiItem">{{ i18n("websocketControlSurface") }}</h3>
 
         <!-- Enable/Disable -->
         <p class="uiItem">
-            <label for="enableWebSocket">启用</label>
+            <label for="enableWebSocket">{{ i18n("websocketEnableWebSocket") }}</label>
             <input type="checkbox" id="enableWebSocket" {% if manager.enabled() then %}checked{% end %}
                 onchange="websocketPanelCallback('enableWebSocket', {checked: this.checked})">
         </p>
@@ -23,17 +23,17 @@
 
         <!-- Mode Selection -->
         <!-- <p class="uiItem">
-            <label for="mode">运行模式:</label>
+            <label for="mode">{{ i18n("mode") }}:</label>
             <select id="mode" onchange="websocketPanelCallback('mode', {value: this.value}); updateModeVisibility();">
-                <option value="server" {% if manager.mode()=="server" then %}selected{% end %}>服务器模式</option>
-                <option value="client" {% if manager.mode()=="client" then %}selected{% end %}>客户端模式</option>
+                <option value="server" {% if manager.mode()=="server" then %}selected{% end %}>{{ i18n("websocketServerMode") }}</option>
+                <option value="client" {% if manager.mode()=="client" then %}selected{% end %}>{{ i18n("websocketClientMode") }}</option>
             </select>
         </p> -->
 
         <!-- Server Settings -->
         <div id="serverSettings" class="mode-settings">
             <p class="uiItem api">
-                <label for="serverPort">服务器端口:</label>
+                <label for="serverPort">{{ i18n("websocketServerPort") }}:</label>
                 <input type="text" id="serverPort" value="{{ manager.serverPort() }}"
                     oninput="console.log('[WebSocket] serverPort input event, value:', this.value)"
                     onchange="console.log('[WebSocket] serverPort change event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})"
@@ -46,40 +46,40 @@
         <!-- Connection Status & Active Connections -->
         <div class="uiItem status-display">
             <div id="statusIndicator" class="status-badge status-disconnected">
-                已断开
+                {{ i18n("websocketDisconnected") }}
             </div>
             <div id="connectionInfo" class="connection-info"></div>
             <button onclick="websocketPanelCallback('refreshStatus', {})" class="button-text">
-                刷新
+                {{ i18n("websocketRefresh") }}
             </button>
         </div>
 
         <div class="uiItem connections-list-container">
             <div id="connectionsList" class="connections-list">
-                <p class="no-connections">暂无活动连接</p>
+                <p class="no-connections">{{ i18n("websocketNoActiveConnections") }}</p>
             </div>
         </div>
 
         <hr>
 
         <!-- Action Query Section -->
-        <h3 class="uiItem">动作查询</h3>
+        <h3 class="uiItem">{{ i18n("websocketActionQuery") }}</h3>
 
         <p class="uiItem" style="text-align: center; padding: 10px 0;">
             <label for="actionAppFilter"
-                style="display:block; margin-bottom:8px; font-size:12px; color:#888;">按应用筛选动作：</label>
+                style="display:block; margin-bottom:8px; font-size:12px; color:#888;">{{ i18n("websocketFilterActionsByApplication") }}</label>
             <select id="actionAppFilter" style="width: 60%; padding:6px; margin-right:8px;">
-                <option value="">所有应用</option>
+                <option value="">{{ i18n("allApplications") }}</option>
                 <!-- 应用选项由后端注入或在面板打开时更新 -->
             </select>
             <a id="openActionChooser" href="#" class="button"
                 style="padding: 8px 18px; font-size: 13px; vertical-align: middle;">
-                🔍 打开动作选择器
+                🔍 {{ i18n("websocketOpenActionChooser") }}
             </a>
         </p>
 
         <p class="uiItem" style="color: #666; font-size: 12px; text-align: center; font-style: italic;">
-            点击上方按钮打开 CommandPost 动作选择器,浏览和搜索所有可用的动作
+            {{ i18n("websocketOpenActionChooserDescription") }}
         </p>
 
         <!-- Selected Action Display -->
@@ -89,11 +89,11 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <p
                         style="margin: 0; color: #1990ff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
-                        当前选中的动作
+                        {{ i18n("websocketCurrentlySelectedAction") }}
                     </p>
                     <button id="copyMessageBtn" onclick="copyMessageToClipboard()" class="button-text"
                         style="background-color: #1990ff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: background-color 0.2s;">
-                        📋 复制消息
+                        📋 {{ i18n("websocketCopyMessage") }}
                     </button>
                 </div>
                 <p id="selectedActionTitle" style="margin: 0; font-size: 14px; font-weight: 600; color: #fff;"></p>
@@ -143,6 +143,14 @@
     </div>
 
     <script>
+        // i18n translations for JavaScript
+        window.ws_i18n = {
+            noCopyableMessage: "{{ i18n('websocketNoCopyableMessage') }}",
+            cannotParseMessageData: "{{ i18n('websocketCannotParseMessageData') }}",
+            copyFailed: "{{ i18n('websocketCopyFailed') }}",
+            copied: "{{ i18n('websocketCopied') }}"
+        };
+
         // Helper function to send messages via postMessage
         function websocketPanelCallback(id, params) {
             console.log('[WebSocket] websocketPanelCallback called - id:', id, 'params:', params);
@@ -167,7 +175,7 @@
                 var actionJsonText = actionJsonElement.textContent || actionJsonElement.innerText;
 
                 if (!actionJsonText || actionJsonText.trim() === "") {
-                    alert("没有可复制的消息");
+                    alert(ws_i18n.noCopyableMessage);
                     return;
                 }
 
@@ -188,7 +196,7 @@
                     messageData = JSON.parse(jsonString);
                 } catch (e) {
                     console.error("[WebSocket] JSON parse error:", e);
-                    alert("无法解析消息数据: " + e.message);
+                    alert(ws_i18n.cannotParseMessageData + " " + e.message);
                     return;
                 }
 
@@ -219,7 +227,7 @@
                 }
             } catch (err) {
                 console.error("[WebSocket] Error in copyMessageToClipboard:", err);
-                alert("复制失败: " + err);
+                alert(ws_i18n.copyFailed + " " + err);
             }
         }
 
@@ -232,7 +240,7 @@
         function showCopySuccess() {
             var copyBtn = document.getElementById("copyMessageBtn");
             var originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = "✅ 已复制";
+            copyBtn.innerHTML = "✅ " + ws_i18n.copied;
             copyBtn.style.backgroundColor = "#28a745";
 
             setTimeout(function () {
@@ -250,7 +258,7 @@
         // Called from Lua when copy fails
         function onCopyError(error) {
             console.error("[WebSocket] Copy failed via Lua:", error);
-            alert("复制失败: " + error);
+            alert(ws_i18n.copyFailed + " " + error);
         }
 
         // Initialize immediately when script runs

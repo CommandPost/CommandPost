@@ -113,18 +113,21 @@ local function updateUI()
 
     -- Update connection status
     local status = manager.getConnectionStatus()
-    local statusText = "已断开"
+    local statusText = i18n("websocketDisconnected")
     local statusClass = "status-disconnected"
     local connectionInfo = ""
 
     if status.enabled then
         if status.serverRunning then
-            statusText = "服务器运行中"
+            statusText = i18n("websocketServerRunning")
             statusClass = "status-connected"
             local serverAddress = string.format("ws://localhost:%d", status.serverPort)
-            connectionInfo = string.format("地址: %s | 端口: %d | 客户端: %d", serverAddress, status.serverPort, status.clientCount or 0)
+            connectionInfo = string.format("%s: %s | %s: %d | %s: %d",
+                i18n("websocketAddress"), serverAddress,
+                i18n("websocketServerPort"), status.serverPort,
+                i18n("websocketClients"), status.clientCount or 0)
         else
-            statusText = "服务器已停止"
+            statusText = i18n("websocketServerStopped")
             statusClass = "status-error"
         end
     end
@@ -148,14 +151,14 @@ local function updateUI()
     if #connections > 0 then
         for _, conn in ipairs(connections) do
             connectionsHTML = connectionsHTML .. string.format(
-                [[<li><strong>ID:</strong> %s<br><strong>状态:</strong> %s<br><strong>模式:</strong> %s</li>]],
-                conn.id or "未知",
-                conn.state or "未知",
-                conn.mode or "未知"
+                [[<li><strong>%s:</strong> %s<br><strong>%s:</strong> %s<br><strong>%s:</strong> %s</li>]],
+                i18n("wsId"), conn.id or i18n("unknown"),
+                i18n("wsStatus"), conn.state or i18n("unknown"),
+                i18n("wsMode"), conn.mode or i18n("unknown")
             )
         end
     else
-        connectionsHTML = [[<li class="no-connections">暂无活动连接</li>]]
+        connectionsHTML = [[<li class="no-connections">]] .. i18n("websocketNoActiveConnections") .. [[</li>]]
     end
 
     injectScript(string.format([[
@@ -415,10 +418,12 @@ local function openActionChooser(opts)
                     if (display && title && handler && jsonElem) {
                         display.style.display = "block";
                         title.textContent = %s;
-                        handler.textContent = "Handler: " + %s + " | Action ID: " + %s;
-                        jsonElem.textContent = "WebSocket 消息示例:\n" + %s;
+                        handler.textContent = "%s: " + %s + " | %s: " + %s;
+                        jsonElem.textContent = "%s\\n" + %s;
                     }
-                ]], titleJson, handlerJson, simplifiedActionIdJson, json.encode(exampleMsg)))
+                ]], titleJson,
+                    i18n("wsHandler"), handlerJson, i18n("wsActionId"), simplifiedActionIdJson,
+                    i18n("websocketMessageExample"), json.encode(exampleMsg)))
             end
         end)
 
@@ -500,7 +505,7 @@ function mod.init(deps, env)
         id = "websocket",
         label = "WebSocket",
         image = imageFromPath(env:pathToAbsolute("/images/websocket.png")),
-        tooltip = "WebSocket 控制表面设置",
+        tooltip = i18n("websocketControlSurfaceSettings"),
         height = 800,
     })
     :addContent(0.1, generateContent, false)
@@ -535,9 +540,9 @@ function mod.init(deps, env)
                 updateUI()
             else
                 webviewAlert(mod._prefsManager.getWebview(), function() end,
-                    "无效的端口号",
-                    "请输入 1 到 65535 之间的有效端口号",
-                    "确定")
+                    i18n("websocketInvalidPortNumber"),
+                    i18n("websocketInvalidPortNumberDescription"),
+                    i18n("ok"))
             end
 
 
@@ -547,18 +552,18 @@ function mod.init(deps, env)
 
             if status.enabled then
                 if status.serverRunning then
-                    message = string.format("服务器正在运行\n端口: %d\n已连接客户端数: %d", status.serverPort, status.clientCount)
+                    message = i18n("websocketServerRunningWithDetails", {port = status.serverPort, count = status.clientCount})
                 else
-                    message = "服务器未运行"
+                    message = i18n("websocketServerNotRunning")
                 end
             else
-                message = "WebSocket 控制表面已禁用"
+                message = i18n("websocketControlSurfaceDisabled")
             end
 
             webviewAlert(mod._prefsManager.getWebview(), function() end,
-                "连接状态",
+                i18n("websocketConnectionStatus"),
                 message,
-                "确定")
+                i18n("ok"))
 
         elseif actionType == "refreshStatus" then
             log.df("Refresh status clicked")
@@ -586,12 +591,13 @@ function mod.init(deps, env)
                 for _,app in ipairs(apps) do
                     options = options .. string.format("<option value='%s'>%s</option>", app.bundleID, tools.escapeTilda(app.displayName))
                 end
+                local allAppsText = i18n("allApplications")
                 injectScript(string.format([[
                     var select = document.getElementById('actionAppFilter');
                     if (select) {
-                        select.innerHTML = '<option value="">所有应用</option>' + `%s`;
+                        select.innerHTML = '<option value="">%s</option>' + `%s`;
                     }
-                ]], options))
+                ]], allAppsText, options))
             end
 
         elseif actionType == "copyToClipboard" then
