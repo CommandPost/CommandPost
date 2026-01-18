@@ -1,0 +1,59 @@
+{
+  "Applications": {
+    "Final Cut Pro": {
+      "1": {
+        "playPause": {
+          "action": {
+            "id": "fcpxPlayPause"
+          },
+          "label": "Play/Pause",
+          "handlerID": "global_handler"
+        },
+        "undo": {
+          "action": {
+            "id": "fcpxUndo"
+          },
+          "label": "Undo",
+          "handlerID": "global_handler"
+        },
+        "redo": {
+          "action": {
+            "id": "fcpxRedo"
+          },
+          "label": "Redo",
+          "handlerID": "global_handler"
+        }
+      }
+    },
+    "CommandPost": {
+      "1": {
+        "showConsole": {
+          "action": {
+            "id": "cpShowConsole"
+          },
+          "label": "Show Console",
+          "handlerID": "global_handler"
+        },
+        "showPreferences": {
+          "action": {
+            "id": "cpShowPreferences"
+          },
+          "label": "Show Preferences",
+          "handlerID": "global_handler"
+        }
+      }
+    }
+  },
+  "Settings": {
+    "mode": "server",
+    "port": 27480,
+    "autoReconnect": true,
+    "reconnectInterval": 5,
+    "enabled": false
+  },
+  "Info": {
+    "version": "1.0",
+    "description": "Default WebSocket Control Surface Configuration",
+    "created": "2026-01-05"
+  }
+}

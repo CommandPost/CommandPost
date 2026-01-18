@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Control Surface</title>
+    <link rel="stylesheet" href="../css/panel.css">
+</head>
+
+<body>
+    <div class="websocket-preferences">
+        <!-- Header -->
+        <h3 class="uiItem">{{ i18n("websocketControlSurface") }}</h3>
+
+        <!-- Enable/Disable -->
+        <p class="uiItem">
+            <label for="enableWebSocket">{{ i18n("websocketEnableWebSocket") }}</label>
+            <input type="checkbox" id="enableWebSocket" {% if manager.enabled() then %}checked{% end %}
+                onchange="websocketPanelCallback('enableWebSocket', {checked: this.checked})">
+        </p>
+
+        <hr>
+
+        <!-- Mode Selection -->
+        <!-- <p class="uiItem">
+            <label for="mode">{{ i18n("mode") }}:</label>
+            <select id="mode" onchange="websocketPanelCallback('mode', {value: this.value}); updateModeVisibility();">
+                <option value="server" {% if manager.mode()=="server" then %}selected{% end %}>{{ i18n("websocketServerMode") }}</option>
+                <option value="client" {% if manager.mode()=="client" then %}selected{% end %}>{{ i18n("websocketClientMode") }}</option>
+            </select>
+        </p> -->
+
+        <!-- Server Settings -->
+        <div id="serverSettings" class="mode-settings">
+            <p class="uiItem api">
+                <label for="serverPort">{{ i18n("websocketServerPort") }}:</label>
+                <input type="text" id="serverPort" value="{{ manager.serverPort() }}"
+                    oninput="console.log('[WebSocket] serverPort input event, value:', this.value)"
+                    onchange="console.log('[WebSocket] serverPort change event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})"
+                    onblur="console.log('[WebSocket] serverPort blur event, value:', this.value); websocketPanelCallback('serverPort', {value: this.value})">
+            </p>
+        </div>
+
+        <hr>
+
+        <!-- Connection Status & Active Connections -->
+        <div class="uiItem status-display">
+            <div id="statusIndicator" class="status-badge status-disconnected">
+                {{ i18n("websocketDisconnected") }}
+            </div>
+            <div id="connectionInfo" class="connection-info"></div>
+            <button onclick="websocketPanelCallback('refreshStatus', {})" class="button-text">
+                {{ i18n("websocketRefresh") }}
+            </button>
+        </div>
+
+        <div class="uiItem connections-list-container">
+            <div id="connectionsList" class="connections-list">
+                <p class="no-connections">{{ i18n("websocketNoActiveConnections") }}</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Action Query Section -->
+        <h3 class="uiItem">{{ i18n("websocketActionQuery") }}</h3>
+
+        <p class="uiItem" style="text-align: center; padding: 10px 0;">
+            <label for="actionAppFilter"
+                style="display:block; margin-bottom:8px; font-size:12px; color:#888;">{{ i18n("websocketFilterActionsByApplication") }}</label>
+            <select id="actionAppFilter" style="width: 60%; padding:6px; margin-right:8px;">
+                <option value="">{{ i18n("allApplications") }}</option>
+                <!-- 应用选项由后端注入或在面板打开时更新 -->
+            </select>
+            <a id="openActionChooser" href="#" class="button"
+                style="padding: 8px 18px; font-size: 13px; vertical-align: middle;">
+                🔍 {{ i18n("websocketOpenActionChooser") }}
+            </a>
+        </p>
+
+        <p class="uiItem" style="color: #666; font-size: 12px; text-align: center; font-style: italic;">
+            {{ i18n("websocketOpenActionChooserDescription") }}
+        </p>
+
+        <!-- Selected Action Display -->
+        <div class="uiItem" id="selectedActionDisplay" style="display: none;">
+            <div
+                style="background-color: #252525; border: 2px solid #1990ff; border-radius: 6px; padding: 15px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <p
+                        style="margin: 0; color: #1990ff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ i18n("websocketCurrentlySelectedAction") }}
+                    </p>
+                    <button id="copyMessageBtn" onclick="copyMessageToClipboard()" class="button-text"
+                        style="background-color: #1990ff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: background-color 0.2s;">
+                        📋 {{ i18n("websocketCopyMessage") }}
+                    </button>
+                </div>
+                <p id="selectedActionTitle" style="margin: 0; font-size: 14px; font-weight: 600; color: #fff;"></p>
+                <p id="selectedActionHandler"
+                    style="margin: 5px 0 0 0; font-size: 11px; font-family: monospace; color: #888;"></p>
+                <p id="selectedActionJson"
+                    style="margin: 10px 0 0 0; font-size: 10px; font-family: monospace; color: #666; white-space: pre-wrap; word-break: break-all;">
+                </p>
+            </div>
+        </div>
+
+        <!-- <hr> -->
+
+        <!-- WebSocket Message Format -->
+        <!-- <h3 class="uiItem">WebSocket 消息格式</h3> -->
+
+        <!-- <div class="uiItem"
+            style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 15px;">
+            <p style="margin: 0 0 10px 0; color: #1990ff; font-size: 12px; font-weight: 600;">
+                发送命令到 WebSocket 服务器
+            </p>
+            <p style="margin: 5px 0; color: #aaa; font-size: 11px;">
+                使用上方选择器选择动作后,发送以下格式的 JSON 消息:
+            </p>
+            <pre
+                style="margin: 10px 0; padding: 10px; background-color: #000; border-radius: 4px; color: #0f0; font-size: 11px; overflow-x: auto;">{
+  "type": "command",
+  "id": "任意唯一ID",
+  "payload": {
+    "handler": "Handler ID",
+    "actionId": "Action ID"
+  }
+}</pre>
+            <p style="margin: 10px 0 5px 0; color: #888; font-size: 10px;">
+                例如,执行 Final Cut Pro 偏好设置:
+            </p>
+            <pre
+                style="margin: 5px 0; padding: 10px; background-color: #000; border-radius: 4px; color: #0f0; font-size: 11px; overflow-x: auto;">{
+            "type": "command",
+            "payload": {
+                "actionId": "cmds:preferencesfinalcutpro",
+                "handler": "global_cmds",
+            },
+            "id": "msg-001",
+        }</pre>
+        </div> -->
+    </div>
+
+    <script>
+        // i18n translations for JavaScript
+        window.ws_i18n = {
+            noCopyableMessage: "{{ i18n('websocketNoCopyableMessage') }}",
+            cannotParseMessageData: "{{ i18n('websocketCannotParseMessageData') }}",
+            copyFailed: "{{ i18n('websocketCopyFailed') }}",
+            copied: "{{ i18n('websocketCopied') }}"
+        };
+
+        // Helper function to send messages via postMessage
+        function websocketPanelCallback(id, params) {
+            console.log('[WebSocket] websocketPanelCallback called - id:', id, 'params:', params);
+            try {
+                var result = {
+                    id: "websocketPanelCallback",
+                    params: Object.assign({ type: id }, params),
+                };
+                console.log('[WebSocket] Sending postMessage:', result);
+                postMessage(result);
+            } catch (err) {
+                console.error('[WebSocket] Error in websocketPanelCallback:', err);
+                alert("Error: " + err);
+            }
+        }
+
+
+        // Copy WebSocket message to clipboard
+        function copyMessageToClipboard() {
+            try {
+                var actionJsonElement = document.getElementById("selectedActionJson");
+                var actionJsonText = actionJsonElement.textContent || actionJsonElement.innerText;
+
+                if (!actionJsonText || actionJsonText.trim() === "") {
+                    alert(ws_i18n.noCopyableMessage);
+                    return;
+                }
+
+                console.log("[WebSocket] actionJsonText:", actionJsonText);
+
+                // Extract JSON from the text (removes the "WebSocket 消息示例:" prefix)
+                var jsonString = actionJsonText;
+                var match = actionJsonText.match(/\{[\s\S]*\}/);
+                if (match) {
+                    jsonString = match[0];
+                }
+
+                console.log("[WebSocket] Extracted JSON string:", jsonString);
+
+                // Parse the JSON to extract handler and actionId
+                var messageData;
+                try {
+                    messageData = JSON.parse(jsonString);
+                } catch (e) {
+                    console.error("[WebSocket] JSON parse error:", e);
+                    alert(ws_i18n.cannotParseMessageData + " " + e.message);
+                    return;
+                }
+
+                // Construct a new WebSocket message with a fresh ID
+                var message = {
+                    type: "command",
+                    id: "msg-" + Date.now(),
+                    payload: messageData.payload
+                };
+
+                var messageString = JSON.stringify(message, null, 2);
+
+                console.log("[WebSocket] Message to copy:", messageString);
+
+                // Try using navigator.clipboard if available
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(messageString).then(function () {
+                        showCopySuccess();
+                        console.log("[WebSocket] Message copied to clipboard successfully");
+                    }).catch(function (err) {
+                        console.error("[WebSocket] navigator.clipboard failed:", err);
+                        // Fallback to postMessage
+                        copyViaPostMessage(messageString);
+                    });
+                } else {
+                    console.log("[WebSocket] navigator.clipboard not available, using postMessage");
+                    copyViaPostMessage(messageString);
+                }
+            } catch (err) {
+                console.error("[WebSocket] Error in copyMessageToClipboard:", err);
+                alert(ws_i18n.copyFailed + " " + err);
+            }
+        }
+
+        // Fallback: copy via postMessage to Lua
+        function copyViaPostMessage(text) {
+            websocketPanelCallback('copyToClipboard', { text: text });
+        }
+
+        // Show success feedback
+        function showCopySuccess() {
+            var copyBtn = document.getElementById("copyMessageBtn");
+            var originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = "✅ " + ws_i18n.copied;
+            copyBtn.style.backgroundColor = "#28a745";
+
+            setTimeout(function () {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.backgroundColor = "#1990ff";
+            }, 2000);
+        }
+
+        // Called from Lua when copy succeeds
+        function onCopySuccess() {
+            showCopySuccess();
+            console.log("[WebSocket] Copy successful via Lua");
+        }
+
+        // Called from Lua when copy fails
+        function onCopyError(error) {
+            console.error("[WebSocket] Copy failed via Lua:", error);
+            alert(ws_i18n.copyFailed + " " + error);
+        }
+
+        // Initialize immediately when script runs
+        (function () {
+            console.log('[WebSocket] Initializing panel JavaScript');
+
+            // Setup Action Chooser button
+            var chooserButton = document.getElementById("openActionChooser");
+            if (chooserButton) {
+                chooserButton.onclick = function () {
+                    var filterElem = document.getElementById('actionAppFilter');
+                    var bundleID = filterElem ? filterElem.value : "";
+                    websocketPanelCallback('openActionChooser', { bundleID: bundleID });
+                };
+            }
+
+            // Request available apps to populate the filter when panel loads
+            try {
+                websocketPanelCallback('requestAppList', {});
+            } catch (e) {
+                console.warn('[WebSocket] requestAppList failed:', e);
+            }
+        })();
+    </script>
+</body>
+
+</html>

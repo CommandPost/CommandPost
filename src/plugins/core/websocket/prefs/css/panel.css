@@ -1,0 +1,158 @@
+/* WebSocket Control Surface Preferences Panel CSS */
+
+body {
+    background-color: #1f1f1f;
+    font-family: -apple-system;
+    font-size: 13px;
+    max-width: 100%;
+    overflow-x: hidden;
+    color: #999999;
+}
+
+.websocket-preferences {
+    padding: 10px 20px;
+}
+
+/* Description */
+.description {
+    color: #999999;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+/* Tips */
+.tip {
+    color: #436694;
+    font-style: italic;
+    padding-top: 5px;
+    font-size: 13px;
+}
+
+/* Status Display */
+.status-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.button-text {
+    background: transparent;
+    border: 1px solid #666;
+    color: #999;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.button-text:hover {
+    background: #333;
+    border-color: #999;
+    color: #fff;
+}
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 100px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.status-connected {
+    background: linear-gradient(to bottom, #4a9d4f, #3d8a42);
+    color: white;
+    border: 1px solid #2d6a31;
+}
+
+.status-disconnected {
+    background: linear-gradient(to bottom, #d94a4a, #c43c3c);
+    color: white;
+    border: 1px solid #9e2e2e;
+}
+
+.status-error {
+    background: linear-gradient(to bottom, #e0a84a, #d4993c);
+    color: white;
+    border: 1px solid #a67a2d;
+}
+
+.connection-info {
+    font-size: 13px;
+    color: #999999;
+    flex: 1;
+}
+
+/* Connections List */
+.connections-list-container {
+    background-color: #161616;
+    border: 2px solid #0a0a0a;
+    border-radius: 6px;
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.connections-list {
+    margin: 0;
+}
+
+.connections-list > div {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #252525;
+    border-radius: 4px;
+    border-left: 3px solid #1981fb;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #bfbfbc;
+}
+
+.connections-list > div:last-child {
+    margin-bottom: 0;
+}
+
+.connections-list > div strong {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.connections-list .no-connections {
+    border-left-color: #666;
+    color: #666;
+    text-align: center;
+    font-style: italic;
+    background: transparent;
+    padding: 20px;
+}
+
+/* Docs Link */
+.docs-link {
+    font-size: 13px;
+    color: #999999;
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* Scrollbar Styling */
+.connections-list-container::-webkit-scrollbar {
+    width: 7px;
+}
+
+.connections-list-container::-webkit-scrollbar-track {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.connections-list-container::-webkit-scrollbar-thumb {
+    background: #737373;
+    border-radius: 4px;
+}
+
+.connections-list-container::-webkit-scrollbar-thumb:hover {
+    background: #8a8a8a;
+}
