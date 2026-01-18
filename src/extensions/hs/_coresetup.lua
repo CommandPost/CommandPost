@@ -191,8 +191,7 @@ function coresetup.setup(modpath, frameworkspath, prettypath, fullpath, configdi
             )
             hs.focus()
             if result == "Send Bug Report" then
-                local feedback = require("cp.feedback")
-                feedback.showFeedback()
+                os.execute('open "https://commandpost.fcp.cafe/support/"')
             else
                 hs.openConsole()
             end

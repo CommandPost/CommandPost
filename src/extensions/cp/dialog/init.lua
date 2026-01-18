@@ -288,8 +288,7 @@ function dialog.displayErrorMessage(message)
     local result = hsDialog.blockAlert(i18n("commonErrorMessageStart"), errorMessage, i18n("yes"), i18n("no"), "critical")
     if originalFocusedWindow then originalFocusedWindow:focus() end
     if result == i18n("yes") then
-        local feedback = require("cp.feedback") -- This is defined here, otherwise it will cause an error.
-        feedback.showFeedback(false)
+        os.execute('open "https://commandpost.fcp.cafe/support/"')
     end
 
 end

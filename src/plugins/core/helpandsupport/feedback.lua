@@ -4,7 +4,6 @@
 
 local require = require
 
-local feedback  = require("cp.feedback")
 local i18n      = require("cp.i18n")
 
 local mod = {}
@@ -19,7 +18,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-    feedback.showFeedback()
+    os.execute('open "https://commandpost.fcp.cafe/support/"')
 end
 
 local plugin = {

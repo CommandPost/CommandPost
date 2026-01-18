@@ -21,7 +21,6 @@ local window                = require "hs.window"
 
 local config                = require "cp.config"
 local fcp                   = require "cp.apple.finalcutpro"
-local feedback              = require "cp.feedback"
 local i18n                  = require "cp.i18n"
 local plugins               = require "cp.plugins"
 local tools                 = require "cp.tools"
@@ -148,7 +147,7 @@ function mod.init()
             },
             { id = i18n("feedback"), image = imageFromName("NSInfo"),
                 fn = function()
-                    feedback.showFeedback()
+                    os.execute('open "https://commandpost.fcp.cafe/support/"')
                 end
             },
         })
