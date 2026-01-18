@@ -914,11 +914,16 @@ local function processFCPXML(path)
 
     --------------------------------------------------------------------------------
     -- Downgrade the FCPXML:
+    --
+    -- 20260118CH - This was causing too many issues, so we just keep whatever
+    --              FCPXML version was supplied. The only reason we originally did
+    --              this was because DaVinci Resolve didn't support newer FCPXML
+    --              versions at the time.
     --------------------------------------------------------------------------------
-    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version="1.12">]], [[<fcpxml version="1.11">]])
-    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version='1.12'>]], [[<fcpxml version='1.11'>]])
-    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version="1.13">]], [[<fcpxml version="1.11">]])
-    xmlOutput = tools.replace(xmlOutput, [[<fcpxml version='1.13'>]], [[<fcpxml version='1.11'>]])
+    --xmlOutput = tools.replace(xmlOutput, [[<fcpxml version="1.12">]], [[<fcpxml version="1.11">]])
+    --xmlOutput = tools.replace(xmlOutput, [[<fcpxml version='1.12'>]], [[<fcpxml version='1.11'>]])
+    --xmlOutput = tools.replace(xmlOutput, [[<fcpxml version="1.13">]], [[<fcpxml version="1.11">]])
+    --xmlOutput = tools.replace(xmlOutput, [[<fcpxml version='1.13'>]], [[<fcpxml version='1.11'>]])
 
     --------------------------------------------------------------------------------
     -- Output a temporary file:
@@ -928,13 +933,16 @@ local function processFCPXML(path)
 
     --------------------------------------------------------------------------------
     -- Validate the FCPXML before sending to FCPX:
+    --
+    -- 20260118CH - This was causing too many issues, so we just ASSUME the FCPXML
+    --              is correct and valid.
     --------------------------------------------------------------------------------
-    local ok, errorMessage = fcpxml.valid(outputPath)
-    if not ok then
-        log.wf("[Sony Timecode Toolbox] XML Validation Error: %s", errorMessage)
-        log.wf("[Sony Timecode Toolbox] Invalid FCPXML was temporarily saved to: %s", outputPath)
-        return showError("DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.")
-    end
+    --local ok, errorMessage = fcpxml.valid(outputPath)
+    --if not ok then
+    --    log.wf("[Sony Timecode Toolbox] XML Validation Error: %s", errorMessage)
+    --    log.wf("[Sony Timecode Toolbox] Invalid FCPXML was temporarily saved to: %s", outputPath)
+    --    return showError("DTD Validation Failed.", "The data we've generated for Final Cut Pro does not pass DTD validation.\n\nThis is most likely a bug in CommandPost.\n\nPlease refer to the CommandPost Debug Console for the path to the failed FCPXML file if you'd like to review it.\n\nPlease send any useful information to the CommandPost Developers so that this issue can be resolved.")
+    --end
 
     --------------------------------------------------------------------------------
     -- Make sure the last output path still exists, otherwise default
