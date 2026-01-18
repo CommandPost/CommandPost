@@ -51,7 +51,7 @@ mod.configPrefix = "cp"
 --- cp.config.privacyPolicyURL -> string
 --- Constant
 --- URL for Privacy Policy
-mod.privacyPolicyURL = "https://commandpost.io/privacy/"
+mod.privacyPolicyURL = "https://commandpost.fcp.cafe/privacy/"
 
 --- cp.config.translationURL -> string
 --- Constant
@@ -122,7 +122,7 @@ mod.pluginPaths	= {
 --- cp.config.iconPath -> string
 --- Constant
 --- Path to the Application Icon
-mod.iconPath = hs.processInfo["resourcePath"] .. "/AppIcon.icns"
+mod.iconPath = hs.processInfo["resourcePath"] .. "/plugins/core/setup/images/commandpost-512x512@2x.png"
 
 --- cp.config.languagePath -> string
 --- Constant

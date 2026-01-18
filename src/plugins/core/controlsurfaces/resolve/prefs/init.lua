@@ -47,7 +47,7 @@ local DEFAULT_BUTTON = "SOURCE"
 -- SNIPPET_HELP_URL -> string
 -- Constant
 -- URL to Snippet Support Site
-local SNIPPET_HELP_URL = "https://commandpost.io/scripting/snippets-for-led-status/"
+local SNIPPET_HELP_URL = "https://commandpost.fcp.cafe/scripting/snippets-for-led-status/"
 
 --- plugins.core.controlsurfaces.resolve.prefs.pasteboard <cp.prop: table>
 --- Field

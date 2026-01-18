@@ -30,7 +30,7 @@ function mod.init(deps)
             -- Final Cut Pro hasn't been scanned yet:
             --------------------------------------------------------------------------------
             local setup = deps.setup
-            local iconPath = config.application():path() .. "/Contents/Resources/AppIcon.icns"
+            local iconPath = config.application():path() .. "/Contents/Resources/plugins/core/setup/images/commandpost-512x512@2x.png"
 
             setup.addPanel(
                 setup.panel.new("scanFinalCutPro", 20)

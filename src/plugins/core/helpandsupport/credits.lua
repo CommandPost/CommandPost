@@ -21,7 +21,7 @@ function plugin.init(deps)
     -- Open Credits:
     --------------------------------------------------------------------------------
     local show = function()
-        os.execute('open "https://commandpost.io/credits/"')
+        os.execute('open "https://commandpost.fcp.cafe/credits/"')
     end
 
     --------------------------------------------------------------------------------

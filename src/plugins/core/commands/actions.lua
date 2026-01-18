@@ -34,7 +34,7 @@ local GROUP = "global"
 -- COMMANDPOST_ICON -> hs.image
 -- Constant
 -- The CommandPost Icon
-local COMMANDPOST_ICON = imageFromPath(processInfo.bundlePath .. "/Contents/Resources/AppIcon.icns")
+local COMMANDPOST_ICON = imageFromPath(processInfo.bundlePath .. "/Contents/Resources/plugins/core/setup/images/commandpost-512x512@2x.png")
 
 --- plugins.core.commands.actions.init(actionmanager, cmds) -> none
 --- Function

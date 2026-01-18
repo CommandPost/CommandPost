@@ -18,7 +18,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-    os.execute('open "https://commandpost.io/developer/introduction/"')
+    os.execute('open "https://commandpost.fcp.cafe/developer/introduction/"')
 end
 
 local plugin = {

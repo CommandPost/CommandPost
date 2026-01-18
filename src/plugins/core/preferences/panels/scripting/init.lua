@@ -259,7 +259,7 @@ function plugin.init(deps, env)
             {
                 label 	    = "Learn More...",
                 width       = 100,
-                onclick	    = function() execute("open 'https://commandpost.io/scripting/applescript/'") end,
+                onclick	    = function() execute("open 'https://commandpost.fcp.cafe/scripting/applescript/'") end,
             }
         )
 
@@ -278,7 +278,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local controllerCallback = function(_, params)
         if params["type"] == "examples" then
-            os.execute('open "https://commandpost.io/scripting/snippets-for-actions/"')
+            os.execute('open "https://commandpost.fcp.cafe/scripting/snippets-for-actions/"')
         elseif params["type"] == "new" then
             --------------------------------------------------------------------------------
             -- New Snippet:
