@@ -4,17 +4,26 @@
 
 local require               = require
 
+--local log                   = require("hs.logger").new("SaveSheet")
+
 local axutils               = require "cp.ui.axutils"
+local tools                 = require "cp.tools"
 
 local GoToPrompt            = require "cp.apple.finalcutpro.export.GoToPrompt"
 local ReplaceAlert          = require "cp.apple.finalcutpro.export.ReplaceAlert"
 
 local Button				= require "cp.ui.Button"
 local Sheet                 = require "cp.ui.Sheet"
+local SplitGroup            = require "cp.ui.SplitGroup"
 local TextField             = require "cp.ui.TextField"
 
+local semver                = require "semver"
+
 local childFromRight	    = axutils.childFromRight
+local childFromTop          = axutils.childFromTop
 local childMatching         = axutils.childMatching
+
+local macOSVersion          = tools.macOSVersion()
 
 local SaveSheet = Sheet:subclass("cp.apple.finalcutpro.export.SaveSheet")
 
@@ -54,27 +63,57 @@ end
 --- Field
 --- The "Save" `Button`.
 function SaveSheet.lazy.value:save()
-    return Button(self, self.UI:mutate(function(original)
-        return childFromRight(original(), 1, Button.matches)
-    end))
+    --------------------------------------------------------------------------------
+    -- On macOS Tahoe, the SaveSheet is inside a AXSplitGroup:
+    --------------------------------------------------------------------------------
+    if semver(macOSVersion) >= semver("26.0.0") then
+        return Button(self, self.UI:mutate(function(original)
+            local splitGroup = childMatching(original(), SplitGroup.matches)
+            return childFromRight(splitGroup, 1, Button.matches)
+        end))
+    else
+        return Button(self, self.UI:mutate(function(original)
+            return childFromRight(original(), 1, Button.matches)
+        end))
+    end
 end
 
 --- cp.apple.finalcutpro.export.SaveSheet.cancel <cp.ui.Button>
 --- Field
 --- The "Cancel" `Button`.
 function SaveSheet.lazy.value:cancel()
-    return Button(self, self.UI:mutate(function(original)
-        return childFromRight(original(), 2, Button.matches)
-    end))
+    --------------------------------------------------------------------------------
+    -- On macOS Tahoe, the SaveSheet is inside a AXSplitGroup:
+    --------------------------------------------------------------------------------
+    if semver(macOSVersion) >= semver("26.0.0") then
+        return Button(self, self.UI:mutate(function(original)
+            local splitGroup = childMatching(original(), SplitGroup.matches)
+            return childFromRight(splitGroup, 2, Button.matches)
+        end))
+    else
+        return Button(self, self.UI:mutate(function(original)
+            return childFromRight(original(), 2, Button.matches)
+        end))
+    end
 end
 
 --- cp.apple.finalcutpro.export.SaveSheet.filename <cp.ui.TextField>
 --- Field
 --- The Save Sheet Filename Text Field.
 function SaveSheet.lazy.value:filename()
-    return TextField(self, function()
-        return childMatching(self:UI(), TextField.matches)
-    end)
+    --------------------------------------------------------------------------------
+    -- On macOS Tahoe, the SaveSheet is inside a AXSplitGroup:
+    --------------------------------------------------------------------------------
+    if semver(macOSVersion) >= semver("26.0.0") then
+        return TextField(self, function()
+            local splitGroup = childMatching(self:UI(), SplitGroup.matches)
+            return splitGroup and childFromTop(splitGroup, 1, TextField.matches)
+        end)
+    else
+        return TextField(self, function()
+            return childMatching(self:UI(), TextField.matches)
+        end)
+    end
 end
 
 --- cp.apple.finalcutpro.export.SaveSheet:setPath(path) -> cp.apple.finalcutpro.export.SaveSheet
