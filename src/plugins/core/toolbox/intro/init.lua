@@ -66,7 +66,7 @@ local function callback(id, params)
             --------------------------------------------------------------------------------
             -- Learn More:
             --------------------------------------------------------------------------------
-            os.execute('open "https://commandpost.io/latenite-technology/"')
+            os.execute('open "https://fcp.cafe/latenite/#custom-tools--consulting"')
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
