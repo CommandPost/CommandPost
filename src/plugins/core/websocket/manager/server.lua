@@ -52,7 +52,7 @@ function mod.start(port, messageHandler)
         mod.stop()
     end
 
-    log.df("Starting WebSocket server on port %d", port)
+    --log.df("Starting WebSocket server on port %d", port)
 
     -- Create HTTP server with WebSocket support
     mod.server = httpserver.new(false, false)
@@ -67,7 +67,7 @@ function mod.start(port, messageHandler)
     -- Start the server
     mod.server:start()
 
-    log.df("WebSocket server started on ws://localhost:%d/", port)
+    --log.df("WebSocket server started on ws://localhost:%d/", port)
     return true
 end
 
@@ -81,7 +81,7 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    log.df("Stopping WebSocket server")
+    --log.df("Stopping WebSocket server")
 
     -- Clear clients
     mod.clients = {}
@@ -117,7 +117,7 @@ end
 --- Returns:
 ---  * Response message string (or empty string if no response)
 function mod.handleMessage(message)
-    log.df("Received message: %s", message)
+    --log.df("Received message: %s", message)
 
     -- Create a mock connection object for the message handler
     local conn = {
@@ -188,7 +188,7 @@ function mod.broadcast(message)
         return 0
     end
 
-    log.df("Broadcast message sent")
+    --log.df("Broadcast message sent")
     return 1
 end
 

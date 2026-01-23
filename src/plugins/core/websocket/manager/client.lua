@@ -50,11 +50,11 @@ function mod.connect(url, messageHandler)
 
     -- Disconnect existing connection first
     if mod.connection then
-        log.df("Disconnecting existing connection before connecting to new URL")
+        --log.df("Disconnecting existing connection before connecting to new URL")
         mod.disconnect()
     end
 
-    log.df("Connecting to WebSocket server: %s", url)
+    --log.df("Connecting to WebSocket server: %s", url)
 
     local ws = websocket.new(url, function(event, message)
         mod.handleEvent(event, message, messageHandler)
@@ -89,7 +89,7 @@ end
 --- Returns:
 ---  * None
 function mod.disconnect()
-    log.df("Disconnecting client")
+    --log.df("Disconnecting client")
 
     -- Stop reconnect timer
     if mod.reconnectTimer then
@@ -150,7 +150,7 @@ end
 ---  * None
 function mod.handleEvent(event, message, messageHandler)
     if event == "open" then
-        log.df("WebSocket client connected")
+        --log.df("WebSocket client connected")
         if mod.connection then
             mod.connection:setState(connection.states.CONNECTED)
         end
@@ -162,7 +162,7 @@ function mod.handleEvent(event, message, messageHandler)
         end
 
     elseif event == "closed" then
-        log.df("WebSocket client disconnected")
+        --log.df("WebSocket client disconnected")
         mod.handleDisconnect()
 
     elseif event == "fail" then
@@ -170,11 +170,11 @@ function mod.handleEvent(event, message, messageHandler)
         mod.handleError(message)
 
     elseif event == "received" then
-        if mod.connection and messageHandler then
+        1if mod.connection and messageHandler then
             messageHandler(mod.connection, message)
         end
     elseif event == "pong" then
-        log.df("WebSocket received pong")
+        --log.df("WebSocket received pong")
     end
 end
 
@@ -248,7 +248,7 @@ function mod.scheduleReconnect()
     local baseDelay = mod.manager and mod.manager.reconnectInterval and mod.manager.reconnectInterval() or 5
     local delay = math.min(baseDelay * math.pow(2, mod.reconnectAttempts - 1), 60)
 
-    log.df("Scheduling reconnect attempt %d in %d seconds", mod.reconnectAttempts, delay)
+    --log.df("Scheduling reconnect attempt %d in %d seconds", mod.reconnectAttempts, delay)
 
     mod.reconnectTimer = timer.doAfter(delay, function()
         mod.reconnectTimer = nil
@@ -256,7 +256,7 @@ function mod.scheduleReconnect()
         if not mod.isConnected() and mod.manager then
             local url = mod.manager.clientUrl and mod.manager.clientUrl() or ""
             if url ~= "" then
-                log.df("Attempting to reconnect (attempt %d)", mod.reconnectAttempts)
+                --log.df("Attempting to reconnect (attempt %d)", mod.reconnectAttempts)
                 mod.connect(url, mod.manager.handleMessage)
             end
         end

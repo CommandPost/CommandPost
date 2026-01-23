@@ -46,7 +46,7 @@ function connection:initialize(websocket, mode, callbacks)
     self.callbacks = callbacks or {}
     self.messageQueue = {}
 
-    log.df("New connection created: %s (mode: %s)", self.id, self.mode)
+    --log.df("New connection created: %s (mode: %s)", self.id, self.mode)
 end
 
 --- plugins.core.websocket.manager.connection:send(message) -> boolean
@@ -80,7 +80,7 @@ function connection:send(message)
 
     if ok then
         self.lastActivity = timer.secondsSinceEpoch()
-        log.df("Message sent on connection %s", self.id)
+        --log.df("Message sent on connection %s", self.id)
         return true
     else
         log.ef("Failed to send message on connection %s: %s", self.id, result)
@@ -99,7 +99,7 @@ end
 ---  * None
 function connection:close()
     if self.websocket then
-        log.df("Closing connection: %s", self.id)
+        --log.df("Closing connection: %s", self.id)
         self.state = connection.states.DISCONNECTED
 
         local ok, err = pcall(function()
@@ -140,7 +140,7 @@ end
 ---  * None
 function connection:setState(state)
     if self.state ~= state then
-        log.df("Connection %s state changed: %s -> %s", self.id, self.state, state)
+        --log.df("Connection %s state changed: %s -> %s", self.id, self.state, state)
         self.state = state
         self.lastActivity = timer.secondsSinceEpoch()
     end

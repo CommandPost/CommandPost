@@ -106,10 +106,10 @@ local function matchesSimplifiedPath(fullPath, simplifiedPath)
 
     -- Debug logging for first few comparisons
     if fullPath:find("Prism") then
-        log.df("Matching: %s", simplifiedPath)
-        log.df("  Full (norm): %s", normalizedFull:sub(-100))
-        log.df("  Simple (norm): %s", normalizedSimple)
-        log.df("  Match result: %s", tostring(result))
+        --log.df("Matching: %s", simplifiedPath)
+        --log.df("  Full (norm): %s", normalizedFull:sub(-100))
+        --log.df("  Simple (norm): %s", normalizedSimple)
+        --log.df("  Match result: %s", tostring(result))
     end
 
     return result
@@ -127,7 +127,7 @@ end
 -- Returns:
 --  * The matching choice object, or nil if not found
 local function findFCPXPluginBySimplifiedPath(choices, simplifiedPath)
-    log.df("Searching %d choices for simplified path: %s", #choices, simplifiedPath)
+    --log.df("Searching %d choices for simplified path: %s", #choices, simplifiedPath)
 
     for i, choice in ipairs(choices) do
         if type(choice.params) == "table" then
@@ -137,8 +137,7 @@ local function findFCPXPluginBySimplifiedPath(choices, simplifiedPath)
             if choice.params.path then
                 matched = matchesSimplifiedPath(choice.params.path, simplifiedPath)
                 if matched then
-                    log.df("Found FCPX plugin by path: %s matches simplified path: %s",
-                           choice.params.path, simplifiedPath)
+                    --log.df("Found FCPX plugin by path: %s matches simplified path: %s", choice.params.path, simplifiedPath)
                     return choice
                 end
             end
@@ -147,8 +146,7 @@ local function findFCPXPluginBySimplifiedPath(choices, simplifiedPath)
             if not matched and choice.params.category and choice.params.name then
                 local categoryName = choice.params.category .. "/" .. choice.params.name
                 if categoryName == simplifiedPath then
-                    log.df("Found FCPX plugin by category/name: %s matches simplified path: %s",
-                           categoryName, simplifiedPath)
+                    --log.df("Found FCPX plugin by category/name: %s matches simplified path: %s", categoryName, simplifiedPath)
                     return choice
                 end
             end
@@ -156,17 +154,15 @@ local function findFCPXPluginBySimplifiedPath(choices, simplifiedPath)
             -- Log first few choices for debugging
             if i <= 3 then
                 if choice.params.path then
-                    log.df("Choice %d (path): %s does not match %s", i,
-                           choice.params.path:sub(-80), simplifiedPath)
+                    --log.df("Choice %d (path): %s does not match %s", i, choice.params.path:sub(-80), simplifiedPath)
                 elseif choice.params.category and choice.params.name then
-                    log.df("Choice %d (cat/name): %s/%s does not match %s", i,
-                           choice.params.category, choice.params.name, simplifiedPath)
+                    --log.df("Choice %d (cat/name): %s/%s does not match %s", i, choice.params.category, choice.params.name, simplifiedPath)
                 end
             end
         end
     end
 
-    log.df("No matching plugin found for: %s", simplifiedPath)
+    --log.df("No matching plugin found for: %s", simplifiedPath)
     return nil
 end
 
@@ -251,7 +247,7 @@ end
 --- Returns:
 ---  * Response table
 function mod.handleMessage(connection, message)
-    log.df("Handling message on connection %s", connection.id)
+    --log.df("Handling message on connection %s", connection.id)
 
     -- Parse message
     local data, parseError = mod.parseMessage(message)
@@ -317,7 +313,7 @@ function mod.handleCommand(data)
     local actionId = data.payload.actionId
     local parameters = data.payload.parameters or {}
 
-    log.df("Executing command - Handler: %s, Action ID: %s", handlerId, actionId or "none")
+    --log.df("Executing command - Handler: %s, Action ID: %s", handlerId, actionId or "none")
 
     -- Find the handler using direct table access to avoid thread issues
     local handlersTable = mod.actionManager.handlers()
@@ -344,7 +340,7 @@ function mod.handleCommand(data)
                 -- For FCPX plugin handlers, actionId can be:
                 -- 1. Full path (e.g., "/Applications/Final Cut Pro.app/.../Prism.localized")
                 -- 2. Simplified path (e.g., "Blur/Prism")
-                log.df("Searching for FCPX plugin by path: %s", actionId)
+                --log.df("Searching for FCPX plugin by path: %s", actionId)
 
                 -- Check if actionId is a full path or simplified path
                 local isFullPath = actionId:sub(1, 1) == "/"
@@ -358,7 +354,7 @@ function mod.handleCommand(data)
                         for _, choice in ipairs(allChoices) do
                             if type(choice.params) == "table" and choice.params.path == actionId then
                                 choiceParams = choice.params
-                                log.df("Found matching FCPX plugin (full path): %s", choice.params.name or "unknown")
+                                --log.df("Found matching FCPX plugin (full path): %s", choice.params.name or "unknown")
                                 break
                             end
                         end
@@ -367,7 +363,7 @@ function mod.handleCommand(data)
                         local matchingChoice = findFCPXPluginBySimplifiedPath(allChoices, actionId)
                         if matchingChoice then
                             choiceParams = matchingChoice.params
-                            log.df("Found matching FCPX plugin (simplified path): %s", choiceParams.name or "unknown")
+                            --log.df("Found matching FCPX plugin (simplified path): %s", choiceParams.name or "unknown")
                         end
                     end
                 else
@@ -383,7 +379,7 @@ function mod.handleCommand(data)
                             for _, choice in ipairs(allChoices) do
                                 if type(choice.params) == "table" and choice.params.path == actionId then
                                     choiceParams = choice.params
-                                    log.df("Found matching FCPX plugin (full path): %s", choice.params.name or "unknown")
+                                    --log.df("Found matching FCPX plugin (full path): %s", choice.params.name or "unknown")
                                     break
                                 end
                             end
@@ -392,7 +388,7 @@ function mod.handleCommand(data)
                             local matchingChoice = findFCPXPluginBySimplifiedPath(allChoices, actionId)
                             if matchingChoice then
                                 choiceParams = matchingChoice.params
-                                log.df("Found matching FCPX plugin (simplified path): %s", choiceParams.name or "unknown")
+                                --log.df("Found matching FCPX plugin (simplified path): %s", choiceParams.name or "unknown")
                             end
                         end
                     end
@@ -473,7 +469,7 @@ function mod.handleCommand(data)
     end)
 
     if ok then
-        log.df("Command executed successfully: %s/%s", handlerId, actionId or "none")
+        --log.df("Command executed successfully: %s/%s", handlerId, actionId or "none")
         return mod.createSuccessResponse(data.id, result)
     else
         log.ef("Command execution failed: %s/%s - %s", handlerId, actionId or "none", result)
@@ -498,7 +494,7 @@ function mod.handleQuery(data)
     local actionId = data.payload.action
     local queryType = data.payload.query or actionId
 
-    log.df("Handling query: %s", queryType or "none")
+    --log.df("Handling query: %s", queryType or "none")
 
     -- Handle special queries
     if queryType == "handlers" or queryType == "listHandlers" then
@@ -518,7 +514,7 @@ function mod.handleQuery(data)
             end
         end
 
-        log.df("Returning %d handlers in response", #handlers)
+        --log.df("Returning %d handlers in response", #handlers)
         return mod.createSuccessResponse(data.id, {handlers = handlers})
     elseif queryType == "handlerInfo" then
         -- Get detailed info about a specific handler

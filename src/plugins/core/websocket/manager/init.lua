@@ -34,10 +34,10 @@ mod.MODE = {
 --- Enable or disable the WebSocket control surface.
 mod.enabled = config.prop("websocket.enabled", false):watch(function(enabled)
     if enabled then
-        log.df("WebSocket control surface enabled")
+        --log.df("WebSocket control surface enabled")
         mod.start()
     else
-        log.df("WebSocket control surface disabled")
+        --log.df("WebSocket control surface disabled")
         mod.stop()
     end
 end)
@@ -53,15 +53,15 @@ end
 --- Variable
 --- Server port (default: 27480)
 mod.serverPort = config.prop("websocket.serverPort", 27480):watch(function(port)
-    log.df("[PROP WATCH] WebSocket server port changed to: %d", port)
-    log.df("[PROP WATCH] Current enabled state: %s, mode: %s", tostring(mod.enabled()), mod.mode())
+    --log.df("[PROP WATCH] WebSocket server port changed to: %d", port)
+    --log.df("[PROP WATCH] Current enabled state: %s, mode: %s", tostring(mod.enabled()), mod.mode())
     if mod.enabled() and mod.mode() == mod.MODE.SERVER then
         -- Restart server with new port
-        log.df("[PROP WATCH] Restarting server with new port")
+        --log.df("[PROP WATCH] Restarting server with new port")
         mod.stop()
         mod.start()
     else
-        log.df("[PROP WATCH] Not restarting server (enabled: %s, mode: %s)", tostring(mod.enabled()), mod.mode())
+        --log.df("[PROP WATCH] Not restarting server (enabled: %s, mode: %s)", tostring(mod.enabled()), mod.mode())
     end
 end)
 
@@ -81,7 +81,7 @@ function mod.start()
         return false
     end
 
-    log.df("Starting WebSocket server")
+    --log.df("Starting WebSocket server")
     return mod.startServer()
 end
 
@@ -95,7 +95,7 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    log.df("Stopping WebSocket server")
+    --log.df("Stopping WebSocket server")
     mod.stopServer()
 end
 
@@ -110,7 +110,7 @@ end
 ---  * true if started successfully, false otherwise
 function mod.startServer()
     local port = mod.serverPort()
-    log.df("Starting WebSocket server on port %d", port)
+    --log.df("Starting WebSocket server on port %d", port)
     return server.start(port, mod.handleMessage)
 end
 
@@ -124,10 +124,9 @@ end
 --- Returns:
 ---  * None
 function mod.stopServer()
-    log.df("Stopping WebSocket server")
+    --log.df("Stopping WebSocket server")
     server.stop()
 end
-
 
 --- plugins.core.websocket.manager.handleMessage(connection, message) -> nil
 --- Function
@@ -140,7 +139,7 @@ end
 --- Returns:
 ---  * None
 function mod.handleMessage(connection, message)
-    log.df("Received message on connection %s: %s", connection.id, message)
+    --log.df("Received message on connection %s: %s", connection.id, message)
 
     -- Process the message
     local response = messageHandler.handleMessage(connection, message)
