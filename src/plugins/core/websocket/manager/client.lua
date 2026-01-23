@@ -170,7 +170,7 @@ function mod.handleEvent(event, message, messageHandler)
         mod.handleError(message)
 
     elseif event == "received" then
-        1if mod.connection and messageHandler then
+        if mod.connection and messageHandler then
             messageHandler(mod.connection, message)
         end
     elseif event == "pong" then
