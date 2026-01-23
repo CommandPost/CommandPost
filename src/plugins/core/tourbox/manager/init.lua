@@ -30,6 +30,90 @@ local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 
 local mod = {}
 
+-- BAUD_RATE
+-- Constant
+-- Baud Rate for serial connection.
+local BAUD_RATE = 115200
+
+-- TOURBOX_CONSOLE_BUNDLE_ID -> string
+-- Constant
+-- The TourBox Console Bundle ID.
+local TOURBOX_CONSOLE_BUNDLE_ID = "com.tourbox.ui.launch"
+
+-- DEVICES -> table
+-- Constant
+-- TourBox Hardware information.
+local DEVICES = {
+    original = {
+        name = "TourBox",
+        idVendor  = 4292,   -- 0x10C4
+        idProduct = 60000,  -- 0xEA60
+        initHex = {
+            --------------------------------------------------------------------------------
+            -- Unlock:
+            --------------------------------------------------------------------------------
+            "5500072cd8001afe",
+
+            --------------------------------------------------------------------------------
+            -- Config frames:
+            --------------------------------------------------------------------------------
+            "a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe",
+        },
+    },
+    elite = {
+        name = "TourBox Elite",
+        idVendor  = 49745, -- 0xC251
+        idProduct = 8197,  -- 0x2005
+        initHex = {
+            --------------------------------------------------------------------------------
+            -- Unlock:
+            --------------------------------------------------------------------------------
+            "5500078894001afe",
+
+            --------------------------------------------------------------------------------
+            -- Packet 1:
+            --------------------------------------------------------------------------------
+            "1b00b0c99f2503e7ffff000000000900000300130002035e000000b5005d040805080608070808080809080b080c080d080e080f0826082708280829083b083c083d083e083f0840084108420843084408450846084708480849084a084b084c084d084e084f0850085108520853085408a808a908aa08ab08fe",
+
+            --------------------------------------------------------------------------------
+            -- Packet 2:
+            --------------------------------------------------------------------------------
+            "1b00b0c99f2503e7ffff0000000009000103001300020300000000",
+        },
+    }
+}
+
+-- ELITE_HAPTIC_TEMPLATE_HEX -> string
+-- Constant
+-- TourBox Elite Haptic Feedback Template Hex.
+local ELITE_HAPTIC_TEMPLATE_HEX =
+    "b5005d04" ..
+    "00050006000700080009000b000c000d" ..
+    "000e000f0026002700280029003b003c003d003e" ..
+    "003f004000410042004300440045004600470048" ..
+    "0049004a004b004c004d004e004f005000510052" ..
+    "0053005400a800a900aa00ab00fe"
+
+-- ELITE_HAPTIC_OFFSETS -> table
+-- Constant
+-- TourBox Elite Haptic Feedback Offsets.
+local ELITE_HAPTIC_OFFSETS = {
+    --------------------------------------------------------------------------------
+    -- Knob:
+    --------------------------------------------------------------------------------
+    4,6,8,10,12,34,36,38,40,42,44,46,48,50,52,
+
+    --------------------------------------------------------------------------------
+    -- Scroll:
+    --------------------------------------------------------------------------------
+    14,16,18,20,22,26,28,30,32,54,56,58,60,62,64,
+
+    --------------------------------------------------------------------------------
+    -- Dial:
+    --------------------------------------------------------------------------------
+    24,66,68,70,72,74,76,78,80,82,84,86,88,90,92,
+}
+
 -- fileExtension -> string
 -- Variable
 -- File Extension for TourBox
@@ -40,20 +124,164 @@ local fileExtension = ".cpTourBox"
 -- Default Filename for TourBox Settings
 local defaultFilename = "Default" .. fileExtension
 
--- PRODUCT_ID -> string
--- Constant
--- The product ID of the original TourBox.
-local PRODUCT_ID = 60000
+-- plugins.core.tourbox.manager._connecting -> boolean
+-- Variable
+-- Are we connecting?
+mod._connecting = false
 
--- VENDOR_ID -> string
--- Constant
--- The vendor ID of the original TourBox.
-local VENDOR_ID = 4292
+-- plugins.core.tourbox.manager._retryTimer -> boolean
+-- Variable
+-- Retry timer
+mod._retryTimer = nil
 
--- TOURBOX_CONSOLE_BUNDLE_ID -> string
--- Constant
--- The TourBox Console Bundle ID.
-local TOURBOX_CONSOLE_BUNDLE_ID = "com.tourbox.ui.launch"
+-- plugins.core.tourbox.manager._retryDelay -> boolean
+-- Variable
+-- Retry delay
+mod._retryDelay = 0.25
+
+-- plugins.core.tourbox.manager._lastPortName -> boolean
+-- Variable
+-- Last port name
+mod._lastPortName = nil
+
+-- hexToByteArray(hex) -> string
+-- Function
+-- Converts Hex to Byte Array
+--
+-- Parameters:
+--  * hex - Hex string
+--
+-- Returns:
+--  * Byte array
+local function hexToByteArray(hex)
+    hex = hex:gsub("%s+", ""):lower()
+    local out = {}
+    for i = 1, #hex, 2 do
+        out[#out+1] = tonumber(hex:sub(i,i+1), 16) or 0
+    end
+    return out
+end
+
+-- byteArrayToHex(t) -> string
+-- Function
+-- Converts a Byte Array to a Hex String
+--
+-- Parameters:
+--  * t - The byte array
+--
+-- Returns:
+--  * A string
+local function byteArrayToHex(t)
+    local s = {}
+    for i = 1, #t do
+        s[#s+1] = string.format("%02x", t[i] & 0xFF)
+    end
+    return table.concat(s)
+end
+
+-- buildEliteHapticsHex(strength, speed) -> string
+-- Function
+-- Build TourBox Elite Haptics Hex.
+--
+-- Parameters:
+--  * strength - 0x00, 0x04, 0x08
+--  * speed - 0x00, 0x01, 0x02
+--
+-- Returns:
+--  * Hex String
+local function buildEliteHapticsHex(strength, speed)
+    local msg = hexToByteArray(ELITE_HAPTIC_TEMPLATE_HEX)
+    local v = (strength or 0x00) | (speed or 0x00)
+
+    for _, off in ipairs(ELITE_HAPTIC_OFFSETS) do
+        local i = off + 1 -- convert 0-based -> Lua index
+        if i >= 1 and i <= #msg then
+            msg[i] = v
+        end
+    end
+
+    return byteArrayToHex(msg)
+end
+
+-- makeEliteAckFromReportHex(reportHex) -> string
+-- Function
+-- Build the 27-byte ACK from the incoming 28-byte report.
+--
+-- Parameters:
+--  * reportHex - Hex string
+--
+-- Returns:
+--  * Byte array in table.
+local function makeEliteAckFromReportHex(reportHex)
+    local b = hexToByteArray(reportHex)
+    if #b ~= 28 then return nil end
+    if b[1] ~= 0x1b or b[2] ~= 0x00 then return nil end
+
+    --------------------------------------------------------------------------------
+    -- ACK is first 27 bytes, with a few fields normalized like the capture shows:
+    --------------------------------------------------------------------------------
+    local ack = {}
+    for i = 1, 27 do
+        ack[i] = b[i]
+    end
+
+    --------------------------------------------------------------------------------
+    -- Observed: byte[8] (1-based) e7 -> d7 (subtract 0x10):
+    --------------------------------------------------------------------------------
+    ack[8] = (ack[8] - 0x10) & 0xFF
+
+    --------------------------------------------------------------------------------
+    -- Observed: byte[17] (1-based) 01 -> 00:
+    --------------------------------------------------------------------------------
+    ack[17] = 0x00
+
+    --------------------------------------------------------------------------------
+    -- Observed: byte[24] (1-based) 01 -> 00:
+    --------------------------------------------------------------------------------
+    ack[24] = 0x00
+
+    --------------------------------------------------------------------------------
+    -- Ensure last byte exists (27 bytes total):
+    --------------------------------------------------------------------------------
+    return byteArrayToHex(ack)
+end
+
+-- scheduleReconnect(portName) -> none
+-- Function
+-- Schedule reconnection to TourBox device
+--
+-- Parameters:
+--  * portName - The port name
+--
+-- Returns:
+--  * None
+local function scheduleReconnect(portName)
+    if mod._retryTimer then return end
+    mod._retryTimer = doAfter(mod._retryDelay, function()
+        mod._retryTimer = nil
+        mod._retryDelay = math.min(mod._retryDelay * 1.5, 2.0) -- backoff up to 2s
+        mod.connectToTourBox(portName or mod._lastPortName)
+    end)
+end
+
+-- matchingDevice(portDetails) -> none
+-- Function
+-- Matches a device to port details.
+--
+-- Parameters:
+--  * portDetails - Port details
+--
+-- Returns:
+--  * The TourBox device
+local function matchingDevice(portDetails)
+    if not portDetails then return nil end
+    for _, dev in pairs(DEVICES) do
+        if portDetails.idVendor == dev.idVendor and portDetails.idProduct == dev.idProduct then
+            return dev
+        end
+    end
+    return nil
+end
 
 -- lockup -> table
 -- Variable
@@ -108,6 +336,8 @@ local lookup = {
 	["69e9"]    = {controlType = "scroll", actionType = "leftRightAction"},
 	["29a9"]    = {controlType = "scroll", actionType = "rightRightAction"},
 
+	["37"]      = {controlType = "knob", actionType = "pressAction"},
+	["b7"]      = {controlType = "knob", actionType = "releaseAction"},
 	["0484"] 	= {controlType = "knob", actionType = "leftAction"},
 	["44c4"] 	= {controlType = "knob", actionType = "rightAction"},
 	["48c8"] 	= {controlType = "knob", actionType = "leftSideAction"},
@@ -129,6 +359,8 @@ local lookup = {
 
 	["4fcf"] 	= {controlType = "dial", actionType = "leftAction"},
 	["0f8f"] 	= {controlType = "dial", actionType = "rightAction"},
+	["38"]      = {controlType = "dial", actionType = "pressAction"},
+	["b8"]      = {controlType = "dial", actionType = "releaseAction"},
 
 	["2a"] 		= {controlType = "tour", actionType = "pressAction"},
 	["aa"] 		= {controlType = "tour", actionType = "releaseAction"},
@@ -160,6 +392,18 @@ local lookup = {
 	["97"] 		= {controlType = "right", actionType = "releaseSideAction"},
 	["2e"] 		= {controlType = "right", actionType = "pressTopAction"},
 	["ae"] 		= {controlType = "right", actionType = "releaseTopAction"},
+
+    --------------------------------------------------------------------------------
+    -- TourBox Elite (single-byte event codes = last byte of 28-byte frame):
+    --------------------------------------------------------------------------------
+    ["49"] = {controlType = "scroll", actionType = "rightAction"}, -- clockwise/up
+    ["09"] = {controlType = "scroll", actionType = "leftAction"},  -- counter/down
+
+    ["44"] = {controlType = "knob",   actionType = "rightAction"}, -- clockwise/up
+    ["04"] = {controlType = "knob",   actionType = "leftAction"},  -- counter/down
+
+    ["4f"] = {controlType = "dial",   actionType = "rightAction"}, -- clockwise/up
+    ["0f"] = {controlType = "dial",   actionType = "leftAction"},  -- counter/down
 }
 
 -- cachedBundleID -> string
@@ -223,6 +467,9 @@ local ignoreNextReleaseAction = {}
 -- Returns:
 --  * None
 local function processMessage(m)
+
+    --log.df("processMessage: %s", hs.inspect(m))
+
     local items = mod.items()
     local bundleID = cachedBundleID
 
@@ -370,6 +617,131 @@ local function processMessage(m)
     end
 end
 
+mod._ignoreInputUntil = 0
+
+-- processHexReport(hex) -> none
+-- Function
+-- Processes the Hex Report from a TourBox device.
+--
+-- Parameters:
+--  * hex - The hex string
+--
+-- Returns:
+--  * None
+local function processHexReport(hex)
+    if not hex or hex == "" then return end
+
+    if mod._ignoreInputUntil and timer.secondsSinceEpoch() < mod._ignoreInputUntil then
+        return
+    end
+
+
+    hex = hex:gsub("%s+", ""):lower()
+
+    --------------------------------------------------------------------------------
+    -- Scan byte stream and fire lookup matches:
+    --------------------------------------------------------------------------------
+    local function scanByteStream(h)
+        local matched = false
+        for i = 1, #h - 1, 2 do
+            local b1 = h:sub(i, i+1)
+            local entry = lookup[b1]
+            if entry then
+                matched = true
+                processMessage(entry)
+            end
+        end
+        if not matched then
+            log.df("TourBox unmapped report: %s", h)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- TourBox Elite:
+    -- Sometimes events arrive as full 28-byte frames (starting 1b00),
+    -- but in your case wheel ticks arrive as single bytes ("0f", "4f", etc).
+    --------------------------------------------------------------------------------
+    if mod._device and mod._device.name == "TourBox Elite" then
+        local frameLen = 56
+
+        --------------------------------------------------------------------------------
+        -- If it looks like a framed packet (or multiple), parse frames;
+        -- otherwise treat as byte stream:
+        --------------------------------------------------------------------------------
+        if #hex >= 4 and hex:sub(1,4) == "1b00" and #hex >= frameLen then
+            local i = 1
+            local matchedAny = false
+
+            while i <= (#hex - 3) do
+                if hex:sub(i, i+3) == "1b00" and (i + frameLen - 1) <= #hex then
+                    local frame = hex:sub(i, i + frameLen - 1)
+                    local eventByte = frame:sub(#frame-1, #frame)
+                    local entry = lookup[eventByte]
+                    if entry then
+                        matchedAny = true
+                        processMessage(entry)
+                    else
+                        log.df("TourBox Elite unmapped event byte: %s (frame=%s)", eventByte, frame)
+                    end
+                    i = i + frameLen
+                else
+                    i = i + 2
+                end
+            end
+
+            if not matchedAny then
+                log.df("TourBox Elite RX (no event matched): %s", hex)
+            end
+            return
+        else
+            --------------------------------------------------------------------------------
+            -- Single-byte (or short stream) mode:
+            --------------------------------------------------------------------------------
+            scanByteStream(hex)
+            return
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Original TourBox behaviour (byte scan + x,(x|0x80) tick coalescing):
+    --------------------------------------------------------------------------------
+    local matched = false
+    local i = 1
+
+    while i <= (#hex - 1) do
+        local b1 = hex:sub(i, i+1)
+        local v1 = tonumber(b1, 16)
+
+        local b2, v2 = nil, nil
+        if i+3 <= #hex then
+            b2 = hex:sub(i+2, i+3)
+            v2 = tonumber(b2, 16)
+        end
+
+        if v1 and v2 and v2 == (v1 + 0x80) then
+            local entry = lookup[b1]
+            if entry then
+                matched = true
+                processMessage(entry)
+            end
+            i = i + 4
+        else
+            local entry = lookup[b1]
+            if entry then
+                matched = true
+                processMessage(entry)
+            end
+            i = i + 2
+        end
+    end
+
+    if not matched then
+        log.df("TourBox unmapped report: %s", hex)
+    end
+end
+
+
+
 -- tourBoxCallback(obj, messageType, data, messageHexString) -> none
 -- Function
 -- TourBox Serial Callback
@@ -385,27 +757,129 @@ end
 local function tourBoxCallback(obj, messageType, message, messageHexString)
     if messageType == "opened" then
         --------------------------------------------------------------------------------
-        -- These are the magic bytes that initialise the TourBox. What they mean, or
-        -- what they do, remain a mystery.
+        -- Ignore input briefly while we get TourBox setup:
         --------------------------------------------------------------------------------
-        mod.tourBox:sendData(hexToBytes("5500072cd8001afe"))
-        mod.tourBox:sendData(hexToBytes("a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe"))
-    elseif messageType == "error" then
-        if not obj:isOpen() then
-            --------------------------------------------------------------------------------
-            -- This most likely means the resource is busy, so lets retry:
-            --------------------------------------------------------------------------------
-            mod.connectToTourBox()
+        mod._ignoreInputUntil = timer.secondsSinceEpoch() + 0.5
+
+        local dev = mod._device
+        if dev and dev.initHex then
+            doAfter(0.1, function()
+                for i, hex in ipairs(dev.initHex) do
+                    --------------------------------------------------------------------------------
+                    -- Small stagger can help on some serial devices:
+                    --------------------------------------------------------------------------------
+                    doAfter(0.01 * (i-1), function()
+                        mod.tourBox:sendData(hexToBytes(hex))
+                    end)
+                end
+
+                --------------------------------------------------------------------------------
+                -- Enable Haptics:
+                --------------------------------------------------------------------------------
+                mod.updateHaptics()
+            end)
         else
-            log.ef("Unexpected TourBox Error: %s", message)
+            --------------------------------------------------------------------------------
+            -- Keep the old behavior if device unknown as a fallback:
+            --------------------------------------------------------------------------------
+            mod.tourBox:sendData(hexToBytes("5500072cd8001afe"))
+            mod.tourBox:sendData(hexToBytes("a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe"))
         end
+        return
+    elseif messageType == "error" then
+        log.ef("TourBox serial error: %s", tostring(message))
+
+        --------------------------------------------------------------------------------
+        -- Close & schedule a reconnect with backoff:
+        --------------------------------------------------------------------------------
+        if mod.tourBox then
+            pcall(function() mod.tourBox:close() end)
+            mod.tourBox = nil
+        end
+        scheduleReconnect(mod._lastPortName)
     else
-        if messageHexString and lookup[messageHexString] then
-            processMessage(lookup[messageHexString])
+        if messageHexString then
+            messageHexString = messageHexString:gsub("%s+", ""):lower()
+            --log.df("RX: %s", messageHexString)
+
+            --------------------------------------------------------------------------------
+            -- TourBox Elite ACK: if we receive a 28-byte report, respond with 27-byte ACK:
+            --------------------------------------------------------------------------------
+            if mod._device and mod._device.name == "TourBox Elite" then
+                local ackHex = makeEliteAckFromReportHex(messageHexString)
+                if ackHex then
+                    mod.tourBox:sendData(hexToBytes(ackHex))
+                    --log.df("TX(ack): %s", ackHex)
+                end
+            end
+
+            processHexReport(messageHexString)
         else
-            print(string.format("Unexpected TourBox Message (%s): '%s'", messageType, messageHexString))
+            log.wf("TourBox messageHexString was nil (type=%s)", tostring(messageType))
         end
     end
+end
+
+--- plugins.core.tourbox.manager.setHaptics(enabled[, strength[, speed]]) -> none
+--- Function
+--- Enables/disables haptics on the TourBox Elite by sending the haptics config map.
+---
+--- Parameters:
+---  * enabled  - boolean
+---  * strength - 0(off), 1(weak), 2(strong)   (default: 2)
+---  * speed    - 0(fast), 1(medium), 2(slow)  (default: 1)
+---
+--- Returns:
+---  * None
+function mod.setHaptics(enabled, strength, speed)
+    --------------------------------------------------------------------------------
+    -- Only meaningful for Elite + connected:
+    --------------------------------------------------------------------------------
+    if not (mod._device and mod._device.name == "TourBox Elite") then return end
+    if not (mod.tourBox and mod.tourBox.isOpen and mod.tourBox:isOpen()) then return end
+
+    strength = tonumber(strength) or 2
+    speed    = tonumber(speed) or 1
+
+    local theStrength = 0x00
+    if enabled then
+        if strength == 1 then
+            theStrength = 0x04
+        elseif strength == 2 then
+            theStrength = 0x08
+        end
+    end
+
+    local theSpeed = 0x00
+    if enabled then
+        if speed == 1 then
+            theSpeed = 0x01
+        elseif speed == 2 then
+            theSpeed = 0x02
+        end
+    end
+
+    local h = buildEliteHapticsHex(theStrength, theSpeed)
+    if h then
+        mod.tourBox:sendData(hexToBytes(h))
+        --log.df("TX(haptics): enabled=%s strength=%d speed=%d hex=%s", tostring(enabled), strength, speed, h)
+    end
+end
+
+--- plugins.core.tourbox.manager.updateHaptics() -> none
+--- Function
+--- Updates TourBox Elite Haptics
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updateHaptics()
+    local enableHaptics = mod.enableHaptics()
+    local hapticsStrength = mod.hapticsStrength()
+    local hapticsSpeed = mod.hapticsSpeed()
+    mod.setHaptics(enableHaptics, hapticsStrength, hapticsSpeed)
 end
 
 --- plugins.core.tourbox.manager.connectToTourBox([portName]) -> none
@@ -418,35 +892,96 @@ end
 --- Returns:
 ---  * None
 function mod.connectToTourBox(portName)
+
+    if mod._connecting then return end
+    mod._connecting = true
+
+    local availablePortDetails = serial.availablePortDetails()
+    --local availablePortNames = serial.availablePortNames()
+
+    --log.df("TourBox connect attempt. portName=%s. %d serial ports found.", tostring(portName), #availablePortNames)
+
+    --[[
+    for _, n in pairs(availablePortNames) do
+        local d = availablePortDetails[n]
+        if d then
+            log.df("Serial port: %s vid=%s pid=%s manufacturer=%s product=%s",
+                tostring(n),
+                tostring(d.idVendor),
+                tostring(d.idProduct),
+                tostring(d.manufacturer),
+                tostring(d.productName))
+        else
+            log.df("Serial port: %s (no details)", tostring(n))
+        end
+    end
+    --]]
+
     if not portName then
-        --------------------------------------------------------------------------------
-        -- If no portName is specified, lets try find one, by filtering the
-        -- vendor ID and product ID:
-        --------------------------------------------------------------------------------
-        local availablePortDetails = serial.availablePortDetails()
         local availablePortNames = serial.availablePortNames()
         for _, currentPortName in pairs(availablePortNames) do
             local portDetails = availablePortDetails[currentPortName]
-            if portDetails and portDetails.idVendor and portDetails.idVendor == VENDOR_ID and portDetails.idProduct == PRODUCT_ID then
+            local dev = matchingDevice(portDetails)
+            if dev then
                 portName = currentPortName
+                mod._device = dev
                 break
             end
         end
+    else
+        --------------------------------------------------------------------------------
+        -- If caller passed portName, still detect device from details:
+        --------------------------------------------------------------------------------
+        mod._device = matchingDevice(availablePortDetails[portName])
+        if not mod._device then
+            log.wf("No matching TourBox serial device found for portName=%s", tostring(portName))
+        end
     end
 
-    if not mod.tourBox then
-        if portName then
-            local tourBox = serial.newFromName(portName)
-            if tourBox then
-                mod.resetTimers()
-                tourBox:baudRate(115200):parity("none"):callback(tourBoxCallback):open()
-                mod.tourBox = tourBox
-            end
-        end
-    else
-        mod.resetTimers()
-        mod.tourBox:open()
+    mod._lastPortName = portName
+
+    if not portName then
+        mod._connecting = false
+        return
     end
+
+    --------------------------------------------------------------------------------
+    -- If we already have an object and it's open, don't reopen:
+    --------------------------------------------------------------------------------
+    if mod.tourBox and mod.tourBox.isOpen and mod.tourBox:isOpen() then
+        mod._retryDelay = 0.25
+        mod._connecting = false
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Always close/discard stale object before creating/opening again:
+    --------------------------------------------------------------------------------
+    if mod.tourBox then
+        pcall(function() mod.tourBox:close() end)
+        mod.tourBox = nil
+    end
+
+    local tourBox = serial.newFromName(portName)
+    if not tourBox then
+        mod._connecting = false
+        scheduleReconnect(portName)
+        return
+    end
+
+    mod.resetTimers()
+    tourBox:baudRate(BAUD_RATE):parity("none"):callback(tourBoxCallback)
+
+    local ok = pcall(function() tourBox:open() end)
+    if ok then
+        mod.tourBox = tourBox
+        mod._retryDelay = 0.25
+        mod._connecting = false
+    else
+        mod._connecting = false
+        scheduleReconnect(portName)
+    end
+
 end
 
 -- deviceCallback(callbackType, devices) -> none
@@ -460,10 +995,12 @@ end
 --  * None
 local function deviceCallback(callbackType, devices)
     if callbackType == "connected" then
+        local availablePortDetails = serial.availablePortDetails()
         for _, portName in pairs(devices) do
-            local availablePortDetails = serial.availablePortDetails()
             local portDetails = availablePortDetails[portName]
-            if portDetails and portDetails.idVendor and portDetails.idVendor == VENDOR_ID and portDetails.idProduct == PRODUCT_ID then
+            local dev = matchingDevice(portDetails)
+            if dev then
+                mod._device = dev
                 mod.connectToTourBox(portName)
             end
         end
@@ -551,6 +1088,21 @@ mod.automaticallySwitchApplications = config.prop("tourbox.automaticallySwitchAp
 --- Field
 --- Display message when changing banks?
 mod.displayMessageWhenChangingBanks = config.prop("tourbox.displayMessageWhenChangingBanks", true)
+
+--- plugins.core.tourbox.manager.enableHaptics <cp.prop: boolean>
+--- Field
+--- Enable Haptics on TourBox Elite
+mod.enableHaptics = config.prop("tourbox.enableHaptics", true):watch(mod.updateHaptics)
+
+--- plugins.core.tourbox.manager.hapticsStrength <cp.prop: number>
+--- Field
+--- Haptics Strength
+mod.hapticsStrength = config.prop("tourbox.hapticsStrength", 2):watch(mod.updateHaptics)
+
+--- plugins.core.tourbox.manager.hapticsSpeed <cp.prop: number>
+--- Field
+--- Haptics Speed
+mod.hapticsSpeed = config.prop("tourbox.hapticsSpeed", 1):watch(mod.updateHaptics)
 
 --- plugins.core.tourbox.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
@@ -660,11 +1212,6 @@ function plugin.init(deps, env)
         :titled(i18n("enableTourBoxSupportQuitTourBoxConsole"))
 
     --------------------------------------------------------------------------------
-    -- Connect to the TourBox:
-    --------------------------------------------------------------------------------
-    mod.enabled:update()
-
-    --------------------------------------------------------------------------------
     -- Setup Bank Actions:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
@@ -769,7 +1316,25 @@ function plugin.init(deps, env)
         end)
         :onActionId(function(action) return "tourBoxBank" .. action.id end)
 
+    --------------------------------------------------------------------------------
+    -- Shutdown Callback (make screen black):
+    --------------------------------------------------------------------------------
+    config.shutdownCallback:new("tourBox", function()
+        log.df("Shutting down TourBox...")
+        if mod.tourBox then
+            mod.tourBox:close()
+            mod.tourBox = nil
+        end
+    end)
+
     return mod
+end
+
+function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Connect to the TourBox:
+    --------------------------------------------------------------------------------
+    mod.enabled:update()
 end
 
 return plugin
