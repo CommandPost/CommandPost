@@ -1,6 +1,6 @@
 --- === plugins.core.tourbox.manager ===
 ---
---- Loupedeck CT Manager Plugin.
+--- TourBox Manager Plugin.
 
 local require                   = require
 
@@ -32,12 +32,12 @@ local mod = {}
 
 -- fileExtension -> string
 -- Variable
--- File Extension for Loupedeck CT
+-- File Extension for TourBox
 local fileExtension = ".cpTourBox"
 
 -- defaultFilename -> string
 -- Variable
--- Default Filename for Loupedeck CT Settings
+-- Default Filename for TourBox Settings
 local defaultFilename = "Default" .. fileExtension
 
 -- PRODUCT_ID -> string
@@ -497,7 +497,7 @@ end
 
 --- plugins.core.tourbox.manager.enabled <cp.prop: boolean>
 --- Field
---- Is Loupedeck CT support enabled?
+--- Is TourBox support enabled?
 mod.enabled = config.prop("tourbox.enabled", false):watch(function(enabled)
     if enabled then
         mod._appWatcher = appWatcher.new(function(_, event)
@@ -539,7 +539,7 @@ local defaultLayoutPath = config.basePath .. "/plugins/core/tourbox/default/Defa
 
 --- plugins.core.tourbox.manager.defaultLayout -> table
 --- Variable
---- Default Loupedeck CT Layout
+--- Default TourBox Layout
 mod.defaultLayout = json.read(defaultLayoutPath)
 
 --- plugins.core.tourbox.manager.automaticallySwitchApplications <cp.prop: boolean>
