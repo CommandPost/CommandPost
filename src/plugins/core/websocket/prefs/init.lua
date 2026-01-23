@@ -77,13 +77,12 @@ local function updateUI()
         return
     end
 
-    log.df("Updating WebSocket UI")
+    --log.df("Updating WebSocket UI")
 
     local manager = mod._manager
 
     -- Log current values from manager
-    log.df("Current manager values - enabled: %s, mode: %s, serverPort: %d",
-        tostring(manager.enabled()), manager.mode(), manager.serverPort())
+    --log.df("Current manager values - enabled: %s, mode: %s, serverPort: %d", tostring(manager.enabled()), manager.mode(), manager.serverPort())
 
     -- Update enabled checkbox
     injectScript([[
@@ -317,7 +316,7 @@ end
 -- Returns:
 --  * None
 local function openActionChooser(opts)
-    log.df("Opening CommandPost Action Chooser")
+    --log.df("Opening CommandPost Action Chooser")
 
     -- Create activator if it doesn't exist
     if not mod.actionActivator then
@@ -346,9 +345,8 @@ local function openActionChooser(opts)
 
             -- Get the complete action ID from the handler
             local fullActionId = handler:actionId(action)
-            log.df("Action selected - Handler: %s, Raw Action ID: %s, Full Action ID: %s, Title: %s",
-                   handlerID, rawActionId, fullActionId, actionTitle)
-            log.df("Action object: %s", inspect(action))
+            --log.df("Action selected - Handler: %s, Raw Action ID: %s, Full Action ID: %s, Title: %s", handlerID, rawActionId, fullActionId, actionTitle)
+            --log.df("Action object: %s", inspect(action))
 
             -- Determine the actual action ID to use
             local actualActionId = fullActionId or rawActionId
@@ -360,11 +358,11 @@ local function openActionChooser(opts)
                 if type(action) == "string" then
                     -- action is the CommandSetID directly (e.g., "SelectToolTrim")
                     actualActionId = action
-                    log.df("Using action string as actualActionId: %s", actualActionId)
+                    --log.df("Using action string as actualActionId: %s", actualActionId)
                 elseif type(action) == "table" and action.params then
                     -- action.params contains the CommandSetID
                     actualActionId = action.params
-                    log.df("Using action.params as actualActionId: %s", actualActionId)
+                    --log.df("Using action.params as actualActionId: %s", actualActionId)
                 end
             -- For FCPX plugin handlers (video effects, audio effects, generators, etc.):
             -- The fullActionId is generic (e.g., "fcpx_videoEffect"), but the actual
@@ -382,13 +380,13 @@ local function openActionChooser(opts)
                     else
                         actualActionId = action.name or fullActionId
                     end
-                    log.df("Using FCPX plugin path/name as actualActionId: %s", actualActionId)
+                    --log.df("Using FCPX plugin path/name as actualActionId: %s", actualActionId)
                 end
             end
 
             -- Simplify actionId for FCPX plugins (remove common path prefixes)
             local simplifiedActionId = simplifyActionId(handlerID, actualActionId)
-            log.df("Simplified actionId: %s -> %s", actualActionId, simplifiedActionId)
+            --log.df("Simplified actionId: %s -> %s", actualActionId, simplifiedActionId)
 
             -- Update UI to show selected action
             local injectScript = mod._prefsManager.injectScript
@@ -433,7 +431,7 @@ local function openActionChooser(opts)
     -- If a bundleID was provided, try to enable handlers for that bundle (group)
     if opts and type(opts) == "table" and opts.bundleID and opts.bundleID ~= "" then
         local bundleID = opts.bundleID
-        log.df("openActionChooser: applying bundleID filter: %s", bundleID)
+        --log.df("openActionChooser: applying bundleID filter: %s", bundleID)
         local appInfo = nil
         if mod._appmanager and mod._appmanager.getApplications then
             local apps = mod._appmanager.getApplications() or {}
@@ -471,7 +469,7 @@ local function openActionChooser(opts)
             end
         end)
         if not applied then
-            log.df("openActionChooser: bundleID filter apply failed: %s", tostring(applyErr))
+            log.ef("openActionChooser: bundleID filter apply failed: %s", tostring(applyErr))
         end
     end
 
@@ -512,31 +510,31 @@ function mod.init(deps, env)
 
     -- Setup panel callbacks
     panel:addHandler("onchange", "websocketPanelCallback", function(id, params)
-        log.df("websocketPanelCallback called - id: %s, params: %s", id, inspect(params))
+        --log.df("websocketPanelCallback called - id: %s, params: %s", id, inspect(params))
         local manager = mod._manager
 
         -- Extract type from params (postMessage format)
         local actionType = params.type or id
 
         if actionType == "enableWebSocket" then
-            log.df("Enable checkbox changed: %s", params.checked)
+            --log.df("Enable checkbox changed: %s", params.checked)
             manager.enabled(params.checked)
             updateUI()
 
         elseif actionType == "mode" then
-            log.df("Mode changed to: %s", params.value)
+            --log.df("Mode changed to: %s", params.value)
             manager.mode(params.value)
             updateUI()
 
         elseif actionType == "serverPort" then
             local port = tonumber(params.value)
             local currentPort = manager.serverPort()
-            log.df("Server port change request - current: %d, new: %s", currentPort, params.value)
+            --log.df("Server port change request - current: %d, new: %s", currentPort, params.value)
             if port and port > 0 and port <= 65535 then
-                log.df("Setting server port to: %d", port)
+                --log.df("Setting server port to: %d", port)
                 manager.serverPort(port)
                 local savedPort = manager.serverPort()
-                log.df("Server port after save: %d (saved successfully: %s)", savedPort, tostring(savedPort == port))
+                --log.df("Server port after save: %d (saved successfully: %s)", savedPort, tostring(savedPort == port))
                 updateUI()
             else
                 webviewAlert(mod._prefsManager.getWebview(), function() end,
@@ -566,16 +564,16 @@ function mod.init(deps, env)
                 i18n("ok"))
 
         elseif actionType == "refreshStatus" then
-            log.df("Refresh status clicked")
+            --log.df("Refresh status clicked")
             updateUI()
 
         elseif actionType == "openActionChooser" then
-            log.df("Open Action Chooser requested - params: %s", inspect(params))
+            --log.df("Open Action Chooser requested - params: %s", inspect(params))
             -- Pass through optional bundleID filter
             openActionChooser(params)
 
         elseif actionType == "requestAppList" then
-            log.df("App list requested from webview")
+            --log.df("App list requested from webview")
             -- Gather registered applications from appmanager
             local apps = {}
             if mod._appmanager and mod._appmanager.getApplications then
@@ -601,7 +599,7 @@ function mod.init(deps, env)
             end
 
         elseif actionType == "copyToClipboard" then
-            log.df("Copy to clipboard requested")
+            --log.df("Copy to clipboard requested")
             local text = params.text
             if text and text ~= "" then
                 -- Put text on the clipboard
@@ -616,7 +614,7 @@ function mod.init(deps, env)
                         }
                     ]])
                 end
-                log.df("Text copied to clipboard successfully")
+                --log.df("Text copied to clipboard successfully")
             else
                 log.wf("No text to copy")
 
@@ -628,20 +626,20 @@ function mod.init(deps, env)
             end
 
         else
-            log.df("Unknown callback type: %s (id: %s)", actionType, id)
-            log.df("params: %s", inspect(params))
+            log.wf("Unknown callback type: %s (id: %s)", actionType, id)
+            log.wf("params: %s", inspect(params))
         end
     end)
 
     -- Watch for panel changes to update UI when switching to this panel
     deps.prefsManager.lastTab:watch(function(tabId)
-        log.df("Panel switched to: %s", tabId)
+        --log.df("Panel switched to: %s", tabId)
         if tabId == "websocket" then
             -- Log current values before UI update
-            log.df("Before updateUI - serverPort: %d", mod._manager.serverPort())
+            --log.df("Before updateUI - serverPort: %d", mod._manager.serverPort())
 
             -- Schedule updateUI to run after HTML is generated and rendered
-            log.df("Scheduling updateUI() for WebSocket panel")
+            --log.df("Scheduling updateUI() for WebSocket panel")
             doAfter(0.5, function()
                 log.df("Executing updateUI() for WebSocket panel")
                 -- Force blur on active element to ensure pending changes are saved
@@ -659,7 +657,7 @@ function mod.init(deps, env)
                 end
                 -- Small delay to allow blur event to process
                 doAfter(0.1, function()
-                    log.df("Now calling updateUI()")
+                    --log.df("Now calling updateUI()")
                     updateUI()
                 end)
             end)
