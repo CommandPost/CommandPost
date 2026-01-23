@@ -94,14 +94,14 @@
 		// -------------------------------------------------
 		// SUPPORTS CLICK:
 		// -------------------------------------------------
-		if (controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short" || controlType == "c1" || controlType == "c2" || controlType == "up" || controlType == "down" || controlType == "left" || controlType == "right" || controlType == "tour") {
+		if (controlType == "dial" || controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short" || controlType == "c1" || controlType == "c2" || controlType == "up" || controlType == "down" || controlType == "left" || controlType == "right" || controlType == "tour") {
 			setStyleDisplayByClass("pressAction", "table");
 		}
 
 		// -------------------------------------------------
 		// SUPPORTS SCROLL:
 		// -------------------------------------------------
-		if (controlType == "dial" || controlType == "knob") {
+		if (controlType == "dial") {
 			setStyleDisplayByClass("knob", "table");
 		}
 
@@ -143,22 +143,22 @@
 		// -------------------------------------------------
 		// SUPPORTS VARIOUS MODIFIERS (KNOB):
 		// -------------------------------------------------
-		if (controlType == "knob" ) {
-			setStyleDisplayByClass("sideKnob", "table");
-			setStyleDisplayByClass("topKnob", "table");
-			setStyleDisplayByClass("tallKnob", "table");
-			setStyleDisplayByClass("shortKnob", "table");
-		}
+		//if (controlType == "knob" ) {
+		//	setStyleDisplayByClass("sideKnob", "table");
+		//	setStyleDisplayByClass("topKnob", "table");
+		//	setStyleDisplayByClass("tallKnob", "table");
+		//	setStyleDisplayByClass("shortKnob", "table");
+		//}
 
 		// -------------------------------------------------
-		// SCROLL HAS PAGE BUTTONS:
+		// SCROLL & KNOB HAVE PAGE BUTTONS:
 		// -------------------------------------------------
-		if (controlType == "scroll" ) {
+		if (controlType == "scroll" || controlType == "knob") {
 			setStyleDisplayByClass("pageButtons", "table");
 		} else {
 			setStyleDisplayByClass("pageButtons", "none");
 		}
-		if (controlType == "scroll" ) {
+		if (controlType == "scroll" || controlType == "knob") {
 			if (currentPage == 1) {
 				setStyleDisplayByClass("pressAction", "table");
 				setStyleDisplayByClass("knob", "table");

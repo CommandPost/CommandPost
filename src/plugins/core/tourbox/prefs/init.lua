@@ -968,7 +968,7 @@ function plugin.init(deps, env)
         label           = i18n("tourBox"),
         image           = imageFromPath(env:pathToAbsolute("/images/TourBox.icns")),
         tooltip         = i18n("tourBox"),
-        height          = 1085,
+        height          = 1120,
     })
         :addContent(1, html.style ([[
                 .displayMessageWhenChangingBanks {
@@ -976,6 +976,20 @@ function plugin.init(deps, env)
                 }
             ]], true))
         :addHeading(1.1, i18n("tourBox"))
+        :addContent(1.2, [[
+            <style>
+                .menubarRow {
+                    display: flex;
+                }
+
+                .menubarColumn {
+                    flex: 50%;
+                    height: 120 !important;
+                }
+            </style>
+            <div class="menubarRow">
+                <div class="menubarColumn">
+        ]], false)
         :addCheckbox(2,
             {
                 label       = i18n("enableTourBoxSupport"),
@@ -1002,9 +1016,65 @@ function plugin.init(deps, env)
                 onchange    = function(_, params) mod._tourboxManager.displayMessageWhenChangingBanks(params.checked) end,
             }
         )
-        :addParagraph(5, html.span {class="tip"} (html(i18n("tourBoxRequirementsTip"), false) ) .. "\n\n")
-        :addParagraph(6, html.span {class="tip"} (html(i18n("tourBoxAppTip"), false) ) .. "\n\n")
-        :addContent(7, generateContent, false)
+        :addContent(5, [[
+                </div>
+                <div class="menubarColumn">
+        ]], false)
+        :addCheckbox(6,
+            {
+                class       = "enableHaptics",
+                label       = i18n("enableHaptics"),
+                checked     = mod._tourboxManager.enableHaptics,
+                onchange    = function(_, params) mod._tourboxManager.enableHaptics(params.checked) end,
+            }
+        )
+        :addSelect(7,
+            {
+                label       =   i18n("hapticsStrenght"),
+                id          =   "hapticsStrength",
+                class       =   "hapticsStrength",
+                value       =   function()
+                                    return mod._tourboxManager.hapticsStrength()
+                                end,
+                options     =   function()
+                                    local options = {
+                                        { value = 1, label = i18n("weak") },
+                                        { value = 2, label = i18n("strong") },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params) mod._tourboxManager.hapticsStrength(params.value) end,
+            }
+        )
+        :addSelect(8,
+            {
+                label       =   i18n("hapticsSpeed"),
+                id          =   "hapticsSpeed",
+                class       =   "hapticsSpeed",
+                value       =   function()
+                                    return mod._tourboxManager.hapticsSpeed()
+                                end,
+                options     =   function()
+                                    local options = {
+                                        { value = 0, label = i18n("fast") },
+                                        { value = 1, label = i18n("medium") },
+                                        { value = 2, label = i18n("slow") },
+                                    }
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params) mod._tourboxManager.hapticsSpeed(params.value) end,
+            }
+        )
+        :addContent(9, [[
+                </div>
+            </div>
+            <br />
+        ]], false)
+        :addParagraph(10, html.span {class="tip"} (html(i18n("tourBoxRequirementsTip"), false) ) .. "\n\n")
+        :addParagraph(11, html.span {class="tip"} (html(i18n("tourBoxAppTip"), false) ) .. "\n\n")
+        :addContent(12, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
