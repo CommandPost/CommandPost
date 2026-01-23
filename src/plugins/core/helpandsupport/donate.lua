@@ -22,6 +22,13 @@ function plugin.init(deps)
                 fn = function() os.execute('open "https://commandpost.fcp.cafe/sponsor/"') end,
             }
         end)
+        :addItem(9999998.2, function()
+            return {
+                title = i18n("joinDiscord"),
+                fn = function() os.execute('open "https://ltnt.tv/discord"') end,
+            }
+        end)
+
         :addSeparator(9999998.2)
 end
 

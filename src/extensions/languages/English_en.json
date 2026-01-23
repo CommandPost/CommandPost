@@ -1399,6 +1399,7 @@
     },
     "jogWheelMode": "Jog Wheel Mode",
     "joinClips": "Join Clips",
+    "joinDiscord": "Join Discord",
     "jumpToFrameShiftExplanation": "If you hold down SHIFT, it will jump 10 frames instead of 1.",
     "jumpToNextFrame": "Jump to Next Frame",
     "jumpToPreviousFrame": "Jump to Previous Frame",
