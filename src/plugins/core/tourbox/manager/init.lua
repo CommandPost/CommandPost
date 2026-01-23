@@ -30,6 +30,39 @@ local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 
 local mod = {}
 
+-- BAUD_RATE
+-- Constant
+-- Baud Rate for serial connection.
+local BAUD_RATE = 115200
+
+-- TOURBOX_CONSOLE_BUNDLE_ID -> string
+-- Constant
+-- The TourBox Console Bundle ID.
+local TOURBOX_CONSOLE_BUNDLE_ID = "com.tourbox.ui.launch"
+
+-- DEVICES -> table
+-- Constant
+-- TourBox Hardware information.
+local DEVICES = {
+    original = {
+        name = "TourBox",
+        idVendor  = 4292,   -- 0x10C4
+        idProduct = 60000,  -- 0xEA60
+        initHex = {
+            "5500072cd8001afe",
+            "a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe",
+        },
+    },
+    elite = {
+        name = "TourBox Elite",
+        idVendor  = 49745, -- 0xC251
+        idProduct = 8197,  -- 0x2005
+        initHex = {
+            "5500078894001afe",
+        },
+    }
+}
+
 -- fileExtension -> string
 -- Variable
 -- File Extension for TourBox
@@ -40,20 +73,62 @@ local fileExtension = ".cpTourBox"
 -- Default Filename for TourBox Settings
 local defaultFilename = "Default" .. fileExtension
 
--- PRODUCT_ID -> string
--- Constant
--- The product ID of the original TourBox.
-local PRODUCT_ID = 60000
+-- plugins.core.tourbox.manager._connecting -> boolean
+-- Variable
+-- Are we connecting?
+mod._connecting = false
 
--- VENDOR_ID -> string
--- Constant
--- The vendor ID of the original TourBox.
-local VENDOR_ID = 4292
+-- plugins.core.tourbox.manager._retryTimer -> boolean
+-- Variable
+-- Retry timer
+mod._retryTimer = nil
 
--- TOURBOX_CONSOLE_BUNDLE_ID -> string
--- Constant
--- The TourBox Console Bundle ID.
-local TOURBOX_CONSOLE_BUNDLE_ID = "com.tourbox.ui.launch"
+-- plugins.core.tourbox.manager._retryDelay -> boolean
+-- Variable
+-- Retry delay
+mod._retryDelay = 0.25
+
+-- plugins.core.tourbox.manager._lastPortName -> boolean
+-- Variable
+-- Last port name
+mod._lastPortName = nil
+
+-- scheduleReconnect(portName) -> none
+-- Function
+-- Schedule reconnection to TourBox device
+--
+-- Parameters:
+--  * portName - The port name
+--
+-- Returns:
+--  * None
+local function scheduleReconnect(portName)
+    if mod._retryTimer then return end
+    mod._retryTimer = doAfter(mod._retryDelay, function()
+        mod._retryTimer = nil
+        mod._retryDelay = math.min(mod._retryDelay * 1.5, 2.0) -- backoff up to 2s
+        mod.connectToTourBox(portName or mod._lastPortName)
+    end)
+end
+
+-- matchingDevice(portDetails) -> none
+-- Function
+-- Matches a device to port details.
+--
+-- Parameters:
+--  * portDetails - Port details
+--
+-- Returns:
+--  * The TourBox device
+local function matchingDevice(portDetails)
+    if not portDetails then return nil end
+    for _, dev in pairs(DEVICES) do
+        if portDetails.idVendor == dev.idVendor and portDetails.idProduct == dev.idProduct then
+            return dev
+        end
+    end
+    return nil
+end
 
 -- lockup -> table
 -- Variable
@@ -370,6 +445,78 @@ local function processMessage(m)
     end
 end
 
+local lastReportBytes = nil
+
+local function debugDiff(b)
+    if not lastReportBytes then
+        lastReportBytes = b
+        return
+    end
+
+    local changes = {}
+    for i = 1, math.min(#b, #lastReportBytes) do
+        if b[i] ~= lastReportBytes[i] then
+            changes[#changes+1] = string.format("[%02d] %s->%s", i, lastReportBytes[i], b[i])
+        end
+    end
+
+    if #changes > 0 then
+        log.df("TourBox report diff: %s", table.concat(changes, " "))
+    end
+
+    lastReportBytes = b
+end
+
+-- processHexReport(hex) -> none
+-- Function
+-- Processes the Hex Report from a TourBox device.
+--
+-- Parameters:
+--  * hex - The hex string
+--
+-- Returns:
+--  * None
+local function processHexReport(hex)
+    if not hex or hex == "" then return end
+
+    local b = {}
+    for i = 1, #hex, 2 do
+        b[#b+1] = hex:sub(i, i+1):lower()
+    end
+
+    debugDiff(b)
+
+    local fired = {}
+
+    --------------------------------------------------------------------------------
+    -- Scan all adjacent pairs, both byte orders:
+    --------------------------------------------------------------------------------
+    for i = 1, #b - 1 do
+        local tok1 = b[i] .. b[i+1]
+        if lookup[tok1] then fired[tok1] = true end
+
+        local tok2 = b[i+1] .. b[i]
+        if lookup[tok2] then fired[tok2] = true end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Fire each matched 2-byte token once per report:
+    --------------------------------------------------------------------------------
+    for tok, _ in pairs(fired) do
+        processMessage(lookup[tok])
+    end
+
+    --------------------------------------------------------------------------------
+    -- Also handle 1-byte tokens (buttons etc):
+    --------------------------------------------------------------------------------
+    for i = 1, #b do
+        local entry = lookup[b[i]]
+        if entry then
+            processMessage(entry)
+        end
+    end
+end
+
 -- tourBoxCallback(obj, messageType, data, messageHexString) -> none
 -- Function
 -- TourBox Serial Callback
@@ -384,24 +531,38 @@ end
 --  * None
 local function tourBoxCallback(obj, messageType, message, messageHexString)
     if messageType == "opened" then
-        --------------------------------------------------------------------------------
-        -- These are the magic bytes that initialise the TourBox. What they mean, or
-        -- what they do, remain a mystery.
-        --------------------------------------------------------------------------------
-        mod.tourBox:sendData(hexToBytes("5500072cd8001afe"))
-        mod.tourBox:sendData(hexToBytes("a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe"))
-    elseif messageType == "error" then
-        if not obj:isOpen() then
-            --------------------------------------------------------------------------------
-            -- This most likely means the resource is busy, so lets retry:
-            --------------------------------------------------------------------------------
-            mod.connectToTourBox()
+        local dev = mod._device
+        if dev and dev.initHex then
+            for i, hex in ipairs(dev.initHex) do
+                --------------------------------------------------------------------------------
+                -- Small stagger can help on some serial devices:
+                --------------------------------------------------------------------------------
+                doAfter(0.05 * (i-1), function()
+                    mod.tourBox:sendData(hexToBytes(hex))
+                end)
+            end
         else
-            log.ef("Unexpected TourBox Error: %s", message)
+            --------------------------------------------------------------------------------
+            -- Keep the old behavior if device unknown as a fallback:
+            --------------------------------------------------------------------------------
+            mod.tourBox:sendData(hexToBytes("5500072cd8001afe"))
+            mod.tourBox:sendData(hexToBytes("a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe"))
         end
+        return
+    elseif messageType == "error" then
+        log.ef("TourBox serial error: %s", tostring(message))
+
+        --------------------------------------------------------------------------------
+        -- Close & schedule a reconnect with backoff:
+        --------------------------------------------------------------------------------
+        if mod.tourBox then
+            pcall(function() mod.tourBox:close() end)
+            mod.tourBox = nil
+        end
+        scheduleReconnect(mod._lastPortName)
     else
-        if messageHexString and lookup[messageHexString] then
-            processMessage(lookup[messageHexString])
+        if messageHexString then
+            processHexReport(messageHexString)
         else
             print(string.format("Unexpected TourBox Message (%s): '%s'", messageType, messageHexString))
         end
@@ -418,35 +579,94 @@ end
 --- Returns:
 ---  * None
 function mod.connectToTourBox(portName)
-    if not portName then
-        --------------------------------------------------------------------------------
-        -- If no portName is specified, lets try find one, by filtering the
-        -- vendor ID and product ID:
-        --------------------------------------------------------------------------------
-        local availablePortDetails = serial.availablePortDetails()
-        local availablePortNames = serial.availablePortNames()
-        for _, currentPortName in pairs(availablePortNames) do
-            local portDetails = availablePortDetails[currentPortName]
-            if portDetails and portDetails.idVendor and portDetails.idVendor == VENDOR_ID and portDetails.idProduct == PRODUCT_ID then
-                portName = currentPortName
-                break
-            end
+
+    if mod._connecting then return end
+    mod._connecting = true
+
+    local availablePortDetails = serial.availablePortDetails()
+    local availablePortNames = serial.availablePortNames()
+
+    log.df("TourBox connect attempt. portName=%s. %d serial ports found.", tostring(portName), #availablePortNames)
+
+    for _, n in pairs(availablePortNames) do
+        local d = availablePortDetails[n]
+        if d then
+            log.df("Serial port: %s vid=%s pid=%s manufacturer=%s product=%s",
+                tostring(n),
+                tostring(d.idVendor),
+                tostring(d.idProduct),
+                tostring(d.manufacturer),
+                tostring(d.productName))
+        else
+            log.df("Serial port: %s (no details)", tostring(n))
         end
     end
 
-    if not mod.tourBox then
-        if portName then
-            local tourBox = serial.newFromName(portName)
-            if tourBox then
-                mod.resetTimers()
-                tourBox:baudRate(115200):parity("none"):callback(tourBoxCallback):open()
-                mod.tourBox = tourBox
+    if not portName then
+        local availablePortNames = serial.availablePortNames()
+        for _, currentPortName in pairs(availablePortNames) do
+            local portDetails = availablePortDetails[currentPortName]
+            local dev = matchingDevice(portDetails)
+            if dev then
+                portName = currentPortName
+                mod._device = dev
+                break
             end
         end
     else
-        mod.resetTimers()
-        mod.tourBox:open()
+        --------------------------------------------------------------------------------
+        -- If caller passed portName, still detect device from details:
+        --------------------------------------------------------------------------------
+        mod._device = matchingDevice(availablePortDetails[portName])
+        if not mod._device then
+            log.wf("No matching TourBox serial device found for portName=%s", tostring(portName))
+        end
     end
+
+    mod._lastPortName = portName
+
+    if not portName then
+        mod._connecting = false
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- If we already have an object and it's open, don't reopen:
+    --------------------------------------------------------------------------------
+    if mod.tourBox and mod.tourBox.isOpen and mod.tourBox:isOpen() then
+        mod._retryDelay = 0.25
+        mod._connecting = false
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Always close/discard stale object before creating/opening again:
+    --------------------------------------------------------------------------------
+    if mod.tourBox then
+        pcall(function() mod.tourBox:close() end)
+        mod.tourBox = nil
+    end
+
+    local tourBox = serial.newFromName(portName)
+    if not tourBox then
+        mod._connecting = false
+        scheduleReconnect(portName)
+        return
+    end
+
+    mod.resetTimers()
+    tourBox:baudRate(BAUD_RATE):parity("none"):callback(tourBoxCallback)
+
+    local ok = pcall(function() tourBox:open() end)
+    if ok then
+        mod.tourBox = tourBox
+        mod._retryDelay = 0.25
+        mod._connecting = false
+    else
+        mod._connecting = false
+        scheduleReconnect(portName)
+    end
+
 end
 
 -- deviceCallback(callbackType, devices) -> none
@@ -460,10 +680,12 @@ end
 --  * None
 local function deviceCallback(callbackType, devices)
     if callbackType == "connected" then
+        local availablePortDetails = serial.availablePortDetails()
         for _, portName in pairs(devices) do
-            local availablePortDetails = serial.availablePortDetails()
             local portDetails = availablePortDetails[portName]
-            if portDetails and portDetails.idVendor and portDetails.idVendor == VENDOR_ID and portDetails.idProduct == PRODUCT_ID then
+            local dev = matchingDevice(portDetails)
+            if dev then
+                mod._device = dev
                 mod.connectToTourBox(portName)
             end
         end
@@ -660,11 +882,6 @@ function plugin.init(deps, env)
         :titled(i18n("enableTourBoxSupportQuitTourBoxConsole"))
 
     --------------------------------------------------------------------------------
-    -- Connect to the TourBox:
-    --------------------------------------------------------------------------------
-    mod.enabled:update()
-
-    --------------------------------------------------------------------------------
     -- Setup Bank Actions:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
@@ -770,6 +987,13 @@ function plugin.init(deps, env)
         :onActionId(function(action) return "tourBoxBank" .. action.id end)
 
     return mod
+end
+
+function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Connect to the TourBox:
+    --------------------------------------------------------------------------------
+    mod.enabled:update()
 end
 
 return plugin
