@@ -20,15 +20,30 @@ local pathToAbsolute			= fs.pathToAbsolute
 
 local fcpID                     = "com.apple.FinalCut"
 local trialID                   = "com.apple.FinalCutTrial"
+local fcpCreatorStudio          = "com.apple.FinalCutApp"
 
 local trialApplications = applicationsForBundleID(trialID) or {}
 
-if #trialApplications == 1 then
+local fcpCreatorStudioApplications = applicationsForBundleID(fcpCreatorStudio) or {}
+
+if #fcpCreatorStudioApplications == 1 then
+    --------------------------------------------------------------------------------
+    -- If the subscription version is currently running, then use the subscription
+    -- bundle identifier instead of the full version:
+    --------------------------------------------------------------------------------
+    fcpID = fcpCreatorStudio
+elseif #trialApplications == 1 then
     --------------------------------------------------------------------------------
     -- If the trial version is currently running, then use the Trial bundle
     -- identifier instead of the full version:
     --------------------------------------------------------------------------------
     fcpID = trialID
+elseif infoForBundleID(fcpID) == nil and infoForBundleID(trialID) then
+    --------------------------------------------------------------------------------
+    -- If the lifetime/perpetual license of FCP isn't installed, and the free
+    -- trial isn't installed, use the subscription bundle ID:
+    --------------------------------------------------------------------------------
+    fcpID = fcpCreatorStudio
 elseif infoForBundleID(fcpID) == nil and infoForBundleID(trialID) ~= nil then
     --------------------------------------------------------------------------------
     -- If the main application isn't installed but the trial is, then use the
