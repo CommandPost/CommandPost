@@ -4,10 +4,11 @@
 
 local require           = require
 
+local inspect           = require "hs.inspect"
 local timer             = require "hs.timer"
 
+local ax                = require "cp.fn.ax"
 local Element           = require "cp.ui.Element"
-local notifier          = require "cp.ui.notifier"
 local prop              = require "cp.prop"
 
 local delayedTimer      = timer.delayed
@@ -23,9 +24,7 @@ local StaticText = Element:subclass("cp.ui.StaticText")
 ---
 --- Returns:
 ---  * If `true`, the element is a Static Text element.
-function StaticText.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXStaticText"
-end
+StaticText.static.matches = ax.matchesIf(Element.matches, ax.hasRole "AXStaticText")
 
 --- cp.ui.StaticText(parent, uiFinder[, convertFn]) -> StaticText
 --- Method
@@ -133,8 +132,25 @@ function StaticText:clear()
     return self
 end
 
-function StaticText.lazy.method:notifier()
-    return notifier.new(self:app():bundleID(), self.UI)
+--- cp.ui.StaticText.insertionPointLineNumber <cp.prop: number>
+--- Field
+--- The line number of the insertion point.
+function StaticText.lazy.prop:insertionPointLineNumber()
+    return ax.prop(self.UI, "AXInsertionPointLineNumber")
+end
+
+--- cp.ui.StaticText.selectedTextRange <cp.prop: table>
+--- Field
+--- The selected text range as a `table` with a `length` and `location` number.
+function StaticText.lazy.prop:selectedTextRange()
+    return ax.prop(self.UI, "AXSelectedTextRange")
+end
+
+--- cp.ui.StaticText.visibleCharacterRange <cp.prop: table>
+--- Field
+--- The visible character range as a `table` with a `length` and `location` number.
+function StaticText.lazy.prop:visibleCharacterRange()
+    return ax.prop(self.UI, "AXVisibleCharacterRange")
 end
 
 --- cp.ui.StaticText:saveLayout() -> table
@@ -182,6 +198,10 @@ function StaticText:__call(parent, value)
         value = parent
     end
     return self:value(value)
+end
+
+function StaticText:__valuestring()
+    return inspect(self:value())
 end
 
 return StaticText

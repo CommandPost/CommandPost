@@ -7,8 +7,11 @@ local require = require
 local hswindow          = require "hs.window"
 local class             = require "middleclass"
 
+local delegator         = require "cp.delegator"
 local lazy              = require "cp.lazy"
 local prop              = require "cp.prop"
+
+local ax                = require "cp.fn.ax"
 local axutils           = require "cp.ui.axutils"
 local notifier          = require "cp.ui.notifier"
 local Alert             = require "cp.ui.Alert"
@@ -19,7 +22,7 @@ local WaitUntil         = require "cp.rx.go.WaitUntil"
 
 local format            = string.format
 
-local Window = class("cp.ui.Window"):include(lazy)
+local Window = class("cp.ui.Window"):include(lazy):include(delegator)
 
 --- cp.ui.Window.matches(element) -> boolean
 --- Function
@@ -156,19 +159,19 @@ function Window.lazy.prop:modal()
 end
 
 function Window.lazy.value:closeButton()
-    return Button(self.UI, "AXCloseButton")
+    return Button(self, ax.prop(self.UI, "AXCloseButton"))
 end
 
 function Window.lazy.value:minimizeButton()
-    return Button(self.UI, "AXMinimizeButton")
+    return Button(self, ax.prop(self.UI, "AXMinimizeButton"))
 end
 
 function Window.lazy.value:fullScreenButton()
-    return Button(self.UI, "AXFullScreenButton")
+    return Button(self, ax.prop(self.UI, "AXFullScreenButton"))
 end
 
 function Window.lazy.value:zoomButton()
-    return Button(self.UI, "AXZoomButton")
+    return Button(self, ax.prop(self.UI, "AXZoomButton"))
 end
 
 --- cp.ui.Window.exists <cp.prop: boolean; read-only>

@@ -198,7 +198,7 @@ return describe "cp.is" {
 
     it "is callable returns ${result} given ${input}"
     :doing(function(this)
-        expect(is.callable(this.input, this.result))
+        expect(is.callable(this.input)):is(this.result)
     end)
     :where {
         { "input",          "result" },

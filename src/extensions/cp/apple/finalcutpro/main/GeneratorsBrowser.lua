@@ -15,9 +15,14 @@ local tools								= require "cp.tools"
 local geometry							= require "hs.geometry"
 local fnutils							= require "hs.fnutils"
 
+local has                               = require "cp.ui.has"
+local CheckBox                          = require "cp.ui.CheckBox"
+local Grid                              = require "cp.ui.Grid"
 local Group                             = require "cp.ui.Group"
+local Image                             = require "cp.ui.Image"
 local Table								= require "cp.ui.OldTable"
 local ScrollArea						= require "cp.ui.ScrollArea"
+local SplitGroup                        = require "cp.ui.SplitGroup"
 local PopUpButton						= require "cp.ui.PopUpButton"
 local TextField							= require "cp.ui.TextField"
 
@@ -28,16 +33,46 @@ local WaitUntil                         = go.WaitUntil
 
 local cache                             = axutils.cache
 local childWithRole                     = axutils.childWithRole
-local childMatching                     = axutils.childMatching
 
 local ninjaDoubleClick                  = tools.ninjaDoubleClick
 
+local list, alias, optional             = has.list, has.alias, has.optional
+
 local GeneratorsBrowser = Group:subclass("cp.apple.finalcutpro.main.GeneratorsBrowser")
+
+
+--- === cp.apple.finalcutpro.main.GeneratorsBrowser.Item ===
+---
+--- A single Title/Generator item.
+---
+--- Extends: [cp.ui.Image](cp.ui.Image.md)
+GeneratorsBrowser.static.Item = Image:subclass("cp.apple.finalcutpro.main.GeneratorsBrowser.Item")
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser.TITLE -> string
 --- Constant
 --- Titles & Generators Title.
 GeneratorsBrowser.static.TITLE = "Titles and Generators"
+
+-- Describes the structure of the AXChildren list.
+GeneratorsBrowser.static.children = list {
+    alias "librariesToggle" { CheckBox },
+    alias "mediaToggle" { CheckBox },
+    alias "generatorsToggle" { CheckBox },
+    alias "group" { PopUpButton },
+    alias "only4K" { optional { CheckBox } },
+    alias "split" { SplitGroup:with(
+        alias "sidebar" { Table },
+        alias "right" {
+            alias "search" { TextField },
+            Group:containing(
+                ScrollArea:containing(
+                    Grid:containing(GeneratorsBrowser.Item)
+                )
+            )
+        }
+    ) },
+    has.ended
+}
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser(parent) -> GeneratorsBrowser
 --- Constructor
@@ -56,7 +91,7 @@ function GeneratorsBrowser:initialize(parent)
             end)
         end
         return nil
-    end))
+    end), self.class.children)
 end
 
 -----------------------------------------------------------------------
@@ -100,6 +135,7 @@ function GeneratorsBrowser.lazy.method:doShow()
     return Do(menuBar:doSelectMenu({"Window", "Go To", GeneratorsBrowser.TITLE}))
     :Then(WaitUntil(self.isShowing))
     :ThenYield()
+    :Label("GeneratorsBrowser:doShow()")
 end
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser:hide() -> GeneratorsBrowser
@@ -119,6 +155,7 @@ end
 
 function GeneratorsBrowser.lazy.method:doHide()
     return Do(self:parent():doHide())
+    :Label("GeneratorsBrowser:doHide()")
 end
 
 -----------------------------------------------------------------------------
@@ -144,39 +181,30 @@ end
 --- Field
 --- The sidebar object.
 function GeneratorsBrowser.lazy.value:sidebar()
-    return Table(self, function()
-        return childWithRole(self:mainGroupUI(), "AXScrollArea")
-    end)
+    return self.children.split.sidebar
 end
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser.contents <cp.ui.ScrollArea>
 --- Field
 --- The Generators Browser Contents.
 function GeneratorsBrowser.lazy.value:contents()
-    return ScrollArea(self, function()
-        local group = childMatching(self:mainGroupUI(), function(child)
-            return child:attributeValue("AXRole") == "AXGroup" and #child == 1
-        end)
-        return group and group[1]
-    end)
+    return self.children.split.right[2].children
 end
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser.group <cp.ui.PopUpButton>
 --- Field
 --- The group.
-function GeneratorsBrowser.lazy.value:group()
-    return PopUpButton(self, function()
-        return childMatching(self:UI(), PopUpButton.matches)
-    end)
-end
+-- function GeneratorsBrowser.lazy.value:group()
+--     return PopUpButton(self, function()
+--         return childMatching(self:UI(), PopUpButton.matches)
+--     end)
+-- end
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser.search <cp.ui.TextField>
 --- Field
 --- Gets the Search TextField object.
 function GeneratorsBrowser.lazy.value:search()
-    return TextField(self, function()
-        return childMatching(self:mainGroupUI(), TextField.matches)
-    end)
+    return self.children.split.right.search
 end
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser:showSidebar() -> GeneratorsBrowser
@@ -220,7 +248,11 @@ end
 --- Returns:
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:showInstalledTitles()
-    self.group:selectItem(1)
+    self:showAllTitles()
+    local group = self.group
+    if group:value() ~= self:app():string("PEMediaBrowserInstalledTitlesMenuItem") then
+        group:selectItem(1)
+    end
     return self
 end
 
@@ -234,7 +266,11 @@ end
 --- Returns:
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:showInstalledGenerators()
-    self:showInstalledTitles()
+    self:showAllGenerators()
+    local group = self.group
+    if group:value() ~= self:app():string("PEMediaBrowserInstalledGeneratorsMenuItem") then
+        group:selectItem(1)
+    end
     return self
 end
 
@@ -388,7 +424,7 @@ end
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:applyItem(itemUI)
     if itemUI then
-        self.contents:showChild(itemUI)
+        self.contents:showChildUI(itemUI)
         local frame = itemUI:attributeValue("AXFrame")
         local targetPoint = geometry.rect(frame).center
         ninjaDoubleClick(targetPoint)
@@ -441,15 +477,15 @@ function GeneratorsBrowser:saveLayout()
     return layout
 end
 
---- cp.apple.finalcutpro.main.GeneratorsBrowser:loadLayout(layout) -> none
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:loadLayout(layout) -> nil
 --- Method
 --- Loads a Generators Browser layout.
 ---
 --- Parameters:
----  * layout - A table containing the Generators Browser layout settings - created using `cp.apple.finalcutpro.main.GeneratorsBrowser:saveLayout()`.
+---  * layout - A table containing the Generators Browser layout settings - created using [saveLayout](#saveLayout).
 ---
 --- Returns:
----  * None
+---  * `nil`
 function GeneratorsBrowser:loadLayout(layout)
     if layout and layout.showing then
         self:show()
@@ -457,6 +493,38 @@ function GeneratorsBrowser:loadLayout(layout)
         self.sidebar:loadLayout(layout.sidebar)
         self.contents:loadLayout(layout.contents)
     end
+end
+
+function GeneratorsBrowser.Item:select()
+    self:parent():selectChild(self)
+end
+
+function GeneratorsBrowser.Item.lazy.method:doSelect()
+    return self:parent():doSelectChild(self)
+end
+
+function GeneratorsBrowser.Item:apply()
+    self:select()
+    self:app():selectMenu({"Edit", "Connect to Primary Storyline"})
+end
+
+--- cp.apple.finalcutpro.main.GeneratorsBrowser.Item:doApply() -> cp.rx.go.Statement
+--- Method
+--- Applies the current item.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Statement` object.
+function GeneratorsBrowser.Item.lazy.method:doApply()
+    return Do(self:doSelect())
+    :Then(self:app():doSelectMenu({"Edit", "Connect to Primary Storyline"}))
+    :Label("GeneratorsBrowser.Item:doApply()")
+end
+
+function GeneratorsBrowser.Item:__valuestring()
+    return self:attributeValue("AXTitle")
 end
 
 return GeneratorsBrowser

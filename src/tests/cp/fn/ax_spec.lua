@@ -273,6 +273,40 @@ return describe "cp.fn.ax" {
         end),
     },
 
+    context "bottomToTopBaseAligned" {
+        it "returns false when both elements have the same bottom edge"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            expect(ax.bottomToTopBaseAligned(first, second)):is(false)
+            expect(ax.bottomToTopBaseAligned(second, first)):is(false)
+        end),
+
+        it "returns true when the first element is more than 50% of the height above the second"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 8, w = 10, h = 10}}
+            expect(ax.bottomToTopBaseAligned(first, second)):is(false)
+            expect(ax.bottomToTopBaseAligned(second, first)):is(true)
+        end),
+
+        it "returns false when the first element is less than 50% of the height above the second"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 2, w = 10, h = 10}}
+            expect(ax.bottomToTopBaseAligned(first, second)):is(false)
+            expect(ax.bottomToTopBaseAligned(second, first)):is(false)
+        end),
+
+        it "isn't affected by differences in x or width"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 10, y = 0, w = 100, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            expect(ax.bottomToTopBaseAligned(first, second)):is(false)
+            expect(ax.bottomToTopBaseAligned(second, first)):is(false)
+        end),
+    },
+
     context "topDown" {
         it "returns false if both elements are exactly the same"
         :doing(function()
@@ -336,6 +370,72 @@ return describe "cp.fn.ax" {
             local second = new_axuielementMock {AXFrame = {x = -2, y = 10, w = 10, h = 10}}
             expect(ax.topDown(first, second)):is(true)
             expect(ax.topDown(second, first)):is(false)
+        end),
+    },
+
+    context "bottomUp" {
+        it "returns false if both elements are exactly the same"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            expect(ax.bottomUp(first, second)):is(false)
+            expect(ax.bottomUp(second, first)):is(false)
+        end),
+
+        it "returns true if the both elements are aligned but the first is right of the second"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = -10, y = 0, w = 10, h = 10}}
+            expect(ax.bottomUp(first, second)):is(true)
+            expect(ax.bottomUp(second, first)):is(false)
+        end),
+
+        it "returns true if the first element is left of the second element, but more than 50% of the height lower"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 10, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 10, y = 0, w = 10, h = 10}}
+            expect(ax.bottomUp(first, second)):is(true)
+            expect(ax.bottomUp(second, first)):is(false)
+        end),
+
+        it "return true if the elements are aligned, have the same right position, and the first is taller"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 10, w = 10, h = 20}}
+            expect(ax.bottomUp(first, second)):is(false)
+            expect(ax.bottomUp(second, first)):is(true)
+        end),
+
+        it "returns true if the elements are aligned, have the same right position, and the first is taller, even if the second is wider"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 20, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 10, w = 10, h = 20}}
+            expect(ax.bottomUp(first, second)):is(false)
+            expect(ax.bottomUp(second, first)):is(true)
+        end),
+
+        it "returns true if the elements are aligned, have the same right position, are equal height, but the first is narrower"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 10, y = 0, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 20, h = 10}}
+            expect(ax.bottomUp(first, second)):is(true)
+            expect(ax.bottomUp(second, first)):is(false)
+        end),
+
+        it "returns false if both elements have the same x value, but the second is taller"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 0, w = 10, h = 20}}
+            local second = new_axuielementMock {AXFrame = {x = 0, y = 10, w = 10, h = 10}}
+            expect(ax.bottomUp(first, second)):is(false)
+            expect(ax.bottomUp(second, first)):is(true)
+        end),
+
+        it "returns true if the first element is right of the second element, even if the first is 20% lower"
+        :doing(function()
+            local first = new_axuielementMock {AXFrame = {x = 0, y = 2, w = 10, h = 10}}
+            local second = new_axuielementMock {AXFrame = {x = -10, y = 0, w = 10, h = 10}}
+            expect(ax.bottomUp(first, second)):is(true)
+            expect(ax.bottomUp(second, first)):is(false)
         end),
     },
 }

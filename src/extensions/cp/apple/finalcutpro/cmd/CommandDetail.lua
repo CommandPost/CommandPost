@@ -1,6 +1,8 @@
 --- === cp.apple.finalcutpro.cmd.CommandDetail ===
 ---
 --- This class provides a UI for displaying the details of a command when it is selected on the `CommandList`.
+---
+--- Extends: [Group](cp.ui.Group.md)
 
 local require = require
 
@@ -12,9 +14,11 @@ local Group                                 = require "cp.ui.Group"
 local StaticText                            = require "cp.ui.StaticText"
 local ScrollArea                            = require "cp.ui.ScrollArea"
 local TextArea                              = require "cp.ui.TextArea"
+local has                                   = require "cp.ui.has"
 
 local chain                                 = fn.chain
 local matchesExactItems                     = fn.table.matchesExactItems
+local list, alias                           = has.list, has.alias
 
 local CommandDetail = Group:subclass("cp.apple.finalcutpro.cmd.CommandDetail")
 
@@ -46,39 +50,42 @@ CommandDetail.static.matches = ax.matchesIf(
     )
 )
 
--- cp.apple.finalcutpro.cmd.CommandDetail._contentGroupUI <cp.prop: axuielement>
--- Field
--- The [axuielement](cp.prop.axuielement) for the content Group.
-function CommandDetail.lazy.prop:_contentGroupUI()
-    return self.UI:mutate(ax.childMatching(Group.matches))
-end
+--- cp.apple.finalcutpro.cmd.CommandDetail.children <cp.ui.has.UIHandler>
+--- Constant
+--- UI Handler for the children of this class.
+CommandDetail.static.children = list {
+    Group:containing {
+        alias "label" { StaticText },
+        alias "detail" { ScrollArea:containing(TextArea) }
+    }
+}
 
--- cp.apple.finalcutpro.cmd.CommandDetail._labelUI <cp.prop: axuielement>
--- Field
--- The [axuielement](cp.prop.axuielement) for the label.
-function CommandDetail.lazy.prop:_labelUI()
-    return self._contentGroupUI:mutate(ax.childMatching(StaticText.matches))
+--- cp.apple.finalcutpro.cmd.CommandDetail(parent, uiFinder) -> cp.apple.finalcutpro.cmd.CommandDetail
+--- Constructor
+--- Creates a new CommandDetail.
+---
+--- Parameters:
+---  * parent - The parent object.
+---  * uiFinder - The uiFinder object.
+---
+--- Returns:
+---  * The new CommandDetail object.
+function CommandDetail:initialize(parent, uiFinder)
+    Group.initialize(self, parent, uiFinder, CommandDetail.children)
 end
 
 --- cp.apple.finalcutpro.cmd.CommandDetail.label <cp.ui.StaticText>
 --- Field
 --- The StaticText that displays the label.
 function CommandDetail.lazy.value:label()
-    return StaticText(self, self._labelUI)
-end
-
--- cp.apple.finalcutpro.cmd.CommandDetail._detailUI <cp.prop: axuielement>
--- Field
--- The [axuielement](cp.prop.axuielement) for the detail `AXScrollArea`.
-function CommandDetail.lazy.prop:_detailUI()
-    return self._contentGroupUI:mutate(ax.childMatching(ScrollArea.matches))
+    return self.children[1].label
 end
 
 --- cp.apple.finalcutpro.cmd.CommandDetail.detail <cp.ui.ScrollArea>
 --- Field
 --- The [ScrollArea](cp.ui.ScrollArea.md) that displays the contained [TextArea](cp.ui.TextArea.md).
 function CommandDetail.lazy.value:detail()
-    return ScrollArea:containing(TextArea)(self, self._detailUI)
+    return self.children[1].detail
 end
 
 --- cp.apple.finalcutpro.cmd.CommandDetail.contents <cp.ui.TextArea>

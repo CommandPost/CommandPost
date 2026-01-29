@@ -13,6 +13,23 @@
 --- o:watchFor("AXValueChanged", function(notifier, element, notification, details) ... end)
 --- o:start()
 --- ```
+---
+--- ## Common Notifications
+---
+--- * `AXFocusedWindowChanged` - The focused window has changed.
+--- * `AXFocusedUIElementChanged` - The focused element has changed.
+--- * `AXLiveRegionChanged` - The live region has changed.
+--- * `AXMenuClosedNotification` - The menu has been closed.
+--- * `AXMenuItemSelectedNotification` - The menu item has been selected.
+--- * `AXMenuOpenedNotification` - The menu has been opened.
+--- * `AXSelectedChildrenChanged` - The selected children have changed.
+--- * `AXUIElementCreated` - The element has been created.
+--- * `AXUIElementDestroyed` - The element has been destroyed.
+--- * `AXValidationErrorChanged` - The validation error has changed.
+--- * `AXValueChanged` - The value of the element has changed.
+--- * `AXWindowCreated` - The window has been created.
+--- * `AXWindowDestroyed` - The window has been destroyed.
+
 
 local require               = require
 

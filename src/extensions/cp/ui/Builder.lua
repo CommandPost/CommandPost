@@ -92,6 +92,8 @@ local Builder = class("cp.ui.Builder")
 
 function Builder:initialize(elementType, ...)
     self[ELEMENT_TYPE] = elementType
+    self.matches = elementType.matches
+
     local extraArgs = {}
     local extraArgsCount = select("#", ...)
     for i = 1, extraArgsCount do

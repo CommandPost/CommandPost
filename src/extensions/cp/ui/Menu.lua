@@ -162,4 +162,29 @@ function Menu:doSelectItemMatching(pattern, altPattern)
     :Label("cp.ui.Menu:doSelectItemMatching(pattern, altPattern)")
 end
 
+--- cp.ui.Menu:doSelectItemWhere(predicate) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select the first item on the `Menu` that passes the `predicate`.
+---
+--- Parameters:
+---  * predicate - A function that will be passed the `MenuItem` and should return `true` if it matches.
+---
+--- Returns:
+---  * the `Statement`.
+function Menu:doSelectItemWhere(predicate)
+    return If(self.UI)
+    :Then(function(ui)
+        for _, item in ipairs(ui) do
+            if predicate(item) then
+                item:performAction("AXPress")
+                return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
+            end
+        end
+        return self:doCancel():Then(false)
+    end)
+    :Otherwise(false)
+    :Label("cp.ui.Menu:doSelectItemWhere(predicate)")
+end
+
+
 return Menu

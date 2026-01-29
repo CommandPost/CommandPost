@@ -3,7 +3,7 @@
 --- A set of handy developer tools for CommandPost.
 
 local require           = require
-local hs                = _G.hs
+local hs                = _G["hs"]
 
 local log               = require "hs.logger".new "dev"
 
@@ -27,6 +27,7 @@ local mod = {}
 local function _inspectElement(e, options)
     mod.highlight(e)
 
+    options = options or {depth=1}
     local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"), options)
 
     local id = e:attributeValue("AXIdentifier")
