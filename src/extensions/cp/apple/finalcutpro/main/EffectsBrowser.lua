@@ -424,7 +424,17 @@ function EffectsBrowser:_startEndRowsUI(startLabel, endLabel)
     --------------------------------------------------------------------------------
     -- Find the two 'All' rows (Video/Audio)
     --------------------------------------------------------------------------------
+
+    local isFCP12 = self:app():version() >= semver("12.0.0")
+
     return self.sidebar:rowsUI(function(row)
+        --------------------------------------------------------------------------------
+        -- Early termination: if we've already found the end, skip remaining rows
+        --------------------------------------------------------------------------------
+        if ended then
+            return false
+        end
+
         local label
 
         if isFCP12 then
@@ -451,6 +461,65 @@ function EffectsBrowser:_startEndRowsUI(startLabel, endLabel)
         return started and not isStartLabel and not ended
     end)
 
+end
+
+-- cp.apple.finalcutpro.main.EffectsBrowser:_findAndSelectCategoryRow(startLabel, endLabel, name) -> boolean
+-- Method
+-- Finds and selects a category row by name within a section, in a single pass.
+-- This is more efficient than first collecting all rows then searching through them.
+--
+-- Parameters:
+--  * startLabel - The uppercase label marking the start of the section (e.g., "VIDEO").
+--  * endLabel - The uppercase label marking the end of the section (e.g., "AUDIO"), or nil for last section.
+--  * name - The category name to find and select.
+--
+-- Returns:
+--  * `true` if the row was found and selected, otherwise `false`.
+function EffectsBrowser:_findAndSelectCategoryRow(startLabel, endLabel, name)
+    local ui = self.sidebar:contentUI()
+    if not ui then
+        return false
+    end
+
+    local isFCP12 = self:app():version() >= semver("12.0.0")
+    local started = false
+
+    for _,child in ipairs(ui) do
+        if child:attributeValue("AXRole") == "AXRow" then
+            local label
+            if isFCP12 then
+                label = child[1] and child[1][2]
+            else
+                label = child[1] and child[1][1]
+            end
+
+            local value = label and label:attributeValue("AXValue")
+
+            --------------------------------------------------------------------------------
+            -- Check if we've hit the start of our section:
+            --------------------------------------------------------------------------------
+            local isStartLabel = value == startLabel
+            if not started and isStartLabel then
+                started = true
+            elseif started then
+                --------------------------------------------------------------------------------
+                -- Check if we've hit the end of our section:
+                --------------------------------------------------------------------------------
+                if value == endLabel then
+                    return false
+                end
+                --------------------------------------------------------------------------------
+                -- Check if this is the row we're looking for:
+                --------------------------------------------------------------------------------
+                if value == name then
+                    child:setAttributeValue("AXSelected", true)
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:showAllVideoEffects() -> boolean
@@ -491,7 +560,17 @@ end
 ---  * The `EffectsBrowser` object.
 function EffectsBrowser:showVideoCategory(name)
     self:showSidebar()
-    Table.selectRow(self:videoCategoryRowsUI(), {name})
+    --------------------------------------------------------------------------------
+    -- Use optimized single-pass search for better performance in FCP 12+:
+    --------------------------------------------------------------------------------
+    local video = upper(self:app():string("FFVideo"))
+    local audio = upper(self:app():string("FFAudio"))
+    if not self:_findAndSelectCategoryRow(video, audio, name) then
+        --------------------------------------------------------------------------------
+        -- Fallback to legacy method if direct search fails:
+        --------------------------------------------------------------------------------
+        Table.selectRow(self:videoCategoryRowsUI(), {name})
+    end
     return self
 end
 
@@ -533,7 +612,16 @@ end
 ---  * The browser.
 function EffectsBrowser:showAudioCategory(name)
     self:showSidebar()
-    Table.selectRow(self:audioCategoryRowsUI(), {name})
+    --------------------------------------------------------------------------------
+    -- Use optimized single-pass search for better performance in FCP 12+:
+    --------------------------------------------------------------------------------
+    local audio = upper(self:app():string("FFAudio"))
+    if not self:_findAndSelectCategoryRow(audio, nil, name) then
+        --------------------------------------------------------------------------------
+        -- Fallback to legacy method if direct search fails:
+        --------------------------------------------------------------------------------
+        Table.selectRow(self:audioCategoryRowsUI(), {name})
+    end
     return self
 end
 
