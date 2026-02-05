@@ -4,7 +4,7 @@
 
 local require = require
 
--- local log								= require "hs.logger".new("EffectsBrowser")
+local log								= require "hs.logger".new("EffectsBrowser")
 
 local geometry							= require "hs.geometry"
 local fnutils							= require "hs.fnutils"
@@ -25,6 +25,9 @@ local Given                             = require "cp.rx.go.Given"
 local If                                = require "cp.rx.go.If"
 local WaitUntil                         = require "cp.rx.go.WaitUntil"
 
+local semver                            = require "semver"
+
+local childWithRole                     = axutils.childWithRole
 local ninjaDoubleClick                  = tools.ninjaDoubleClick
 local upper                             = tools.upper
 
@@ -422,7 +425,19 @@ function EffectsBrowser:_startEndRowsUI(startLabel, endLabel)
     -- Find the two 'All' rows (Video/Audio)
     --------------------------------------------------------------------------------
     return self.sidebar:rowsUI(function(row)
-        local label = row[1][1]
+        local label
+
+        if isFCP12 then
+            --------------------------------------------------------------------------------
+            -- For maximum performance, we just use table index:
+            --------------------------------------------------------------------------------
+            --local cell = childWithRole(row, "AXCell")
+            --label = cell and childWithRole(cell, "AXStaticText")
+            label = row[1][2]
+        else
+            label = row[1][1]
+        end
+
         local value = label and label:attributeValue("AXValue")
         --log.df("checking row value: %s", value)
 
@@ -634,7 +649,7 @@ function EffectsBrowser.lazy.prop:mainGroupUI()
         return axutils.cache(self, "_mainGroup",
         function()
             local ui = original()
-            return ui and axutils.childWithRole(ui, "AXSplitGroup")
+            return ui and childWithRole(ui, "AXSplitGroup")
         end)
     end)
 end
@@ -664,7 +679,14 @@ end
 --- The Sidebar Toggle.
 function EffectsBrowser.lazy.value:sidebarToggle()
     return CheckBox(self, function()
-        return axutils.childWithRole(self:UI(), "AXCheckBox")
+        local fcpVersion = self:app():version()
+        if fcpVersion >= semver("12.0.0") then
+            --log.df("Getting Sidebar Toggle for Final Cut Pro 12...")
+            local group = childWithRole(self:UI(), "AXGroup")
+            return childWithRole(group, "AXCheckBox")
+        else
+            return childWithRole(self:UI(), "AXCheckBox")
+        end
     end)
 end
 
@@ -673,7 +695,7 @@ end
 --- The group `PopUpButton`.
 function EffectsBrowser.lazy.value:group()
     return PopUpButton(self, function()
-        return axutils.childWithRole(self:mainGroupUI(), "AXPopUpButton")
+        return childWithRole(self:mainGroupUI(), "AXPopUpButton")
     end)
 end
 
@@ -682,7 +704,7 @@ end
 --- The Search `PopUpButton` object.
 function EffectsBrowser.lazy.value:search()
     return TextField(self, function()
-        return axutils.childWithRole(self:UI(), "AXTextField")
+        return childWithRole(self:UI(), "AXTextField")
     end)
 end
 
