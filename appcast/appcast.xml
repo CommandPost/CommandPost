@@ -6,6 +6,19 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 2.0.0</title>
+			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
+			<pubDate>Thu,  5 Feb 2026 23:19:19 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/2.0.0/CommandPost_2.0.0.dmg"
+				sparkle:version="8150"
+                sparkle:shortVersionString="2.0.0"
+				sparkle:dsaSignature="MCwCFDEmPB7kY0CXhpI2SFj88wRtSoDlAhQNSk1aYhQJhMxEs9DSg3RfVOgvWg=="
+				sparkle:edSignature="X1xfZ9+OK40z3PXvYH678449YRA+GvU8Qo4J8geTFXqlmRvT42g5cGhYEbiHZLkln93AObPoC1fIhlCQryJOAg==" length="63466970"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>11.00</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.6.1</title>
 			<sparkle:releaseNotesLink>https://commandpost.github.io/CommandPost/releasenotes.html</sparkle:releaseNotesLink>
 			<pubDate>Fri, 23 Jan 2026 17:32:55 +1100</pubDate>
