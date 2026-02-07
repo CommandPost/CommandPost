@@ -25,8 +25,6 @@ local window                = require "hs.window"
 
 local config                = require "cp.config"
 
-local fcp                   = require "cp.apple.finalcutpro"
-
 local v                     = require "semver"
 
 local attributes            = fs.attributes
@@ -1576,10 +1574,21 @@ end
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
     local originalFocusedWindow = window.focusedWindow()
     local whichBundleID = processInfo["bundleID"]
-    local fcpBundleID = fcp:bundleID()
-    if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcpBundleID then
-        whichBundleID = fcpBundleID
+
+    --------------------------------------------------------------------------------
+    -- Workarounds for Final Cut Pro:
+    --------------------------------------------------------------------------------
+    if originalFocusedWindow then
+        local currentBundleID = originalFocusedWindow:application():bundleID()
+        if currentBundleID == "com.apple.FinalCut" then
+            whichBundleID = "com.apple.FinalCut"
+        elseif currentBundleID == "com.apple.FinalCutApp" then
+            whichBundleID = "com.apple.FinalCutApp"
+        elseif currentBundleID == "com.apple.FinalCutTrial" then
+            whichBundleID = "com.apple.FinalCutTrial"
+        end
     end
+
     if type(stopOnError) ~= "boolean" then stopOnError = true end
     if type(input) == "table" then
         local appleScript = [[
