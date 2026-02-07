@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "'%{title}' എന്ന് പേരുള്ള ഒരു ക്ലിപ്പും കണ്ടെത്തിയില്ല.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "ഒരു പുതിയ FCPXML വിജയകരമായി എക്‌സ്‌പോർട്ടുചെയ്‌തു.",
     "aValidTokenIsRequired": "സാധുവായ ഒരു ടോക്കൺ ആവശ്യമാണ്.",
+    "aValidWorkspaceIsRequired": "സാധുവായ ഒരു വർക്ക്‌സ്‌പെയ്‌സ് ആവശ്യമാണ്.",
     "above": "മുകളിൽ",
     "absolute": "സമ്പൂർണ്ണ",
     "absoluteSnapsToZero": "സമ്പൂർണ്ണ (പൂജ്യം വരെ സ്നാപ്പുകൾ)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "ടൂർബോക്സ്: മാനേജർ",
     "core_tourbox_prefs_label": "മുൻ‌ഗണനകൾ: ടൂർ‌ബോക്സ്",
     "core_watchfolders_manager_label": "മാനേജർ: വാച്ച് ഫോൾഡറുകൾ",
+    "core_websocket_label": "വെബ്‌സോക്കറ്റ്",
+    "core_websocket_manager_label": "മാനേജർ: വെബ്‌സോക്കറ്റ്",
+    "core_websocket_prefs_label": "മുൻ‌ഗണനകൾ: വെബ്‌സോക്കറ്റ്",
     "correctSpellingAutomatically": "അക്ഷരവിന്യാസം യാന്ത്രികമായി ശരിയാക്കുക",
     "cpAddNoteToSelectedClips_title": "തിരഞ്ഞെടുത്ത ക്ലിപ്പിലേക്ക് (കളിലേക്ക്) കുറിപ്പ് ചേർക്കുക",
     "cpAllowTasksDuringPlayback_title": "പ്ലേബാക്ക് സമയത്ത് റെൻഡറിംഗ് ടോഗിൾ ചെയ്യുക",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "ഫയൽനാമ പ്രിഫിക്‌സ് പ്രവർത്തനക്ഷമമാക്കുക",
     "enableFlashDrive": "ഫ്ലാഷ് ഡ്രൈവ് പ്രവർത്തനക്ഷമമാക്കുക",
     "enableHUD": "HUD പ്രവർത്തനക്ഷമമാക്കുക",
+    "enableHaptics": "ഹാപ്റ്റിക്സ് പ്രാപ്തമാക്കുക",
     "enableLoupdeckSupport": "ലൂപെഡെക് + പിന്തുണ പ്രവർത്തനക്ഷമമാക്കുക",
     "enableLoupedeckCTSupport": "ലൂപെഡെക് സിടി പിന്തുണ പ്രവർത്തനക്ഷമമാക്കുക",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "ലൗപെഡെക് സിടി പിന്തുണ പ്രവർത്തനക്ഷമമാക്കുക & ലൂപെഡെക് അപ്ലിക്കേഷൻ ഉപേക്ഷിക്കുക",
@@ -949,6 +954,7 @@
     "feedback": "ഫീഡ്‌ബാക്ക്",
     "feedbackError": "കമാൻഡ്പോസ്റ്റ് സെർവറുകളുമായി ആശയവിനിമയം നടത്താൻ ശ്രമിക്കുമ്പോൾ ഇനിപ്പറയുന്ന പിശക് സംഭവിച്ചു:\n\n%{message}\n\nനിർഭാഗ്യവശാൽ നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് സമർപ്പിച്ചിട്ടില്ല.\n\nദയവായി വീണ്ടും ശ്രമിക്കുക.",
     "feedbackSuccess": "നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് വിജയകരമായി സമർപ്പിച്ചു.\n\nനന്ദി!",
+    "fieldOfView": "ഫീൽഡ് ഓഫ് വ്യൂ",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "തിരഞ്ഞെടുത്ത ഫയൽ വായിക്കാൻ കഴിഞ്ഞില്ല.",
     "fill": "പൂരിപ്പിക്കുക",
@@ -1165,6 +1171,7 @@
     "findNext": "അടുത്തത് കണ്ടു പിടിക്കുക",
     "findPrevious": "മുമ്പത്തെ കണ്ടെത്തുക",
     "findToken": "ടോക്കൺ കണ്ടെത്തുക",
+    "findWorkspace": "ജോലിസ്ഥലം കണ്ടെത്തുക",
     "finder": "ഫൈൻഡർ",
     "finder_application_manager_label": "അപ്ലിക്കേഷൻ മാനേജർ",
     "finder_audio_label": "ഓഡിയോ പ്രവർത്തനങ്ങൾ",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "ഫ്ലാറ്റ്",
     "flat9": "ഫ്ലാറ്റ്",
+    "focusOnScaleAll": "എല്ലാം സ്കെയിൽ ചെയ്യുന്നതിൽ ശ്രദ്ധ കേന്ദ്രീകരിക്കുക",
     "focusOnTitleTextInInspector": "ഇൻസ്പെക്ടറിലെ ശീർഷക വാചകത്തിൽ ശ്രദ്ധ കേന്ദ്രീകരിക്കുക",
     "folder": "ഫോൾഡർ",
     "font": "ഫോണ്ട്",
@@ -1270,6 +1278,8 @@
     "grouped": "ഗ്രൂപ്പുചെയ്‌തു",
     "guide": "ഗൈഡ്",
     "guides": "ഗൈഡുകൾ",
+    "hapticsSpeed": "ഹാപ്റ്റിക്സ് വേഗത",
+    "hapticsStrenght": "ഹാപ്റ്റിക്സ് ശക്തി",
     "hardLight": "ഹാർഡ് ലൈറ്റ്",
     "hardLight9": "ഹാർഡ്‌ലൈറ്റ്",
     "hardMix": "ഹാർഡ് മിക്സ്",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "വിവരം",
     "insert": "തിരുകുക",
+    "insertAction": "പ്രവർത്തനം തിരുകുക",
     "insertClipsVerticallyFromBrowserToTimeline": "ബ്രൗസറിൽ നിന്ന് ടൈംലൈനിലേക്ക് ലംബമായി ക്ലിപ്പുകൾ ചേർക്കുക",
     "insertIntoTimeline": "ടൈംലൈനിൽ തിരുകുക",
     "insideCorners": "കോർണറുകൾക്കുള്ളിൽ",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "ജോഗ് വീൽ മോഡ്",
     "joinClips": "ക്ലിപ്പുകളിൽ ചേരുക",
+    "joinDiscord": "ഡിസ്കോർഡിൽ ചേരുക",
     "jumpToFrameShiftExplanation": "നിങ്ങൾ SHIFT അമർത്തിപ്പിടിച്ചാൽ, അത് 1-ന് പകരം 10 ഫ്രെയിമുകൾ ചാടും.",
     "jumpToNextFrame": "അടുത്ത ഫ്രെയിമിലേക്ക് പോകുക",
     "jumpToPreviousFrame": "മുമ്പത്തെ ഫ്രെയിമിലേക്ക് പോകുക",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "തിരയൽ കൺസോളിലെ macOS കുറുക്കുവഴികൾ ആപ്പിൽ നിന്നുള്ള കുറുക്കുവഴികൾ ലിസ്‌റ്റ് ചെയ്യാൻ CommandPost-ന് <strong>ഓട്ടോമേഷൻ</strong> അനുമതി<br /> ആവശ്യമാണ്.<br /><br />ഇത് <strong>ഓപ്‌ഷണൽ</strong> ആണ്. നിങ്ങൾ <strong>കുറുക്കുവഴികൾ പ്രാപ്‌തമാക്കുക</strong> ക്ലിക്ക് ചെയ്യുകയാണെങ്കിൽ, CommandPost മുമ്പ് ആവശ്യപ്പെട്ടിട്ടില്ലെങ്കിൽ<br /> അനുമതിക്കായി നിങ്ങളോട് ആവശ്യപ്പെട്ടേക്കാം. <strong>സിസ്റ്റം മുൻഗണനകൾ > സുരക്ഷയും സ്വകാര്യതയും > സ്വകാര്യത > ഓട്ടോമേഷൻ</strong> പാനൽ സന്ദർശിച്ച് നിങ്ങൾക്ക് എപ്പോൾ വേണമെങ്കിലും ഈ അനുമതി മാറ്റാവുന്നതാണ്.",
     "magicButton": "മാജിക് ബട്ടൺ",
     "magnify": "വലുതാക്കുക",
+    "mapping": "മാപ്പിംഗ്",
     "marker": "മാർക്കർ",
     "master": "മാസ്റ്റർ",
     "master2": "മിസ്",
@@ -1663,7 +1676,9 @@
     "notion": "ആശയം",
     "notionDatabaseURL": "നോഷൻ ഡാറ്റാബേസ് URL",
     "notionDescription": "ഫൈനൽ കട്ട് പ്രോയിൽ നിന്ന് മെറ്റാഡാറ്റ നേടാനും നോട്ടിലേക്ക് നേരിട്ട് അപ്‌ലോഡ് ചെയ്യാനും ഈ ടൂൾ നിങ്ങളെ അനുവദിക്കുന്നു. vzhd1701-ന്റെ csv2notion ആണ് നൽകുന്നത്.",
+    "notionDescriptionTwo": "CSV2Notion Neo നൽകുന്നത്.",
     "notionToken": "ധാരണ ടോക്കൺ",
+    "notionWorkspace": "ആശയം വർക്ക്സ്പേസ്",
     "nudge": "നഡ്ജ്",
     "number": "നമ്പർ",
     "ofScreen": "സ്ക്രീനിന്റെ",
@@ -1711,6 +1726,8 @@
     "optional": "ഓപ്ഷണൽ",
     "options": "ഓപ്ഷനുകൾ",
     "organize": "ഓർഗനൈസുചെയ്യുക",
+    "orientation": "ഓറിയൻ്റേഷൻ",
+    "orientationMapping": "ഓറിയൻ്റേഷൻ മാപ്പിംഗ്",
     "originalClipName": "യഥാർത്ഥ ക്ലിപ്പിന്റെ പേര്",
     "originalOptimised": "യഥാർത്ഥ / ഒപ്റ്റിമൈസ് ചെയ്തത്",
     "originalTitle": "യഥാർത്ഥ ശീർഷകം",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "ഈ ബട്ടണിന്റെ പേരുമാറ്റാൻ നിങ്ങൾ എന്താണ് ആഗ്രഹിക്കുന്നത്?",
     "renameClip": "ക്ലിപ്പിന്റെ പേരുമാറ്റുക",
     "renderComplete": "റെൻഡർ പൂർത്തിയായി!",
+    "reorient": "പുനഃക്രമീകരിക്കുക",
     "repeat": "ആവർത്തിച്ച്",
     "repeatPressActionUntilReleased": "റിലീസ് ചെയ്യുന്നതുവരെ പ്രസ്സ് പ്രവർത്തനം ആവർത്തിക്കുക",
     "replace": "മാറ്റിസ്ഥാപിക്കുക",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2 ലെഫ്റ്റ്",
     "rightTextLayer": "വലത് വാചക പാളി",
     "rightVertical": "വലത് ലംബ",
+    "roll": "റോൾ ചെയ്യുക",
     "rollingShutter": "റോളിംഗ് ഷട്ടർ",
     "rotate": "തിരിക്കുക",
     "rotate9": "തിരിക്കുക",
@@ -2158,6 +2177,38 @@
         "one": "%{amount} പിക്സൽ ആങ്കർ ഉയർത്തുക",
         "other": "%{amount} പിക്സൽ ആങ്കർ ഉയർത്തുക"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "%{amount} ഡിഗ്രിയിൽ ഇടത്തേക്കുള്ള കാഴ്ചയുടെ ഓറിയൻ്റേഷൻ ഫീൽഡ് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രിയിൽ ഇടത്തേക്കുള്ള കാഴ്ചയുടെ ഓറിയൻ്റേഷൻ ഫീൽഡ് മാറ്റുക"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "%{amount} ഡിഗ്രി പ്രകാരം വലത് കാഴ്ചയുടെ ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ ഫീൽഡ്",
+        "other": "%{amount} ഡിഗ്രി പ്രകാരം വലത് കാഴ്ചയുടെ ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ ഫീൽഡ്"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ പാൻ ഇടത്തേക്ക് %{amount} ഡിഗ്രി",
+        "other": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ പാൻ ഇടത്തേക്ക് %{amount} ഡിഗ്രി"
+    },
+    "shiftOrientationPanRight": {
+        "one": "%{amount} ഡിഗ്രി പ്രകാരം ഓറിയൻ്റേഷൻ പാൻ വലത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രി പ്രകാരം ഓറിയൻ്റേഷൻ പാൻ വലത്തേക്ക് മാറ്റുക"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ റോൾ ഇടത്തേക്ക് %{amount} ഡിഗ്രി",
+        "other": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ റോൾ ഇടത്തേക്ക് %{amount} ഡിഗ്രി"
+    },
+    "shiftOrientationRollRight": {
+        "one": "%{amount} ഡിഗ്രി പ്രകാരം ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ റോൾ റൈറ്റ്",
+        "other": "%{amount} ഡിഗ്രി പ്രകാരം ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ റോൾ റൈറ്റ്"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ ഇടത്തേക്ക് %{amount} ഡിഗ്രി ചരിവ്",
+        "other": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ ഇടത്തേക്ക് %{amount} ഡിഗ്രി ചരിവ്"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ %{amount} ഡിഗ്രിയിൽ വലത്തേക്ക് ചരിക്കുക",
+        "other": "ഷിഫ്റ്റ് ഓറിയൻ്റേഷൻ %{amount} ഡിഗ്രിയിൽ വലത്തേക്ക് ചരിക്കുക"
+    },
     "shiftPositionDownPixels": {
         "one": "ഷിഫ്റ്റ് സ്ഥാനം താഴേക്ക് %{amount} പിക്സൽ",
         "other": "ഷിഫ്റ്റ് സ്ഥാനം താഴേക്ക് %{amount} പിക്സൽ"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "ഷിഫ്റ്റ് സ്ഥാനം മുകളിലേക്ക് %{amount} പിക്സൽ",
         "other": "ഷിഫ്റ്റ് സ്ഥാനം മുകളിലേക്ക് %{amount} പിക്സൽ"
+    },
+    "shiftReorientPanLeft": {
+        "one": "%{amount} ഡിഗ്രിയിൽ റീഓറിയൻ്റ് പാൻ ഇടത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രിയിൽ റീഓറിയൻ്റ് പാൻ ഇടത്തേക്ക് മാറ്റുക"
+    },
+    "shiftReorientPanRight": {
+        "one": "%{amount} ഡിഗ്രി പ്രകാരം റീഓറിയൻ്റ് പാൻ വലത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രി പ്രകാരം റീഓറിയൻ്റ് പാൻ വലത്തേക്ക് മാറ്റുക"
+    },
+    "shiftReorientRollLeft": {
+        "one": "%{amount} ഡിഗ്രിയിൽ റീഓറിയൻ്റ് റോൾ ഇടത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രിയിൽ റീഓറിയൻ്റ് റോൾ ഇടത്തേക്ക് മാറ്റുക"
+    },
+    "shiftReorientRollRight": {
+        "one": "%{amount} ഡിഗ്രി പ്രകാരം റീഓറിയൻ്റ് റോൾ വലത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രി പ്രകാരം റീഓറിയൻ്റ് റോൾ വലത്തേക്ക് മാറ്റുക"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "%{amount} ഡിഗ്രിയിൽ ഇടത്തേക്ക് റീഓറിയൻ്റ് ടിൽറ്റ് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രിയിൽ ഇടത്തേക്ക് റീഓറിയൻ്റ് ടിൽറ്റ് മാറ്റുക"
+    },
+    "shiftReorientTiltRight": {
+        "one": "%{amount} ഡിഗ്രിയിൽ റീഓറിയൻ്റ് ടിൽറ്റ് വലത്തേക്ക് മാറ്റുക",
+        "other": "%{amount} ഡിഗ്രിയിൽ റീഓറിയൻ്റ് ടിൽറ്റ് വലത്തേക്ക് മാറ്റുക"
     },
     "shiftRotationLeft": {
         "one": "ഷിഫ്റ്റ് റൊട്ടേഷൻ ഇടത് %{amount} ഡിഗ്രി",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "ഇത് ഈ പ്രത്യേക യൂണിറ്റിനായുള്ള എല്ലാ സ്ട്രീം ഡെക്ക് ഇനങ്ങളും സ്ഥിര മൂല്യങ്ങളിലേക്ക് പുന reset സജ്ജീകരിക്കും.",
     "streamdeckPanelLabel": "സ്ട്രീം ഡെക്ക്",
     "streamdeckPanelTooltip": "സ്ട്രീം ഡെക്ക് മുൻ‌ഗണനകൾ",
+    "strong": "ശക്തം",
     "subcomponent": "ഉപവിഭാഗം",
     "subcomponents": "ഉപഘടകങ്ങൾ",
     "subtract": "കുറയ്ക്കുക",
@@ -2380,6 +2456,7 @@
     "temperature": "താപനില",
     "temperature4": "താൽക്കാലികം",
     "ten": "10",
+    "testSnippet": "ടെസ്റ്റ് സ്നിപ്പറ്റ്",
     "testTitle": "കമാൻഡ്പോസ്റ്റ് ടെസ്റ്റ്",
     "text": "വാചകം",
     "textInspectorCouldNotBeShown": "ടെക്സ്റ്റ് ഇൻസ്പെക്ടർ കാണിക്കാൻ കഴിഞ്ഞില്ല.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "ഇതിനകം നിർത്തിയിട്ടുണ്ടെങ്കിൽ മാത്രമേ ഇത് പ്ലേ കുറുക്കുവഴി കീ പ്രവർത്തനക്ഷമമാക്കൂ.",
     "three": "3",
     "threeDeeText": "3D വാചകം",
+    "tilt": "ചരിവ്",
     "timeline": "ടൈംലൈൻ",
     "timelineBatchExportBeginMessage": "ഈ ടൈംലൈൻ ബാച്ച് എക്‌സ്‌പോർട്ട് ഉപകരണം ഓരോ ക്ലിപ്പും വ്യക്തിഗതമായി തിരഞ്ഞെടുക്കുന്നതിന് ഓട്ടോമേഷൻ ഉപയോഗിക്കുന്നു, തുടർന്ന് 'ഫയൽ> പങ്കിടുക' മെനു ഇനം പ്രവർത്തനക്ഷമമാക്കുന്നു.\n\nഈ പ്രക്രിയ പൂർത്തിയാകുന്നതുവരെ മൗസ് നീക്കുകയോ കീബോർഡിൽ സ്പർശിക്കുകയോ ചെയ്യരുത്.",
     "timelineBatchExportCompressorBeginMessage": "ഈ ടൈംലൈൻ ബാച്ച് എക്‌സ്‌പോർട്ട് ഉപകരണം ഓരോ ക്ലിപ്പും വ്യക്തിഗതമായി തിരഞ്ഞെടുക്കുന്നതിന് ഓട്ടോമേഷൻ ഉപയോഗിക്കുന്നു, തുടർന്ന് 'ഫയൽ> കംപ്രസ്സറിലേക്ക് അയയ്‌ക്കുക' മെനു ഇനം പ്രവർത്തനക്ഷമമാക്കുന്നു.\n\nഈ പ്രക്രിയ പൂർത്തിയാകുന്നതുവരെ മൗസ് നീക്കുകയോ കീബോർഡിൽ സ്പർശിക്കുകയോ ചെയ്യരുത്.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "ടൈംലൈൻ",
     "tint": "ടിന്റ്",
     "tint4": "ടിന്റ്",
+    "tinyPlanet": "ചെറിയ ഗ്രഹം",
     "tip": "നുറുങ്ങ്",
     "title": "ശീർഷകം",
     "title_group": "ശീർഷകം",
@@ -2431,6 +2510,7 @@
     "toggleControls": "നിയന്ത്രണങ്ങൾ ടോഗിൾ ചെയ്യുക",
     "toggleDaVinciResolveControlSurfaceSupport": "ഡാവിഞ്ചി റിസോൾവ് കൺട്രോൾ സർഫേസ് സപ്പോർട്ട് ടോഗിൾ ചെയ്യുക",
     "toggleEffects": "ഇഫക്റ്റുകൾ ടോഗിൾ ചെയ്യുക",
+    "toggleKeyframe": "കീഫ്രെയിം ടോഗിൾ ചെയ്യുക",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "തിരഞ്ഞെടുത്ത ക്ലിപ്പുകളിൽ വീഡിയോ ആനിമേഷൻ പോപ്പ്അപ്പിൽ അതാര്യത ഫേഡ് ഹാൻഡിലുകൾ ടോഗിൾ ചെയ്യുക",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "ഒരു ഫൈനൽ കട്ട് പ്രോ ബഗ് കാരണം ഇത് ഒരു സെക്കൻഡറി സ്റ്റോറിലൈനിലെ ക്ലിപ്പുകൾക്കായി പ്രവർത്തിക്കുന്നില്ല",
     "toggleOverlaysWithCapsLock": "ക്യാപ്‌സ് ലോക്ക് ഉപയോഗിച്ച് ഓവർലേകൾ ടോഗിൾ ചെയ്യുക",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "ചുവടെയുള്ള ഏതെങ്കിലും വാച്ച് ഫോൾഡറുകളിലേക്ക് ഒരു എഫ്‌സി‌പി‌എക്സ്എം‌എൽ ഫയൽ ചേർക്കുമ്പോഴെല്ലാം മാകോസ് അറിയിപ്പുകൾ സ്വീകരിക്കാൻ ഈ സവിശേഷത നിങ്ങളെ അനുവദിക്കുന്നു. <br /> അറിയിപ്പിൽ നിന്ന് നിങ്ങൾക്ക് <b> ഇറക്കുമതി </ b> ഈ ഫയലുകൾ നിങ്ങളുടെ നിലവിലെ ഫൈനൽ കട്ട് പ്രോ ടൈംലൈനിലേക്ക് നേരിട്ട് . <br /> <b> ഇറക്കുമതി </ b> അമർത്തുമ്പോൾ നിങ്ങൾ <b> ഷിഫ്റ്റ് </ b> അമർത്തിപ്പിടിക്കുകയാണെങ്കിൽ, അത് ബാക്കിയുള്ള എല്ലാ ഫയലുകളും ഇറക്കുമതി ചെയ്യും.",
     "watchFolders": "ഫോൾഡറുകൾ കാണുക",
     "wave": "തരംഗം",
+    "weak": "ദുർബലം",
+    "websocket": "വെബ്‌സോക്കറ്റ്",
+    "websocketActionQuery": "പ്രവർത്തന അന്വേഷണം",
+    "websocketAddress": "വിലാസം",
+    "websocketCannotParseMessageData": "സന്ദേശ ഡാറ്റ വിശകലനം ചെയ്യാൻ കഴിയില്ല:",
+    "websocketClientMode": "ക്ലയന്റ് മോഡ്",
+    "websocketClients": "ക്ലയന്റുകൾ",
+    "websocketConnected": "ബന്ധിപ്പിച്ചു",
+    "websocketConnectionStatus": "കണക്ഷൻ നില",
+    "websocketControlSurface": "വെബ്‌സോക്കറ്റ് നിയന്ത്രണ ഉപരിതലം",
+    "websocketControlSurfaceDisabled": "വെബ്‌സോക്കറ്റ് നിയന്ത്രണ സർഫേസ് പ്രവർത്തനരഹിതമാക്കി",
+    "websocketControlSurfaceSettings": "വെബ്‌സോക്കറ്റ് നിയന്ത്രണ ഉപരിതല ക്രമീകരണങ്ങൾ",
+    "websocketCopied": "പകർത്തി",
+    "websocketCopyFailed": "പകർത്തൽ പരാജയപ്പെട്ടു:",
+    "websocketCopyMessage": "സന്ദേശം പകർത്തുക",
+    "websocketCurrentlySelectedAction": "നിലവിൽ തിരഞ്ഞെടുത്ത പ്രവർത്തനം",
+    "websocketDisableWebSocketControlSurface": "വെബ്‌സോക്കറ്റ് നിയന്ത്രണ സർഫസ് പ്രവർത്തനരഹിതമാക്കുക",
+    "websocketDisconnected": "വിച്ഛേദിച്ചു",
+    "websocketEnableWebSocket": "വെബ്‌സോക്കറ്റ് പ്രവർത്തനക്ഷമമാക്കുക",
+    "websocketEnableWebSocketControlSurface": "വെബ്‌സോക്കറ്റ് നിയന്ത്രണ സർഫേസ് പ്രവർത്തനക്ഷമമാക്കുക",
+    "websocketFilterActionsByApplication": "ആപ്ലിക്കേഷൻ അനുസരിച്ച് പ്രവർത്തനങ്ങൾ ഫിൽട്ടർ ചെയ്യുക:",
+    "websocketInvalidPortNumber": "അസാധുവായ പോർട്ട് നമ്പർ",
+    "websocketInvalidPortNumberDescription": "1 നും 65535 നും ഇടയിലുള്ള ഒരു സാധുവായ പോർട്ട് നമ്പർ നൽകുക.",
+    "websocketMessageExample": "വെബ്‌സോക്കറ്റ് സന്ദേശ ഉദാഹരണം:",
+    "websocketNoActiveConnections": "സജീവ കണക്ഷനുകളൊന്നുമില്ല.",
+    "websocketNoCopyableMessage": "പകർത്താൻ സന്ദേശമൊന്നുമില്ല.",
+    "websocketOpenActionChooser": "ആക്ഷൻ ചൂസർ തുറക്കുക",
+    "websocketOpenActionChooserDescription": "ലഭ്യമായ എല്ലാ പ്രവർത്തനങ്ങളും ബ്രൗസ് ചെയ്യാനും തിരയാനും കമാൻഡ്പോസ്റ്റ് ആക്ഷൻ ചൂസർ തുറക്കാൻ മുകളിലുള്ള ബട്ടൺ ക്ലിക്കുചെയ്യുക.",
+    "websocketRefresh": "പുതുക്കുക",
+    "websocketServerMode": "സെർവർ മോഡ്",
+    "websocketServerNotRunning": "സെർവർ പ്രവർത്തിക്കുന്നില്ല.",
+    "websocketServerPort": "സെർവർ പോർട്ട്",
+    "websocketServerRunning": "സെർവർ പ്രവർത്തിക്കുന്നു",
+    "websocketServerRunningWithDetails": "സെർവർ പ്രവർത്തിക്കുന്നു\\nപോർട്ട്: %{പോർട്ട്}\\nബന്ധിപ്പിച്ച ക്ലയന്റുകൾ: %{count}",
+    "websocketServerStopped": "സെർവർ നിർത്തി",
+    "websocketToggleWebSocketControlSurface": "വെബ്‌സോക്കറ്റ് നിയന്ത്രണ ഉപരിതലം മാറ്റുക",
     "weight": "ഭാരം",
     "welcomeToTheToolbox": "ടൂൾബോക്സിലേക്ക് സ്വാഗതം",
     "whatDidYouExpectToHappen": "എന്ത് സംഭവിക്കുമെന്ന് നിങ്ങൾ പ്രതീക്ഷിച്ചു?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "വർക്ക്ഫ്ലോ വിപുലീകരണം ഇൻസ്റ്റാൾ ചെയ്തു",
     "workflowExtensionMovePlayhead": "വർക്ക്ഫ്ലോ എക്സ്റ്റൻഷൻ API വഴി ഫൈനൽ കട്ട് പ്രോ പ്ലേഹെഡ് നീക്കുന്നു",
     "workspaces": "വർക്ക്‌സ്‌പെയ്‌സുകൾ",
+    "wsActionId": "ആക്ഷൻ ഐഡി",
+    "wsHandler": "കൈകാര്യം ചെയ്യുന്നയാൾ",
+    "wsId": "ഐഡി",
+    "wsMode": "മോഡ്",
+    "wsStatus": "പദവി",
     "xml": "എക്സ്എം‌എൽ",
     "yellow": "മഞ്ഞ",
     "yes": "അതെ",
