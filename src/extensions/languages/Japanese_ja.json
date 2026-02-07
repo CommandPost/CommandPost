@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "'％{title}'というタイトルのクリップは見つかりませんでした。",
     "aNewFCPXMLHasBeenExportedSuccessfully": "新しいFCPXMLが正常にエクスポートされました。",
     "aValidTokenIsRequired": "有効なトークンが必要です。",
+    "aValidWorkspaceIsRequired": "有効なワークスペースが必要です。",
     "above": "上",
     "absolute": "絶対の",
     "absoluteSnapsToZero": "絶対（ゼロにスナップ）",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox：マネージャー",
     "core_tourbox_prefs_label": "設定：TourBox",
     "core_watchfolders_manager_label": "マネージャー：ウォッチフォルダ",
+    "core_websocket_label": "ウェブソケット",
+    "core_websocket_manager_label": "マネージャー: WebSocket",
+    "core_websocket_prefs_label": "設定: WebSocket",
     "correctSpellingAutomatically": "スペルを自動的に修正する",
     "cpAddNoteToSelectedClips_title": "選択したクリップにメモを追加",
     "cpAllowTasksDuringPlayback_title": "再生中にレンダリングを切り替える",
@@ -811,6 +815,7 @@
     "enableFilenamePrefix": "ファイル名プレフィックスを有効にする",
     "enableFlashDrive": "フラッシュドライブを有効にする",
     "enableHUD": "HUDを有効にする",
+    "enableHaptics": "触覚を有効にする",
     "enableLoupdeckSupport": "Loupedeck +サポートを有効にする",
     "enableLoupedeckCTSupport": "LoupedeckCTサポートを有効にする",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Loupedeck CTサポートを有効にしてLoupedeckアプリを終了する",
@@ -945,6 +950,7 @@
     "feedback": "フィードバック",
     "feedbackError": "CommandPostサーバーと通信しようとして次のエラーが発生しました。\n\n％{message}\n\n残念ながらあなたのフィードバックは送信されませんでした。\n\nもう一度やり直してください。",
     "feedbackSuccess": "あなたのフィードバックはうまく提出されました。\n\nありがとうございました！",
+    "fieldOfView": "視野",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "選択したファイルを読み取ることができませんでした。",
     "fill": "塗りつぶす",
@@ -1161,6 +1167,7 @@
     "findNext": "次を見つける",
     "findPrevious": "前を検索",
     "findToken": "トークンを探す",
+    "findWorkspace": "ワークスペースを探す",
     "finder": "ファインダ",
     "finder_application_manager_label": "アプリケーションマネージャ",
     "finder_audio_label": "オーディオアクション",
@@ -1176,6 +1183,7 @@
     "five": "5",
     "flat": "平らな",
     "flat9": "平らな",
+    "focusOnScaleAll": "スケール重視",
     "focusOnTitleTextInInspector": "インスペクターでタイトルテキストに焦点を当てる",
     "folder": "フォルダ",
     "font": "フォント",
@@ -1266,6 +1274,8 @@
     "grouped": "グループ化",
     "guide": "ガイド",
     "guides": "ガイド",
+    "hapticsSpeed": "触覚スピード",
+    "hapticsStrenght": "触覚強度",
     "hardLight": "ハードライト",
     "hardLight9": "ハードライト",
     "hardMix": "ハードミックス",
@@ -1360,6 +1370,7 @@
     "inertiaCam": "イナーシャカム",
     "info": "情報",
     "insert": "入れる",
+    "insertAction": "アクションを挿入",
     "insertClipsVerticallyFromBrowserToTimeline": "ブラウザからタイムラインに垂直にクリップを挿入",
     "insertIntoTimeline": "タイムラインに挿入",
     "insideCorners": "内部コーナー",
@@ -1385,6 +1396,7 @@
     },
     "jogWheelMode": "ジョグホイールモード",
     "joinClips": "クリップに参加する",
+    "joinDiscord": "Discordに参加する",
     "jumpToFrameShiftExplanation": "SHIFTを押したままにすると、1ではなく10フレームジャンプします。",
     "jumpToNextFrame": "次のフレームにジャンプ",
     "jumpToPreviousFrame": "前のフレームにジャンプ",
@@ -1515,6 +1527,7 @@
     "macosShortcutsSetupMessage": "CommandPostには、検索コンソールでmacOSショートカットアプリからのショートカットを一覧表示するための<strong>自動化</strong>権限<br/>が必要です。<br/><br/>これは<strong>オプション</strong>です。 <strong>ショートカットを有効にする</strong>をクリックすると、CommandPostが以前に要求していない場合は、許可を求めるプロンプトが表示される場合があります<br/>。この権限は、<strong>システム環境設定>セキュリティとプライバシー>プライバシー>自動化</strong>パネルにアクセスしていつでも変更できます。",
     "magicButton": "魔法のボタン",
     "magnify": "拡大する",
+    "mapping": "マッピング",
     "marker": "マーカー",
     "master": "マスター",
     "master2": "ミズ",
@@ -1657,7 +1670,9 @@
     "notion": "概念",
     "notionDatabaseURL": "概念データベースの URL",
     "notionDescription": "このツールを使用すると、Final Cut Pro からメタデータを取得して、Notion に直接アップロードできます。 vzhd1701 の csv2notion を利用しています。",
+    "notionDescriptionTwo": "CSV2Notion Neo を搭載。",
     "notionToken": "概念トークン",
+    "notionWorkspace": "Notionワークスペース",
     "nudge": "ナッジ",
     "number": "数",
     "ofScreen": "画面の",
@@ -1705,6 +1720,8 @@
     "optional": "オプション",
     "options": "オプション",
     "organize": "整理する",
+    "orientation": "オリエンテーション",
+    "orientationMapping": "方向マッピング",
     "originalClipName": "オリジナルクリップ名",
     "originalOptimised": "オリジナル/最適化",
     "originalTitle": "元のタイトル",
@@ -1925,6 +1942,7 @@
     "renameButtonQuestion": "このボタンの名前を変更しますか？",
     "renameClip": "クリップの名前を変更",
     "renderComplete": "レンダリング完了！",
+    "reorient": "方向転換",
     "repeat": "繰り返す",
     "repeatPressActionUntilReleased": "リリースされるまでプレスアクションを繰り返す",
     "replace": "交換",
@@ -1995,6 +2013,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "右テキストレイヤー",
     "rightVertical": "右垂直",
+    "roll": "ロール",
     "rollingShutter": "ロールシャッター",
     "rotate": "回転",
     "rotate9": "回転",
@@ -2146,6 +2165,30 @@
     "shiftAnchorUpPixels": {
         "other": "アンカーを %{amount} ピクセル上にシフト"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "other": "視野の向きを %{amount} 度左にシフトします"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "other": "視野の向きを %{amount} 度右にシフトします"
+    },
+    "shiftOrientationPanLeft": {
+        "other": "方向を左に %{amount} 度シフト"
+    },
+    "shiftOrientationPanRight": {
+        "other": "方向を右に %{amount} 度シフト"
+    },
+    "shiftOrientationRollLeft": {
+        "other": "方向を左に %{amount} 度シフトします"
+    },
+    "shiftOrientationRollRight": {
+        "other": "方向を右に %{amount} 度シフトします"
+    },
+    "shiftOrientationTiltLeft": {
+        "other": "方向を左に %{amount} 度シフトします"
+    },
+    "shiftOrientationTiltRight": {
+        "other": "方向を右に %{amount} 度シフトします"
+    },
     "shiftPositionDownPixels": {
         "other": "位置を下にシフト％{amount}ピクセル"
     },
@@ -2157,6 +2200,24 @@
     },
     "shiftPositionUpPixels": {
         "other": "位置を上にシフト％{amount}ピクセル"
+    },
+    "shiftReorientPanLeft": {
+        "other": "Shift 方向を変更して左に %{amount} 度パン"
+    },
+    "shiftReorientPanRight": {
+        "other": "Shift 方向を変更して右に %{amount} 度パン"
+    },
+    "shiftReorientRollLeft": {
+        "other": "シフト方向変更 左に %{amount} 度回転"
+    },
+    "shiftReorientRollRight": {
+        "other": "シフト方向変更 %{amount} 度右に回転"
+    },
+    "shiftReorientTiltLeft": {
+        "other": "シフト方向変更 左に %{amount} 度傾ける"
+    },
+    "shiftReorientTiltRight": {
+        "other": "シフト方向を変更 右に %{amount} 度傾ける"
     },
     "shiftRotationLeft": {
         "other": "回転を％{amount}度だけ左にシフト"
@@ -2315,6 +2376,7 @@
     "streamDeckResetUnitConfirmation": "これにより、この特定のユニットのすべてのストリームデッキアイテムがデフォルト値にリセットされます。",
     "streamdeckPanelLabel": "ストリームデッキ",
     "streamdeckPanelTooltip": "ストリームデッキの設定",
+    "strong": "強い",
     "subcomponent": "サブコンポーネント",
     "subcomponents": "サブコンポーネント",
     "subtract": "引く",
@@ -2356,6 +2418,7 @@
     "temperature": "温度",
     "temperature4": "温度",
     "ten": "10",
+    "testSnippet": "テストスニペット",
     "testTitle": "CommandPostテスト",
     "text": "テキスト",
     "textInspectorCouldNotBeShown": "テキストインスペクターを表示できませんでした。",
@@ -2377,6 +2440,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "これは、すでに停止している場合にのみ、再生ショートカットキーをトリガーします。",
     "three": "3",
     "threeDeeText": "3Dテキスト",
+    "tilt": "傾き",
     "timeline": "タイムライン",
     "timelineBatchExportBeginMessage": "このタイムラインバッチエクスポートツールは、オートメーションを使用して各クリップを個別に選択し、[ファイル]> [共有]メニュー項目をトリガーします。\n\nこのプロセスが完了するまで、マウスを動かしたり、キーボードに触れたりしないでください。",
     "timelineBatchExportCompressorBeginMessage": "このタイムラインバッチエクスポートツールは、オートメーションを使用して各クリップを個別に選択し、[ファイル]> [コンプレッサーに送信]メニュー項目をトリガーします。\n\nこのプロセスが完了するまで、マウスを動かしたり、キーボードに触れたりしないでください。",
@@ -2387,6 +2451,7 @@
     "timeline_group": "タイムライン",
     "tint": "色合い",
     "tint4": "色合い",
+    "tinyPlanet": "タイニープラネット",
     "tip": "先端",
     "title": "タイトル",
     "title_group": "タイトル",
@@ -2407,6 +2472,7 @@
     "toggleControls": "トグルコントロール",
     "toggleDaVinciResolveControlSurfaceSupport": "DaVinciResolveコントロールサーフェスサポートを切り替えます",
     "toggleEffects": "エフェクトの切り替え",
+    "toggleKeyframe": "キーフレームの切り替え",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "選択したクリップのビデオアニメーションポップアップで不透明度フェードハンドルを切り替えます",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Final Cut Proのバグのため、これはセカンダリストーリーラインのクリップでは機能しません",
     "toggleOverlaysWithCapsLock": "Caps Lockでオーバーレイを切り替える",
@@ -2584,6 +2650,42 @@
     "watchFolderXMLHelp": "この機能を使用すると、FCPXMLファイルが以下の時計フォルダのいずれかに追加されるたびに、macOS通知を受け取ることができます。通知から、これらのファイルを現在のFinal Cut Proのタイムラインに直接<b>インポート</ b>することができます。 <b>インポート</ b>を押したときに<b>シフト</ b>を押し続けると、未処理のファイルがすべてインポートされます。",
     "watchFolders": "ウォッチフォルダ",
     "wave": "波",
+    "weak": "弱い",
+    "websocket": "ウェブソケット",
+    "websocketActionQuery": "アクションクエリ",
+    "websocketAddress": "住所",
+    "websocketCannotParseMessageData": "メッセージデータを解析できません:",
+    "websocketClientMode": "クライアントモード",
+    "websocketClients": "クライアント",
+    "websocketConnected": "接続",
+    "websocketConnectionStatus": "接続ステータス",
+    "websocketControlSurface": "WebSocket コントロール サーフェス",
+    "websocketControlSurfaceDisabled": "WebSocketコントロールサーフェスが無効になっています",
+    "websocketControlSurfaceSettings": "WebSocket コントロール サーフェスの設定",
+    "websocketCopied": "コピーしました",
+    "websocketCopyFailed": "コピーに失敗しました:",
+    "websocketCopyMessage": "メッセージをコピー",
+    "websocketCurrentlySelectedAction": "現在選択されているアクション",
+    "websocketDisableWebSocketControlSurface": "WebSocket コントロール サーフェスを無効にする",
+    "websocketDisconnected": "切断",
+    "websocketEnableWebSocket": "WebSocketを有効にする",
+    "websocketEnableWebSocketControlSurface": "WebSocketコントロールサーフェスを有効にする",
+    "websocketFilterActionsByApplication": "アプリケーション別にアクションをフィルタリング:",
+    "websocketInvalidPortNumber": "無効なポート番号",
+    "websocketInvalidPortNumberDescription": "1～65535の有効なポート番号を入力してください",
+    "websocketMessageExample": "WebSocket メッセージの例:",
+    "websocketNoActiveConnections": "アクティブな接続はありません",
+    "websocketNoCopyableMessage": "コピーするメッセージはありません",
+    "websocketOpenActionChooser": "アクション選択ツールを開く",
+    "websocketOpenActionChooserDescription": "上のボタンをクリックすると、CommandPostアクションセレクターが開き、利用可能なすべてのアクションを参照および検索できます。",
+    "websocketRefresh": "リフレッシュ",
+    "websocketServerMode": "サーバーモード",
+    "websocketServerNotRunning": "サーバーが稼働していません",
+    "websocketServerPort": "サーバーポート",
+    "websocketServerRunning": "サーバー実行中",
+    "websocketServerRunningWithDetails": "サーバーは実行中です\\nポート: %{port}\\n接続されたクライアント: %{count}",
+    "websocketServerStopped": "サーバーが停止しました",
+    "websocketToggleWebSocketControlSurface": "WebSocket コントロール サーフェスの切り替え",
     "weight": "重量",
     "welcomeToTheToolbox": "ツールボックスへようこそ",
     "whatDidYouExpectToHappen": "何が起こると思いますか？",
@@ -2601,6 +2703,11 @@
     "workflowExtensionInstalled": "ワークフロー拡張機能がインストールされました",
     "workflowExtensionMovePlayhead": "ワークフロー拡張APIを介してFinalCutPro再生ヘッドを移動します",
     "workspaces": "ワークスペース",
+    "wsActionId": "アクションID",
+    "wsHandler": "ハンドラ",
+    "wsId": "ID",
+    "wsMode": "モード",
+    "wsStatus": "状態",
     "xml": "XML",
     "yellow": "黄",
     "yes": "はい",
