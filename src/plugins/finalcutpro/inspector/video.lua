@@ -654,6 +654,18 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Focus on Scale:
+    --------------------------------------------------------------------------------
+    fcpxCmds:add("focusOnScaleAll")
+        :titled(i18n("focusOnScaleAll"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            scaleAll:doShow():Then(
+                scaleAll.value:doFocus()
+            ):Now()
+        end)
+
+    --------------------------------------------------------------------------------
     -- Scale X:
     --------------------------------------------------------------------------------
     local scaleX = transform:scaleX()
