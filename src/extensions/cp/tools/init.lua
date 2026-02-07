@@ -25,6 +25,8 @@ local window                = require "hs.window"
 
 local config                = require "cp.config"
 
+local fcp                   = require "cp.apple.finalcutpro"
+
 local v                     = require "semver"
 
 local attributes            = fs.attributes
@@ -1574,7 +1576,7 @@ end
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
     local originalFocusedWindow = window.focusedWindow()
     local whichBundleID = processInfo["bundleID"]
-    local fcpBundleID = "com.apple.FinalCut"
+    local fcpBundleID = fcp:bundleID()
     if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcpBundleID then
         whichBundleID = fcpBundleID
     end

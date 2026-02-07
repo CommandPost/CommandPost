@@ -8,6 +8,8 @@ local log				    = require "hs.logger" .new "GeneralPanel"
 
 local tools                 = require "cp.tools"
 
+local fcp                   = require "cp.apple.finalcutpro"
+
 local ax                    = require "cp.fn.ax"
 local Button                = require "cp.ui.Button"
 local PopUpButton           = require "cp.ui.PopUpButton"
@@ -42,7 +44,7 @@ function GeneralPanel.static.timeDisplay(value)
         -- Setter:
         --------------------------------------------------------------------------------
         if tools.tableContains(GeneralPanel.mt.TIME_DISPLAY, value) then
-            execute("defaults write com.apple.FinalCut timeFormatLK -data " .. value)
+            execute("defaults write " .. fcp:bundleID() .. " timeFormatLK -data " .. value)
             for i, v in pairs(GeneralPanel.mt.TIME_DISPLAY) do
                 if value == v then
                     return i
@@ -56,7 +58,7 @@ function GeneralPanel.static.timeDisplay(value)
         --------------------------------------------------------------------------------
         -- Getter:
         --------------------------------------------------------------------------------
-        local output, executeStatus = execute("defaults read com.apple.FinalCut timeFormatLK")
+        local output, executeStatus = execute("defaults read " .. fcp:bundleID() .. " timeFormatLK")
         if executeStatus and output then
             local length = string.len(output)
             if string.sub(output, 1, 1) == "<" and string.sub(output, length -1, length - 1 ) == ">" then
