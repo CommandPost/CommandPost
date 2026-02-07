@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "'%{title}' शीर्षक वाली कोई क्लिप नहीं मिली।",
     "aNewFCPXMLHasBeenExportedSuccessfully": "एक नया fcpxML सफलतापूर्वक निर्यात किया गया है।",
     "aValidTokenIsRequired": "एक वैध टोकन की आवश्यकता है।",
+    "aValidWorkspaceIsRequired": "एक वैध कार्यस्थान आवश्यक है.",
     "above": "ऊपर",
     "absolute": "पूर्ण",
     "absoluteSnapsToZero": "निरपेक्ष (स्नैप टू जीरो)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "टूरबॉक्स: मैनेजर",
     "core_tourbox_prefs_label": "प्राथमिकताएं: टूरबॉक्स",
     "core_watchfolders_manager_label": "मैनेजर: वॉच फ़ोल्डर्स",
+    "core_websocket_label": "वेबसॉकेट",
+    "core_websocket_manager_label": "प्रबंधक: वेबसॉकेट",
+    "core_websocket_prefs_label": "प्राथमिकताएँ: वेबसॉकेट",
     "correctSpellingAutomatically": "सही वर्तनी स्वचालित रूप से",
     "cpAddNoteToSelectedClips_title": "चयनित क्लिप में नोट जोड़ें",
     "cpAllowTasksDuringPlayback_title": "प्लेबैक के दौरान रेंडरिंग टॉगल करें",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "फ़ाइलनाम उपसर्ग सक्षम करें",
     "enableFlashDrive": "फ्लैश ड्राइव को सक्षम करें",
     "enableHUD": "एचयूडी सक्षम करें",
+    "enableHaptics": "हैप्टिक्स सक्षम करें",
     "enableLoupdeckSupport": "लूपडेक + समर्थन सक्षम करें",
     "enableLoupedeckCTSupport": "Loupedeck CT समर्थन सक्षम करें",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Loupedeck CT सहायता और Loupedeck ऐप सक्षम करें",
@@ -949,6 +954,7 @@
     "feedback": "प्रतिक्रिया",
     "feedbackError": "कमांडपोस्ट सर्वर के साथ संवाद करने की कोशिश में निम्नलिखित त्रुटि हुई:\n\n%{message}\n\nदुर्भाग्य से आपकी प्रतिक्रिया प्रस्तुत नहीं की गई।\n\nकृपया पुन: प्रयास करें।",
     "feedbackSuccess": "आपकी राय सफलतापूर्वक सबमिट की गई थी\n\nधन्यवाद!",
+    "fieldOfView": "देखने के क्षेत्र",
     "fiftyHz": "50 हर्ट्ज",
     "fileCouldNotBeRead": "चयनित फ़ाइल को पढ़ा नहीं जा सका",
     "fill": "भरना",
@@ -1165,6 +1171,7 @@
     "findNext": "अगला ढूंढो",
     "findPrevious": "पिछला खोजें",
     "findToken": "टोकन खोजें",
+    "findWorkspace": "कार्यस्थान खोजें",
     "finder": "खोजक",
     "finder_application_manager_label": "आवेदन प्रबंधंक",
     "finder_audio_label": "ऑडियो क्रिया",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "समतल",
     "flat9": "समतल",
+    "focusOnScaleAll": "पैमाने पर ध्यान केंद्रित करें",
     "focusOnTitleTextInInspector": "इंस्पेक्टर में शीर्षक पाठ पर ध्यान दें",
     "folder": "फ़ोल्डर",
     "font": "फ़ॉन्ट",
@@ -1270,6 +1278,8 @@
     "grouped": "समूहीकृत",
     "guide": "मार्गदर्शक",
     "guides": "गाइड",
+    "hapticsSpeed": "हैप्टिक्स गति",
+    "hapticsStrenght": "स्पर्श शक्ति",
     "hardLight": "कठिन प्रकाश",
     "hardLight9": "कठिन प्रकाश",
     "hardMix": "कठिन मिश्रण",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "जानकारी",
     "insert": "डालना",
+    "insertAction": "क्रिया सम्मिलित करें",
     "insertClipsVerticallyFromBrowserToTimeline": "ब्राउज़र से टाइमलाइन पर क्लिप्स लंबवत डालें",
     "insertIntoTimeline": "टाइमलाइन में डालें",
     "insideCorners": "कोनों के अंदर",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "जॉग व्हील मोड",
     "joinClips": "joinClips",
+    "joinDiscord": "डिस्कॉर्ड से जुड़ें",
     "jumpToFrameShiftExplanation": "यदि आप SHIFT को दबाए रखते हैं, तो यह 1 के बजाय 10 फ्रेम कूद जाएगा।",
     "jumpToNextFrame": "अगले फ्रेम पर जाएं",
     "jumpToPreviousFrame": "पिछले फ्रेम पर जाएं",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "Search Console में macOS शॉर्टकट ऐप से शॉर्टकट सूचीबद्ध करने के लिए CommandPost को <strong>ऑटोमेशन</strong> अनुमति<br /> की आवश्यकता होती है।<br /><br />यह <strong>वैकल्पिक</strong> है। यदि आप <strong>शॉर्टकट सक्षम करें</strong> पर क्लिक करते हैं, तो आपको अनुमति के लिए कहा जा सकता है<br /> यदि कमांडपोस्ट ने पहले से नहीं पूछा है। आप किसी भी समय <strong>सिस्टम वरीयताएँ> सुरक्षा और गोपनीयता> गोपनीयता> स्वचालन</strong> पैनल पर जाकर इस अनुमति को बदल सकते हैं।",
     "magicButton": "मैजिक बटन",
     "magnify": "आवर्धक",
+    "mapping": "मानचित्रण",
     "marker": "निशान",
     "master": "स्वामी",
     "master2": "master2",
@@ -1663,7 +1676,9 @@
     "notion": "धारणा",
     "notionDatabaseURL": "धारणा डेटाबेस यूआरएल",
     "notionDescription": "यह टूल आपको फाइनल कट प्रो से मेटाडेटा प्राप्त करने और इसे सीधे नोटियन पर अपलोड करने की अनुमति देता है। vzhd1701 के csv2notion द्वारा संचालित।",
+    "notionDescriptionTwo": "CSV2Notion Neo द्वारा संचालित.",
     "notionToken": "धारणा टोकन",
+    "notionWorkspace": "नोशन वर्कस्पेस",
     "nudge": "कुहनी से हलका धक्का",
     "number": "संख्या",
     "ofScreen": "स्क्रीन के",
@@ -1711,6 +1726,8 @@
     "optional": "वैकल्पिक",
     "options": "विकल्प",
     "organize": "व्यवस्थित करें",
+    "orientation": "अभिविन्यास",
+    "orientationMapping": "अभिविन्यास मानचित्रण",
     "originalClipName": "मूल क्लिप नाम",
     "originalOptimised": "मूल / अनुकूलित",
     "originalTitle": "मूल शीर्षक",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "क्या आप इस बटन का नाम बदलना चाहेंगे?",
     "renameClip": "क्लिप का नाम बदलें",
     "renderComplete": "पूरा प्रस्तुत करें!",
+    "reorient": "नई दिशा",
     "repeat": "दोहराना",
     "repeatPressActionUntilReleased": "प्रेस कार्रवाई को तब तक जारी रखें जब तक जारी न हो जाए",
     "replace": "बदलने के",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "राइट टेक्स्ट लेयर",
     "rightVertical": "rightVertical",
+    "roll": "रोल",
     "rollingShutter": "रोलिंग शटर",
     "rotate": "घुमाएँ",
     "rotate9": "घुमाएँ",
@@ -2158,6 +2177,38 @@
         "one": "शिफ़्ट एंकर को %{amount} पिक्सेल तक बढ़ाएँ",
         "other": "शिफ़्ट एंकर को %{amount} पिक्सेल तक बढ़ाएँ"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "दिशा-निर्देशन क्षेत्र को %{amount} डिग्री बायीं ओर खिसकाएं",
+        "other": "दिशा-निर्देशन क्षेत्र को %{amount} डिग्री बायीं ओर खिसकाएं"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "दिशा क्षेत्र दृश्य को %{amount} डिग्री से दाईं ओर खिसकाएं",
+        "other": "दिशा क्षेत्र दृश्य को %{amount} डिग्री से दाईं ओर खिसकाएं"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "ओरिएंटेशन पैन को %{amount} डिग्री से बाएं शिफ्ट करें",
+        "other": "ओरिएंटेशन पैन को %{amount} डिग्री से बाएं शिफ्ट करें"
+    },
+    "shiftOrientationPanRight": {
+        "one": "ओरिएंटेशन पैन को %{amount} डिग्री से दाईं ओर शिफ्ट करें",
+        "other": "ओरिएंटेशन पैन को %{amount} डिग्री से दाईं ओर शिफ्ट करें"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "ओरिएंटेशन रोल को %{amount} डिग्री से बाईं ओर शिफ्ट करें",
+        "other": "ओरिएंटेशन रोल को %{amount} डिग्री से बाईं ओर शिफ्ट करें"
+    },
+    "shiftOrientationRollRight": {
+        "one": "दिशा परिवर्तन %{amount} डिग्री से दाईं ओर रोल करें",
+        "other": "दिशा परिवर्तन %{amount} डिग्री से दाईं ओर रोल करें"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "अभिविन्यास को %{amount} डिग्री से बाईं ओर झुकाएँ",
+        "other": "अभिविन्यास को %{amount} डिग्री से बाईं ओर झुकाएँ"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "दिशा परिवर्तन %{amount} डिग्री से दाएँ झुकाएँ",
+        "other": "दिशा परिवर्तन %{amount} डिग्री से दाएँ झुकाएँ"
+    },
     "shiftPositionDownPixels": {
         "one": "शिफ्ट स्थिति नीचे %{amount} पिक्सेल",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Shift स्थिति %{amount} पिक्सेल",
         "other": "Shift स्थिति %{amount} पिक्सेल"
+    },
+    "shiftReorientPanLeft": {
+        "one": "पैन को %{amount} डिग्री तक बाईं ओर शिफ्ट करें",
+        "other": "पैन को %{amount} डिग्री तक बाईं ओर शिफ्ट करें"
+    },
+    "shiftReorientPanRight": {
+        "one": "पैन को %{amount} डिग्री से दाईं ओर स्थानांतरित करें",
+        "other": "पैन को %{amount} डिग्री से दाईं ओर स्थानांतरित करें"
+    },
+    "shiftReorientRollLeft": {
+        "one": "%{amount} डिग्री से बाईं ओर रोल को स्थानांतरित करें",
+        "other": "%{amount} डिग्री से बाईं ओर रोल को स्थानांतरित करें"
+    },
+    "shiftReorientRollRight": {
+        "one": "%{amount} डिग्री से दाईं ओर रोल करें, पुनः दिशा बदलें",
+        "other": "%{amount} डिग्री से दाईं ओर रोल करें, पुनः दिशा बदलें"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "शिफ्ट रीओरिएंट टिल्ट लेफ्ट बायीं ओर %{amount} डिग्री",
+        "other": "शिफ्ट रीओरिएंट टिल्ट लेफ्ट बायीं ओर %{amount} डिग्री"
+    },
+    "shiftReorientTiltRight": {
+        "one": "%{amount} डिग्री से दाईं ओर शिफ्ट करें, पुनः दिशा बदलें, झुकाएं",
+        "other": "%{amount} डिग्री से दाईं ओर शिफ्ट करें, पुनः दिशा बदलें, झुकाएं"
     },
     "shiftRotationLeft": {
         "one": "शिफ्ट रोटेशन को %{amount} डिग्री द्वारा छोड़ा गया",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "यह इस विशेष इकाई के लिए डिफ़ॉल्ट मानों के लिए सभी स्ट्रीम डेक आइटम रीसेट करेगा।",
     "streamdeckPanelLabel": "स्ट्रीम डेक",
     "streamdeckPanelTooltip": "स्ट्रीम डेक प्राथमिकताएँ",
+    "strong": "मज़बूत",
     "subcomponent": "उप-घटक",
     "subcomponents": "उप-घटक",
     "subtract": "घटाना",
@@ -2380,6 +2456,7 @@
     "temperature": "तापमान",
     "temperature4": "temperature4",
     "ten": "10",
+    "testSnippet": "टेस्ट स्निपेट",
     "testTitle": "कमांडपोस्ट टेस्ट",
     "text": "टेक्स्ट",
     "textInspectorCouldNotBeShown": "पाठ निरीक्षक नहीं दिखाया जा सका।",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "यह केवल प्ले शॉर्टकट कुंजी को ट्रिगर करेगा यदि पहले ही रोक दिया गया हो।",
     "three": "3",
     "threeDeeText": "3 डी पाठ",
+    "tilt": "नत",
     "timeline": "समय",
     "timelineBatchExportBeginMessage": "यह टाइमलाइन बैच एक्सपोर्ट टूल प्रत्येक क्लिप को व्यक्तिगत रूप से चुनने के लिए ऑटोमेशन का उपयोग करता है, फिर 'फ़ाइल> शेयर' मेनू आइटम को ट्रिगर करता है।\n\nकृपया इस प्रक्रिया के पूरा होने तक माउस को स्थानांतरित न करें या कीबोर्ड को स्पर्श न करें।",
     "timelineBatchExportCompressorBeginMessage": "यह टाइमलाइन बैच एक्सपोर्ट टूल प्रत्येक क्लिप को व्यक्तिगत रूप से चुनने के लिए ऑटोमेशन का उपयोग करता है, फिर 'फाइल> सेंडर टू कंप्रेसर' मेनू आइटम को ट्रिगर करता है।\n\nकृपया इस प्रक्रिया के पूरा होने तक माउस को स्थानांतरित न करें या कीबोर्ड को स्पर्श न करें।",
@@ -2411,6 +2489,7 @@
     "timeline_group": "समय",
     "tint": "टिंट",
     "tint4": "tint4",
+    "tinyPlanet": "छोटा ग्रह",
     "tip": "टिप",
     "title": "शीर्षक",
     "title_group": "शीर्षक",
@@ -2431,6 +2510,7 @@
     "toggleControls": "टॉगल नियंत्रण",
     "toggleDaVinciResolveControlSurfaceSupport": "टॉगल करें DaVinci समाधान नियंत्रण भूतल समर्थन",
     "toggleEffects": "toggleEffects",
+    "toggleKeyframe": "मुख्यफ़्रेम टॉगल करें",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "चुनिंदा क्लिप पर वीडियो एनीमेशन पॉपअप में टॉगल अपारदर्शिता फीका हैंडल",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "एक के कारण Final Cut Pro बग यह एक माध्यमिक कहानी में क्लिप के लिए काम नहीं करता है",
     "toggleOverlaysWithCapsLock": "toggleOverlaysWithCapsLock",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "यह फीचर आपको मैक ओएस नुकसान के लिए प्राप्त करने की अनुमति देता है, जब भी किसी भी फ़ॉक्सएक्सएमएल फाइल को नीचे की घड़ी फ़ोल्डरों में से किसी में जोड़ा जाता है। अधिसूचना से आप इन फाइलों को सीधे अपने वर्तमान फाइनल कट प्रो समयरेखा पर <b> आयात कर सकते हैं </ b> यदि आप <b> SHIFT </ b> को दबाते समय <b> आयात करें </ b> दबाते हैं, तो यह सभी बकाया फाइलों को आयात करेगा",
     "watchFolders": "फ़ोल्डर देखें",
     "wave": "लहर",
+    "weak": "कमज़ोर",
+    "websocket": "वेबसॉकेट",
+    "websocketActionQuery": "एक्शन क्वेरी",
+    "websocketAddress": "पता",
+    "websocketCannotParseMessageData": "संदेश डेटा को पार्स नहीं किया जा सकता:",
+    "websocketClientMode": "क्लाइंट मोड",
+    "websocketClients": "ग्राहकों",
+    "websocketConnected": "जुड़े हुए",
+    "websocketConnectionStatus": "कनेक्शन स्थिति",
+    "websocketControlSurface": "वेबसॉकेट नियंत्रण सतह",
+    "websocketControlSurfaceDisabled": "वेबसॉकेट कंट्रोल सरफेस अक्षम है",
+    "websocketControlSurfaceSettings": "वेबसॉकेट नियंत्रण सतह सेटिंग्स",
+    "websocketCopied": "कॉपी किया गया",
+    "websocketCopyFailed": "कॉपी करने में विफल:",
+    "websocketCopyMessage": "संदेश की प्रतिलिपि बनाएं",
+    "websocketCurrentlySelectedAction": "वर्तमान में चयनित कार्रवाई",
+    "websocketDisableWebSocketControlSurface": "वेबसॉकेट कंट्रोल सरफेस को अक्षम करें",
+    "websocketDisconnected": "डिस्कनेक्ट किया गया",
+    "websocketEnableWebSocket": "वेबसॉकेट सक्षम करें",
+    "websocketEnableWebSocketControlSurface": "वेबसॉकेट कंट्रोल सरफेस को सक्षम करें",
+    "websocketFilterActionsByApplication": "एप्लिकेशन के आधार पर कार्यों को फ़िल्टर करें:",
+    "websocketInvalidPortNumber": "अमान्य पोर्ट नंबर",
+    "websocketInvalidPortNumberDescription": "कृपया 1 और 65535 के बीच एक वैध पोर्ट नंबर दर्ज करें।",
+    "websocketMessageExample": "वेबसॉकेट संदेश का उदाहरण:",
+    "websocketNoActiveConnections": "कोई सक्रिय कनेक्शन नहीं",
+    "websocketNoCopyableMessage": "कॉपी करने के लिए कोई संदेश नहीं है",
+    "websocketOpenActionChooser": "ओपन एक्शन चयनकर्ता",
+    "websocketOpenActionChooserDescription": "ऊपर दिए गए बटन पर क्लिक करके कमांडपोस्ट एक्शन चूज़र खोलें और सभी उपलब्ध एक्शन ब्राउज़ और सर्च करें।",
+    "websocketRefresh": "ताज़ा करना",
+    "websocketServerMode": "सर्वर मोड",
+    "websocketServerNotRunning": "सर्वर नहीं चल रहा है",
+    "websocketServerPort": "सर्वर पोर्ट",
+    "websocketServerRunning": "सर्वर चल रहा है",
+    "websocketServerRunningWithDetails": "सर्वर चल रहा है\\nपोर्ट: %{पोर्ट}\\nकनेक्टेड क्लाइंट: %{काउंट}",
+    "websocketServerStopped": "सर्वर बंद हो गया",
+    "websocketToggleWebSocketControlSurface": "वेबसॉकेट कंट्रोल सरफेस को टॉगल करें",
     "weight": "वजन",
     "welcomeToTheToolbox": "टूलबॉक्स में आपका स्वागत है",
     "whatDidYouExpectToHappen": "तुमने क्या होने की उम्मीद की थी?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "वर्कफ़्लो एक्सटेंशन स्थापित",
     "workflowExtensionMovePlayhead": "वर्कफ़्लो एक्सटेंशन API के माध्यम से फ़ाइनल कट प्रो प्लेहेड को स्थानांतरित करता है",
     "workspaces": "कार्यस्थानों",
+    "wsActionId": "एक्शन आईडी",
+    "wsHandler": "हैंडलर",
+    "wsId": "पहचान",
+    "wsMode": "तरीका",
+    "wsStatus": "स्थिति",
     "xml": "एक्सएमएल",
     "yellow": "पीला",
     "yes": "हाँ",
