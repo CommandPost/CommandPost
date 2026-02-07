@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Er is geen fragment gevonden met de titel '%{title}'.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "Een nieuwe FCPXML is succesvol geëxporteerd.",
     "aValidTokenIsRequired": "Een geldig token is vereist.",
+    "aValidWorkspaceIsRequired": "Een geldige werkruimte is vereist.",
     "above": "Bovenstaande",
     "absolute": "absoluut",
     "absoluteSnapsToZero": "Absoluut (snapt naar nul)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Manager",
     "core_tourbox_prefs_label": "Voorkeuren: TourBox",
     "core_watchfolders_manager_label": "Beheerder: Observatie mappen",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Manager: WebSocket",
+    "core_websocket_prefs_label": "Voorkeuren: WebSocket",
     "correctSpellingAutomatically": "Spelling automatisch corrigeren",
     "cpAddNoteToSelectedClips_title": "Notitie toevoegen aan geselecteerde clip (s)",
     "cpAllowTasksDuringPlayback_title": "Schakelen tussen weergave tijdens weergave",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Voorvoegsel bestandsnaam inschakelen",
     "enableFlashDrive": "Schakel Flash Drive in",
     "enableHUD": "Schakel HUD in",
+    "enableHaptics": "Haptische feedback inschakelen",
     "enableLoupdeckSupport": "Schakel Loupedeck + ondersteuning in",
     "enableLoupedeckCTSupport": "Schakel Loupedeck CT-ondersteuning in",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Schakel Loupedeck CT-ondersteuning in en sluit de Loupedeck-app af",
@@ -949,6 +954,7 @@
     "feedback": "terugkoppeling",
     "feedbackError": "De volgende fout is opgetreden tijdens het communiceren met de CommandPost-servers:\n\n%{message}\n\nHelaas is uw terugkoppeling niet verzonden.\n\nProbeer het opnieuw.",
     "feedbackSuccess": "Uw terugkoppeling is succesvol verzonden.\n\nDank je!",
+    "fieldOfView": "Gezichtsveld",
     "fiftyHz": "50hz",
     "fileCouldNotBeRead": "Het geselecteerde bestand kan niet worden gelezen.",
     "fill": "Vullen",
@@ -1165,6 +1171,7 @@
     "findNext": "Volgende zoeken",
     "findPrevious": "Vorige zoeken",
     "findToken": "Vind token",
+    "findWorkspace": "Zoek werkruimte",
     "finder": "Finder",
     "finder_application_manager_label": "Applicatie Manager",
     "finder_audio_label": "Audio-acties",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Vlak",
     "flat9": "Vlak",
+    "focusOnScaleAll": "Focus op schaalvergroting",
     "focusOnTitleTextInInspector": "Focus op titeltekst in Inspector",
     "folder": "Map",
     "font": "doopvont",
@@ -1270,6 +1278,8 @@
     "grouped": "gegroepeerd",
     "guide": "Gids",
     "guides": "Gidsen",
+    "hapticsSpeed": "Haptische snelheid",
+    "hapticsStrenght": "Haptische sterkte",
     "hardLight": "Hard licht",
     "hardLight9": "Hard licht",
     "hardMix": "Harde mix",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "info",
     "insert": "Invoegen",
+    "insertAction": "Actie invoegen",
     "insertClipsVerticallyFromBrowserToTimeline": "Plaats clips verticaal van browser naar tijdlijn",
     "insertIntoTimeline": "Voeg in de tijdlijn in",
     "insideCorners": "Binnenhoeken",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Jog Wheel-modus",
     "joinClips": "Sluit me aan bij clips",
+    "joinDiscord": "Word lid van Discord",
     "jumpToFrameShiftExplanation": "Als u SHIFT ingedrukt houdt, springt het 10 frames in plaats van 1.",
     "jumpToNextFrame": "Naar volgend frame springen",
     "jumpToPreviousFrame": "Naar vorig frame springen",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "CommandPost vereist een <strong>Automatisering</strong>-machtiging<br /> om snelkoppelingen van de macOS Shortcuts-app in de Search Console weer te geven.<br /><br />Dit is <strong>optioneel</strong>. Als u op <strong>Snelkoppelingen inschakelen</strong> klikt, wordt u mogelijk om toestemming gevraagd<br /> als CommandPost dit nog niet eerder heeft gevraagd. U kunt deze toestemming op elk moment wijzigen door naar het paneel <strong>Systeemvoorkeuren > Beveiliging en privacy > Privacy > Automatisering</strong> te gaan.",
     "magicButton": "Magische knop",
     "magnify": "Vergroten",
+    "mapping": "In kaart brengen",
     "marker": "Markeerstift",
     "master": "Hoofd",
     "master2": "MEVROUW",
@@ -1663,7 +1676,9 @@
     "notion": "Begrip",
     "notionDatabaseURL": "Notion Database-URL",
     "notionDescription": "Met deze tool kun je metadata uit Final Cut Pro halen en deze rechtstreeks naar Notion uploaden. Aangedreven door vzhd1701's csv2notion.",
+    "notionDescriptionTwo": "Mogelijk gemaakt door CSV2Notion Neo.",
     "notionToken": "Begrip token",
+    "notionWorkspace": "Begrip werkruimte",
     "nudge": "Duwtje",
     "number": "Aantal",
     "ofScreen": "van het scherm",
@@ -1711,6 +1726,8 @@
     "optional": "Optioneel",
     "options": "opties",
     "organize": "Organiseren",
+    "orientation": "Oriëntatie",
+    "orientationMapping": "Oriëntatie in kaart brengen",
     "originalClipName": "Oorspronkelijke clipnaam",
     "originalOptimised": "Original / Geoptimaliseerde",
     "originalTitle": "Originele titel",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "Waar wilt u deze knop naartoe hernoemen?",
     "renameClip": "Naam van clip wijzigen",
     "renderComplete": "Renderen voltooid!",
+    "reorient": "Heroriënteren",
     "repeat": "Herhaling",
     "repeatPressActionUntilReleased": "Herhaal de drukactie tot het wordt vrijgegeven",
     "replace": "Vervangen",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Juiste tekstlaag",
     "rightVertical": "Rechts verticaal",
+    "roll": "Rollen",
     "rollingShutter": "Rolluik",
     "rotate": "Draaien",
     "rotate9": "Draaien",
@@ -2158,6 +2177,38 @@
         "one": "Verschuif het anker omhoog met %{amount} Pixel",
         "other": "Verschuif het anker omhoog met %{amount} Pixel"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Verschuivingsoriëntatie Gezichtsveld links met %{amount} graad",
+        "other": "Verschuivingsoriëntatie Gezichtsveld links met %{amount} graad"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Verschuif het gezichtsveld van de oriëntatie met %{amount} graden naar rechts",
+        "other": "Verschuif het gezichtsveld van de oriëntatie met %{amount} graden naar rechts"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Oriëntatie verschuiven naar links verschuiven met %{amount} graden",
+        "other": "Oriëntatie verschuiven naar links verschuiven met %{amount} graden"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Oriëntatie verschuiven Naar rechts pannen met %{amount} graden",
+        "other": "Oriëntatie verschuiven Naar rechts pannen met %{amount} graden"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Verschuivingsrichting Rol naar links met %{amount} graad",
+        "other": "Verschuivingsrichting Rol naar links met %{amount} graad"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Oriëntatie verschuiven Rol naar rechts met %{amount} graad",
+        "other": "Oriëntatie verschuiven Rol naar rechts met %{amount} graad"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Oriëntatie verschuiven Kantelen naar links met %{amount} graden",
+        "other": "Oriëntatie verschuiven Kantelen naar links met %{amount} graden"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Oriëntatie verschuiven Kantelen naar rechts met %{amount} graden",
+        "other": "Oriëntatie verschuiven Kantelen naar rechts met %{amount} graden"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Shift Position Up %{amount} Pixel",
         "other": "Shift Position Up %{amount} Pixels"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Verschuiving Heroriënteren Pannen naar links met %{amount} graden",
+        "other": "Verschuiving Heroriënteren Pannen naar links met %{amount} graden"
+    },
+    "shiftReorientPanRight": {
+        "one": "Verschuiving Heroriënteren Pannen naar rechts met %{amount} graden",
+        "other": "Verschuiving Heroriënteren Pannen naar rechts met %{amount} graden"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Verschuiving Heroriënteren Rol naar links met %{amount} graad",
+        "other": "Verschuiving Heroriënteren Rol naar links met %{amount} graad"
+    },
+    "shiftReorientRollRight": {
+        "one": "Verschuiving Heroriënteren Rol naar rechts met %{amount} graad",
+        "other": "Verschuiving Heroriënteren Rol naar rechts met %{amount} graad"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Verschuiven Heroriënteren Kantelen naar links met %{amount} graden",
+        "other": "Verschuiven Heroriënteren Kantelen naar links met %{amount} graden"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Verschuiving Heroriënteren Kantelen naar rechts met %{amount} graden",
+        "other": "Verschuiving Heroriënteren Kantelen naar rechts met %{amount} graden"
     },
     "shiftRotationLeft": {
         "one": "Shift Rotation Left by %{amount} Degree",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Hierdoor worden alle Stream Deck-items voor dit specifieke toestel teruggezet naar de standaardwaarden.",
     "streamdeckPanelLabel": "Streamdeck",
     "streamdeckPanelTooltip": "Voorkeuren voor streamdecks",
+    "strong": "Sterk",
     "subcomponent": "subonderdeel",
     "subcomponents": "subonderdelen",
     "subtract": "Aftrekken",
@@ -2380,6 +2456,7 @@
     "temperature": "Temperatuur",
     "temperature4": "Temp",
     "ten": "10",
+    "testSnippet": "Testfragment",
     "testTitle": "CommandPost-test",
     "text": "Tekst",
     "textInspectorCouldNotBeShown": "Text Inspector kon niet worden getoond.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Hierdoor wordt de afspeelsneltoets alleen geactiveerd als deze al is gestopt.",
     "three": "3",
     "threeDeeText": "3D-tekst",
+    "tilt": "Kantelen",
     "timeline": "Tijdlijn",
     "timelineBatchExportBeginMessage": "Deze tijdlijn Batch Export Tool gebruikt automatisering om elke clip afzonderlijk te selecteren en activeert vervolgens het menu-item 'Bestand> Delen'.\n\nBeweeg de muis niet en raak het toetsenbord niet aan voordat dit proces is voltooid.",
     "timelineBatchExportCompressorBeginMessage": "Deze tijdlijn Batch Export Tool gebruikt automatisering om elke clip afzonderlijk te selecteren en activeert vervolgens het menu-item 'Bestand> Verzenden naar compressor'.\n\nBeweeg de muis niet en raak het toetsenbord niet aan voordat dit proces is voltooid.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "Tijdlijn",
     "tint": "Tint",
     "tint4": "Tint",
+    "tinyPlanet": "Kleine planeet",
     "tip": "Tip",
     "title": "Titel",
     "title_group": "Titel",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Schakelaars omschakelen",
     "toggleDaVinciResolveControlSurfaceSupport": "Toggle DaVinci Resolve Control Surface-ondersteuning",
     "toggleEffects": "Effecten wisselen",
+    "toggleKeyframe": "Schakel Keyframe in",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Schakel de ondoorzichtigheid fade-handvatten in video-animatie pop-up op geselecteerde clips",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Vanwege een Final Cut Pro-bug werkt dit niet voor clips in een secundaire verhaallijn",
     "toggleOverlaysWithCapsLock": "Overlays wisselen met Caps Lock",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Met deze functie kunt u macOS-notificaties ontvangen wanneer een FCPXML-bestand wordt toegevoegd aan een van de onderstaande Observatie mappen. <br /> Vanuit de melding kunt u <b> Deze </ b> importeren naar uw huidige Final Cut Pro-tijdlijn . <br /> Als u <b> SHIFT </ b> ingedrukt houdt wanneer u op <b> Import </ b> drukt, worden alle openstaande bestanden geïmporteerd.",
     "watchFolders": "Observatie mappen",
     "wave": "Golf",
+    "weak": "Zwak",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Actiequery",
+    "websocketAddress": "Adres",
+    "websocketCannotParseMessageData": "Kan de berichtgegevens niet verwerken:",
+    "websocketClientMode": "Clientmodus",
+    "websocketClients": "Klanten",
+    "websocketConnected": "Aangesloten",
+    "websocketConnectionStatus": "Verbindingsstatus",
+    "websocketControlSurface": "WebSocket-besturingsoppervlak",
+    "websocketControlSurfaceDisabled": "Het WebSocket-bedieningspaneel is uitgeschakeld.",
+    "websocketControlSurfaceSettings": "Instellingen voor het WebSocket-bedieningspaneel",
+    "websocketCopied": "Gekopieerd",
+    "websocketCopyFailed": "Kopiëren mislukt:",
+    "websocketCopyMessage": "Bericht kopiëren",
+    "websocketCurrentlySelectedAction": "Momenteel geselecteerde actie",
+    "websocketDisableWebSocketControlSurface": "Schakel het WebSocket-bedieningspaneel uit.",
+    "websocketDisconnected": "Verbinding verbroken",
+    "websocketEnableWebSocket": "WebSocket inschakelen",
+    "websocketEnableWebSocketControlSurface": "Schakel het WebSocket-bedieningspaneel in.",
+    "websocketFilterActionsByApplication": "Filter acties op toepassing:",
+    "websocketInvalidPortNumber": "Ongeldig poortnummer",
+    "websocketInvalidPortNumberDescription": "Voer een geldig poortnummer in tussen 1 en 65535.",
+    "websocketMessageExample": "Voorbeeld van een WebSocket-bericht:",
+    "websocketNoActiveConnections": "Geen actieve verbindingen",
+    "websocketNoCopyableMessage": "Geen bericht om te kopiëren",
+    "websocketOpenActionChooser": "Open Actiekiezer",
+    "websocketOpenActionChooserDescription": "Klik op de bovenstaande knop om de CommandPost Actiekiezer te openen en alle beschikbare acties te bekijken en te doorzoeken.",
+    "websocketRefresh": "Vernieuwen",
+    "websocketServerMode": "Servermodus",
+    "websocketServerNotRunning": "De server draait niet.",
+    "websocketServerPort": "Serverpoort",
+    "websocketServerRunning": "Server draait",
+    "websocketServerRunningWithDetails": "Server draait\\nPoort: %{port}\\nAangesloten clients: %{count}",
+    "websocketServerStopped": "Server gestopt",
+    "websocketToggleWebSocketControlSurface": "WebSocket-bedieningspaneel in-/uitschakelen",
     "weight": "Gewicht",
     "welcomeToTheToolbox": "Welkom bij de Toolbox",
     "whatDidYouExpectToHappen": "Wat verwachtte je dat er zou gebeuren?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "Workflow-extensie geïnstalleerd",
     "workflowExtensionMovePlayhead": "Verplaatst de Final Cut Pro-afspeelkop via de Workflow Extension API",
     "workspaces": "workspaces",
+    "wsActionId": "Actie-ID",
+    "wsHandler": "Handler",
+    "wsId": "ID",
+    "wsMode": "Modus",
+    "wsStatus": "Status",
     "xml": "XML",
     "yellow": "Geel",
     "yes": "Ja",
