@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Intet klip med titlen '%{title}' blev fundet.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "En ny FCPXML er blevet eksporteret med succes.",
     "aValidTokenIsRequired": "Der kræves et gyldigt token.",
+    "aValidWorkspaceIsRequired": "Der kræves et gyldigt arbejdsområde.",
     "above": "Over",
     "absolute": "absolutte",
     "absoluteSnapsToZero": "Absolut (snaps til nul)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Manager",
     "core_tourbox_prefs_label": "Præferencer: TourBox",
     "core_watchfolders_manager_label": "Manager: Se mapper",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Leder: WebSocket",
+    "core_websocket_prefs_label": "Præferencer: WebSocket",
     "correctSpellingAutomatically": "Korrekt stavning automatisk",
     "cpAddNoteToSelectedClips_title": "Føj note til de valgte klipp (er)",
     "cpAllowTasksDuringPlayback_title": "Skift gengivelse under afspilning",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Aktivér filnavnspræfiks",
     "enableFlashDrive": "Aktivér Flash-drev",
     "enableHUD": "Aktivér HUD",
+    "enableHaptics": "Aktivér haptik",
     "enableLoupdeckSupport": "Aktivér Loupedeck + Support",
     "enableLoupedeckCTSupport": "Aktivér Loupedeck CT Support",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Aktivér Loupedeck CT Support & Afslut Loupedeck App",
@@ -949,6 +954,7 @@
     "feedback": "Feedback",
     "feedbackError": "Følgende fejl opstod ved forsøg på at kommunikere med CommandPost-serverne:\n\n%{message}\n\nDesværre blev din feedback ikke sendt.\n\nPrøv igen.",
     "feedbackSuccess": "Din feedback blev sendt.\n\nTak skal du have!",
+    "fieldOfView": "Synsfelt",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "Den valgte fil kunne ikke læses.",
     "fill": "Fylde",
@@ -1165,6 +1171,7 @@
     "findNext": "Find næste",
     "findPrevious": "Find tidligere",
     "findToken": "Find token",
+    "findWorkspace": "Find Workspace",
     "finder": "Finder",
     "finder_application_manager_label": "Application Manager",
     "finder_audio_label": "Lydhandlinger",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Flad",
     "flat9": "Flad",
+    "focusOnScaleAll": "Fokus på skalering af alle",
     "focusOnTitleTextInInspector": "Fokus på titeltekst i inspektøren",
     "folder": "Folder",
     "font": "Skrifttype",
@@ -1270,6 +1278,8 @@
     "grouped": "grupperet",
     "guide": "Guide",
     "guides": "Guides",
+    "hapticsSpeed": "Haptisk hastighed",
+    "hapticsStrenght": "Haptisk styrke",
     "hardLight": "Hårdt lys",
     "hardLight9": "Hårdt lys",
     "hardMix": "Hård blanding",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "Info",
     "insert": "Indsæt",
+    "insertAction": "Indsæt handling",
     "insertClipsVerticallyFromBrowserToTimeline": "Indsæt klip lodret fra browser til tidslinje",
     "insertIntoTimeline": "Indsæt i tidslinjen",
     "insideCorners": "Inde i hjørner",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Jog Wheel Mode",
     "joinClips": "Deltag i klip",
+    "joinDiscord": "Deltag i Discord",
     "jumpToFrameShiftExplanation": "Hvis du holder SHIFT nede, springer den 10 billeder i stedet for 1.",
     "jumpToNextFrame": "Hop til næste ramme",
     "jumpToPreviousFrame": "Hop til forrige ramme",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "CommandPost kræver en <strong>Automation</strong>-tilladelse<br /> for at vise genveje fra macOS-genvejsappen i Search Console.<br /><br />Dette er <strong>valgfrit</strong>. Hvis du klikker på <strong>Aktiver genveje</strong>, bliver du muligvis bedt om tilladelse<br /> hvis CommandPost ikke allerede har spurgt tidligere. Du kan til enhver tid ændre denne tilladelse ved at besøge panelet <strong>Systemindstillinger > Sikkerhed og privatliv > Privatliv > Automatisering</strong>.",
     "magicButton": "Magisk knap",
     "magnify": "Forstørre",
+    "mapping": "Kortlægning",
     "marker": "Marker",
     "master": "Mestre",
     "master2": "FRK",
@@ -1663,7 +1676,9 @@
     "notion": "Begreb",
     "notionDatabaseURL": "Begrebsdatabase-URL",
     "notionDescription": "Dette værktøj giver dig mulighed for at hente metadata fra Final Cut Pro og uploade dem direkte til Notion. Drevet af vzhd1701's csv2notion.",
+    "notionDescriptionTwo": "Drevet af CSV2Notion Neo.",
     "notionToken": "Notion Token",
+    "notionWorkspace": "Begrebet arbejdsområde",
     "nudge": "Puffe",
     "number": "Nummer",
     "ofScreen": "på skærmen",
@@ -1711,6 +1726,8 @@
     "optional": "Valgfri",
     "options": "Muligheder",
     "organize": "Organisere",
+    "orientation": "Orientering",
+    "orientationMapping": "Orienteringskortlægning",
     "originalClipName": "Originalt klipnavn",
     "originalOptimised": "Original / Optimeret",
     "originalTitle": "Originaltitel",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "Hvad vil du omdøbe denne knap til?",
     "renameClip": "Omdøb klip",
     "renderComplete": "Render komplet!",
+    "reorient": "Reorientere",
     "repeat": "Gentage",
     "repeatPressActionUntilReleased": "Gentag trykhandling indtil frigivet",
     "replace": "Erstatte",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Højre tekstlag",
     "rightVertical": "Højre lodret",
+    "roll": "Rulle",
     "rollingShutter": "Rullende skodde",
     "rotate": "Rotere",
     "rotate9": "Rotere",
@@ -2158,6 +2177,38 @@
         "one": "Flyt ankeret op med %{amount} Pixel",
         "other": "Flyt ankeret op med %{amount} Pixel"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Skift Orientering Synsfelt venstre med %{amount} Grad",
+        "other": "Skift Orientering Synsfelt venstre med %{amount} Grad"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Skift orienteringsfelt til højre med %{amount} grader",
+        "other": "Skift orienteringsfelt til højre med %{amount} grader"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Skift Orientering Panorer til venstre med %{amount} Grad",
+        "other": "Skift Orientering Panorer til venstre med %{amount} Grad"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Skift Orientering Panorer højre med %{amount} Grad",
+        "other": "Skift Orientering Panorer højre med %{amount} Grad"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Skift orientering Rul til venstre med %{amount} grader",
+        "other": "Skift orientering Rul til venstre med %{amount} grader"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Skift Orientering Rul til højre med %{amount} Grad",
+        "other": "Skift Orientering Rul til højre med %{amount} Grad"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Skift orientering Vip til venstre med %{amount} grader",
+        "other": "Skift orientering Vip til venstre med %{amount} grader"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Skift orientering Vip til højre med %{amount} grader",
+        "other": "Skift orientering Vip til højre med %{amount} grader"
+    },
     "shiftPositionDownPixels": {
         "one": "Skift position ned %{amount} Pixel",
         "other": "Skift position ned %{amount} Pixels"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Skift position op %{amount} Pixel",
         "other": "Skift position op %{amount} Pixels"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Skift Reorienter Panorer til venstre med %{amount} Grad",
+        "other": "Skift Reorienter Panorer til venstre med %{amount} Grad"
+    },
+    "shiftReorientPanRight": {
+        "one": "Skift Reorienter Panorer til højre med %{amount} Grad",
+        "other": "Skift Reorienter Panorer til højre med %{amount} Grad"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Skift Reorienter Rul til venstre med %{amount} grader",
+        "other": "Skift Reorienter Rul til venstre med %{amount} grader"
+    },
+    "shiftReorientRollRight": {
+        "one": "Skift Reorienter Rul til højre med %{amount} Grad",
+        "other": "Skift Reorienter Rul til højre med %{amount} Grad"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Skift Reorienter Vip til venstre med %{amount} grader",
+        "other": "Skift Reorienter Vip til venstre med %{amount} grader"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Skift Reorienter Tilt højre med %{amount} Grad",
+        "other": "Skift Reorienter Tilt højre med %{amount} Grad"
     },
     "shiftRotationLeft": {
         "one": "Skift rotation venstre med %{amount} grad",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Dette nulstiller alle Stream Deck-emner for denne bestemte enhed til standardværdierne.",
     "streamdeckPanelLabel": "Stream dæk",
     "streamdeckPanelTooltip": "Præferencer for stream-dæk",
+    "strong": "Stærk",
     "subcomponent": "underkomponent",
     "subcomponents": "delkomponenter",
     "subtract": "Trække fra",
@@ -2380,6 +2456,7 @@
     "temperature": "Temperatur",
     "temperature4": "Midlertidig",
     "ten": "10",
+    "testSnippet": "Test Snippet",
     "testTitle": "CommandPost-test",
     "text": "Tekst",
     "textInspectorCouldNotBeShown": "Tekstinspektør kunne ikke vises.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Dette udløser kun genvejstasten for afspilning, hvis den allerede er stoppet.",
     "three": "3",
     "threeDeeText": "3D-tekst",
+    "tilt": "Tilt",
     "timeline": "Tidslinje",
     "timelineBatchExportBeginMessage": "Dette tidslinje-batcheksportværktøj bruger automatisering til at vælge hvert klip individuelt og udløser derefter menupunktet 'Filer> Del'.\n\nVenligst flyt ikke musen eller berør tastaturet, før denne proces er afsluttet.",
     "timelineBatchExportCompressorBeginMessage": "Dette tidslinje-batcheksportværktøj bruger automatisering til at vælge hvert klip individuelt og udløser derefter menupunktet 'Filer> Send til kompressor'.\n\nVenligst flyt ikke musen eller berør tastaturet, før denne proces er afsluttet.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "Tidslinje",
     "tint": "toning",
     "tint4": "toning",
+    "tinyPlanet": "Lille planet",
     "tip": "Tip",
     "title": "Titel",
     "title_group": "Titel",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Skift kontrol",
     "toggleDaVinciResolveControlSurfaceSupport": "Slå DaVinci Resolve Control Surface Support til/fra",
     "toggleEffects": "Skift effekter",
+    "toggleKeyframe": "Slå Keyframe til/fra",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Toggle Opacity Fade Handles i Video Animation Popup på valgte klip",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "På grund af en Final Cut Pro-fejl fungerer dette ikke for klip i en sekundær historie",
     "toggleOverlaysWithCapsLock": "Skift overlays med Caps Lock",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Denne funktion giver dig mulighed for at modtage macOS-meddelelser, hver gang en FCPXML-fil tilføjes til en af nedenstående overvågningsmapper. <br /> Fra underretningen kan du derefter <b> importere </b> disse filer direkte til din nuværende Final Cut Pro-tidslinje . <br /> Hvis du holder nede <b> SKIFT </b>, når du trykker på <b> Importer </b>, importerer det alle de udestående filer.",
     "watchFolders": "Se mapper",
     "wave": "Bølge",
+    "weak": "Svag",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Handlingsforespørgsel",
+    "websocketAddress": "Adresse",
+    "websocketCannotParseMessageData": "Kan ikke analysere beskeddata:",
+    "websocketClientMode": "Klienttilstand",
+    "websocketClients": "Klienter",
+    "websocketConnected": "Forbundet",
+    "websocketConnectionStatus": "Forbindelsesstatus",
+    "websocketControlSurface": "WebSocket-kontroloverflade",
+    "websocketControlSurfaceDisabled": "WebSocket-kontroloverfladen er deaktiveret",
+    "websocketControlSurfaceSettings": "Indstillinger for WebSocket-kontroloverflade",
+    "websocketCopied": "Kopieret",
+    "websocketCopyFailed": "Kopiering mislykkedes:",
+    "websocketCopyMessage": "Kopiér besked",
+    "websocketCurrentlySelectedAction": "Aktuelt valgte handling",
+    "websocketDisableWebSocketControlSurface": "Deaktiver WebSocket-kontroloverflade",
+    "websocketDisconnected": "Afbrudt",
+    "websocketEnableWebSocket": "Aktivér WebSocket",
+    "websocketEnableWebSocketControlSurface": "Aktivér WebSocket-kontroloverflade",
+    "websocketFilterActionsByApplication": "Filtrer handlinger efter applikation:",
+    "websocketInvalidPortNumber": "Ugyldigt portnummer",
+    "websocketInvalidPortNumberDescription": "Indtast venligst et gyldigt portnummer mellem 1 og 65535",
+    "websocketMessageExample": "Eksempel på WebSocket-meddelelse:",
+    "websocketNoActiveConnections": "Ingen aktive forbindelser",
+    "websocketNoCopyableMessage": "Ingen besked at kopiere",
+    "websocketOpenActionChooser": "Åbn handlingsvælgeren",
+    "websocketOpenActionChooserDescription": "Klik på knappen ovenfor for at åbne CommandPost-handlingsvælgeren og gennemse og søge efter alle tilgængelige handlinger",
+    "websocketRefresh": "Opfriske",
+    "websocketServerMode": "Servertilstand",
+    "websocketServerNotRunning": "Serveren kører ikke",
+    "websocketServerPort": "Serverport",
+    "websocketServerRunning": "Server kører",
+    "websocketServerRunningWithDetails": "Serveren kører\\nPort: %{port}\\nTilsluttede klienter: %{count}",
+    "websocketServerStopped": "Server stoppet",
+    "websocketToggleWebSocketControlSurface": "Skift WebSocket-kontrolflade",
     "weight": "Vægt",
     "welcomeToTheToolbox": "Velkommen til værktøjskassen",
     "whatDidYouExpectToHappen": "Hvad forventede du at ske?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "Workflow-udvidelse installeret",
     "workflowExtensionMovePlayhead": "Flytter Final Cut Pro-afspilningshovedet via Workflow Extension API",
     "workspaces": "arbejdsområder",
+    "wsActionId": "Handlings-ID",
+    "wsHandler": "Håndterer",
+    "wsId": "ID",
+    "wsMode": "Mode",
+    "wsStatus": "Status",
     "xml": "XML",
     "yellow": "Gul",
     "yes": "Ja",
