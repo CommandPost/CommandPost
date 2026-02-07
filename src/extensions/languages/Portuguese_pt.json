@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Nenhum clipe intitulado '%{title}' foi encontrado.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "Um novo FCPXML foi exportado com sucesso.",
     "aValidTokenIsRequired": "É necessário um token válido.",
+    "aValidWorkspaceIsRequired": "É necessário um espaço de trabalho válido.",
     "above": "Acima",
     "absolute": "Absoluto",
     "absoluteSnapsToZero": "Absoluto (Snaps to Zero)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Manager",
     "core_tourbox_prefs_label": "Preferências: TourBox",
     "core_watchfolders_manager_label": "Manger: Watch Folders",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Gerenciador: WebSocket",
+    "core_websocket_prefs_label": "Preferências: WebSocket",
     "correctSpellingAutomatically": "Corrigir ortografia automaticamente",
     "cpAddNoteToSelectedClips_title": "Adicionar nota ao (s) clipe (s) selecionado (s)",
     "cpAllowTasksDuringPlayback_title": "Alternar Renderização durante a Reprodução",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Habilitar prefixo de nome de arquivo",
     "enableFlashDrive": "Habilitar Flash Drive",
     "enableHUD": "Ativar HUD",
+    "enableHaptics": "Ativar feedback háptico",
     "enableLoupdeckSupport": "Ativar suporte do Loupedeck +",
     "enableLoupedeckCTSupport": "Habilitar suporte para CT Loupedeck",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Habilite o suporte do Loupedeck CT e saia do aplicativo Loupedeck",
@@ -949,6 +954,7 @@
     "feedback": "Comentários",
     "feedbackError": "O seguinte erro ocorreu ao tentar se comunicar com os servidores CommandPost:\n\n%{message}\n\nInfelizmente seu feedback não foi enviado.\n\nPor favor, tente novamente.",
     "feedbackSuccess": "Os seus comentários foram enviados com sucesso.\n\nObrigado!",
+    "fieldOfView": "Campo de visão",
     "fiftyHz": "50 Hz",
     "fileCouldNotBeRead": "O arquivo selecionado não pôde ser lido.",
     "fill": "Preencher",
@@ -1165,6 +1171,7 @@
     "findNext": "Encontre o próximo",
     "findPrevious": "Encontre Anterior",
     "findToken": "Encontrar token",
+    "findWorkspace": "Encontrar espaço de trabalho",
     "finder": "Localizador",
     "finder_application_manager_label": "Gerente de aplicação",
     "finder_audio_label": "Ações de áudio",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Plano",
     "flat9": "Plano",
+    "focusOnScaleAll": "Foco na escala",
     "focusOnTitleTextInInspector": "Foco no texto do título no Inspetor",
     "folder": "Pasta",
     "font": "Fonte",
@@ -1270,6 +1278,8 @@
     "grouped": "Agrupado",
     "guide": "Guia",
     "guides": "Guias",
+    "hapticsSpeed": "Velocidade háptica",
+    "hapticsStrenght": "Força Háptica",
     "hardLight": "Luz dura",
     "hardLight9": "HardLight",
     "hardMix": "Mix Hard",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "Info",
     "insert": "Inserir",
+    "insertAction": "Inserir ação",
     "insertClipsVerticallyFromBrowserToTimeline": "Inserir clipes verticalmente do navegador para a linha do tempo",
     "insertIntoTimeline": "Inserir na linha do tempo",
     "insideCorners": "Cantos Internos",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Modo Jog Wheel",
     "joinClips": "Junte-se aos clipes",
+    "joinDiscord": "Entre no Discord",
     "jumpToFrameShiftExplanation": "Se você segurar SHIFT, ele pulará 10 quadros em vez de 1.",
     "jumpToNextFrame": "Pular para o próximo quadro",
     "jumpToPreviousFrame": "Saltar para o quadro anterior",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "O CommandPost requer uma permissão de <strong>Automação</strong><br /> para listar atalhos do aplicativo Atalhos do macOS no Search Console.<br /><br />Isso é <strong>opcional</strong>. Se você clicar em <strong>Ativar atalhos</strong>, poderá ser solicitada permissão<br /> se o CommandPost ainda não tiver solicitado anteriormente. Você pode alterar essa permissão a qualquer momento visitando o painel <strong>Preferências do sistema > Segurança e privacidade > Privacidade > Automação</strong>.",
     "magicButton": "Botão Mágico",
     "magnify": "Ampliar",
+    "mapping": "Mapeamento",
     "marker": "Marcador",
     "master": "mestre",
     "master2": "SENHORA",
@@ -1663,7 +1676,9 @@
     "notion": "Noção",
     "notionDatabaseURL": "URL do banco de dados de noção",
     "notionDescription": "Essa ferramenta permite obter metadados do Final Cut Pro e enviá-los diretamente para o Notion. Alimentado por csv2notion de vzhd1701.",
+    "notionDescriptionTwo": "Desenvolvido por CSV2Notion Neo.",
     "notionToken": "Ficha de Noção",
+    "notionWorkspace": "Espaço de trabalho de noção",
     "nudge": "Empurrão",
     "number": "Número",
     "ofScreen": "da tela",
@@ -1711,6 +1726,8 @@
     "optional": "Opcional",
     "options": "Opções",
     "organize": "Organizar",
+    "orientation": "Orientação",
+    "orientationMapping": "Mapeamento de orientação",
     "originalClipName": "Nome original do clipe",
     "originalOptimised": "Original / otimizado",
     "originalTitle": "Título original",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "O que você gostaria de renomear este botão?",
     "renameClip": "Renomear clipe",
     "renderComplete": "Render Complete!",
+    "reorient": "Reorientar",
     "repeat": "Repetir",
     "repeatPressActionUntilReleased": "Repita a ação de imprensa até o lançamento",
     "replace": "Substituir",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Camada de texto à direita",
     "rightVertical": "Vertical direito",
+    "roll": "Rolar",
     "rollingShutter": "Obturador de rolamento",
     "rotate": "Girar",
     "rotate9": "Girar",
@@ -2158,6 +2177,38 @@
         "one": "Mude a âncora para cima em %{amount} Pixel",
         "other": "Mude a âncora para cima em %{amount} Pixel"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Deslocar o campo de visão da orientação para a esquerda em %{amount} grau",
+        "other": "Deslocar o campo de visão da orientação para a esquerda em %{amount} grau"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Deslocar o campo de visão da orientação para a direita em %{amount} grau",
+        "other": "Deslocar o campo de visão da orientação para a direita em %{amount} grau"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Deslocar a orientação para a esquerda em %{amount} grau",
+        "other": "Deslocar a orientação para a esquerda em %{amount} grau"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Deslocar orientação de orientação para a direita em %{amount} grau",
+        "other": "Deslocar orientação de orientação para a direita em %{amount} grau"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Deslocar Orientação Rolar para a Esquerda em %{amount} Grau",
+        "other": "Deslocar Orientação Rolar para a Esquerda em %{amount} Grau"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Deslocar Orientação Rolar para a Direita em %{amount} Grau",
+        "other": "Deslocar Orientação Rolar para a Direita em %{amount} Grau"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Mudar Orientação Inclinação para a Esquerda em %{amount} Grau",
+        "other": "Mudar Orientação Inclinação para a Esquerda em %{amount} Grau"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Mudar Orientação Inclinação para a Direita em %{amount} Grau",
+        "other": "Mudar Orientação Inclinação para a Direita em %{amount} Grau"
+    },
     "shiftPositionDownPixels": {
         "one": "Posição de mudança para baixo %{amount} Pixel",
         "other": "Posição de mudança para baixo %{amount} Pixel"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Posição de mudança para cima %{amount} Pixel",
         "other": "Posição de mudança para cima %{amount} Pixel"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Deslocar e reorientar panorâmica para a esquerda em %{amount} grau",
+        "other": "Deslocar e reorientar panorâmica para a esquerda em %{amount} grau"
+    },
+    "shiftReorientPanRight": {
+        "one": "Deslocar e reorientar panorâmica para a direita em %{amount} grau",
+        "other": "Deslocar e reorientar panorâmica para a direita em %{amount} grau"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Shift Reorientar Rolar para a Esquerda em %{amount} Grau",
+        "other": "Shift Reorientar Rolar para a Esquerda em %{amount} Grau"
+    },
+    "shiftReorientRollRight": {
+        "one": "Shift Reorientar Rolar para a Direita em %{amount} Grau",
+        "other": "Shift Reorientar Rolar para a Direita em %{amount} Grau"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Shift Reorientar inclinação para a esquerda em %{amount} grau",
+        "other": "Shift Reorientar inclinação para a esquerda em %{amount} grau"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Shift Reorientar inclinação para a direita em %{amount} grau",
+        "other": "Shift Reorientar inclinação para a direita em %{amount} grau"
     },
     "shiftRotationLeft": {
         "one": "Rotação de turno esquerda por %{amount} Grau",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Isso redefinirá todos os itens do Stream Deck para esta unidade em particular para os valores padrão.",
     "streamdeckPanelLabel": "Deck de fluxo",
     "streamdeckPanelTooltip": "Preferências do Stream Deck",
+    "strong": "Forte",
     "subcomponent": "Subcomponente",
     "subcomponents": "Sub-componentes",
     "subtract": "Subtrair",
@@ -2380,6 +2456,7 @@
     "temperature": "Temperatura",
     "temperature4": "Temp",
     "ten": "10",
+    "testSnippet": "Trecho de teste",
     "testTitle": "Teste CommandPost",
     "text": "Texto",
     "textInspectorCouldNotBeShown": "Não foi possível exibir o Inspetor de texto.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Isso só acionará a tecla de atalho de reprodução se já estiver parada.",
     "three": "3",
     "threeDeeText": "Texto 3D",
+    "tilt": "Inclinar",
     "timeline": "Cronograma",
     "timelineBatchExportBeginMessage": "Essa ferramenta de exportação em lote da linha do tempo usa a automação para selecionar cada clipe individualmente e aciona o item de menu 'Arquivo> Compartilhar'.\n\nPor favor, não mova o mouse ou toque no teclado até que este processo esteja completo.",
     "timelineBatchExportCompressorBeginMessage": "Essa ferramenta de exportação em lote da linha do tempo usa a automação para selecionar cada clipe individualmente e aciona o item de menu 'Arquivo> Enviar para o compressor'.\n\nPor favor, não mova o mouse ou toque no teclado até que este processo esteja completo.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "Cronograma",
     "tint": "Matiz",
     "tint4": "Matiz",
+    "tinyPlanet": "Planeta minúsculo",
     "tip": "Gorjeta",
     "title": "Título",
     "title_group": "Título",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Alternar Controles",
     "toggleDaVinciResolveControlSurfaceSupport": "Toggle DaVinci Resolve Control Surface Support",
     "toggleEffects": "Alternar Efeitos",
+    "toggleKeyframe": "Alternar quadro-chave",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Alternar alças de esmaecimento de opacidade em pop-up de animação de vídeo em clipes selecionados",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Devido a um bug do Final Cut Pro, isso não funciona para clipes em um enredo secundário",
     "toggleOverlaysWithCapsLock": "Alternar sobreposições com o Caps Lock",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Este recurso permite que você receba notificações do macOS sempre que um arquivo FCPXML seja adicionado a qualquer uma das pastas de exibição abaixo. A partir da notificação, você pode então <b> Importar </ b> esses arquivos diretamente para sua linha de tempo atual do Final Cut Pro. Se você pressionar <b> SHIFT </ b> ao pressionar <b> Importar </ b>, ele importará todos os arquivos pendentes.",
     "watchFolders": "Watch Folders",
     "wave": "Aceno",
+    "weak": "Fraco",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Consulta de ação",
+    "websocketAddress": "Endereço",
+    "websocketCannotParseMessageData": "Não foi possível analisar os dados da mensagem:",
+    "websocketClientMode": "Modo Cliente",
+    "websocketClients": "Clientes",
+    "websocketConnected": "Conectado",
+    "websocketConnectionStatus": "Status da conexão",
+    "websocketControlSurface": "Superfície de controle WebSocket",
+    "websocketControlSurfaceDisabled": "A superfície de controle WebSocket está desativada.",
+    "websocketControlSurfaceSettings": "Configurações da superfície de controle WebSocket",
+    "websocketCopied": "Copiado",
+    "websocketCopyFailed": "Falha na cópia:",
+    "websocketCopyMessage": "Copiar mensagem",
+    "websocketCurrentlySelectedAction": "Ação selecionada no momento",
+    "websocketDisableWebSocketControlSurface": "Desativar a superfície de controle WebSocket",
+    "websocketDisconnected": "Desconectado",
+    "websocketEnableWebSocket": "Habilitar WebSocket",
+    "websocketEnableWebSocketControlSurface": "Habilitar superfície de controle WebSocket",
+    "websocketFilterActionsByApplication": "Filtrar ações por aplicativo:",
+    "websocketInvalidPortNumber": "Número da porta inválido",
+    "websocketInvalidPortNumberDescription": "Por favor, insira um número de porta válido entre 1 e 65535.",
+    "websocketMessageExample": "Exemplo de mensagem WebSocket:",
+    "websocketNoActiveConnections": "Nenhuma conexão ativa",
+    "websocketNoCopyableMessage": "Nenhuma mensagem para copiar.",
+    "websocketOpenActionChooser": "Abrir Seletor de Ações",
+    "websocketOpenActionChooserDescription": "Clique no botão acima para abrir o Seletor de Ações do CommandPost e navegar e pesquisar todas as ações disponíveis.",
+    "websocketRefresh": "Atualizar",
+    "websocketServerMode": "Modo Servidor",
+    "websocketServerNotRunning": "O servidor não está em execução.",
+    "websocketServerPort": "Porta do servidor",
+    "websocketServerRunning": "Servidor em execução",
+    "websocketServerRunningWithDetails": "Servidor em execução\\nPorta: %{port}\\nClientes conectados: %{count}",
+    "websocketServerStopped": "Servidor parado",
+    "websocketToggleWebSocketControlSurface": "Alternar superfície de controle WebSocket",
     "weight": "Peso",
     "welcomeToTheToolbox": "Bem-vindo à caixa de ferramentas",
     "whatDidYouExpectToHappen": "O que você esperava que acontecesse?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "Extensão de fluxo de trabalho instalada",
     "workflowExtensionMovePlayhead": "Move o indicador de reprodução do Final Cut Pro por meio da API Workflow Extension",
     "workspaces": "Espaços de trabalho",
+    "wsActionId": "ID da ação",
+    "wsHandler": "Manipulador",
+    "wsId": "EU IA",
+    "wsMode": "Modo",
+    "wsStatus": "Status",
     "xml": "XML",
     "yellow": "Amarelo",
     "yes": "sim",
