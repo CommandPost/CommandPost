@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "제목이 '%{title}'인 클립이 없습니다.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "새 FCPXML을 성공적으로 내보냈습니다.",
     "aValidTokenIsRequired": "유효한 토큰이 필요합니다.",
+    "aValidWorkspaceIsRequired": "유효한 작업공간이 필요합니다.",
     "above": "위",
     "absolute": "순수한",
     "absoluteSnapsToZero": "절대(0으로 스냅)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox : 관리자",
     "core_tourbox_prefs_label": "환경 설정 : TourBox",
     "core_watchfolders_manager_label": "관리자 : 감시 폴더",
+    "core_websocket_label": "웹소켓",
+    "core_websocket_manager_label": "관리자: 웹소켓",
+    "core_websocket_prefs_label": "환경설정: 웹소켓",
     "correctSpellingAutomatically": "자동 맞춤법",
     "cpAddNoteToSelectedClips_title": "선택한 클립에 메모 추가",
     "cpAllowTasksDuringPlayback_title": "재생 중 렌더링 토글",
@@ -811,6 +815,7 @@
     "enableFilenamePrefix": "파일 이름 접두사 사용",
     "enableFlashDrive": "플래시 드라이브 활성화",
     "enableHUD": "HUD 활성화",
+    "enableHaptics": "햅틱 활성화",
     "enableLoupdeckSupport": "Loupedeck + 지원 활성화",
     "enableLoupedeckCTSupport": "Loupedeck CT 지원 활성화",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Loupedeck CT 지원 활성화 및 Loupedeck 앱 종료",
@@ -945,6 +950,7 @@
     "feedback": "피드백",
     "feedbackError": "CommandPost 서버와 통신하려는 중에 다음 오류가 발생했습니다.\n\n%{message}\n\n불행히도 귀하의 의견은 제출되지 않았습니다.\n\n다시 시도하십시오.",
     "feedbackSuccess": "귀하의 의견이 성공적으로 제출되었습니다.\n\n감사합니다!",
+    "fieldOfView": "시야",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "선택한 파일을 읽을 수 없습니다.",
     "fill": "가득 따르다",
@@ -1161,6 +1167,7 @@
     "findNext": "다음 찾기",
     "findPrevious": "이전 찾기",
     "findToken": "토큰 찾기",
+    "findWorkspace": "작업 공간 찾기",
     "finder": "파인더",
     "finder_application_manager_label": "응용 프로그램 관리자",
     "finder_audio_label": "오디오 액션",
@@ -1176,6 +1183,7 @@
     "five": "5",
     "flat": "플랫",
     "flat9": "플랫",
+    "focusOnScaleAll": "모든 것을 확장하는 데 집중하세요",
     "focusOnTitleTextInInspector": "인스펙터에서 제목 텍스트에 초점",
     "folder": "폴더",
     "font": "폰트",
@@ -1266,6 +1274,8 @@
     "grouped": "그룹화",
     "guide": "안내서",
     "guides": "가이드",
+    "hapticsSpeed": "햅틱 속도",
+    "hapticsStrenght": "햅틱 강도",
     "hardLight": "하드 라이트",
     "hardLight9": "하드 라이트",
     "hardMix": "하드 믹스",
@@ -1360,6 +1370,7 @@
     "inertiaCam": "이너시아 캠",
     "info": "정보",
     "insert": "끼워 넣다",
+    "insertAction": "삽입 작업",
     "insertClipsVerticallyFromBrowserToTimeline": "브라우저에서 타임 라인으로 세로로 클립 삽입",
     "insertIntoTimeline": "타임 라인에 삽입",
     "insideCorners": "내부 코너",
@@ -1385,6 +1396,7 @@
     },
     "jogWheelMode": "조그 휠 모드",
     "joinClips": "클립 조인",
+    "joinDiscord": "디스코드에 참여하세요",
     "jumpToFrameShiftExplanation": "SHIFT를 누르고 있으면 1이 아닌 10프레임으로 이동합니다.",
     "jumpToNextFrame": "다음 프레임으로 이동",
     "jumpToPreviousFrame": "이전 프레임으로 이동",
@@ -1515,6 +1527,7 @@
     "macosShortcutsSetupMessage": "CommandPost는 Search Console의 macOS 바로 가기 앱에서 바로 가기를 나열하려면 <strong>자동화</strong> 권한<br />이 필요합니다.<br /><br />이것은 <strong>선택 사항</strong>입니다. <strong>바로 가기 활성화</strong>를 클릭하면 CommandPost가 이전에 아직 요청하지 않은 경우<br /> 권한을 묻는 메시지가 표시될 수 있습니다. <strong>시스템 환경설정 > 보안 및 개인정보 보호 > 개인정보 보호 > 자동화</strong> 패널을 방문하여 언제든지 이 권한을 변경할 수 있습니다.",
     "magicButton": "매직 버튼",
     "magnify": "확대",
+    "mapping": "매핑",
     "marker": "채점자",
     "master": "석사",
     "master2": "MS",
@@ -1657,7 +1670,9 @@
     "notion": "개념",
     "notionDatabaseURL": "노션 데이터베이스 URL",
     "notionDescription": "이 도구를 사용하면 Final Cut Pro에서 메타데이터를 가져와 Notion에 바로 업로드할 수 있습니다. vzhd1701의 csv2notion에 의해 구동됩니다.",
+    "notionDescriptionTwo": "CSV2Notion Neo로 구동됩니다.",
     "notionToken": "개념 토큰",
+    "notionWorkspace": "노션 워크스페이스",
     "nudge": "슬쩍 찌르다",
     "number": "번호",
     "ofScreen": "화면의",
@@ -1705,6 +1720,8 @@
     "optional": "선택 과목",
     "options": "옵션",
     "organize": "구성",
+    "orientation": "정위",
+    "orientationMapping": "방향 매핑",
     "originalClipName": "원본 클립 이름",
     "originalOptimised": "원본 / 최적화",
     "originalTitle": "원 제목",
@@ -1925,6 +1942,7 @@
     "renameButtonQuestion": "이 버튼의 이름을 무엇으로 바꾸시겠습니까?",
     "renameClip": "클립 이름 바꾸기",
     "renderComplete": "렌더 완료!",
+    "reorient": "방향 바꾸기",
     "repeat": "반복",
     "repeatPressActionUntilReleased": "출시 될 때까지 보도 조치 반복",
     "replace": "바꾸다",
@@ -1995,6 +2013,7 @@
     "rightSurroundToLeftFront9": "왼쪽",
     "rightTextLayer": "올바른 텍스트 레이어",
     "rightVertical": "오른쪽 세로",
+    "roll": "롤",
     "rollingShutter": "롤링 셔터",
     "rotate": "회전",
     "rotate9": "회전",
@@ -2146,6 +2165,30 @@
     "shiftAnchorUpPixels": {
         "other": "앵커를 %{amount}픽셀 위로 이동"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "other": "방향 시야각을 %{amount}도만큼 왼쪽으로 이동"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "other": "방향 시야를 %{amount}도만큼 오른쪽으로 이동"
+    },
+    "shiftOrientationPanLeft": {
+        "other": "방향 팬을 왼쪽으로 %{amount}도만큼 이동"
+    },
+    "shiftOrientationPanRight": {
+        "other": "%{amount}도만큼 방향 이동 오른쪽으로 이동"
+    },
+    "shiftOrientationRollLeft": {
+        "other": "%{amount}도만큼 왼쪽으로 방향 롤 이동"
+    },
+    "shiftOrientationRollRight": {
+        "other": "%{amount}도만큼 오른쪽으로 이동 방향 롤"
+    },
+    "shiftOrientationTiltLeft": {
+        "other": "이동 방향 왼쪽으로 %{amount}도만큼 기울임"
+    },
+    "shiftOrientationTiltRight": {
+        "other": "Shift 방향을 %{amount}도만큼 오른쪽으로 기울입니다."
+    },
     "shiftPositionDownPixels": {
         "other": "%{amount} 픽셀 아래로 위치 이동"
     },
@@ -2157,6 +2200,24 @@
     },
     "shiftPositionUpPixels": {
         "other": "위로 위치 이동 %{amount} 픽셀"
+    },
+    "shiftReorientPanLeft": {
+        "other": "팬 방향을 왼쪽으로 %{amount}도만큼 이동"
+    },
+    "shiftReorientPanRight": {
+        "other": "%{amount}도만큼 팬 방향을 오른쪽으로 이동"
+    },
+    "shiftReorientRollLeft": {
+        "other": "%{amount}도만큼 롤 방향을 왼쪽으로 이동"
+    },
+    "shiftReorientRollRight": {
+        "other": "%{amount}도만큼 롤 오른쪽으로 이동"
+    },
+    "shiftReorientTiltLeft": {
+        "other": "Shift 기울기를 왼쪽으로 %{amount}도만큼 재설정"
+    },
+    "shiftReorientTiltRight": {
+        "other": "Shift 기울기를 오른쪽으로 %{amount}도만큼 재설정"
     },
     "shiftRotationLeft": {
         "other": "%{amount}도만큼 왼쪽으로 회전 이동"
@@ -2315,6 +2376,7 @@
     "streamDeckResetUnitConfirmation": "이 특정 장치의 모든 스트림 데크 항목을 기본값으로 재설정합니다.",
     "streamdeckPanelLabel": "Stream Deck",
     "streamdeckPanelTooltip": "Stream Deck 환경 설정",
+    "strong": "강한",
     "subcomponent": "하위 구성 요소",
     "subcomponents": "하위 구성 요소",
     "subtract": "덜다",
@@ -2356,6 +2418,7 @@
     "temperature": "온도",
     "temperature4": "온도",
     "ten": "10",
+    "testSnippet": "테스트 조각",
     "testTitle": "커맨드포스트 테스트",
     "text": "본문",
     "textInspectorCouldNotBeShown": "텍스트 검사기를 표시 할 수 없습니다.",
@@ -2377,6 +2440,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "이미 중지 된 경우에만 재생 바로 가기 키를 트리거합니다.",
     "three": "삼",
     "threeDeeText": "3D 텍스트",
+    "tilt": "경사",
     "timeline": "타임 라인",
     "timelineBatchExportBeginMessage": "이 타임 라인 배치 내보내기 도구는 자동화를 사용하여 각 클립을 개별적으로 선택한 다음 '파일> 공유'메뉴 항목을 트리거합니다.\n\n이 과정이 완료 될 때까지 마우스를 움직이거나 키보드를 만지지 마십시오.",
     "timelineBatchExportCompressorBeginMessage": "이 타임 라인 배치 내보내기 도구는 자동화를 사용하여 각 클립을 개별적으로 선택한 다음 '파일> 압축기로 보내기'메뉴 항목을 트리거합니다.\n\n이 과정이 완료 될 때까지 마우스를 움직이거나 키보드를 만지지 마십시오.",
@@ -2387,6 +2451,7 @@
     "timeline_group": "타임 라인",
     "tint": "색조",
     "tint4": "색조",
+    "tinyPlanet": "작은 행성",
     "tip": "팁",
     "title": "표제",
     "title_group": "표제",
@@ -2407,6 +2472,7 @@
     "toggleControls": "컨트롤 전환",
     "toggleDaVinciResolveControlSurfaceSupport": "Toggle DaVinci Resolve 컨트롤 표면 지원",
     "toggleEffects": "토글 효과",
+    "toggleKeyframe": "키프레임 전환",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "선택한 클립의 비디오 애니메이션 팝업에서 불투명도 페이드 핸들 전환",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Final Cut Pro 버그로 인해 보조 스토리 라인의 클립에는 작동하지 않습니다.",
     "toggleOverlaysWithCapsLock": "Caps Lock으로 오버레이 전환",
@@ -2584,6 +2650,42 @@
     "watchFolderXMLHelp": "이 기능을 사용하면 FCPXML 파일이 아래 감시 폴더 중 하나에 추가 될 때마다 macOS 알림을받을 수 있습니다. <br /> 알림에서이 파일을 현재 Final Cut Pro 타임 라인으로 직접 <b> 가져 오기 </ b> 할 수 있습니다. . <br /> <b> 가져 오기 </ b>를 누를 때 <b> SHIFT </ b>를 누르고 있으면 미해결 파일이 모두 가져옵니다.",
     "watchFolders": "감시 폴더",
     "wave": "파도",
+    "weak": "약한",
+    "websocket": "웹소켓",
+    "websocketActionQuery": "액션 쿼리",
+    "websocketAddress": "주소",
+    "websocketCannotParseMessageData": "메시지 데이터를 구문 분석할 수 없습니다.",
+    "websocketClientMode": "클라이언트 모드",
+    "websocketClients": "고객들",
+    "websocketConnected": "연결됨",
+    "websocketConnectionStatus": "연결 상태",
+    "websocketControlSurface": "웹소켓 컨트롤 서피스",
+    "websocketControlSurfaceDisabled": "WebSocket 컨트롤 서페이스가 비활성화되었습니다.",
+    "websocketControlSurfaceSettings": "WebSocket 컨트롤 서피스 설정",
+    "websocketCopied": "복사됨",
+    "websocketCopyFailed": "복사 실패:",
+    "websocketCopyMessage": "메시지 복사",
+    "websocketCurrentlySelectedAction": "현재 선택된 작업",
+    "websocketDisableWebSocketControlSurface": "WebSocket 제어 표면 비활성화",
+    "websocketDisconnected": "연결이 끊어졌습니다",
+    "websocketEnableWebSocket": "WebSocket 활성화",
+    "websocketEnableWebSocketControlSurface": "WebSocket 제어 표면 활성화",
+    "websocketFilterActionsByApplication": "애플리케이션별로 작업을 필터링합니다.",
+    "websocketInvalidPortNumber": "잘못된 포트 번호입니다",
+    "websocketInvalidPortNumberDescription": "1에서 65535 사이의 유효한 포트 번호를 입력하십시오.",
+    "websocketMessageExample": "웹소켓 메시지 예시:",
+    "websocketNoActiveConnections": "활성 연결 없음",
+    "websocketNoCopyableMessage": "복사할 메시지가 없습니다",
+    "websocketOpenActionChooser": "오픈 액션 선택기",
+    "websocketOpenActionChooserDescription": "위 버튼을 클릭하여 CommandPost 액션 선택기를 열고 사용 가능한 모든 액션을 찾아보고 검색하세요.",
+    "websocketRefresh": "새로 고치다",
+    "websocketServerMode": "서버 모드",
+    "websocketServerNotRunning": "서버가 실행 중이 아닙니다",
+    "websocketServerPort": "서버 포트",
+    "websocketServerRunning": "서버 실행 중",
+    "websocketServerRunningWithDetails": "서버가 실행 중입니다.\\n포트: %{port}\\n연결된 클라이언트 수: %{count}",
+    "websocketServerStopped": "서버가 중지되었습니다",
+    "websocketToggleWebSocketControlSurface": "WebSocket 제어 표면 토글",
     "weight": "무게",
     "welcomeToTheToolbox": "Toolbox에 오신 것을 환영합니다",
     "whatDidYouExpectToHappen": "무슨 일이 있었나요?",
@@ -2601,6 +2703,11 @@
     "workflowExtensionInstalled": "워크플로 확장이 설치됨",
     "workflowExtensionMovePlayhead": "Workflow Extension API를 통해 Final Cut Pro 재생 헤드를 이동합니다.",
     "workspaces": "작업 공간",
+    "wsActionId": "액션 ID",
+    "wsHandler": "매니저",
+    "wsId": "ID",
+    "wsMode": "방법",
+    "wsStatus": "상태",
     "xml": "XML",
     "yellow": "노랑",
     "yes": "예",
