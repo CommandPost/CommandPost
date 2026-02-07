@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Không có clip có tiêu đề '%{title}' được tìm thấy.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "FCPXML mới đã được xuất thành công.",
     "aValidTokenIsRequired": "Mã thông báo hợp lệ là bắt buộc.",
+    "aValidWorkspaceIsRequired": "Cần có một không gian làm việc hợp lệ.",
     "above": "Ở trên",
     "absolute": "Tuyệt đối",
     "absoluteSnapsToZero": "Tuyệt đối (Snaps to Zero)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Người quản lý",
     "core_tourbox_prefs_label": "Tùy chọn: TourBox",
     "core_watchfolders_manager_label": "Manger: Xem thư mục",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Quản trị viên: WebSocket",
+    "core_websocket_prefs_label": "Tùy chọn: WebSocket",
     "correctSpellingAutomatically": "Chính tả tự động",
     "cpAddNoteToSelectedClips_title": "Thêm ghi chú vào (các) clip đã chọn",
     "cpAllowTasksDuringPlayback_title": "Toggle Rendering Trong khi Phát lại",
@@ -811,6 +815,7 @@
     "enableFilenamePrefix": "Bật tiền tố tên tệp",
     "enableFlashDrive": "Bật ổ đĩa Flash",
     "enableHUD": "Kích hoạt HUD",
+    "enableHaptics": "Bật phản hồi xúc giác",
     "enableLoupdeckSupport": "Kích hoạt Loupedeck + Hỗ trợ",
     "enableLoupedeckCTSupport": "Bật Hỗ trợ Loupedeck CT",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Bật Hỗ trợ Loupedeck CT & Thoát ứng dụng Loupedeck",
@@ -945,6 +950,7 @@
     "feedback": "Phản hồi",
     "feedbackError": "Đã xảy ra lỗi sau khi cố gắng giao tiếp với các máy chủ CommandPost:\n\n%{message}\n\nThật không may, phản hồi của bạn đã không được gửi.\n\nVui lòng thử lại.",
     "feedbackSuccess": "Phản hồi của bạn đã được gửi thành công.\n\nCảm ơn bạn!",
+    "fieldOfView": "Góc nhìn",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "Không thể đọc được tệp đã chọn.",
     "fill": "Lấp đầy",
@@ -1161,6 +1167,7 @@
     "findNext": "Tìm tiếp",
     "findPrevious": "Tìm trước",
     "findToken": "Tìm mã thông báo",
+    "findWorkspace": "Tìm không gian làm việc",
     "finder": "Trình tìm kiếm",
     "finder_application_manager_label": "Quản lý ứng dụng",
     "finder_audio_label": "Hành động âm thanh",
@@ -1176,6 +1183,7 @@
     "five": "5",
     "flat": "Bằng phẳng",
     "flat9": "Bằng phẳng",
+    "focusOnScaleAll": "Tập trung vào việc mở rộng quy mô tất cả",
     "focusOnTitleTextInInspector": "Tập trung vào văn bản tiêu đề trong thanh tra",
     "folder": "Thư mục",
     "font": "Phông chữ",
@@ -1266,6 +1274,8 @@
     "grouped": "Được nhóm lại",
     "guide": "Hướng dẫn",
     "guides": "Hướng dẫn",
+    "hapticsSpeed": "Tốc độ phản hồi xúc giác",
+    "hapticsStrenght": "Độ mạnh của phản hồi xúc giác",
     "hardLight": "Đèn rất sáng",
     "hardLight9": "Đèn rất sáng",
     "hardMix": "Hỗn hợp cứng",
@@ -1360,6 +1370,7 @@
     "inertiaCam": "Quán tính",
     "info": "Thông tin",
     "insert": "Chèn",
+    "insertAction": "Chèn hành động",
     "insertClipsVerticallyFromBrowserToTimeline": "Chèn clip theo chiều dọc từ trình duyệt đến dòng thời gian",
     "insertIntoTimeline": "Chèn vào Timeline",
     "insideCorners": "Góc bên trong",
@@ -1385,6 +1396,7 @@
     },
     "jogWheelMode": "Chế độ Jog Wheel",
     "joinClips": "Tham gia clip",
+    "joinDiscord": "Tham gia Discord",
     "jumpToFrameShiftExplanation": "Nếu bạn giữ SHIFT, nó sẽ nhảy 10 khung thay vì 1.",
     "jumpToNextFrame": "Chuyển đến khung tiếp theo",
     "jumpToPreviousFrame": "Chuyển đến Khung trước",
@@ -1515,6 +1527,7 @@
     "macosShortcutsSetupMessage": "CommandPost yêu cầu quyền <strong> Tự động hóa </strong> <br /> để liệt kê các phím tắt từ ứng dụng Phím tắt macOS trong Search Console. <br /> <br /> Đây là <strong> tùy chọn </strong>. Nếu bạn nhấp vào <strong> Bật phím tắt </strong>, bạn có thể được nhắc cấp quyền <br /> nếu CommandPost chưa hỏi trước đó. Bạn có thể thay đổi quyền này bất kỳ lúc nào bằng cách truy cập bảng điều khiển <strong> Tùy chọn hệ thống> Bảo mật và quyền riêng tư> Quyền riêng tư> Tự động hóa </strong>.",
     "magicButton": "Nút ma thuật",
     "magnify": "Phóng đại",
+    "mapping": "Lập bản đồ",
     "marker": "Đánh dấu",
     "master": "Bậc thầy",
     "master2": "CÔ",
@@ -1657,7 +1670,9 @@
     "notion": "Khái niệm",
     "notionDatabaseURL": "URL cơ sở dữ liệu chú thích",
     "notionDescription": "Công cụ này cho phép bạn lấy siêu dữ liệu từ Final Cut Pro và tải nó thẳng lên Notion. Được hỗ trợ bởi csv2notion của vzhd1701.",
+    "notionDescriptionTwo": "Được hỗ trợ bởi CSV2Notion Neo.",
     "notionToken": "Mã thông báo",
+    "notionWorkspace": "Không gian làm việc của khái niệm",
     "nudge": "Di chuyển",
     "number": "Con số",
     "ofScreen": "của màn hình",
@@ -1705,6 +1720,8 @@
     "optional": "Không bắt buộc",
     "options": "Tùy chọn",
     "organize": "Tổ chức",
+    "orientation": "Định hướng",
+    "orientationMapping": "Bản đồ định hướng",
     "originalClipName": "Tên clip gốc",
     "originalOptimised": "Bản gốc / Tối ưu hóa",
     "originalTitle": "Tiêu đề ban đầu",
@@ -1925,6 +1942,7 @@
     "renameButtonQuestion": "Bạn muốn đổi tên nút này thành gì?",
     "renameClip": "Đổi tên clip",
     "renderComplete": "Render Complete!",
+    "reorient": "Định hướng lại",
     "repeat": "Nói lại",
     "repeatPressActionUntilReleased": "Lặp lại hành động báo chí cho đến khi phát hành",
     "replace": "Thay thế",
@@ -1995,6 +2013,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Lớp văn bản bên phải",
     "rightVertical": "Dọc phải",
+    "roll": "Cuộn",
     "rollingShutter": "Màn trập",
     "rotate": "Quay",
     "rotate9": "Quay",
@@ -2146,6 +2165,30 @@
     "shiftAnchorUpPixels": {
         "other": "Dịch neo lên trên %{amount} Pixel"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "other": "Trường nhìn hướng dịch chuyển sang trái %{amount} độ"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "other": "Dịch chuyển trường hướng nhìn sang phải theo %{amount} độ"
+    },
+    "shiftOrientationPanLeft": {
+        "other": "Dịch chuyển Pan định hướng sang trái %{amount} Độ"
+    },
+    "shiftOrientationPanRight": {
+        "other": "Dịch chuyển Pan định hướng sang phải %{amount} Độ"
+    },
+    "shiftOrientationRollLeft": {
+        "other": "Dịch chuyển hướng cuộn sang trái %{amount} độ"
+    },
+    "shiftOrientationRollRight": {
+        "other": "Dịch chuyển hướng cuộn sang phải %{amount} độ"
+    },
+    "shiftOrientationTiltLeft": {
+        "other": "Chuyển hướng Nghiêng sang trái %{amount} Độ"
+    },
+    "shiftOrientationTiltRight": {
+        "other": "Chuyển hướng Nghiêng sang phải %{amount} Độ"
+    },
     "shiftPositionDownPixels": {
         "other": "Shift Vị trí Xuống %{amount} Pixel"
     },
@@ -2157,6 +2200,24 @@
     },
     "shiftPositionUpPixels": {
         "other": "Dịch chuyển vị trí lên %{amount} Pixel"
+    },
+    "shiftReorientPanLeft": {
+        "other": "Dịch chuyển Định hướng lại Pan sang trái theo %{amount} Độ"
+    },
+    "shiftReorientPanRight": {
+        "other": "Chuyển hướng xoay sang phải theo %{amount} độ"
+    },
+    "shiftReorientRollLeft": {
+        "other": "Dịch chuyển Định hướng lại Cuộn sang trái theo %{amount} Độ"
+    },
+    "shiftReorientRollRight": {
+        "other": "Dịch chuyển Định hướng lại cuộn sang phải theo %{amount} Độ"
+    },
+    "shiftReorientTiltLeft": {
+        "other": "Dịch chuyển Định hướng lại Nghiêng sang trái theo %{amount} Độ"
+    },
+    "shiftReorientTiltRight": {
+        "other": "Dịch chuyển Định hướng lại Nghiêng sang phải theo %{amount} Độ"
     },
     "shiftRotationLeft": {
         "other": "Dịch chuyển Xoay sang trái %{amount} Độ"
@@ -2315,6 +2376,7 @@
     "streamDeckResetUnitConfirmation": "Thao tác này sẽ đặt lại tất cả các mục trong Bộ bài luồng cho đơn vị cụ thể này về giá trị mặc định.",
     "streamdeckPanelLabel": "Suối sàn",
     "streamdeckPanelTooltip": "Tùy chọn luồng trực tuyến",
+    "strong": "Mạnh",
     "subcomponent": "Thành phần phụ",
     "subcomponents": "Thành phần phụ",
     "subtract": "Trừ",
@@ -2356,6 +2418,7 @@
     "temperature": "Nhiệt độ",
     "temperature4": "Nhiệt độ",
     "ten": "10",
+    "testSnippet": "Đoạn thử nghiệm",
     "testTitle": "Kiểm tra CommandPost",
     "text": "Bản văn",
     "textInspectorCouldNotBeShown": "Thanh tra văn bản không thể được hiển thị.",
@@ -2377,6 +2440,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Thao tác này sẽ chỉ kích hoạt phím tắt phát nếu đã dừng.",
     "three": "3",
     "threeDeeText": "Văn bản 3D",
+    "tilt": "Nghiêng",
     "timeline": "Mốc thời gian",
     "timelineBatchExportBeginMessage": "Công cụ xuất hàng loạt dòng thời gian này sử dụng tự động hóa để chọn từng clip riêng lẻ, sau đó kích hoạt mục menu 'Tệp> Chia sẻ'.\n\nVui lòng không di chuyển chuột hoặc chạm vào bàn phím cho đến khi quá trình này hoàn tất.",
     "timelineBatchExportCompressorBeginMessage": "Công cụ xuất hàng loạt dòng thời gian này sử dụng tự động hóa để chọn từng clip riêng lẻ, sau đó kích hoạt mục menu 'Tệp> Gửi đến máy nén'.\n\nVui lòng không di chuyển chuột hoặc chạm vào bàn phím cho đến khi quá trình này hoàn tất.",
@@ -2387,6 +2451,7 @@
     "timeline_group": "Mốc thời gian",
     "tint": "Tint",
     "tint4": "Tint",
+    "tinyPlanet": "Hành tinh nhỏ",
     "tip": "tiền boa",
     "title": "Chức vụ",
     "title_group": "Tiêu đề\n",
@@ -2407,6 +2472,7 @@
     "toggleControls": "Điều khiển chuyển đổi",
     "toggleDaVinciResolveControlSurfaceSupport": "Chuyển đổi Hỗ trợ bề mặt điều khiển độ phân giải DaVinci",
     "toggleEffects": "Chuyển đổi hiệu ứng",
+    "toggleKeyframe": "Chuyển đổi khung hình chính",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Chuyển đổi Xử lý Độ mờ mờ trong Video Bật lên Hoạt ảnh trên các Đoạn đã Chọn",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Do lỗi Final Cut Pro, điều này không hoạt động đối với các clip trong Cốt truyện phụ",
     "toggleOverlaysWithCapsLock": "Chuyển đổi lớp phủ bằng Caps Lock",
@@ -2584,6 +2650,42 @@
     "watchFolderXMLHelp": "Tính năng này cho phép bạn nhận được thông báo macOS bất cứ khi nào một tệp FCPXML được thêm vào bất kỳ thư mục xem dưới đây. Từ thông báo sau đó bạn có thể <b> Nhập </ b> các tệp này trực tiếp vào trình tự thời gian Final Cut Pro hiện tại của bạn. Nếu bạn giữ <b> SHIFT </ b> khi nhấn <b> Nhập </ b>, nó sẽ nhập tất cả các tệp xuất hiện.",
     "watchFolders": "Xem thư mục",
     "wave": "Làn sóng",
+    "weak": "Yếu đuối",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Truy vấn hành động",
+    "websocketAddress": "Địa chỉ",
+    "websocketCannotParseMessageData": "Không thể phân tích dữ liệu tin nhắn:",
+    "websocketClientMode": "Chế độ máy khách",
+    "websocketClients": "Khách hàng",
+    "websocketConnected": "Đã kết nối",
+    "websocketConnectionStatus": "Trạng thái kết nối",
+    "websocketControlSurface": "Giao diện điều khiển WebSocket",
+    "websocketControlSurfaceDisabled": "Giao diện điều khiển WebSocket đã bị vô hiệu hóa.",
+    "websocketControlSurfaceSettings": "Cài đặt bề mặt điều khiển WebSocket",
+    "websocketCopied": "Đã sao chép",
+    "websocketCopyFailed": "Sao chép thất bại:",
+    "websocketCopyMessage": "Sao chép tin nhắn",
+    "websocketCurrentlySelectedAction": "Hành động hiện đang được chọn",
+    "websocketDisableWebSocketControlSurface": "Vô hiệu hóa giao diện điều khiển WebSocket",
+    "websocketDisconnected": "Đã ngắt kết nối",
+    "websocketEnableWebSocket": "Bật WebSocket",
+    "websocketEnableWebSocketControlSurface": "Kích hoạt giao diện điều khiển WebSocket",
+    "websocketFilterActionsByApplication": "Lọc các hành động theo ứng dụng:",
+    "websocketInvalidPortNumber": "Số cổng không hợp lệ",
+    "websocketInvalidPortNumberDescription": "Vui lòng nhập số cổng hợp lệ từ 1 đến 65535.",
+    "websocketMessageExample": "Ví dụ về tin nhắn WebSocket:",
+    "websocketNoActiveConnections": "Không có kết nối nào đang hoạt động",
+    "websocketNoCopyableMessage": "Không có tin nhắn nào để sao chép",
+    "websocketOpenActionChooser": "Công cụ lựa chọn hành động mở",
+    "websocketOpenActionChooserDescription": "Nhấp vào nút phía trên để mở Trình chọn hành động CommandPost và tìm kiếm tất cả các hành động có sẵn.",
+    "websocketRefresh": "Làm cho khỏe lại",
+    "websocketServerMode": "Chế độ máy chủ",
+    "websocketServerNotRunning": "Máy chủ không hoạt động",
+    "websocketServerPort": "Cổng máy chủ",
+    "websocketServerRunning": "Máy chủ đang chạy",
+    "websocketServerRunningWithDetails": "Máy chủ đang hoạt động\\nCổng: %{port}\\nSố lượng máy khách đã kết nối: %{count}",
+    "websocketServerStopped": "Máy chủ đã dừng",
+    "websocketToggleWebSocketControlSurface": "Bảng điều khiển bật/tắt WebSocket",
     "weight": "Cân nặng",
     "welcomeToTheToolbox": "Chào mừng bạn đến với Hộp công cụ",
     "whatDidYouExpectToHappen": "Bạn mong đợi điều gì sẽ xảy ra?",
@@ -2601,6 +2703,11 @@
     "workflowExtensionInstalled": "Đã cài đặt tiện ích mở rộng quy trình làm việc",
     "workflowExtensionMovePlayhead": "Di chuyển playhead của Final Cut Pro thông qua API mở rộng quy trình làm việc",
     "workspaces": "Không gian làm việc",
+    "wsActionId": "ID hành động",
+    "wsHandler": "Trình xử lý",
+    "wsId": "NHẬN DẠNG",
+    "wsMode": "Cách thức",
+    "wsStatus": "Trạng thái",
     "xml": "XML",
     "yellow": "Màu vàng",
     "yes": "Vâng",
