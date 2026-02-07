@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "'%{title}' ਨਾਂ ਦਾ ਕੋਈ ਕਲਿਪ ਨਹੀਂ ਮਿਲਿਆ ਸੀ.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "ਇੱਕ ਨਵਾਂ FCPXML ਸਫਲਤਾਪੂਰਵਕ ਨਿਰਯਾਤ ਕੀਤਾ ਗਿਆ ਹੈ.",
     "aValidTokenIsRequired": "ਇੱਕ ਵੈਧ ਟੋਕਨ ਦੀ ਲੋੜ ਹੈ।",
+    "aValidWorkspaceIsRequired": "ਇੱਕ ਵੈਧ ਵਰਕਸਪੇਸ ਦੀ ਲੋੜ ਹੈ।",
     "above": "ਉੱਪਰ",
     "absolute": "ਸੰਪੂਰਨ",
     "absoluteSnapsToZero": "ਸੰਪੂਰਨ (ਜ਼ੀਰੋ 'ਤੇ ਸਨੈਪ)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "ਟੂਰਬਾਕਸ: ਮੈਨੇਜਰ",
     "core_tourbox_prefs_label": "ਪਸੰਦ: ਟੂਰਬੌਕਸ",
     "core_watchfolders_manager_label": "ਖੁਰਲੀ: ਵਾਚ ਫੋਲਡਰ",
+    "core_websocket_label": "ਵੈੱਬਸਾਕੇਟ",
+    "core_websocket_manager_label": "ਮੈਨੇਜਰ: ਵੈੱਬਸੌਕੇਟ",
+    "core_websocket_prefs_label": "ਪਸੰਦਾਂ: ਵੈੱਬਸੌਕੇਟ",
     "correctSpellingAutomatically": "ਸਪੈਲਿੰਗ ਆਪਣੇ ਆਪ ਸਹੀ ਕਰੋ",
     "cpAddNoteToSelectedClips_title": "ਚੁਣੀਆਂ ਗਈਆਂ ਕਲਿੱਪਾਂ 'ਤੇ ਨੋਟ ਸ਼ਾਮਲ ਕਰੋ",
     "cpAllowTasksDuringPlayback_title": "ਪਲੇਬੈਕ ਦੇ ਦੌਰਾਨ ਪੇਸ਼ਕਾਰੀ ਟੌਗਲ ਕਰੋ",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "ਫਾਇਲ-ਨਾਂ ਅਗੇਤਰ ਯੋਗ ਕਰੋ",
     "enableFlashDrive": "ਫਲੈਸ਼ ਡਰਾਈਵ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
     "enableHUD": "HUD ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
+    "enableHaptics": "ਹੈਪਟਿਕਸ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
     "enableLoupdeckSupport": "ਲੂਡਡੇਕ + ਸਮਰਥਨ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
     "enableLoupedeckCTSupport": "ਲੂਪੇਡੈਕ ਸੀਟੀ ਸਹਾਇਤਾ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "ਲੂਡੇਪੇਕ ਸੀਟੀ ਸਮਰਥਨ ਅਤੇ ਬੰਦ ਕਰੋ ਲੂਡਪੇਕ ਐਪ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
@@ -949,6 +954,7 @@
     "feedback": "ਸੁਝਾਅ",
     "feedbackError": "ਕਮਾਂਡਪੋਸਟ ਸਰਵਰ ਨਾਲ ਸੰਚਾਰ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਵੇਲੇ ਹੇਠਲੀ ਗਲਤੀ ਆਈ ਹੈ:\n\n%{message}\n\nਬਦਕਿਸਮਤੀ ਨਾਲ ਤੁਹਾਡਾ ਫੀਡਬੈਕ ਪ੍ਰਸਤੁਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਸੀ.\n\nਮੁੜ ਕੋਸ਼ਿਸ ਕਰੋ ਜੀ.",
     "feedbackSuccess": "ਤੁਹਾਡੀ ਫੀਡਬੈਕ ਸਫਲਤਾ ਨਾਲ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਸੀ\n\nਤੁਹਾਡਾ ਧੰਨਵਾਦ!",
+    "fieldOfView": "ਦ੍ਰਿਸ਼ ਦਾ ਖੇਤਰ",
     "fiftyHz": "50 ਹਰਟਜ਼",
     "fileCouldNotBeRead": "ਚੁਣੀ ਫਾਇਲ ਨੂੰ ਪੜਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ.",
     "fill": "ਭਰੋ",
@@ -1165,6 +1171,7 @@
     "findNext": "ਅੱਗੇ ਲੱਭੋ",
     "findPrevious": "ਪਿਛਲਾ ਲੱਭੋ",
     "findToken": "ਟੋਕਨ ਲੱਭੋ",
+    "findWorkspace": "ਵਰਕਸਪੇਸ ਲੱਭੋ",
     "finder": "ਖੋਜੀ",
     "finder_application_manager_label": "ਐਪਲੀਕੇਸ਼ਨ ਮੈਨੇਜਰ",
     "finder_audio_label": "ਆਡੀਓ ਕਾਰਵਾਈਆਂ",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "ਫਲੈਟ",
     "flat9": "ਫਲੈਟ",
+    "focusOnScaleAll": "ਸਕੇਲ ਆਲ 'ਤੇ ਧਿਆਨ ਕੇਂਦਰਿਤ ਕਰੋ",
     "focusOnTitleTextInInspector": "ਇੰਸਪੈਕਟਰ ਵਿਚ ਟਾਈਟਲ ਟੈਕਸਟ 'ਤੇ ਧਿਆਨ ਦਿਓ",
     "folder": "ਫੋਲਡਰ",
     "font": "ਫੋਂਟ",
@@ -1270,6 +1278,8 @@
     "grouped": "ਗਰੁੱਪਡ",
     "guide": "ਗਾਈਡ",
     "guides": "ਗਾਈਡਾਂ",
+    "hapticsSpeed": "ਹੈਪਟਿਕਸ ਸਪੀਡ",
+    "hapticsStrenght": "ਹੈਪਟਿਕਸ ਸਟ੍ਰੈਂਘਟ",
     "hardLight": "ਹਾਰਡ ਲਾਈਟ",
     "hardLight9": "ਹਾਰਡਲਾਈਟ",
     "hardMix": "ਹਾਰਡ ਮਿਕਸ",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "ਜਾਣਕਾਰੀ",
     "insert": "ਪਾਓ",
+    "insertAction": "ਐਕਸ਼ਨ ਸ਼ਾਮਲ ਕਰੋ",
     "insertClipsVerticallyFromBrowserToTimeline": "ਬਰਾipsਜ਼ਰ ਤੋਂ ਟਾਈਮਲਾਈਨ ਤੱਕ ਲੰਬਕਾਰੀ ਤੌਰ ਤੇ ਕਲਿੱਪ ਸ਼ਾਮਲ ਕਰੋ",
     "insertIntoTimeline": "ਟਾਈਮਲਾਈਨ ਵਿੱਚ ਸੰਮਿਲਿਤ ਕਰੋ",
     "insideCorners": "ਕੋਨੇ ਦੇ ਅੰਦਰ",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "ਜੋਗ ਵ੍ਹੀਲ ਮੋਡ",
     "joinClips": "ਕਲਿਪ ਵਿੱਚ ਜੁੜੋ",
+    "joinDiscord": "ਡਿਸਕਾਰਡ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਵੋ",
     "jumpToFrameShiftExplanation": "ਜੇਕਰ ਤੁਸੀਂ SHIFT ਨੂੰ ਦਬਾ ਕੇ ਰੱਖਦੇ ਹੋ, ਤਾਂ ਇਹ 1 ਦੀ ਬਜਾਏ 10 ਫਰੇਮਾਂ ਨੂੰ ਜੰਪ ਕਰੇਗਾ।",
     "jumpToNextFrame": "ਅਗਲੇ ਫਰੇਮ 'ਤੇ ਜਾਓ",
     "jumpToPreviousFrame": "ਪਿਛਲੇ ਫਰੇਮ 'ਤੇ ਜਾਓ",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "ਕਮਾਂਡਪੋਸਟ ਨੂੰ ਖੋਜ ਕੰਸੋਲ ਵਿੱਚ macOS ਸ਼ਾਰਟਕੱਟ ਐਪ ਤੋਂ ਸ਼ਾਰਟਕੱਟਾਂ ਨੂੰ ਸੂਚੀਬੱਧ ਕਰਨ ਲਈ <strong>ਆਟੋਮੇਸ਼ਨ</strong> ਅਨੁਮਤੀ ਦੀ ਲੋੜ ਹੈ।<br /><br />ਇਹ <strong>ਵਿਕਲਪਿਕ</strong> ਹੈ। ਜੇਕਰ ਤੁਸੀਂ <strong>ਸ਼ਾਰਟਕੱਟ ਸਮਰੱਥ ਕਰੋ</strong> 'ਤੇ ਕਲਿੱਕ ਕਰਦੇ ਹੋ, ਤਾਂ ਤੁਹਾਨੂੰ ਅਨੁਮਤੀ ਲਈ ਪੁੱਛਿਆ ਜਾ ਸਕਦਾ ਹੈ<br /> ਜੇਕਰ ਕਮਾਂਡਪੋਸਟ ਨੇ ਪਹਿਲਾਂ ਤੋਂ ਪਹਿਲਾਂ ਨਹੀਂ ਪੁੱਛਿਆ ਹੈ। ਤੁਸੀਂ <strong>ਸਿਸਟਮ ਤਰਜੀਹਾਂ > ਸੁਰੱਖਿਆ ਅਤੇ ਗੋਪਨੀਯਤਾ > ਗੋਪਨੀਯਤਾ > ਆਟੋਮੇਸ਼ਨ</strong> ਪੈਨਲ 'ਤੇ ਜਾ ਕੇ ਕਿਸੇ ਵੀ ਸਮੇਂ ਇਸ ਅਨੁਮਤੀ ਨੂੰ ਬਦਲ ਸਕਦੇ ਹੋ।",
     "magicButton": "ਮੈਜਿਕ ਬਟਨ",
     "magnify": "ਵੱਡਾ ਕਰੋ",
+    "mapping": "ਮੈਪਿੰਗ",
     "marker": "ਮਾਰਕਰ",
     "master": "ਮਾਸਟਰ",
     "master2": "ਐਮ ਐਸ",
@@ -1663,7 +1676,9 @@
     "notion": "ਧਾਰਨਾ",
     "notionDatabaseURL": "ਧਾਰਨਾ ਡਾਟਾਬੇਸ URL",
     "notionDescription": "ਇਹ ਟੂਲ ਤੁਹਾਨੂੰ ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਤੋਂ ਮੈਟਾਡੇਟਾ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਇਸਨੂੰ ਸਿੱਧਾ ਨੋਟਸ਼ਨ 'ਤੇ ਅੱਪਲੋਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿੰਦਾ ਹੈ। vzhd1701 ਦੇ csv2notion ਦੁਆਰਾ ਸੰਚਾਲਿਤ।",
+    "notionDescriptionTwo": "CSV2Notion ਨਿਓ ਦੁਆਰਾ ਸੰਚਾਲਿਤ।",
     "notionToken": "ਧਾਰਨਾ ਟੋਕਨ",
+    "notionWorkspace": "ਵਿਚਾਰ ਵਰਕਸਪੇਸ",
     "nudge": "ਨੱਜ",
     "number": "ਗਿਣਤੀ",
     "ofScreen": "ਸਕਰੀਨ ਦੀ",
@@ -1711,6 +1726,8 @@
     "optional": "ਵਿਕਲਪਿਕ",
     "options": "ਚੋਣਾਂ",
     "organize": "ਸੰਗਠਿਤ ਕਰੋ",
+    "orientation": "ਸਥਿਤੀ",
+    "orientationMapping": "ਓਰੀਐਂਟੇਸ਼ਨ ਮੈਪਿੰਗ",
     "originalClipName": "ਅਸਲੀ ਕਲਿਪ ਨਾਮ",
     "originalOptimised": "ਅਸਲੀ / ਅਨੁਕੂਲ",
     "originalTitle": "ਅਸਲ ਸਿਰਲੇਖ",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "ਤੁਸੀਂ ਇਸ ਬਟਨ ਦਾ ਕੀ ਨਾਮ ਬਦਲਣਾ ਚਾਹੁੰਦੇ ਹੋ?",
     "renameClip": "ਕਲਿੱਪ ਦਾ ਨਾਮ ਬਦਲੋ",
     "renderComplete": "ਰੈਂਡਰ ਪੂਰਾ ਕਰੋ!",
+    "reorient": "ਪੁਨਰ ਦਿਸ਼ਾ",
     "repeat": "ਦੁਹਰਾਓ",
     "repeatPressActionUntilReleased": "ਜਾਰੀ ਹੋਣ ਤਕ ਪ੍ਰੈਸ ਐਕਸ਼ਨ ਨੂੰ ਦੁਹਰਾਓ",
     "replace": "ਬਦਲੋ",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "ਰਘਟ 2 ਲਫਟ",
     "rightTextLayer": "ਸੱਜੀ ਟੈਕਸਟ ਪਰਤ",
     "rightVertical": "ਸੱਜਾ ਵਰਟੀਕਲ",
+    "roll": "ਰੋਲ",
     "rollingShutter": "ਰੋਲਿੰਗ ਸ਼ਟਰ",
     "rotate": "ਘੁੰਮਾਓ",
     "rotate9": "ਘੁੰਮਾਓ",
@@ -2158,6 +2177,38 @@
         "one": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
         "other": "ਐਂਕਰ ਨੂੰ %{amount} ਪਿਕਸਲ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "ਦ੍ਰਿਸ਼ ਦੇ ਓਰੀਐਂਟੇਸ਼ਨ ਫੀਲਡ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਦ੍ਰਿਸ਼ ਦੇ ਓਰੀਐਂਟੇਸ਼ਨ ਫੀਲਡ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "ਦ੍ਰਿਸ਼ਟੀਕੋਣ ਦੇ ਖੇਤਰ ਨੂੰ %{amount} ਡਿਗਰੀ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਦ੍ਰਿਸ਼ਟੀਕੋਣ ਦੇ ਖੇਤਰ ਨੂੰ %{amount} ਡਿਗਰੀ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "ਓਰੀਐਂਟੇਸ਼ਨ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਓਰੀਐਂਟੇਸ਼ਨ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftOrientationPanRight": {
+        "one": "ਓਰੀਐਂਟੇਸ਼ਨ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਓਰੀਐਂਟੇਸ਼ਨ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਤੱਕ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "ਓਰੀਐਂਟੇਸ਼ਨ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਓਰੀਐਂਟੇਸ਼ਨ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftOrientationRollRight": {
+        "one": "ਓਰੀਐਂਟੇਸ਼ਨ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਓਰੀਐਂਟੇਸ਼ਨ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "ਸ਼ਿਫਟ ਓਰੀਐਂਟੇਸ਼ਨ ਖੱਬੇ ਪਾਸੇ %{amount} ਡਿਗਰੀ ਤੱਕ ਝੁਕਾਓ",
+        "other": "ਸ਼ਿਫਟ ਓਰੀਐਂਟੇਸ਼ਨ ਖੱਬੇ ਪਾਸੇ %{amount} ਡਿਗਰੀ ਤੱਕ ਝੁਕਾਓ"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "ਸ਼ਿਫਟ ਓਰੀਐਂਟੇਸ਼ਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਝੁਕਾਓ",
+        "other": "ਸ਼ਿਫਟ ਓਰੀਐਂਟੇਸ਼ਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਝੁਕਾਓ"
+    },
     "shiftPositionDownPixels": {
         "one": "ਸ਼ਿਫਟ ਸਥਿਤੀ ਹੇਠਾਂ %{amount} ਪਿਕਸਲ",
         "other": "ਸ਼ਿਫਟ ਸਥਿਤੀ ਹੇਠਾਂ %{amount} ਪਿਕਸਲ"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "ਸ਼ਿਫਟ ਸਥਿਤੀ %{amount} ਪਿਕਸਲ",
         "other": "ਸ਼ਿਫਟ ਸਥਿਤੀ %{amount} ਪਿਕਸਲ"
+    },
+    "shiftReorientPanLeft": {
+        "one": "ਰੀਓਰੀਐਂਟ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਰੀਓਰੀਐਂਟ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftReorientPanRight": {
+        "one": "ਰੀਓਰੀਐਂਟ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਰੀਓਰੀਐਂਟ ਪੈਨ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftReorientRollLeft": {
+        "one": "ਰੀਓਰੀਐਂਟ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਰੀਓਰੀਐਂਟ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftReorientRollRight": {
+        "one": "ਰੀਓਰੀਐਂਟ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "ਰੀਓਰੀਐਂਟ ਰੋਲ ਨੂੰ %{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਸ਼ਿਫਟ ਕਰੋ"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "%{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਵੱਲ ਝੁਕਾਓ",
+        "other": "%{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਖੱਬੇ ਪਾਸੇ ਵੱਲ ਝੁਕਾਓ"
+    },
+    "shiftReorientTiltRight": {
+        "one": "%{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਵੱਲ ਝੁਕਾਓ ਸ਼ਿਫਟ ਕਰੋ",
+        "other": "%{amount} ਡਿਗਰੀ ਦੁਆਰਾ ਸੱਜੇ ਪਾਸੇ ਵੱਲ ਝੁਕਾਓ ਸ਼ਿਫਟ ਕਰੋ"
     },
     "shiftRotationLeft": {
         "one": "ਸ਼ਿਫਟ ਰੋਟੇਸ਼ਨ %{amount} ਡਿਗਰੀ ਨਾਲ ਖੱਬਾ",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "ਇਹ ਇਸ ਵਿਸ਼ੇਸ਼ ਇਕਾਈ ਲਈ ਸਾਰੀਆਂ ਸਟ੍ਰੀਮ ਡੈੱਕ ਆਈਟਮਾਂ ਨੂੰ ਡਿਫੌਲਟ ਮੁੱਲਾਂ ਤੇ ਰੀਸੈਟ ਕਰ ਦੇਵੇਗਾ.",
     "streamdeckPanelLabel": "ਸਟ੍ਰੀਮ ਡੈੱਕ",
     "streamdeckPanelTooltip": "ਸਟ੍ਰੀਮ ਡੈੱਕ ਪਸੰਦ",
+    "strong": "ਮਜ਼ਬੂਤ",
     "subcomponent": "ਉਪ ਕੰਪੋਨੈਂਟ",
     "subcomponents": "ਉਪ ਕੰਪੋਨੈਂਟਸ",
     "subtract": "ਘਟਾਓ",
@@ -2380,6 +2456,7 @@
     "temperature": "ਤਾਪਮਾਨ",
     "temperature4": "ਤਾਪਮਾਨ",
     "ten": "10",
+    "testSnippet": "ਟੈਸਟ ਸਨਿੱਪਟ",
     "testTitle": "ਕਮਾਂਡਪੋਸਟ ਟੈਸਟ",
     "text": "ਟੈਕਸਟ",
     "textInspectorCouldNotBeShown": "ਟੈਕਸਟ ਇੰਸਪੈਕਟਰ ਨਹੀਂ ਦਿਖਾਇਆ ਜਾ ਸਕਿਆ.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "ਇਹ ਸਿਰਫ ਪਲੇ ਸ਼ੌਰਟਕਟ ਕੁੰਜੀ ਨੂੰ ਚਾਲੂ ਕਰੇਗੀ ਜੇ ਪਹਿਲਾਂ ਹੀ ਰੋਕ ਦਿੱਤੀ ਗਈ ਹੈ.",
     "three": "3",
     "threeDeeText": "3 ਡੀ ਟੈਕਸਟ",
+    "tilt": "ਝੁਕਾਓ",
     "timeline": "ਟਾਈਮਲਾਈਨ",
     "timelineBatchExportBeginMessage": "ਇਹ ਟਾਈਮਲਾਈਨ ਬੈਚ ਐਕਸਪੋਰਟ ਟੂਲ ਹਰੇਕ ਕਲਿੱਪ ਨੂੰ ਵੱਖਰੇ ਤੌਰ 'ਤੇ ਚੁਣਨ ਲਈ ਆਟੋਮੇਸ਼ਨ ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ, ਫਿਰ' ਫਾਈਲ> ਸ਼ੇਅਰ 'ਮੀਨੂੰ ਆਈਟਮ ਨੂੰ ਟਰਿੱਗਰ ਕਰਦਾ ਹੈ.\n\nਜਦੋਂ ਤੱਕ ਇਹ ਪ੍ਰਕਿਰਿਆ ਪੂਰੀ ਨਹੀਂ ਹੋ ਜਾਂਦੀ ਕਿਰਪਾ ਕਰਕੇ ਮਾ theਸ ਨੂੰ ਹਿਲਾਓ ਨਾ ਜਾਂ ਕੀਬੋਰਡ ਨੂੰ ਛੋਹਵੋ ਜੀ.",
     "timelineBatchExportCompressorBeginMessage": "ਇਹ ਟਾਈਮਲਾਈਨ ਬੈਚ ਐਕਸਪੋਰਟ ਟੂਲ ਹਰੇਕ ਕਲਿੱਪ ਨੂੰ ਵੱਖਰੇ ਤੌਰ 'ਤੇ ਚੁਣਨ ਲਈ ਸਵੈਚਾਲਨ ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ, ਫਿਰ' ਫਾਈਲ> ਕੰਪਰੈਸਰ ਤੇ ਭੇਜੋ 'ਮੀਨੂੰ ਆਈਟਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ.\n\nਜਦੋਂ ਤੱਕ ਇਹ ਪ੍ਰਕਿਰਿਆ ਪੂਰੀ ਨਹੀਂ ਹੋ ਜਾਂਦੀ ਕਿਰਪਾ ਕਰਕੇ ਮਾ theਸ ਨੂੰ ਹਿਲਾਓ ਨਾ ਜਾਂ ਕੀਬੋਰਡ ਨੂੰ ਛੋਹਵੋ ਜੀ.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "ਟਾਈਮਲਾਈਨ",
     "tint": "ਰੰਗੀਨ",
     "tint4": "ਰੰਗੀਨ",
+    "tinyPlanet": "ਛੋਟਾ ਗ੍ਰਹਿ",
     "tip": "ਟਿਪ",
     "title": "ਟਾਈਟਲ",
     "title_group": "ਟਾਈਟਲ",
@@ -2431,6 +2510,7 @@
     "toggleControls": "ਨਿਯੰਤਰਣ ਬਦਲੋ",
     "toggleDaVinciResolveControlSurfaceSupport": "DaVinci ਰੈਜ਼ੋਲਵ ਕੰਟਰੋਲ ਸਰਫੇਸ ਸਪੋਰਟ ਨੂੰ ਟੌਗਲ ਕਰੋ",
     "toggleEffects": "ਪ੍ਰਭਾਵ ਬਦਲੋ",
+    "toggleKeyframe": "ਕੀਫ੍ਰੇਮ ਨੂੰ ਟੌਗਲ ਕਰੋ",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "ਚੁਣੀ ਗਈ ਕਲਿੱਪਾਂ ਤੇ ਵੀਡੀਓ ਐਨੀਮੇਸ਼ਨ ਪੌਪਅਪ ਵਿੱਚ ਧੁੰਦਲਾਪਨ ਫੇਡ ਹੈਂਡਲਜ਼ ਬਦਲੋ",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "ਅੰਤਮ ਕਟ ਪ੍ਰੋ ਬੱਗ ਕਾਰਨ, ਇਹ ਸੈਕੰਡਰੀ ਸਟੋਰੀਲਾਈਨ ਵਿੱਚ ਕਲਿੱਪਾਂ ਲਈ ਕੰਮ ਨਹੀਂ ਕਰਦਾ",
     "toggleOverlaysWithCapsLock": "ਕੈਪਸ ਲੌਕ ਨਾਲ ਓਵਰਲੇਜ਼ ਟੌਗਲ ਕਰੋ",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਤੁਹਾਨੂੰ ਮਾਈਕੌਸ ਘਾਟੇ ਨੂੰ ਪ੍ਰਾਪਤ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿੰਦਾ ਹੈ ਜਦੋਂ ਵੀ ਕਿਸੇ ਫੈਕਸ ਐਕ ਏ ਐੱਫ ਐੱਸ ਐੱਮ ਐੱਲ ਫਾਇਲ ਨੂੰ ਹੇਠਾਂ ਦਿੱਤੇ ਕਿਸੇ ਵੀ ਦੇਖਣ ਵਾਲੇ ਫੋਲਡਰ ਵਿੱਚ ਜੋੜਿਆ ਜਾਂਦਾ ਹੈ. ਸੂਚਨਾ ਤੋਂ ਤੁਸੀਂ ਇਹਨਾਂ ਫਾਈਲਾਂ ਨੂੰ ਸਿੱਧੇ ਆਪਣੇ ਵਰਤਮਾਨ ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਟਾਈਮਲਾਈਨ ਨੂੰ <b> ਆਯਾਤ </ b> ਕਰ ਸਕਦੇ ਹੋ ਜੇ ਤੁਸੀਂ <b> SHIFT </ b> ਨੂੰ ਦਬਾਉਂਦੇ ਹੋ ਜਦੋਂ <b> ਆਯਾਤ ਕਰੋ </ b> ਦਬਾਓ, ਇਹ ਸਾਰੀਆਂ ਬਕਾਇਆ ਫਾਈਲਾਂ ਨੂੰ ਆਯਾਤ ਕਰੇਗਾ.",
     "watchFolders": "ਵਾਚ ਫੋਲਡਰ",
     "wave": "ਲਹਿਰ",
+    "weak": "ਕਮਜ਼ੋਰ",
+    "websocket": "ਵੈੱਬਸਾਕੇਟ",
+    "websocketActionQuery": "ਕਾਰਵਾਈ ਪੁੱਛਗਿੱਛ",
+    "websocketAddress": "ਪਤਾ",
+    "websocketCannotParseMessageData": "ਸੁਨੇਹਾ ਡਾਟਾ ਪਾਰਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ:",
+    "websocketClientMode": "ਕਲਾਇੰਟ ਮੋਡ",
+    "websocketClients": "ਗਾਹਕ",
+    "websocketConnected": "ਜੁੜਿਆ ਹੋਇਆ",
+    "websocketConnectionStatus": "ਕਨੈਕਸ਼ਨ ਸਥਿਤੀ",
+    "websocketControlSurface": "ਵੈੱਬਸੌਕੇਟ ਕੰਟਰੋਲ ਸਰਫੇਸ",
+    "websocketControlSurfaceDisabled": "ਵੈੱਬਸੌਕੇਟ ਕੰਟਰੋਲ ਸਰਫੇਸ ਬੰਦ ਹੈ",
+    "websocketControlSurfaceSettings": "ਵੈੱਬਸੌਕੇਟ ਕੰਟਰੋਲ ਸਰਫੇਸ ਸੈਟਿੰਗਾਂ",
+    "websocketCopied": "ਕਾਪੀ ਕੀਤਾ ਗਿਆ",
+    "websocketCopyFailed": "ਕਾਪੀ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ:",
+    "websocketCopyMessage": "ਸੁਨੇਹਾ ਕਾਪੀ ਕਰੋ",
+    "websocketCurrentlySelectedAction": "ਮੌਜੂਦਾ ਚੁਣੀ ਗਈ ਕਾਰਵਾਈ",
+    "websocketDisableWebSocketControlSurface": "ਵੈੱਬਸੌਕੇਟ ਕੰਟਰੋਲ ਸਰਫੇਸ ਨੂੰ ਅਯੋਗ ਕਰੋ",
+    "websocketDisconnected": "ਡਿਸਕਨੈਕਟ ਕੀਤਾ ਗਿਆ",
+    "websocketEnableWebSocket": "ਵੈੱਬਸੌਕੇਟ ਚਾਲੂ ਕਰੋ",
+    "websocketEnableWebSocketControlSurface": "ਵੈੱਬਸੌਕੇਟ ਕੰਟਰੋਲ ਸਰਫੇਸ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
+    "websocketFilterActionsByApplication": "ਐਪਲੀਕੇਸ਼ਨ ਦੁਆਰਾ ਕਾਰਵਾਈਆਂ ਨੂੰ ਫਿਲਟਰ ਕਰੋ:",
+    "websocketInvalidPortNumber": "ਅਵੈਧ ਪੋਰਟ ਨੰਬਰ",
+    "websocketInvalidPortNumberDescription": "ਕਿਰਪਾ ਕਰਕੇ 1 ਅਤੇ 65535 ਦੇ ਵਿਚਕਾਰ ਇੱਕ ਵੈਧ ਪੋਰਟ ਨੰਬਰ ਦਾਖਲ ਕਰੋ।",
+    "websocketMessageExample": "ਵੈੱਬਸੌਕੇਟ ਸੁਨੇਹੇ ਦੀ ਉਦਾਹਰਣ:",
+    "websocketNoActiveConnections": "ਕੋਈ ਕਿਰਿਆਸ਼ੀਲ ਕਨੈਕਸ਼ਨ ਨਹੀਂ",
+    "websocketNoCopyableMessage": "ਕਾਪੀ ਕਰਨ ਲਈ ਕੋਈ ਸੁਨੇਹਾ ਨਹੀਂ ਹੈ",
+    "websocketOpenActionChooser": "ਐਕਸ਼ਨ ਚੋਣਕਾਰ ਖੋਲ੍ਹੋ",
+    "websocketOpenActionChooserDescription": "ਸਾਰੀਆਂ ਉਪਲਬਧ ਕਾਰਵਾਈਆਂ ਨੂੰ ਬ੍ਰਾਊਜ਼ ਕਰਨ ਅਤੇ ਖੋਜਣ ਲਈ ਕਮਾਂਡਪੋਸਟ ਐਕਸ਼ਨ ਚੋਣਕਾਰ ਖੋਲ੍ਹਣ ਲਈ ਉੱਪਰ ਦਿੱਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।",
+    "websocketRefresh": "ਤਾਜ਼ਾ ਕਰੋ",
+    "websocketServerMode": "ਸਰਵਰ ਮੋਡ",
+    "websocketServerNotRunning": "ਸਰਵਰ ਨਹੀਂ ਚੱਲ ਰਿਹਾ ਹੈ।",
+    "websocketServerPort": "ਸਰਵਰ ਪੋਰਟ",
+    "websocketServerRunning": "ਸਰਵਰ ਚੱਲ ਰਿਹਾ ਹੈ",
+    "websocketServerRunningWithDetails": "ਸਰਵਰ ਚੱਲ ਰਿਹਾ ਹੈ\\nਪੋਰਟ: %{ਪੋਰਟ}\\nਕਨੈਕਟ ਕੀਤੇ ਕਲਾਇੰਟ: %{count}",
+    "websocketServerStopped": "ਸਰਵਰ ਬੰਦ ਹੋ ਗਿਆ",
+    "websocketToggleWebSocketControlSurface": "ਵੈੱਬਸਾਕੇਟ ਕੰਟਰੋਲ ਸਰਫੇਸ ਟੌਗਲ ਕਰੋ",
     "weight": "ਭਾਰ",
     "welcomeToTheToolbox": "ਟੂਲਬਾਕਸ ਵਿਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ",
     "whatDidYouExpectToHappen": "ਤੁਸੀਂ ਕੀ ਕਰਨ ਦੀ ਆਸ ਕੀਤੀ?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "ਵਰਕਫਲੋ ਐਕਸਟੈਂਸ਼ਨ ਸਥਾਪਤ ਕੀਤੀ ਗਈ",
     "workflowExtensionMovePlayhead": "ਵਰਕਫਲੋ ਐਕਸਟੈਂਸ਼ਨ API ਰਾਹੀਂ ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ ਪਲੇਹੈੱਡ ਨੂੰ ਮੂਵ ਕਰਦਾ ਹੈ",
     "workspaces": "ਵਰਕਸਪੇਸ",
+    "wsActionId": "ਕਾਰਵਾਈ ਆਈਡੀ",
+    "wsHandler": "ਹੈਂਡਲਰ",
+    "wsId": "ਆਈਡੀ",
+    "wsMode": "ਮੋਡ",
+    "wsStatus": "ਸਥਿਤੀ",
     "xml": "XML",
     "yellow": "ਪੀਲਾ",
     "yes": "ਹਾਂ",
