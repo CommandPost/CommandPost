@@ -269,6 +269,117 @@ function GeneratorsBrowser:showAllTitles()
     return self
 end
 
+-- cp.apple.finalcutpro.main.GeneratorsBrowser:_findAndSelectCategoryRow(parentLabel, name) -> boolean
+-- Method
+-- Finds and selects a category row by name under a parent row, in a single pass.
+-- This is more efficient than first collecting all rows then searching through them.
+--
+-- Parameters:
+--  * parentLabel - The label of the parent row (e.g., "Titles" or "Generators").
+--  * name - The category name to find and select.
+--
+-- Returns:
+--  * `true` if the row was found and selected, otherwise `false`.
+function GeneratorsBrowser:_findAndSelectCategoryRow(parentLabel, name)
+    local ui = self.sidebar:contentUI()
+    if not ui then
+        return false
+    end
+
+    local isFinalCutPro12OrLater = self:app():isFinalCutPro12OrLater()
+
+    --------------------------------------------------------------------------------
+    -- First, find and disclose the parent row:
+    --------------------------------------------------------------------------------
+    local parentRow = nil
+    for _,child in ipairs(ui) do
+        if child:attributeValue("AXRole") == "AXRow" then
+            local cell = child[1]
+            local value
+            if isFinalCutPro12OrLater then
+                --------------------------------------------------------------------------------
+                -- In FCP 12, the structure is: AXRow > AXCell > AXStaticText
+                --------------------------------------------------------------------------------
+                local staticText = cell and cell[2]
+                value = staticText and staticText:attributeValue("AXValue")
+            else
+                --------------------------------------------------------------------------------
+                -- In earlier versions, try multiple approaches:
+                --------------------------------------------------------------------------------
+                if cell then
+                    if #cell > 0 then
+                        value = cell[1] and cell[1]:attributeValue("AXValue")
+                    else
+                        value = cell:attributeValue("AXValue")
+                    end
+                    --------------------------------------------------------------------------------
+                    -- Fallback for FCP 11 structure:
+                    --------------------------------------------------------------------------------
+                    if value == nil then
+                        local subCell = childWithRole(cell, "AXCell")
+                        local staticText = subCell and childWithRole(subCell, "AXStaticText")
+                        value = staticText and staticText:attributeValue("AXValue")
+                    end
+                end
+            end
+
+            if value == parentLabel then
+                parentRow = child
+                break
+            end
+        end
+    end
+
+    if not parentRow then
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Ensure the parent row is disclosed:
+    --------------------------------------------------------------------------------
+    local disclosing = parentRow:attributeValue("AXDisclosing")
+    if disclosing == false then
+        parentRow:setAttributeValue("AXDisclosing", true)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Now search through the disclosed children:
+    --------------------------------------------------------------------------------
+    local disclosedRows = parentRow:attributeValue("AXDisclosedRows")
+    if not disclosedRows then
+        return false
+    end
+
+    for _,row in ipairs(disclosedRows) do
+        local cell = row[1]
+        local value
+        if isFinalCutPro12OrLater then
+            local staticText = cell and cell[2]
+            value = staticText and staticText:attributeValue("AXValue")
+        else
+            if cell then
+                if #cell > 0 then
+                    value = cell[1] and cell[1]:attributeValue("AXValue")
+                else
+                    value = cell:attributeValue("AXValue")
+                end
+                if value == nil then
+                    local subCell = childWithRole(cell, "AXCell")
+                    local staticText = subCell and childWithRole(subCell, "AXStaticText")
+                    value = staticText and staticText:attributeValue("AXValue")
+                end
+            end
+        end
+
+        if value == name then
+            row:setAttributeValue("AXSelected", true)
+            return true
+        end
+    end
+
+    return false
+end
+
 --- cp.apple.finalcutpro.main.GeneratorsBrowser:showTitlesCategory(name) -> self
 --- Method
 --- Ensures the sidebar is showing and that the selected 'Titles' category is selected, if available.
@@ -280,7 +391,15 @@ end
 ---  * The Generators Browser.
 function GeneratorsBrowser:showTitlesCategory(name)
     self:showSidebar()
-    Table.selectRow(self.sidebar:rowsUI(), {self:getTitlesRowLabel(), name})
+    --------------------------------------------------------------------------------
+    -- Use optimized single-pass search for better performance in FCP 12+:
+    --------------------------------------------------------------------------------
+    if not self:_findAndSelectCategoryRow(self:getTitlesRowLabel(), name) then
+        --------------------------------------------------------------------------------
+        -- Fallback to legacy method if direct search fails:
+        --------------------------------------------------------------------------------
+        Table.selectRow(self.sidebar:rowsUI(), {self:getTitlesRowLabel(), name})
+    end
     return self
 end
 
@@ -326,7 +445,15 @@ end
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:showGeneratorsCategory(name)
     self:showSidebar()
-    Table.selectRow(self.sidebar:rowsUI(), {self:getGeneratorsRowLabel(), name})
+    --------------------------------------------------------------------------------
+    -- Use optimized single-pass search for better performance in FCP 12+:
+    --------------------------------------------------------------------------------
+    if not self:_findAndSelectCategoryRow(self:getGeneratorsRowLabel(), name) then
+        --------------------------------------------------------------------------------
+        -- Fallback to legacy method if direct search fails:
+        --------------------------------------------------------------------------------
+        Table.selectRow(self.sidebar:rowsUI(), {self:getGeneratorsRowLabel(), name})
+    end
     return self
 end
 

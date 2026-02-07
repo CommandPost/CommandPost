@@ -424,9 +424,7 @@ function EffectsBrowser:_startEndRowsUI(startLabel, endLabel)
     --------------------------------------------------------------------------------
     -- Find the two 'All' rows (Video/Audio)
     --------------------------------------------------------------------------------
-
-    local isFCP12 = self:app():version() >= semver("12.0.0")
-
+    local isFinalCutPro12OrLater = self:app():isFinalCutPro12OrLater()
     return self.sidebar:rowsUI(function(row)
         --------------------------------------------------------------------------------
         -- Early termination: if we've already found the end, skip remaining rows
@@ -437,7 +435,7 @@ function EffectsBrowser:_startEndRowsUI(startLabel, endLabel)
 
         local label
 
-        if isFCP12 then
+        if isFinalCutPro12OrLater then
             --------------------------------------------------------------------------------
             -- For maximum performance, we just use table index:
             --------------------------------------------------------------------------------
@@ -481,13 +479,13 @@ function EffectsBrowser:_findAndSelectCategoryRow(startLabel, endLabel, name)
         return false
     end
 
-    local isFCP12 = self:app():version() >= semver("12.0.0")
+    local isFinalCutPro12OrLater = self:app():isFinalCutPro12OrLater()
     local started = false
 
     for _,child in ipairs(ui) do
         if child:attributeValue("AXRole") == "AXRow" then
             local label
-            if isFCP12 then
+            if isFinalCutPro12OrLater then
                 label = child[1] and child[1][2]
             else
                 label = child[1] and child[1][1]

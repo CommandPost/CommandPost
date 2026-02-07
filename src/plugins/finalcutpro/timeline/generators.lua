@@ -194,12 +194,23 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure "Installed Generators" is selected:
+    -- Make sure "Installed Generators" or "Generators" (in FCP v12 or later)
+    -- is selected:
     --------------------------------------------------------------------------------
     local group = generators.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledGeneratorsMenuItem") then
-        generators:showInstalledGenerators()
+    if group then
+        local groupValue = group:attributeValue("AXValue")
+
+        local titlesText
+        if fcp:isFinalCutPro12OrLater() then
+            titlesText = fcp:string("FFEffectsBrowserInstalledMotionTemplatesGenerators")
+        else
+            titlesText = fcp:string("PEMediaBrowserInstalledGeneratorsMenuItem")
+        end
+
+        if groupValue and titlesText and groupValue ~= titlesText then
+            generators:showInstalledTitles()
+        end
     end
 
     --------------------------------------------------------------------------------

@@ -285,6 +285,19 @@ function fcp.lazy.prop:isInstalled()
     return self.app.installed
 end
 
+--- cp.apple.finalcutpro.isFinalCutPro12OrLater() -> boolean
+--- Method
+--- Are we running Final Cut Pro v12 or later?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A boolean
+function fcp:isFinalCutPro12OrLater()
+    return self.app.version() >= semver("12.0.0")
+end
+
 --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only; live>
 --- Field
 --- Is Final Cut Pro Frontmost?

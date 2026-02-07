@@ -75,12 +75,21 @@ function mod.apply(action)
     effects:show()
 
     --------------------------------------------------------------------------------
-    -- Make sure "Installed Effects" is selected:
+    -- Make sure "Installed Effects" or "Effects" (in FCP v12 and later)
+    -- is selected:
     --------------------------------------------------------------------------------
+    local effectsText
+    if fcp:isFinalCutPro12OrLater() then
+        effectsText = fcp:string("FFEffectsBrowserInstalledMotionTemplatesEffects")
+    else
+        effectsText = fcp:string("PEMediaBrowserInstalledEffectsMenuItem")
+    end
     local group = effects.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
-        effects:showInstalledEffects()
+    if group then
+        local groupValue = group:attributeValue("AXValue")
+        if groupValue and effectsText and groupValue ~= effectsText then
+            effects:showInstalledEffects()
+        end
     end
 
     --------------------------------------------------------------------------------

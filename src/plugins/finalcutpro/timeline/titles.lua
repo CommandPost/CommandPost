@@ -196,12 +196,22 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure "Installed Titles" is selected:
+    -- Make sure "Installed Titles" or "Titles" (in FCP v12 or later) is selected:
     --------------------------------------------------------------------------------
     local group = generators.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledTitlesMenuItem") then
-        generators:showInstalledTitles()
+    if group then
+        local groupValue = group:attributeValue("AXValue")
+
+        local titlesText
+        if fcp:isFinalCutPro12OrLater() then
+            titlesText = fcp:string("FFEffectsBrowserInstalledMotionTemplatesTitles")
+        else
+            titlesText = fcp:string("PEMediaBrowserInstalledTitlesMenuItem")
+        end
+
+        if groupValue and titlesText and groupValue ~= titlesText then
+            generators:showInstalledTitles()
+        end
     end
 
     --------------------------------------------------------------------------------
