@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "No s'ha trobat cap clip titulat '%{title}'.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "Un nou FCPXML s'ha exportat correctament.",
     "aValidTokenIsRequired": "Es requereix un testimoni vàlid.",
+    "aValidWorkspaceIsRequired": "Es requereix un espai de treball vàlid.",
     "above": "A dalt",
     "absolute": "Absolut",
     "absoluteSnapsToZero": "Absolut (ajusta a zero)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Gestor",
     "core_tourbox_prefs_label": "Preferències: TourBox",
     "core_watchfolders_manager_label": "Gestor: Carpetes de visualització",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Gestor: WebSocket",
+    "core_websocket_prefs_label": "Preferències: WebSocket",
     "correctSpellingAutomatically": "Corregir l'ortografia automàticament",
     "cpAddNoteToSelectedClips_title": "Afegeix una nota als clips seleccionats",
     "cpAllowTasksDuringPlayback_title": "Commuta la renderització durant la reproducció",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Activa el prefix del nom del fitxer",
     "enableFlashDrive": "Activa la unitat flash",
     "enableHUD": "Activa HUD",
+    "enableHaptics": "Activa la hàptica",
     "enableLoupdeckSupport": "Activa el suport de Loupedeck",
     "enableLoupedeckCTSupport": "Activa el suport de Loupedeck CT",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Activa l'assistència de Loupedeck CT i surt de l'aplicació Loupedeck",
@@ -949,6 +954,7 @@
     "feedback": "Feedback",
     "feedbackError": "S'ha produït el següent error en intentar comunicar-se amb els servidors CommandPost:\n\n%{message}\n\nMalauradament, els vostres comentaris no s'han enviat.\n\nSiusplau torna-ho a provar.",
     "feedbackSuccess": "La teva opinió s'ha enviat correctament.\n\nGràcies!",
+    "fieldOfView": "Camp de visió",
     "fiftyHz": "50 Hz",
     "fileCouldNotBeRead": "No s'ha pogut llegir el fitxer seleccionat.",
     "fill": "Omplir",
@@ -1165,6 +1171,7 @@
     "findNext": "Cerca Següent",
     "findPrevious": "Cerca l'anterior",
     "findToken": "Cerca el testimoni",
+    "findWorkspace": "Trobeu l'espai de treball",
     "finder": "Cercador",
     "finder_application_manager_label": "Gestor d'aplicacions",
     "finder_audio_label": "Accions d'àudio",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Pis",
     "flat9": "Pis",
+    "focusOnScaleAll": "Centrar-se en l'escala de tot",
     "focusOnTitleTextInInspector": "Centra't en el text del títol a Inspector",
     "folder": "Carpeta",
     "font": "Font",
@@ -1270,6 +1278,8 @@
     "grouped": "Agrupats",
     "guide": "Guia",
     "guides": "Guies",
+    "hapticsSpeed": "Velocitat hàptica",
+    "hapticsStrenght": "Força hàptica",
     "hardLight": "Llum dura",
     "hardLight9": "HardLight",
     "hardMix": "Barreja dura",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InerciaCam",
     "info": "Informació",
     "insert": "Insereix",
+    "insertAction": "Inserir acció",
     "insertClipsVerticallyFromBrowserToTimeline": "Insereix clips verticalment des del navegador a la línia de temps",
     "insertIntoTimeline": "Insereix a la línia de temps",
     "insideCorners": "Cantonades interiors",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Mode Jog Wheel",
     "joinClips": "Uneix-te a Clips",
+    "joinDiscord": "Uneix-te a Discord",
     "jumpToFrameShiftExplanation": "Si manteniu premuda la tecla MAJÚS, saltarà 10 fotogrames en lloc d'1.",
     "jumpToNextFrame": "Anar al fotograma següent",
     "jumpToPreviousFrame": "Anar al fotograma anterior",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "CommandPost requereix un permís d'<strong>Automatització</strong><br /> per llistar les dreceres de l'aplicació de dreceres de macOS a Search Console.<br /><br />Això és <strong>opcional</strong>. Si feu clic a <strong>Activa les dreceres</strong>, és possible que se us demani permís<br /> si CommandPost encara no ho ha demanat anteriorment. Podeu canviar aquest permís en qualsevol moment visitant el tauler <strong>Preferències del sistema > Seguretat i privadesa > Privadesa > Automatització</strong>.",
     "magicButton": "Botó màgic",
     "magnify": "Ampliar",
+    "mapping": "Cartografia",
     "marker": "Marcador",
     "master": "Mestre",
     "master2": "SENYORA",
@@ -1663,7 +1676,9 @@
     "notion": "Noció",
     "notionDatabaseURL": "URL de la base de dades de nocions",
     "notionDescription": "Aquesta eina us permet obtenir metadades de Final Cut Pro i penjar-les directament a Notion. Desenvolupat per csv2notion de vzhd1701.",
+    "notionDescriptionTwo": "Desenvolupat per CSV2Notion Neo.",
     "notionToken": "Fitxa de noció",
+    "notionWorkspace": "Espai de treball de la noció",
     "nudge": "Empenyér",
     "number": "Número",
     "ofScreen": "de pantalla",
@@ -1711,6 +1726,8 @@
     "optional": "Opcional",
     "options": "Opcions",
     "organize": "Organitzar",
+    "orientation": "Orientació",
+    "orientationMapping": "Cartografia d'orientació",
     "originalClipName": "Nom del clip original",
     "originalOptimised": "Original/Optimitzat",
     "originalTitle": "Títol original",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "Amb què us agradaria canviar el nom d'aquest botó?",
     "renameClip": "Canvia el nom del clip",
     "renderComplete": "Renderització completa!",
+    "reorient": "Reorientar",
     "repeat": "Repetiu",
     "repeatPressActionUntilReleased": "Repetiu l'acció de premsa fins que s'alliberi",
     "replace": "Substitueix",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Dreta2Esquerra",
     "rightTextLayer": "Capa de text dreta",
     "rightVertical": "Vertical dreta",
+    "roll": "Rotlla",
     "rollingShutter": "Persiana enrotllable",
     "rotate": "Girar",
     "rotate9": "Girar",
@@ -2158,6 +2177,38 @@
         "one": "Desplaceu l'ancoratge cap amunt en %{amount} píxels",
         "other": "Desplaceu l'ancoratge cap amunt en %{amount} píxels"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Desplaça el camp de visió d'orientació cap a l'esquerra en %{amount} grau",
+        "other": "Desplaça el camp de visió d'orientació cap a l'esquerra en %{amount} grau"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Desplaça el camp de visió d'orientació a la dreta en %{amount} grau",
+        "other": "Desplaça el camp de visió d'orientació a la dreta en %{amount} grau"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Desplaça la panoràmica d'orientació cap a l'esquerra en %{amount} grau",
+        "other": "Desplaça la panoràmica d'orientació cap a l'esquerra en %{amount} grau"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Desplaça l'orientació cap a la dreta en %{amount} grau",
+        "other": "Desplaça l'orientació cap a la dreta en %{amount} grau"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Desplaceu el rotllo d'orientació cap a l'esquerra en %{amount} grau",
+        "other": "Desplaceu el rotllo d'orientació cap a l'esquerra en %{amount} grau"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Desplaça el rotllo d'orientació cap a la dreta en %{amount} grau",
+        "other": "Desplaça el rotllo d'orientació cap a la dreta en %{amount} grau"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Desplaçament d'orientació Inclinació cap a l'esquerra en %{amount} grau",
+        "other": "Desplaçament d'orientació Inclinació cap a l'esquerra en %{amount} grau"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Desplaçament d'orientació Inclinació cap a la dreta en %{amount} grau",
+        "other": "Desplaçament d'orientació Inclinació cap a la dreta en %{amount} grau"
+    },
     "shiftPositionDownPixels": {
         "one": "Canvia la posició cap avall %{amount} píxels",
         "other": "Canvia la posició cap avall %{amount} píxels"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Canvia la posició cap amunt %{amount} píxels",
         "other": "Canvia la posició cap amunt %{amount} píxels"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Canviar Reorienta la panoràmica cap a l'esquerra en %{amount} grau",
+        "other": "Canviar Reorienta la panoràmica cap a l'esquerra en %{amount} grau"
+    },
+    "shiftReorientPanRight": {
+        "one": "Canvia Reorienta la panoràmica cap a la dreta en %{amount} grau",
+        "other": "Canvia Reorienta la panoràmica cap a la dreta en %{amount} grau"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Canviar Reorienta el rotllo cap a l'esquerra en %{amount} grau",
+        "other": "Canviar Reorienta el rotllo cap a l'esquerra en %{amount} grau"
+    },
+    "shiftReorientRollRight": {
+        "one": "Canvia reorientar el rotllo cap a la dreta en %{amount} grau",
+        "other": "Canvia reorientar el rotllo cap a la dreta en %{amount} grau"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Maj Reorienta la inclinació cap a l'esquerra en %{amount} grau",
+        "other": "Maj Reorienta la inclinació cap a l'esquerra en %{amount} grau"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Maj Reorienta la inclinació cap a la dreta en %{amount} grau",
+        "other": "Maj Reorienta la inclinació cap a la dreta en %{amount} grau"
     },
     "shiftRotationLeft": {
         "one": "Desplaçament de rotació cap a l'esquerra en %{amount} grau",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Això restablirà tots els elements de Stream Deck per a aquesta unitat en particular als valors predeterminats.",
     "streamdeckPanelLabel": "Stream Deck",
     "streamdeckPanelTooltip": "Preferències de la plataforma de reproducció",
+    "strong": "Fort",
     "subcomponent": "Subcomponent",
     "subcomponents": "Subcomponents",
     "subtract": "Sostreure",
@@ -2380,6 +2456,7 @@
     "temperature": "Temperatura",
     "temperature4": "Temp",
     "ten": "10",
+    "testSnippet": "Fragment de prova",
     "testTitle": "Prova CommandPost",
     "text": "Text",
     "textInspectorCouldNotBeShown": "No s'ha pogut mostrar l'inspector de text.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Això només activarà la tecla de drecera de reproducció si ja està aturada.",
     "three": "3",
     "threeDeeText": "Text 3D",
+    "tilt": "Inclinació",
     "timeline": "Cronologia",
     "timelineBatchExportBeginMessage": "Aquesta eina d'exportació per lots de cronologia utilitza l'automatització per seleccionar cada clip individualment i, a continuació, activa l'element de menú \"Fitxer > Comparteix\".\n\nNo moveu el ratolí ni toqueu el teclat fins que s'hagi completat aquest procés.\n\nLa preferència \"Activa la renderització durant la reproducció\" es desactivarà fins que s'hagi completat l'exportació per lots per millorar el rendiment.\n\nSi teniu una màquina més lenta o esteu exportant molts clips, és possible que Final Cut Pro tingui problemes per mantenir-se al dia; en aquest cas, podeu tenir més èxit amb aquesta eina per \"Enviar a compressor\", ja que en realitat la transcodificació només necessitarà lloc quan inicieu la cua d'exportació.\n\nCom a alternativa a CommandPost, també podeu utilitzar l'aplicació Frame.io, però això pot ser molt més lent en línies de temps grans, ja que primer exporta tota la línia de temps.",
     "timelineBatchExportCompressorBeginMessage": "Aquesta eina d'exportació per lots de cronologia utilitza l'automatització per seleccionar cada clip individualment i, a continuació, activa l'element de menú \"Fitxer > Envia al compressor\".\n\nNo moveu el ratolí ni toqueu el teclat fins que s'hagi completat aquest procés.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "Cronologia",
     "tint": "Tint",
     "tint4": "Tint",
+    "tinyPlanet": "Petit Planeta",
     "tip": "Consell",
     "title": "Títol",
     "title_group": "Títol",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Commuta els controls",
     "toggleDaVinciResolveControlSurfaceSupport": "Commuta el suport de la superfície de control de DaVinci Resolve",
     "toggleEffects": "Commuta els efectes",
+    "toggleKeyframe": "Commuta el fotograma clau",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Commuta les nanses d'esvaïment d'opacitat a la finestra emergent d'animació de vídeo als clips seleccionats",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "A causa d'un error de Final Cut Pro, això no funciona per als clips d'una història secundària",
     "toggleOverlaysWithCapsLock": "Commuta les superposicions amb el bloqueig de majúscules",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Aquesta funció us permet rebre notificacions de macOS sempre que s'afegeix un fitxer FCPXML a qualsevol de les carpetes de visualització següents.<br />Des de la notificació podeu <b>Importar</b> aquests fitxers directament a la vostra línia de temps de Final Cut Pro actual. .<br />Si manteniu premuda la tecla <b>MAJÚS</b> quan premeu <b>Importa</b>, s'importarà tots els fitxers pendents.",
     "watchFolders": "Carpetes de visualització",
     "wave": "Onada",
+    "weak": "Feble",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Consulta d'acció",
+    "websocketAddress": "Adreça",
+    "websocketCannotParseMessageData": "No es poden analitzar les dades del missatge:",
+    "websocketClientMode": "Mode client",
+    "websocketClients": "Clients",
+    "websocketConnected": "Connectat",
+    "websocketConnectionStatus": "Estat de la connexió",
+    "websocketControlSurface": "Superfície de control de WebSocket",
+    "websocketControlSurfaceDisabled": "La superfície de control de WebSocket està desactivada",
+    "websocketControlSurfaceSettings": "Configuració de la superfície de control de WebSocket",
+    "websocketCopied": "Copiat",
+    "websocketCopyFailed": "La còpia ha fallat:",
+    "websocketCopyMessage": "Copiar missatge",
+    "websocketCurrentlySelectedAction": "Acció seleccionada actualment",
+    "websocketDisableWebSocketControlSurface": "Desactiva la superfície de control de WebSocket",
+    "websocketDisconnected": "Desconnectat",
+    "websocketEnableWebSocket": "Habilita WebSocket",
+    "websocketEnableWebSocketControlSurface": "Habilita la superfície de control de WebSocket",
+    "websocketFilterActionsByApplication": "Filtra accions per aplicació:",
+    "websocketInvalidPortNumber": "Número de port no vàlid",
+    "websocketInvalidPortNumberDescription": "Si us plau, introduïu un número de port vàlid entre 1 i 65535.",
+    "websocketMessageExample": "Exemple de missatge de WebSocket:",
+    "websocketNoActiveConnections": "Cap connexió activa",
+    "websocketNoCopyableMessage": "No hi ha missatge per copiar",
+    "websocketOpenActionChooser": "Obre el selector d'accions",
+    "websocketOpenActionChooserDescription": "Feu clic al botó de dalt per obrir el selector d'accions de CommandPost per navegar i cercar totes les accions disponibles.",
+    "websocketRefresh": "Actualitza",
+    "websocketServerMode": "Mode servidor",
+    "websocketServerNotRunning": "El servidor no està en funcionament",
+    "websocketServerPort": "Port del servidor",
+    "websocketServerRunning": "Servidor en execució",
+    "websocketServerRunningWithDetails": "El servidor està en execució\\nPort: %{port}\\nClients connectats: %{count}",
+    "websocketServerStopped": "Servidor aturat",
+    "websocketToggleWebSocketControlSurface": "Activa/desactiva la superfície de control de WebSocket",
     "weight": "Pes",
     "welcomeToTheToolbox": "Benvingut a la Caixa d'eines",
     "whatDidYouExpectToHappen": "Què esperaves que passés?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "S'ha instal·lat l'extensió de flux de treball",
     "workflowExtensionMovePlayhead": "Mou el capçal de reproducció de Final Cut Pro mitjançant l'API d'extensió de flux de treball",
     "workspaces": "Espais de treball",
+    "wsActionId": "ID d'acció",
+    "wsHandler": "Manipulador",
+    "wsId": "ID",
+    "wsMode": "Mode",
+    "wsStatus": "Estat",
     "xml": "XML",
     "yellow": "groc",
     "yes": "Sí",
