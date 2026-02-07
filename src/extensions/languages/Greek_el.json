@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Δεν βρέθηκε κανένα κλιπ με τίτλο '%{title}'.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "Ένα νέο FCPXML έχει εξαχθεί με επιτυχία.",
     "aValidTokenIsRequired": "Απαιτείται ένα έγκυρο διακριτικό.",
+    "aValidWorkspaceIsRequired": "Απαιτείται έγκυρος χώρος εργασίας.",
     "above": "Πάνω από",
     "absolute": "Απόλυτος",
     "absoluteSnapsToZero": "Απόλυτο (κουμπώνει στο μηδέν)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Διευθυντής",
     "core_tourbox_prefs_label": "Προτιμήσεις: TourBox",
     "core_watchfolders_manager_label": "Διαχειριστής: Παρακολουθήστε τους φακέλους",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Διαχειριστής: WebSocket",
+    "core_websocket_prefs_label": "Προτιμήσεις: WebSocket",
     "correctSpellingAutomatically": "Σωστή ορθογραφία",
     "cpAddNoteToSelectedClips_title": "Προσθήκη σημείωσης στα επιλεγμένα κλιπ",
     "cpAllowTasksDuringPlayback_title": "Εναλλαγή προβολής κατά τη διάρκεια της αναπαραγωγής",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Ενεργοποιήστε το πρόθεμα ονόματος αρχείου",
     "enableFlashDrive": "Ενεργοποίηση Flash Drive",
     "enableHUD": "Ενεργοποίηση του HUD",
+    "enableHaptics": "Ενεργοποίηση απτικής λειτουργίας",
     "enableLoupdeckSupport": "Ενεργοποιήστε την υπηρεσία Loupedeck + Υποστήριξη",
     "enableLoupedeckCTSupport": "Ενεργοποίηση υποστήριξης CT Loupedeck",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Ενεργοποίηση Loupedeck CT Support & Quit Loupedeck App",
@@ -949,6 +954,7 @@
     "feedback": "Ανατροφοδότηση",
     "feedbackError": "Παρουσιάστηκε το ακόλουθο σφάλμα κατά την επικοινωνία με τους διακομιστές CommandPost:\n\n%{message}\n\nΔυστυχώς τα σχόλιά σας δεν υποβλήθηκαν.\n\nΠΑΡΑΚΑΛΩ προσπαθησε ξανα.",
     "feedbackSuccess": "Τα σχόλιά σας υποβλήθηκαν με επιτυχία.\n\nΕυχαριστώ!",
+    "fieldOfView": "Οπτικό πεδίο",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "Δεν ήταν δυνατή η ανάγνωση του επιλεγμένου αρχείου.",
     "fill": "Γέμισμα",
@@ -1165,6 +1171,7 @@
     "findNext": "Βρείτε Επόμενο",
     "findPrevious": "Εύρεση προηγούμενης",
     "findToken": "Εύρεση Token",
+    "findWorkspace": "Εύρεση χώρου εργασίας",
     "finder": "Ευρίσκων",
     "finder_application_manager_label": "Διαχείριση εφαρμογών",
     "finder_audio_label": "Ηχητικές ενέργειες",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Επίπεδος",
     "flat9": "Επίπεδος",
+    "focusOnScaleAll": "Εστίαση στην Κλιμάκωση Όλων",
     "focusOnTitleTextInInspector": "Εστίαση στο κείμενο τίτλου στον επιθεωρητή",
     "folder": "Ντοσιέ",
     "font": "Γραμματοσειρά",
@@ -1270,6 +1278,8 @@
     "grouped": "Ομαδοποιημένο",
     "guide": "Οδηγός",
     "guides": "Οδηγοί",
+    "hapticsSpeed": "Ταχύτητα απτικής",
+    "hapticsStrenght": "Απτική Δύναμη",
     "hardLight": "Δυνατο φως",
     "hardLight9": "Δυνατο φως",
     "hardMix": "Hard Mix",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "Πληροφορίες",
     "insert": "Εισάγετε",
+    "insertAction": "Εισαγωγή ενέργειας",
     "insertClipsVerticallyFromBrowserToTimeline": "Τοποθετήστε τα κλιπ κάθετα Από το πρόγραμμα περιήγησης στη χρονολογική σειρά",
     "insertIntoTimeline": "Εισαγάγετε στη χρονολογική σειρά",
     "insideCorners": "Μέσα στις Γωνίες",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Λειτουργία Jog Wheel",
     "joinClips": "Συμμετοχή κλιπ",
+    "joinDiscord": "Γίνετε μέλος του Discord",
     "jumpToFrameShiftExplanation": "Εάν κρατήσετε πατημένο το SHIFT, θα μεταπηδήσει 10 καρέ αντί για 1.",
     "jumpToNextFrame": "Μετάβαση στο επόμενο πλαίσιο",
     "jumpToPreviousFrame": "Μετάβαση στο προηγούμενο πλαίσιο",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "Το CommandPost απαιτεί άδεια <strong>Αυτοματοποίησης</strong><br /> για τη λίστα συντομεύσεων από την εφαρμογή Συντομεύσεις macOS στο Search Console.<br /><br />Αυτό είναι <strong>προαιρετικό</strong>. Εάν κάνετε κλικ στην <strong>Ενεργοποίηση συντομεύσεων</strong>, ενδέχεται να σας ζητηθεί άδεια<br /> εάν το CommandPost δεν έχει ήδη ζητήσει στο παρελθόν. Μπορείτε να αλλάξετε αυτήν την άδεια ανά πάσα στιγμή, μεταβαίνοντας στον πίνακα <strong>Προτιμήσεις συστήματος > Ασφάλεια και απόρρητο > Απόρρητο > Αυτοματοποίηση</strong>.",
     "magicButton": "Μαγικό κουμπί",
     "magnify": "Μεγεθύνω",
+    "mapping": "Χαρτογράφηση",
     "marker": "Σημάδι",
     "master": "Κύριος",
     "master2": "Κυρία",
@@ -1663,7 +1676,9 @@
     "notion": "Εννοια",
     "notionDatabaseURL": "Διεύθυνση URL βάσης δεδομένων έννοιας",
     "notionDescription": "Αυτό το εργαλείο σάς επιτρέπει να λαμβάνετε μεταδεδομένα από το Final Cut Pro και να τα ανεβάσετε απευθείας στο Notion. Υποστηρίζεται από το csv2notion του vzhd1701.",
+    "notionDescriptionTwo": "Με την υποστήριξη του CSV2Notion Neo.",
     "notionToken": "Token έννοιας",
+    "notionWorkspace": "Έννοια Χώρος εργασίας",
     "nudge": "Σκουντώ",
     "number": "Αριθμός",
     "ofScreen": "της οθόνης",
@@ -1711,6 +1726,8 @@
     "optional": "Προαιρετικός",
     "options": "Επιλογές",
     "organize": "Οργανώνω",
+    "orientation": "Προσανατολισμός",
+    "orientationMapping": "Χαρτογράφηση προσανατολισμού",
     "originalClipName": "Αρχικό όνομα κλιπ",
     "originalOptimised": "Αρχικό / Βελτιστοποιημένο",
     "originalTitle": "Πρωτότυπος τίτλος",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "Τι θα θέλατε να μετονομάσετε αυτό το κουμπί;",
     "renameClip": "Μετονομασία κλιπ",
     "renderComplete": "Ο ρόλος ολοκληρώθηκε!",
+    "reorient": "Αναπροσανατολισμός",
     "repeat": "Επαναλαμβάνω",
     "repeatPressActionUntilReleased": "Επανάληψη δράσης Μέχρι να κυκλοφορήσει",
     "replace": "Αντικαθιστώ",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Δεξιά στρώμα κειμένου",
     "rightVertical": "Δεξιά κάθετη",
+    "roll": "Ρολό",
     "rollingShutter": "Rolling Shutter",
     "rotate": "Γυρίζω",
     "rotate9": "Γυρίζω",
@@ -2158,6 +2177,38 @@
         "one": "Shift Anchor Up κατά %{amount} Pixel",
         "other": "Shift Anchor Up κατά %{amount} Pixel"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Μετατόπιση προσανατολισμού οπτικού πεδίου αριστερά κατά %{amount} βαθμό",
+        "other": "Μετατόπιση προσανατολισμού οπτικού πεδίου αριστερά κατά %{amount} βαθμό"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Μετατόπιση του οπτικού πεδίου προσανατολισμού προς τα δεξιά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση του οπτικού πεδίου προσανατολισμού προς τα δεξιά κατά %{amount} μοίρα"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Shift Orientation Pan Left αριστερά κατά %{amount} Degree",
+        "other": "Shift Orientation Pan Left αριστερά κατά %{amount} Degree"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Μετατόπιση προσανατολισμού προς τα δεξιά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση προσανατολισμού προς τα δεξιά κατά %{amount} μοίρα"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Shift Orientation Roll αριστερά κατά %{amount} Degree",
+        "other": "Shift Orientation Roll αριστερά κατά %{amount} Degree"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Μετατόπιση προσανατολισμού Ρολό προς τα δεξιά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση προσανατολισμού Ρολό προς τα δεξιά κατά %{amount} μοίρα"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Μετατόπιση Προσανατολισμού Κλίση προς τα αριστερά κατά %{amount} μοίρες",
+        "other": "Μετατόπιση Προσανατολισμού Κλίση προς τα αριστερά κατά %{amount} μοίρες"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Μετατόπιση προσανατολισμού Κλίση προς τα δεξιά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση προσανατολισμού Κλίση προς τα δεξιά κατά %{amount} μοίρα"
+    },
     "shiftPositionDownPixels": {
         "one": "Θέση αλλαγής ταχύτητας %{amount} Pixel",
         "other": "Θέση αλλαγής ταχύτητας %{amount} Pixel"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Θέση αλλαγής ταχύτητας %{amount} Pixel",
         "other": "Θέση αλλαγής ταχύτητας %{amount} Pixel"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Μετατόπιση αναπροσανατολισμού μετατόπισης προς τα αριστερά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση αναπροσανατολισμού μετατόπισης προς τα αριστερά κατά %{amount} μοίρα"
+    },
+    "shiftReorientPanRight": {
+        "one": "Μετατόπιση προσανατολισμού προς τα δεξιά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση προσανατολισμού προς τα δεξιά κατά %{amount} μοίρα"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Shift Reorient Roll Left κατά %{amount} Degree",
+        "other": "Shift Reorient Roll Left κατά %{amount} Degree"
+    },
+    "shiftReorientRollRight": {
+        "one": "Μετατόπιση Αναπροσανατολισμού Ρολό προς τα δεξιά κατά %{amount} μοίρα",
+        "other": "Μετατόπιση Αναπροσανατολισμού Ρολό προς τα δεξιά κατά %{amount} μοίρα"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Μετατόπιση Αναπροσανατολισμός Κλίση προς τα αριστερά κατά %{amount} μοίρες",
+        "other": "Μετατόπιση Αναπροσανατολισμός Κλίση προς τα αριστερά κατά %{amount} μοίρες"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Μετατόπιση Αναπροσανατολισμού Κλίση προς τα δεξιά κατά %{amount} μοίρες",
+        "other": "Μετατόπιση Αναπροσανατολισμού Κλίση προς τα δεξιά κατά %{amount} μοίρες"
     },
     "shiftRotationLeft": {
         "one": "Περιστροφή εναλλαγής αριστερά κατά %{amount} Βαθμός",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Αυτό θα επαναφέρει όλα τα στοιχεία Stream Deck για τη συγκεκριμένη μονάδα στις προεπιλεγμένες τιμές.",
     "streamdeckPanelLabel": "Stream Deck",
     "streamdeckPanelTooltip": "Προτιμήσεις γέφυρας ροής",
+    "strong": "Ισχυρός",
     "subcomponent": "Υποσύνολο",
     "subcomponents": "Υποσυνιστώσες",
     "subtract": "Αφαιρώ",
@@ -2380,6 +2456,7 @@
     "temperature": "Θερμοκρασία",
     "temperature4": "Θερμοκρασία",
     "ten": "10",
+    "testSnippet": "Απόσπασμα δοκιμής",
     "testTitle": "Δοκιμή CommandPost",
     "text": "Κείμενο",
     "textInspectorCouldNotBeShown": "Δεν ήταν δυνατή η εμφάνιση του Επιθεωρητή κειμένου.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Αυτό θα ενεργοποιήσει το πλήκτρο συντόμευσης αναπαραγωγής μόνο εάν έχει ήδη σταματήσει.",
     "three": "3",
     "threeDeeText": "3D κείμενο",
+    "tilt": "Γέρνω",
     "timeline": "Χρονοδιάγραμμα",
     "timelineBatchExportBeginMessage": "Το εργαλείο αυτόματης εξαγωγής χρονικής γραμμής χρησιμοποιεί αυτοματοποίηση για να επιλέξετε κάθε κλιπ μεμονωμένα και στη συνέχεια ενεργοποιεί το στοιχείο μενού \"Αρχείο> Κοινή χρήση\".\n\nΜην μετακινείτε το ποντίκι ή αγγίζετε το πληκτρολόγιο μέχρι να ολοκληρωθεί αυτή η διαδικασία.",
     "timelineBatchExportCompressorBeginMessage": "Το εργαλείο αυτόματης εξαγωγής χρονικής γραμμής χρησιμοποιεί αυτοματοποίηση για να επιλέξετε κάθε κλιπ μεμονωμένα και στη συνέχεια ενεργοποιεί το στοιχείο μενού 'Αρχείο> Αποστολή σε συμπιεστή'.\n\nΜην μετακινείτε το ποντίκι ή αγγίζετε το πληκτρολόγιο μέχρι να ολοκληρωθεί αυτή η διαδικασία.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "Χρονοδιάγραμμα",
     "tint": "Απόχρωση",
     "tint4": "Απόχρωση",
+    "tinyPlanet": "Μικροσκοπικός Πλανήτης",
     "tip": "Υπόδειξη",
     "title": "Τίτλος",
     "title_group": "Τίτλος",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Εναλλαγή στοιχείων ελέγχου",
     "toggleDaVinciResolveControlSurfaceSupport": "Εναλλαγή DaVinci Resolve Control Surface Support",
     "toggleEffects": "Εναλλαγή εφέ",
+    "toggleKeyframe": "Εναλλαγή βασικού καρέ",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Εναλλαγή λαβών αδιαφάνειας στο αναδυόμενο παράθυρο Animation βίντεο σε επιλεγμένα κλιπ",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "Λόγω ενός σφάλματος Final Cut Pro, αυτό δεν λειτουργεί για κλιπ σε μια δευτερεύουσα ιστορία",
     "toggleOverlaysWithCapsLock": "Εναλλαγή επικαλύψεων με Caps Lock",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Αυτή η δυνατότητα σάς επιτρέπει να λαμβάνετε μηνύματα macOS κάθε φορά που ένα αρχείο FCPXML προστίθεται σε οποιονδήποτε από τους παρακάτω φακέλους ρολογιών. <br /> Από την ειδοποίηση μπορείτε να <b> Εισάγετε </ b> αυτά τα αρχεία απευθείας στην τρέχουσα τελική γραμμή Final Cut Pro . <br /> Εάν κρατήσετε πατημένο το <b> SHIFT </ b> πατώντας <b> Εισαγωγή </ b>, θα εισάγετε όλα τα εκκρεμή αρχεία.",
     "watchFolders": "Παρακολουθήστε φακέλους",
     "wave": "Κύμα",
+    "weak": "Αδύναμος",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Ερώτημα ενέργειας",
+    "websocketAddress": "Διεύθυνση",
+    "websocketCannotParseMessageData": "Δεν είναι δυνατή η ανάλυση δεδομένων μηνύματος:",
+    "websocketClientMode": "Λειτουργία πελάτη",
+    "websocketClients": "Πελάτες",
+    "websocketConnected": "Συνδεδεμένος",
+    "websocketConnectionStatus": "Κατάσταση σύνδεσης",
+    "websocketControlSurface": "Επιφάνεια ελέγχου WebSocket",
+    "websocketControlSurfaceDisabled": "Το WebSocket Control Surface είναι απενεργοποιημένο",
+    "websocketControlSurfaceSettings": "Ρυθμίσεις επιφάνειας ελέγχου WebSocket",
+    "websocketCopied": "Αντιγράφηκε",
+    "websocketCopyFailed": "Η αντιγραφή απέτυχε:",
+    "websocketCopyMessage": "Αντιγραφή μηνύματος",
+    "websocketCurrentlySelectedAction": "Τρέχουσα επιλεγμένη ενέργεια",
+    "websocketDisableWebSocketControlSurface": "Απενεργοποίηση επιφάνειας ελέγχου WebSocket",
+    "websocketDisconnected": "Ασύνδετος",
+    "websocketEnableWebSocket": "Ενεργοποίηση WebSocket",
+    "websocketEnableWebSocketControlSurface": "Ενεργοποίηση επιφάνειας ελέγχου WebSocket",
+    "websocketFilterActionsByApplication": "Φιλτράρισμα ενεργειών ανά εφαρμογή:",
+    "websocketInvalidPortNumber": "Μη έγκυρος αριθμός θύρας",
+    "websocketInvalidPortNumberDescription": "Παρακαλώ εισάγετε έναν έγκυρο αριθμό θύρας μεταξύ 1 και 65535",
+    "websocketMessageExample": "Παράδειγμα μηνύματος WebSocket:",
+    "websocketNoActiveConnections": "Δεν υπάρχουν ενεργές συνδέσεις",
+    "websocketNoCopyableMessage": "Δεν υπάρχει μήνυμα για αντιγραφή",
+    "websocketOpenActionChooser": "Άνοιγμα Επιλογέα Ενεργειών",
+    "websocketOpenActionChooserDescription": "Κάντε κλικ στο παραπάνω κουμπί για να ανοίξετε τον Επιλογέα Ενεργειών CommandPost για να περιηγηθείτε και να αναζητήσετε όλες τις διαθέσιμες ενέργειες.",
+    "websocketRefresh": "Φρεσκάρω",
+    "websocketServerMode": "Λειτουργία διακομιστή",
+    "websocketServerNotRunning": "Ο διακομιστής δεν εκτελείται",
+    "websocketServerPort": "Θύρα διακομιστή",
+    "websocketServerRunning": "Διακομιστής σε λειτουργία",
+    "websocketServerRunningWithDetails": "Ο διακομιστής εκτελείται\\nΘύρα: %{port}\\nΣυνδεδεμένοι πελάτες: %{count}",
+    "websocketServerStopped": "Ο διακομιστής σταμάτησε",
+    "websocketToggleWebSocketControlSurface": "Εναλλαγή επιφάνειας ελέγχου WebSocket",
     "weight": "Βάρος",
     "welcomeToTheToolbox": "Καλώς ορίσατε στην εργαλειοθήκη",
     "whatDidYouExpectToHappen": "Τι περιμένατε να συμβεί;",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "Εγκαταστάθηκε η επέκταση ροής εργασίας",
     "workflowExtensionMovePlayhead": "Μετακινεί την κεφαλή αναπαραγωγής Final Cut Pro μέσω του Workflow Extension API",
     "workspaces": "Χώροι εργασίας",
+    "wsActionId": "Αναγνωριστικό ενέργειας",
+    "wsHandler": "Χειριστής",
+    "wsId": "ταυτότητα",
+    "wsMode": "Τρόπος",
+    "wsStatus": "Κατάσταση",
     "xml": "XML",
     "yellow": "Κίτρινος",
     "yes": "Ναί",
