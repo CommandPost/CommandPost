@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "শিরোনাম '%{title}' কোন ক্লিপ খুঁজে পাওয়া যায়নি।",
     "aNewFCPXMLHasBeenExportedSuccessfully": "একটি নতুন এফসিপিএক্সএমএল সাফল্যের সাথে রফতানি করা হয়েছে।",
     "aValidTokenIsRequired": "একটি বৈধ টোকেন প্রয়োজন.",
+    "aValidWorkspaceIsRequired": "একটি বৈধ কর্মক্ষেত্র প্রয়োজন।",
     "above": "উপরে",
     "absolute": "পরম",
     "absoluteSnapsToZero": "পরম (শূন্য থেকে স্ন্যাপ)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "ট্যুরবক্স: ম্যানেজার",
     "core_tourbox_prefs_label": "পছন্দসমূহ: ট্যুরবক্স",
     "core_watchfolders_manager_label": "ম্যানেজার: দেখুন ফোল্ডার",
+    "core_websocket_label": "ওয়েবসকেট",
+    "core_websocket_manager_label": "ম্যানেজার: ওয়েবসকেট",
+    "core_websocket_prefs_label": "পছন্দসমূহ: ওয়েবসকেট",
     "correctSpellingAutomatically": "স্বয়ংক্রিয়ভাবে বানান সংশোধন করুন",
     "cpAddNoteToSelectedClips_title": "নির্বাচিত ক্লিপগুলিতে নোট যুক্ত করুন",
     "cpAllowTasksDuringPlayback_title": "প্লেব্যাকের সময় রেন্ডারিং টগল করুন",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "ফাইলের নাম প্রিফিক্স সক্ষম করুন",
     "enableFlashDrive": "ফ্ল্যাশ ড্রাইভ সক্ষম করুন",
     "enableHUD": "HUD সক্ষম করুন",
+    "enableHaptics": "হ্যাপটিক্স সক্ষম করুন",
     "enableLoupdeckSupport": "লুপডেক + সমর্থন সক্ষম করুন",
     "enableLoupedeckCTSupport": "লুপডেক সিটি সমর্থন সক্ষম করুন",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "লুপেডেক সিটি সহায়তা সক্ষম করুন এবং লুপ্পেক অ্যাপ্লিকেশনটি প্রস্থান করুন",
@@ -949,6 +954,7 @@
     "feedback": "প্রতিক্রিয়া",
     "feedbackError": "কমান্ডপস্ট সার্ভারগুলির সাথে যোগাযোগ করার চেষ্টা করে নিম্নলিখিত ত্রুটি ঘটেছে:\n\n%{message}\n\nদুর্ভাগ্যবশত আপনার মতামত জমা দেওয়া হয় নি।\n\nঅনুগ্রহপূর্বক আবার চেষ্টা করুন.",
     "feedbackSuccess": "আপনার প্রতিক্রিয়া সফলভাবে জমা দেওয়া হয়েছে\n\nধন্যবাদ!",
+    "fieldOfView": "দেখার ক্ষেত্র",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "নির্বাচিত ফাইলটি পড়তে পারে না।",
     "fill": "পূরণ করা",
@@ -1165,6 +1171,7 @@
     "findNext": "পরবর্তী খুঁজে",
     "findPrevious": "পূর্ববর্তী সন্ধান করুন",
     "findToken": "টোকেন খুঁজুন",
+    "findWorkspace": "কর্মক্ষেত্র খুঁজুন",
     "finder": "আবিষ্কর্তা",
     "finder_application_manager_label": "অ্যাপ্লিকেশন ম্যানেজার",
     "finder_audio_label": "অডিও ক্রিয়া",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "ফ্ল্যাট",
     "flat9": "ফ্ল্যাট",
+    "focusOnScaleAll": "স্কেল অল-এর উপর ফোকাস করুন",
     "focusOnTitleTextInInspector": "পরিদর্শকের শিরোনাম পাঠ্যের উপর ফোকাস করুন",
     "folder": "ফোল্ডার",
     "font": "ফন্ট",
@@ -1270,6 +1278,8 @@
     "grouped": "গোষ্ঠীবদ্ধ",
     "guide": "গাইড",
     "guides": "নির্দেশিকা",
+    "hapticsSpeed": "হ্যাপটিক্স গতি",
+    "hapticsStrenght": "হ্যাপটিক্স স্ট্রেংঘট",
     "hardLight": "কঠিন আলো",
     "hardLight9": "কঠিন আলো",
     "hardMix": "হার্ড মিক্স",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "তথ্য",
     "insert": "ঢোকান",
+    "insertAction": "ক্রিয়া সন্নিবেশ করান",
     "insertClipsVerticallyFromBrowserToTimeline": "ব্রাউজার থেকে সময়রেখায় উল্লম্বভাবে ক্লিপগুলি সন্নিবেশ করান",
     "insertIntoTimeline": "টাইমলাইনে ঢোকান",
     "insideCorners": "কোণার ভিতরে",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "জগ হুইল মোড",
     "joinClips": "ক্লিপ যোগ দিন",
+    "joinDiscord": "ডিসকর্ডে যোগ দিন",
     "jumpToFrameShiftExplanation": "আপনি SHIFT চেপে ধরলে, এটি 1 এর পরিবর্তে 10 ফ্রেম লাফিয়ে যাবে।",
     "jumpToNextFrame": "নেক্সট ফ্রেমে ঝাঁপ দাও",
     "jumpToPreviousFrame": "পূর্ববর্তী ফ্রেমে ঝাঁপ দাও",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "সার্চ কনসোলে macOS শর্টকাট অ্যাপ থেকে শর্টকাট তালিকাভুক্ত করার জন্য CommandPost-এর <strong>অটোমেশন</strong> অনুমতির প্রয়োজন হয়।<br /><br />এটি <strong>ঐচ্ছিক</strong>। আপনি যদি <strong>শর্টকাট সক্ষম করুন</strong> ক্লিক করেন, তাহলে আপনাকে অনুমতির জন্য অনুরোধ করা হতে পারে<br /> যদি CommandPost আগে থেকে জিজ্ঞাসা না করে থাকে। আপনি <strong>সিস্টেম পছন্দগুলি > নিরাপত্তা এবং গোপনীয়তা > গোপনীয়তা > অটোমেশন</strong> প্যানেলে গিয়ে যেকোনো সময় এই অনুমতি পরিবর্তন করতে পারেন।",
     "magicButton": "যাদু বোতাম",
     "magnify": "বড় করুন",
+    "mapping": "ম্যাপিং",
     "marker": "মার্কার",
     "master": "মনিব",
     "master2": "মাইক্রোসফট",
@@ -1663,7 +1676,9 @@
     "notion": "ধারণা",
     "notionDatabaseURL": "ধারণা ডাটাবেস URL",
     "notionDescription": "এই টুলটি আপনাকে Final Cut Pro থেকে মেটাডেটা পেতে এবং এটি সরাসরি Notion-এ আপলোড করতে দেয়। vzhd1701 এর csv2notion দ্বারা চালিত।",
+    "notionDescriptionTwo": "CSV2Notion নিও দ্বারা চালিত।",
     "notionToken": "ধারণা টোকেন",
+    "notionWorkspace": "ধারণা কর্মক্ষেত্র",
     "nudge": "কনুইদ্বারা মৃদু গুন্তা",
     "number": "সংখ্যা",
     "ofScreen": "পর্দার",
@@ -1711,6 +1726,8 @@
     "optional": "ঐচ্ছিক",
     "options": "বিকল্প",
     "organize": "সংগঠিত করা",
+    "orientation": "ওরিয়েন্টেশন",
+    "orientationMapping": "ওরিয়েন্টেশন ম্যাপিং",
     "originalClipName": "মূল ক্লিপ নাম",
     "originalOptimised": "মূল / অনুকূল",
     "originalTitle": "আসল শিরোনাম",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "আপনি কি এই বোতামটির নাম পরিবর্তন করতে চান?",
     "renameClip": "ক্লিপটির নতুন নামকরণ করুন",
     "renderComplete": "সম্পূর্ণ পূরণ করুন!",
+    "reorient": "পুনর্নির্মাণ",
     "repeat": "পুনরাবৃত্তি",
     "repeatPressActionUntilReleased": "মুক্তি না হওয়া পর্যন্ত পুনরাবৃত্তি প্রেস অ্যাকশন",
     "replace": "প্রতিস্থাপন করা",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "ডান পাঠ্য স্তর",
     "rightVertical": "ডান উল্লম্ব",
+    "roll": "রোল",
     "rollingShutter": "ঘূর্ণায়মান শাটার",
     "rotate": "আবর্তিত",
     "rotate9": "আবর্তিত",
@@ -2158,6 +2177,38 @@
         "one": "%{amount} পিক্সেল দ্বারা ডানদিকে অ্যাঙ্কর শিফট করুন",
         "other": "%{amount} পিক্সেল দ্বারা ডানদিকে অ্যাঙ্কর শিফট করুন"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "%{amount} ডিগ্রী বামে দৃশ্যের ওরিয়েন্টেশন ফিল্ডকে স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী বামে দৃশ্যের ওরিয়েন্টেশন ফিল্ডকে স্থানান্তর করুন"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "%{amount} ডিগ্রী দ্বারা ডানদিকে দৃষ্টিভঙ্গি ক্ষেত্র স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা ডানদিকে দৃষ্টিভঙ্গি ক্ষেত্র স্থানান্তর করুন"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "%{amount} ডিগ্রী বামে অভিযোজন প্যান স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী বামে অভিযোজন প্যান স্থানান্তর করুন"
+    },
+    "shiftOrientationPanRight": {
+        "one": "%{amount} ডিগ্রী দ্বারা ডানদিকে ওরিয়েন্টেশন প্যান স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা ডানদিকে ওরিয়েন্টেশন প্যান স্থানান্তর করুন"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "ওরিয়েন্টেশন রোলকে %{amount} ডিগ্রী বামে স্থানান্তর করুন",
+        "other": "ওরিয়েন্টেশন রোলকে %{amount} ডিগ্রী বামে স্থানান্তর করুন"
+    },
+    "shiftOrientationRollRight": {
+        "one": "%{amount} ডিগ্রি দ্বারা ডানদিকে ওরিয়েন্টেশন রোল স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রি দ্বারা ডানদিকে ওরিয়েন্টেশন রোল স্থানান্তর করুন"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "%{amount} ডিগ্রী দ্বারা বাম দিকে কাত করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা বাম দিকে কাত করুন"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "%{amount} ডিগ্রী দ্বারা ডানদিকে কাত করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা ডানদিকে কাত করুন"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} Pixel",
         "other": "Shift Position Down %{amount} Pixels"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Shift Position Up %{amount} Pixel",
         "other": "Shift Position Up %{amount} Pixels"
+    },
+    "shiftReorientPanLeft": {
+        "one": "%{amount} ডিগ্রী দ্বারা পুনঃঅভিযোজন প্যান বামে স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা পুনঃঅভিযোজন প্যান বামে স্থানান্তর করুন"
+    },
+    "shiftReorientPanRight": {
+        "one": "%{amount} ডিগ্রী দ্বারা ডানদিকে রিওরিয়েন্ট প্যান স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা ডানদিকে রিওরিয়েন্ট প্যান স্থানান্তর করুন"
+    },
+    "shiftReorientRollLeft": {
+        "one": "রিওরিয়েন্ট রোলকে %{amount} ডিগ্রী বাম দিকে সরান",
+        "other": "রিওরিয়েন্ট রোলকে %{amount} ডিগ্রী বাম দিকে সরান"
+    },
+    "shiftReorientRollRight": {
+        "one": "%{amount} ডিগ্রী দ্বারা ডানদিকে রিওরিয়েন্ট রোল স্থানান্তর করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা ডানদিকে রিওরিয়েন্ট রোল স্থানান্তর করুন"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "%{amount} ডিগ্রী দ্বারা বাম দিকে কাত করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা বাম দিকে কাত করুন"
+    },
+    "shiftReorientTiltRight": {
+        "one": "%{amount} ডিগ্রী দ্বারা ডানদিকে রিওরিয়েন্ট টিল্ট করুন",
+        "other": "%{amount} ডিগ্রী দ্বারা ডানদিকে রিওরিয়েন্ট টিল্ট করুন"
     },
     "shiftRotationLeft": {
         "one": "শিফট রোটেশন বাম %{amount} ডিগ্রি দ্বারা",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "এটি এই নির্দিষ্ট ইউনিটের জন্য সমস্ত স্ট্রিম ডেক আইটেমগুলিকে ডিফল্ট মানগুলিতে পুনরায় সেট করবে।",
     "streamdeckPanelLabel": "স্ট্রিম ডেক",
     "streamdeckPanelTooltip": "স্ট্রিম ডেক পছন্দসমূহ",
+    "strong": "শক্তিশালী",
     "subcomponent": "Subcomponent",
     "subcomponents": "Subcomponents",
     "subtract": "বিয়োগ করা",
@@ -2380,6 +2456,7 @@
     "temperature": "তাপমাত্রা",
     "temperature4": "টেম্প",
     "ten": "10",
+    "testSnippet": "টেস্ট স্নিপেট",
     "testTitle": "কমান্ডপস্ট পরীক্ষা",
     "text": "পাঠ",
     "textInspectorCouldNotBeShown": "পাঠ্য পরিদর্শক দেখানো যায়নি।",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "এটি ইতিমধ্যে বন্ধ হয়ে থাকলে কেবল প্লে শর্টকাট কীটিকে ট্রিগার করবে।",
     "three": "3",
     "threeDeeText": "3 ডি পাঠ্য",
+    "tilt": "কাত",
     "timeline": "সময়রেখা",
     "timelineBatchExportBeginMessage": "এই টাইমলাইন ব্যাচ এক্সপোর্ট সরঞ্জাম প্রতিটি ক্লিপ পৃথকভাবে নির্বাচন করতে অটোমেশন ব্যবহার করে, তারপরে 'ফাইল> ভাগ করুন' মেনু আইটেমটি ট্রিগার করে।\n\nএই প্রক্রিয়াটি শেষ না হওয়া পর্যন্ত দয়া করে মাউসটি সরানো বা কীবোর্ডটি স্পর্শ করবেন না।",
     "timelineBatchExportCompressorBeginMessage": "এই টাইমলাইন ব্যাচ এক্সপোর্ট সরঞ্জাম প্রতিটি ক্লিপ পৃথকভাবে নির্বাচন করতে অটোমেশন ব্যবহার করে, তারপরে 'ফাইল> সংক্ষেপককে প্রেরণ করুন' মেনু আইটেমটি ট্রিগার করে।\n\nএই প্রক্রিয়াটি শেষ না হওয়া পর্যন্ত দয়া করে মাউসটি সরানো বা কীবোর্ডটি স্পর্শ করবেন না।",
@@ -2411,6 +2489,7 @@
     "timeline_group": "সময়রেখা",
     "tint": "আভা",
     "tint4": "আভা",
+    "tinyPlanet": "ক্ষুদ্র গ্রহ",
     "tip": "ডগা",
     "title": "খেতাব",
     "title_group": "খেতাব",
@@ -2431,6 +2510,7 @@
     "toggleControls": "নিয়ন্ত্রণগুলি টগল করুন",
     "toggleDaVinciResolveControlSurfaceSupport": "DaVinci সমাধান নিয়ন্ত্রণ সারফেস সমর্থন টগল করুন",
     "toggleEffects": "প্রভাবগুলি টগল করুন",
+    "toggleKeyframe": "কীফ্রেম টগল করুন",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "বাছাই করা ক্লিপগুলিতে ভিডিও অ্যানিমেশন পপআপে अस्पष्ट বিবর্ণ হ্যান্ডলগুলি টগল করুন",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "ফাইনাল কাট প্রো বাগের কারণে এটি কোনও গৌণ স্টোরিলাইনে ক্লিপগুলির জন্য কাজ করে না",
     "toggleOverlaysWithCapsLock": "ক্যাপ লক সহ ওভারলে টগল করুন",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "এই বৈশিষ্ট্যটি আপনাকে ম্যাকোএস সূত্রগুলি পেতে সহায়তা করে যখনই কোনও ফ্যাক্সফক্সএলএমএল ফাইলে নীচের কোনও নজরদার ফোল্ডারগুলির মধ্যে যোগ করা হয়। <br /> বিজ্ঞপ্তি থেকে আপনি <b> আমদানি করতে পারেন </ b> এই ফাইল সরাসরি আপনার বর্তমান ফাইনাল কাট প্রো টাইমলাইনে <br /> <br /> <b> SHIFT </ b> চেপে ধরলে <b> আমদানি </ b> চাপুন, এটি সব অসামরিক ফাইল আমদানি করবে।",
     "watchFolders": "দেখুন ফোল্ডার",
     "wave": "তরঙ্গ",
+    "weak": "দুর্বল",
+    "websocket": "ওয়েবসকেট",
+    "websocketActionQuery": "অ্যাকশন কোয়েরি",
+    "websocketAddress": "জানুন",
+    "websocketCannotParseMessageData": "বার্তার তথ্য বিশ্লেষণ করা যাচ্ছে না:",
+    "websocketClientMode": "ক্লায়েন্ট মোড",
+    "websocketClients": "ক্লায়েন্ট",
+    "websocketConnected": "সংযুক্ত",
+    "websocketConnectionStatus": "সংযোগের অবস্থা",
+    "websocketControlSurface": "ওয়েবসকেট কন্ট্রোল সারফেস",
+    "websocketControlSurfaceDisabled": "ওয়েবসকেট কন্ট্রোল সারফেস অক্ষম করা আছে",
+    "websocketControlSurfaceSettings": "ওয়েবসকেট নিয়ন্ত্রণ সারফেস সেটিংস",
+    "websocketCopied": "কপি করা হয়েছে",
+    "websocketCopyFailed": "কপি করা যায়নি:",
+    "websocketCopyMessage": "বার্তা কপি করুন",
+    "websocketCurrentlySelectedAction": "বর্তমানে নির্বাচিত কর্ম",
+    "websocketDisableWebSocketControlSurface": "ওয়েবসকেট কন্ট্রোল সারফেস অক্ষম করুন",
+    "websocketDisconnected": "সংযোগ বিচ্ছিন্ন",
+    "websocketEnableWebSocket": "ওয়েবসকেট সক্ষম করুন",
+    "websocketEnableWebSocketControlSurface": "ওয়েবসকেট কন্ট্রোল সারফেস সক্ষম করুন",
+    "websocketFilterActionsByApplication": "অ্যাপ্লিকেশন অনুসারে ক্রিয়াগুলি ফিল্টার করুন:",
+    "websocketInvalidPortNumber": "অবৈধ পোর্ট নম্বর",
+    "websocketInvalidPortNumberDescription": "১ থেকে ৬৫৫৩৫ এর মধ্যে একটি বৈধ পোর্ট নম্বর লিখুন।",
+    "websocketMessageExample": "ওয়েবসকেট বার্তার উদাহরণ:",
+    "websocketNoActiveConnections": "কোনও সক্রিয় সংযোগ নেই",
+    "websocketNoCopyableMessage": "কপি করার জন্য কোনও বার্তা নেই",
+    "websocketOpenActionChooser": "অ্যাকশন চয়নকারী খুলুন",
+    "websocketOpenActionChooserDescription": "উপরের বোতামে ক্লিক করে CommandPost Action Chooser খুলুন এবং সমস্ত উপলব্ধ অ্যাকশন ব্রাউজ এবং অনুসন্ধান করুন।",
+    "websocketRefresh": "রিফ্রেশ করুন",
+    "websocketServerMode": "সার্ভার মোড",
+    "websocketServerNotRunning": "সার্ভার চলছে না।",
+    "websocketServerPort": "সার্ভার পোর্ট",
+    "websocketServerRunning": "সার্ভার চলছে",
+    "websocketServerRunningWithDetails": "সার্ভার চলছে\\nপোর্ট: %{পোর্ট}\\nসংযুক্ত ক্লায়েন্ট: %{গণনা}",
+    "websocketServerStopped": "সার্ভার বন্ধ হয়ে গেছে",
+    "websocketToggleWebSocketControlSurface": "ওয়েবসকেট কন্ট্রোল সারফেস টগল করুন",
     "weight": "ওজন",
     "welcomeToTheToolbox": "টুলবক্সে স্বাগতম",
     "whatDidYouExpectToHappen": "আপনি কি ঘটতে আশা করেছিলেন?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "ওয়ার্কফ্লো এক্সটেনশন ইনস্টল করা হয়েছে",
     "workflowExtensionMovePlayhead": "ওয়ার্কফ্লো এক্সটেনশন API-এর মাধ্যমে ফাইনাল কাট প্রো প্লেহেড সরান",
     "workspaces": "ওয়ার্কস্পেস",
+    "wsActionId": "অ্যাকশন আইডি",
+    "wsHandler": "হ্যান্ডলার",
+    "wsId": "আইডি",
+    "wsMode": "মোড",
+    "wsStatus": "অবস্থা",
     "xml": "এক্সএমএল",
     "yellow": "হলুদ",
     "yes": "হাঁ",
