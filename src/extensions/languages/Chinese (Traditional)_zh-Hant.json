@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "未找到標題為“％{title}”的剪輯。",
     "aNewFCPXMLHasBeenExportedSuccessfully": "新的FCPXML已成功導出。",
     "aValidTokenIsRequired": "需要有效的令牌。",
+    "aValidWorkspaceIsRequired": "需要一個有效的工作空間。",
     "above": "以上",
     "absolute": "絕對",
     "absoluteSnapsToZero": "絕對（捕捉到零）",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox：經理",
     "core_tourbox_prefs_label": "首選項：TourBox",
     "core_watchfolders_manager_label": "經理：觀看文件夾",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "管理器：WebSocket",
+    "core_websocket_prefs_label": "首選項：WebSocket",
     "correctSpellingAutomatically": "自動糾正拼寫",
     "cpAddNoteToSelectedClips_title": "將註釋添加到選定的剪輯",
     "cpAllowTasksDuringPlayback_title": "在播放期間切換渲染",
@@ -811,6 +815,7 @@
     "enableFilenamePrefix": "啟用文件名前綴",
     "enableFlashDrive": "啟用閃存驅動器",
     "enableHUD": "啟用HUD",
+    "enableHaptics": "啟用觸覺回饋",
     "enableLoupdeckSupport": "啟用Loupedeck +支持",
     "enableLoupedeckCTSupport": "啟用Loupedeck CT支持",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "啟用Loupedeck CT支持並退出Loupedeck應用",
@@ -945,6 +950,7 @@
     "feedback": "反饋",
     "feedbackError": "嘗試與CommandPost服務器通信時發生以下錯誤：\n\n％{message}\n\n很遺憾，您的反饋未提交。\n\n請再試一次。",
     "feedbackSuccess": "您的反饋已成功提交。\n\n謝謝！",
+    "fieldOfView": "視野",
     "fiftyHz": "50赫茲",
     "fileCouldNotBeRead": "無法讀取所選文件。",
     "fill": "填",
@@ -1161,6 +1167,7 @@
     "findNext": "找下一個",
     "findPrevious": "找到上一個",
     "findToken": "查找令牌",
+    "findWorkspace": "尋找工作空間",
     "finder": "發現者",
     "finder_application_manager_label": "應用經理",
     "finder_audio_label": "音頻動作",
@@ -1176,6 +1183,7 @@
     "five": "五",
     "flat": "平面",
     "flat9": "平面",
+    "focusOnScaleAll": "注意規模化",
     "focusOnTitleTextInInspector": "專注於檢查器中的標題文本",
     "folder": "夾",
     "font": "字形",
@@ -1266,6 +1274,8 @@
     "grouped": "分組",
     "guide": "指南",
     "guides": "指南",
+    "hapticsSpeed": "觸覺速度",
+    "hapticsStrenght": "觸覺強度",
     "hardLight": "硬燈",
     "hardLight9": "HARDLIGHT",
     "hardMix": "硬混合",
@@ -1360,6 +1370,7 @@
     "inertiaCam": "InertiaCam",
     "info": "信息",
     "insert": "插入",
+    "insertAction": "插入動作",
     "insertClipsVerticallyFromBrowserToTimeline": "從瀏覽器垂直插入剪輯到時間軸",
     "insertIntoTimeline": "插入時間軸",
     "insideCorners": "內角",
@@ -1385,6 +1396,7 @@
     },
     "jogWheelMode": "轉盤模式",
     "joinClips": "加入剪輯",
+    "joinDiscord": "加入 Discord",
     "jumpToFrameShiftExplanation": "如果按住 SHIFT，它將跳 10 幀而不是 1 幀。",
     "jumpToNextFrame": "跳到下一幀",
     "jumpToPreviousFrame": "跳到上一幀",
@@ -1515,6 +1527,7 @@
     "macosShortcutsSetupMessage": "CommandPost 需要<strong>自動化</strong>權限<br />才能在 Search Console 中列出來自 macOS 快捷方式應用的快捷方式。<br /><br />這是<strong>可選</strong>。如果您單擊<strong>啟用快捷方式</strong>，如果 CommandPost 之前沒有詢問過，系統可能會提示您授予權限<br />。您可以隨時通過訪問<strong>系統偏好設置>安全和隱私>隱私>自動化</strong>面板更改此權限。",
     "magicButton": "魔術按鈕",
     "magnify": "放大",
+    "mapping": "測繪",
     "marker": "標記",
     "master": "主",
     "master2": "女士",
@@ -1657,7 +1670,9 @@
     "notion": "概念",
     "notionDatabaseURL": "概念數據庫 URL",
     "notionDescription": "此工具允許您從 Final Cut Pro 獲取元數據並將其直接上傳到 Notion。由 vzhd1701 的 csv2notion 提供支持。",
+    "notionDescriptionTwo": "由 CSV2Notion Neo 提供支援。",
     "notionToken": "概念令牌",
+    "notionWorkspace": "概念工作區",
     "nudge": "微調",
     "number": "數",
     "ofScreen": "屏幕的",
@@ -1705,6 +1720,8 @@
     "optional": "可選的",
     "options": "選項",
     "organize": "組織",
+    "orientation": "方向",
+    "orientationMapping": "方向映射",
     "originalClipName": "原始剪輯名稱",
     "originalOptimised": "原稿/優化",
     "originalTitle": "原始標題",
@@ -1925,6 +1942,7 @@
     "renameButtonQuestion": "你想把這個按鈕重命名為什麼？",
     "renameClip": "重命名剪輯",
     "renderComplete": "渲染完成！",
+    "reorient": "重新定位",
     "repeat": "重複",
     "repeatPressActionUntilReleased": "重複按動作直到釋放",
     "replace": "更換",
@@ -1995,6 +2013,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "右文字圖層",
     "rightVertical": "右垂直",
+    "roll": "卷",
     "rollingShutter": "捲簾",
     "rotate": "旋轉",
     "rotate9": "旋轉",
@@ -2146,6 +2165,30 @@
     "shiftAnchorUpPixels": {
         "other": "將錨點向上移動 %{amount} 像素"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "other": "將方向視野向左移動 %{amount} 度"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "other": "將方向視野右移 %{amount} 度"
+    },
+    "shiftOrientationPanLeft": {
+        "other": "將方向向左平移 %{amount} 度"
+    },
+    "shiftOrientationPanRight": {
+        "other": "將方向向右平移 %{amount} 度"
+    },
+    "shiftOrientationRollLeft": {
+        "other": "移動方向 向左滾動 %{amount} 度"
+    },
+    "shiftOrientationRollRight": {
+        "other": "方向向右移動 %{amount} 度"
+    },
+    "shiftOrientationTiltLeft": {
+        "other": "移動方向向左傾斜 %{amount} 度"
+    },
+    "shiftOrientationTiltRight": {
+        "other": "移動方向向右傾斜 %{amount} 度"
+    },
     "shiftPositionDownPixels": {
         "other": "將位置向下移動 %{amount} 像素"
     },
@@ -2157,6 +2200,24 @@
     },
     "shiftPositionUpPixels": {
         "other": "上移位置 %{amount} 像素"
+    },
+    "shiftReorientPanLeft": {
+        "other": "將平移向左移動 %{amount} 度"
+    },
+    "shiftReorientPanRight": {
+        "other": "將平移向右移動 %{amount} 度"
+    },
+    "shiftReorientRollLeft": {
+        "other": "Shift 將滾動方向向左重新調整 %{amount} 度"
+    },
+    "shiftReorientRollRight": {
+        "other": "Shift 將滾動方向向右調整 %{amount} 度"
+    },
+    "shiftReorientTiltLeft": {
+        "other": "Shift 重新定向向左傾斜 %{amount} 度"
+    },
+    "shiftReorientTiltRight": {
+        "other": "Shift 重新定向向右傾斜 %{amount} 度"
     },
     "shiftRotationLeft": {
         "other": "將旋轉左移 %{amount} 度"
@@ -2315,6 +2376,7 @@
     "streamDeckResetUnitConfirmation": "這會將該特定設備的所有Stream Deck項目重置為默認值。",
     "streamdeckPanelLabel": "溪流甲板",
     "streamdeckPanelTooltip": "Stream Deck首選項",
+    "strong": "強的",
     "subcomponent": "子組件",
     "subcomponents": "子組件",
     "subtract": "減去",
@@ -2356,6 +2418,7 @@
     "temperature": "溫度",
     "temperature4": "溫度",
     "ten": "10",
+    "testSnippet": "測試片段",
     "testTitle": "CommandPost測試",
     "text": "文本",
     "textInspectorCouldNotBeShown": "無法顯示文本檢查器。",
@@ -2377,6 +2440,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "如果已經停止，則只會觸發播放快捷鍵。",
     "three": "3",
     "threeDeeText": "3D文字",
+    "tilt": "傾斜",
     "timeline": "時間線",
     "timelineBatchExportBeginMessage": "此時間軸批量導出工具使用自動化單獨選擇每個剪輯，然後觸發“文件>共享”菜單項。\n\n在此過程完成之前，請勿移動鼠標或觸摸鍵盤。",
     "timelineBatchExportCompressorBeginMessage": "此時間軸批量導出工具使用自動化單獨選擇每個剪輯，然後觸發“文件>發送到壓縮器”菜單項。\n\n在此過程完成之前，請勿移動鼠標或觸摸鍵盤。",
@@ -2387,6 +2451,7 @@
     "timeline_group": "時間線",
     "tint": "著色",
     "tint4": "著色",
+    "tinyPlanet": "小小星球",
     "tip": "小費",
     "title": "標題",
     "title_group": "標題",
@@ -2407,6 +2472,7 @@
     "toggleControls": "切換控件",
     "toggleDaVinciResolveControlSurfaceSupport": "切換 DaVinci Resolve 控製表面支持",
     "toggleEffects": "切換效果",
+    "toggleKeyframe": "切換關鍵幀",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "在選定剪輯上的視頻動畫彈出窗口中切換不透明度淡入淡出手柄",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "由於存在Final Cut Pro錯誤，因此該功能不適用於次要故事情節中的剪輯",
     "toggleOverlaysWithCapsLock": "使用大寫鎖定切換疊加層",
@@ -2584,6 +2650,42 @@
     "watchFolderXMLHelp": "此功能允許您在將FCPXML文件添加到以下任何監視文件夾中時收到macOS通知。<br />從通知中，您可以<b>導入</ b>這些文件直接到您當前的Final Cut Pro時間軸。<br />如果按<b>導入</ b>按住<b> SHIFT </ b>，它將導入所有未完成的文件。",
     "watchFolders": "觀看文件夾",
     "wave": "海浪",
+    "weak": "虛弱的",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "操作查詢",
+    "websocketAddress": "地址",
+    "websocketCannotParseMessageData": "無法解析訊息資料：",
+    "websocketClientMode": "客戶端模式",
+    "websocketClients": "客戶",
+    "websocketConnected": "已連接",
+    "websocketConnectionStatus": "連線狀態",
+    "websocketControlSurface": "WebSocket 控制介面",
+    "websocketControlSurfaceDisabled": "WebSocket 控制介面已停用",
+    "websocketControlSurfaceSettings": "WebSocket 控制介面設定",
+    "websocketCopied": "已複製",
+    "websocketCopyFailed": "複製失敗：",
+    "websocketCopyMessage": "複製訊息",
+    "websocketCurrentlySelectedAction": "目前選擇的操作",
+    "websocketDisableWebSocketControlSurface": "停用 WebSocket 控制介面",
+    "websocketDisconnected": "斷開連接",
+    "websocketEnableWebSocket": "啟用 WebSocket",
+    "websocketEnableWebSocketControlSurface": "啟用 WebSocket 控制介面",
+    "websocketFilterActionsByApplication": "按應用程式篩選操作：",
+    "websocketInvalidPortNumber": "無效的連接埠號",
+    "websocketInvalidPortNumberDescription": "請輸入 1 到 65535 之間的有效連接埠號碼。",
+    "websocketMessageExample": "WebSocket訊息範例：",
+    "websocketNoActiveConnections": "沒有活動連接",
+    "websocketNoCopyableMessage": "沒有要複製的訊息",
+    "websocketOpenActionChooser": "開啟操作選擇器",
+    "websocketOpenActionChooserDescription": "點擊上方按鈕開啟 CommandPost 操作選擇器，瀏覽並搜尋所有可用操作。",
+    "websocketRefresh": "重新整理",
+    "websocketServerMode": "伺服器模式",
+    "websocketServerNotRunning": "伺服器未運行",
+    "websocketServerPort": "伺服器連接埠",
+    "websocketServerRunning": "伺服器運行中",
+    "websocketServerRunningWithDetails": "伺服器正在執行\\n連接埠：%{port}\\n已連接客戶端：%{count}",
+    "websocketServerStopped": "伺服器已停止",
+    "websocketToggleWebSocketControlSurface": "切換 WebSocket 控制介面",
     "weight": "重量",
     "welcomeToTheToolbox": "歡迎使用工具箱",
     "whatDidYouExpectToHappen": "你期望發生什麼？",
@@ -2601,6 +2703,11 @@
     "workflowExtensionInstalled": "已安裝工作流擴展",
     "workflowExtensionMovePlayhead": "通過 Workflow Extension API 移動 Final Cut Pro 播放頭",
     "workspaces": "工作區",
+    "wsActionId": "操作 ID",
+    "wsHandler": "處理程式",
+    "wsId": "ID",
+    "wsMode": "模式",
+    "wsStatus": "地位",
     "xml": "XML",
     "yellow": "黃色",
     "yes": "是",
