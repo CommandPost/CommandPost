@@ -311,6 +311,9 @@ end
 ---
 --- Returns:
 ---  * None
+---
+--- Notes:
+---  * `cp.plugins("core.monogram.manager").sign()` to run.
 function mod.sign()
     local basePath = config.basePath
     local appPath = basePath .. "/../../monogramsign"

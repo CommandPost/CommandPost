@@ -3,7 +3,9 @@
         "com.apple.FinalCut",
         "com.apple.finalcut",
         "com.apple.FinalCutTrial",
-        "com.apple.finalcuttrial"
+        "com.apple.finalcuttrial",
+        "com.apple.finalcutapp",
+        "com.apple.FinalCutApp"
     ],
     "category": [
         "video"
