@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Nem található a (z) '%{title}' címû klip.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "Új FCPXML-fájl exportálása sikeresen megtörtént.",
     "aValidTokenIsRequired": "Érvényes token szükséges.",
+    "aValidWorkspaceIsRequired": "Érvényes munkaterület szükséges.",
     "above": "Felett",
     "absolute": "Abszolút",
     "absoluteSnapsToZero": "Abszolút (nullára ugrik)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Menedzser",
     "core_tourbox_prefs_label": "Preferenciák: TourBox",
     "core_watchfolders_manager_label": "Kezelő: watch folderek",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Menedzser: WebSocket",
+    "core_websocket_prefs_label": "Beállítások: WebSocket",
     "correctSpellingAutomatically": "Helyesírás helyesírása automatikusan",
     "cpAddNoteToSelectedClips_title": "Jegyzet hozzáadása a kiválasztott klipekhez",
     "cpAllowTasksDuringPlayback_title": "Váltás a lejátszás közben",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Engedélyezze a fájlnév előtagot",
     "enableFlashDrive": "Engedélyezze a Flash meghajtót",
     "enableHUD": "HUD engedélyezése",
+    "enableHaptics": "Haptikus jelzések engedélyezése",
     "enableLoupdeckSupport": "Engedélyezze a Loupedeck + támogatást",
     "enableLoupedeckCTSupport": "Engedélyezze a Loupedeck CT támogatást",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Loupedeck CT támogatás engedélyezése és kilépés a Loupedeck Appból",
@@ -949,6 +954,7 @@
     "feedback": "Visszajelzés",
     "feedbackError": "A következő hiba történt a CommandPost-szerverrel való kommunikáció során:\n\n%{message}\n\nA visszajelzésed sajnos nem lett elküldve.\n\nKérlek, próbáld újra.",
     "feedbackSuccess": "Visszajelzését sikeresen elküldtük.\n\nKöszönöm!",
+    "fieldOfView": "Látómező",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "A kiválasztott fájl nem olvasható.",
     "fill": "Tölt",
@@ -1165,6 +1171,7 @@
     "findNext": "Keresse meg a következőt",
     "findPrevious": "Előző keresése",
     "findToken": "Keresse meg a Tokent",
+    "findWorkspace": "Keresse meg a Munkaterületet",
     "finder": "Finder",
     "finder_application_manager_label": "Alkalmazás kezelő",
     "finder_audio_label": "Audio műveletek",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Lakás",
     "flat9": "Lakás",
+    "focusOnScaleAll": "Fókuszban a teljes méretezés",
     "focusOnTitleTextInInspector": "Összpontosítson a címsorra az ellenőrben",
     "folder": "Folder",
     "font": "Betűtípus",
@@ -1270,6 +1278,8 @@
     "grouped": "csoportosított",
     "guide": "Útmutató",
     "guides": "Segédvonalak",
+    "hapticsSpeed": "Haptikus sebesség",
+    "hapticsStrenght": "Haptikus erősség",
     "hardLight": "Kemény fény",
     "hardLight9": "Kemény fény",
     "hardMix": "Kemény keverék",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "Info",
     "insert": "Beszúrás",
+    "insertAction": "Művelet beszúrása",
     "insertClipsVerticallyFromBrowserToTimeline": "Helyezze be a klipeket függőlegesen a böngészőből az idővonalba",
     "insertIntoTimeline": "Helyezze be az idővonalba",
     "insideCorners": "Belső sarkok",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Jog Wheel mód",
     "joinClips": "Csatlakozzon a klipekhez",
+    "joinDiscord": "Csatlakozz a Discordhoz",
     "jumpToFrameShiftExplanation": "Ha lenyomva tartja a SHIFT billentyűt, akkor 1 helyett 10 képkockát ugrik.",
     "jumpToNextFrame": "Ugrás a következő képkockára",
     "jumpToPreviousFrame": "Ugrás az előző keretre",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "A CommandPost <strong>automatizálási</strong> engedélyt igényel<br /> a macOS Shortcuts alkalmazás parancsikonjainak a Search Console-ban történő felsorolásához.<br /><br />Ez <strong>nem kötelező</strong>. Ha a <strong>Parancsikonok engedélyezése</strong> lehetőségre kattint, előfordulhat, hogy a rendszer engedélyt kér<br />, ha a CommandPost korábban még nem kérte. Ezt az engedélyt bármikor módosíthatja a <strong>Rendszerbeállítások > Biztonság és adatvédelem > Adatvédelem > Automatizálás</strong> panelen.",
     "magicButton": "Varázslat gomb",
     "magnify": "Nagyítás",
+    "mapping": "Térképezés",
     "marker": "Jelző",
     "master": "Fő",
     "master2": "KISASSZONY",
@@ -1663,7 +1676,9 @@
     "notion": "Fogalom",
     "notionDatabaseURL": "Fogalom adatbázis URL",
     "notionDescription": "Ez az eszköz lehetővé teszi metaadatok lekérését a Final Cut Pro alkalmazásból, és közvetlenül a Notionba töltheti fel. Támogatja a vzhd1701 csv2notion.",
+    "notionDescriptionTwo": "Üzemeltető: CSV2Notion Neo.",
     "notionToken": "Fogalom Token",
+    "notionWorkspace": "Fogalom munkaterület",
     "nudge": "Meglökés",
     "number": "Szám",
     "ofScreen": "képernyő",
@@ -1711,6 +1726,8 @@
     "optional": "Választható",
     "options": "Lehetőségek",
     "organize": "Szervez",
+    "orientation": "Irányultság",
+    "orientationMapping": "Tájolási térképezés",
     "originalClipName": "Eredeti klip neve",
     "originalOptimised": "Eredeti / Optimalizált",
     "originalTitle": "Eredeti cím",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "Mire szeretné átnevezni ezt a gombot?",
     "renameClip": "Klip átnevezése",
     "renderComplete": "A renderelés befejeződött.",
+    "reorient": "Orientálja át",
     "repeat": "Ismétlés",
     "repeatPressActionUntilReleased": "Ismételje meg a sajtóműveletet a megjelenésig",
     "replace": "Cserélje",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Jobb szövegréteg",
     "rightVertical": "Jobb függőleges",
+    "roll": "Tekercs",
     "rollingShutter": "Redőny",
     "rotate": "Forog",
     "rotate9": "Forog",
@@ -2158,6 +2177,38 @@
         "one": "Horgony felfelé tolása %{amount} képponttal",
         "other": "Horgony felfelé tolása %{amount} képponttal"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Tájolás eltolása a látómező balra %{amount} fokkal",
+        "other": "Tájolás eltolása a látómező balra %{amount} fokkal"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Tájolási látómező jobbra eltolása %{amount} fokkal",
+        "other": "Tájolási látómező jobbra eltolása %{amount} fokkal"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Tájolás eltolása balra %{amount} fokkal",
+        "other": "Tájolás eltolása balra %{amount} fokkal"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Tájolás eltolása jobbra %{amount} fokkal",
+        "other": "Tájolás eltolása jobbra %{amount} fokkal"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Tájolási görgő balra %{amount} fokkal",
+        "other": "Tájolási görgő balra %{amount} fokkal"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Tájolási görgetés jobbra tolása %{amount} fokkal",
+        "other": "Tájolási görgetés jobbra tolása %{amount} fokkal"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Eltolás Tájolás Döntés Balra %{amount} fokkal",
+        "other": "Eltolás Tájolás Döntés Balra %{amount} fokkal"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Eltolás Tájolás Döntés Jobbra %{amount} fokkal",
+        "other": "Eltolás Tájolás Döntés Jobbra %{amount} fokkal"
+    },
     "shiftPositionDownPixels": {
         "one": "Shift Position Down %{amount} pixel",
         "other": "Shift Position Down %{amount} pixel"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Shift Position Up %{amount} pixel",
         "other": "Shift Position Up %{amount} pixel"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Eltolás a Pan átirányítása balra %{amount} fokkal",
+        "other": "Eltolás a Pan átirányítása balra %{amount} fokkal"
+    },
+    "shiftReorientPanRight": {
+        "one": "Eltolja az eltolás átirányítását jobbra %{amount} fokkal",
+        "other": "Eltolja az eltolás átirányítását jobbra %{amount} fokkal"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Eltolja az átirányító görgőt balra %{amount} fokkal",
+        "other": "Eltolja az átirányító görgőt balra %{amount} fokkal"
+    },
+    "shiftReorientRollRight": {
+        "one": "Eltolja az Átirányító görgőt jobbra %{amount} fokkal",
+        "other": "Eltolja az Átirányító görgőt jobbra %{amount} fokkal"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Shift Döntés átirányítása balra %{amount} fokkal",
+        "other": "Shift Döntés átirányítása balra %{amount} fokkal"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Shift Reorient Tilt Right %{amount} fokkal",
+        "other": "Shift Reorient Tilt Right %{amount} fokkal"
     },
     "shiftRotationLeft": {
         "one": "Forgatás balra %{amount} fokkal",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Ez visszaállítja az adott Stream Deck elemeket az alapértelmezett értékekre.",
     "streamdeckPanelLabel": "Patak fedélzet",
     "streamdeckPanelTooltip": "A patakkészlet preferenciái",
+    "strong": "Erős",
     "subcomponent": "alösszetevőt",
     "subcomponents": "alösszetevői",
     "subtract": "levon",
@@ -2380,6 +2456,7 @@
     "temperature": "Hőmérséklet",
     "temperature4": "Temp",
     "ten": "10",
+    "testSnippet": "Tesztrészlet",
     "testTitle": "CommandPost teszt",
     "text": "Szöveg",
     "textInspectorCouldNotBeShown": "A Szöveges ellenőr nem mutatható ki.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Ez csak akkor indítja el a lejátszás gyorsbillentyűt, ha már le van állítva.",
     "three": "3",
     "threeDeeText": "3D szöveg",
+    "tilt": "Döntés",
     "timeline": "Idővonal",
     "timelineBatchExportBeginMessage": "Ez az ütemterv kötegelt exportáló eszköz az automatizálást használja az egyes klipek különválasztásához, majd elindítja a 'Fájl> Megosztás menüpontot.\n\nKérjük, ne mozgassa az egeret, és ne érintse meg a billentyűzetet, amíg a folyamat be nem fejeződik.",
     "timelineBatchExportCompressorBeginMessage": "Ez az ütemterv kötegelt exportáló eszköz az automatizálást használja az egyes klip különválasztásához, majd elindítja a 'File> Send to Compressor' menüpontot.\n\nKérjük, ne mozgassa az egeret, és ne érintse meg a billentyűzetet, amíg a folyamat be nem fejeződik.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "Timeline",
     "tint": "Színez",
     "tint4": "Színez",
+    "tinyPlanet": "Apró bolygó",
     "tip": "Tipp",
     "title": "Cím",
     "title_group": "Cím",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Váltás a vezérlők között",
     "toggleDaVinciResolveControlSurfaceSupport": "Kapcsolja be a DaVinci Resolve Control Surface támogatást",
     "toggleEffects": "Váltás effektusok",
+    "toggleKeyframe": "Kulcskocka váltása",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Váltsa át az Opacity Fade fogantyúkat a Video Animation előugró ablakban a kiválasztott klipeken",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "A Final Cut Pro hiba miatt ez nem működik a másodlagos történetsor klipjeinél",
     "toggleOverlaysWithCapsLock": "Overlay-ek be- és kikapcsolása Caps Lock-kal",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Ez a funkció lehetővé teszi, hogy macOS értesítéseket kapj, ha egy FCPXML fájl a lenti watch folderek valmelyikébe kerül.<br />Az értesítés után <br /> beimportálthatod <br /> ezeke a fájlokat <br /> közvetlenül az aktív Final Cut Pro timeline-re.<br />Ha nyomvatartod a <b> SHIFT-et </b> mielőtt megnyomod az <b> Importálás </b> gombot, akkor az összes fájlt importálni fogod.",
     "watchFolders": "Watch folderek",
     "wave": "Hullám",
+    "weak": "Gyenge",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Műveletlekérdezés",
+    "websocketAddress": "Cím",
+    "websocketCannotParseMessageData": "Az üzenet adatainak elemzése nem lehetséges:",
+    "websocketClientMode": "Kliens mód",
+    "websocketClients": "Ügyfelek",
+    "websocketConnected": "Csatlakoztatva",
+    "websocketConnectionStatus": "Kapcsolat állapota",
+    "websocketControlSurface": "WebSocket vezérlőfelület",
+    "websocketControlSurfaceDisabled": "A WebSocket vezérlőfelület le van tiltva.",
+    "websocketControlSurfaceSettings": "WebSocket vezérlőfelület beállításai",
+    "websocketCopied": "Másolva",
+    "websocketCopyFailed": "Másolás sikertelen:",
+    "websocketCopyMessage": "Üzenet másolása",
+    "websocketCurrentlySelectedAction": "Jelenleg kiválasztott művelet",
+    "websocketDisableWebSocketControlSurface": "WebSocket vezérlőfelület letiltása",
+    "websocketDisconnected": "Szétkapcsolt",
+    "websocketEnableWebSocket": "WebSocket engedélyezése",
+    "websocketEnableWebSocketControlSurface": "WebSocket vezérlőfelület engedélyezése",
+    "websocketFilterActionsByApplication": "Műveletek szűrése alkalmazás szerint:",
+    "websocketInvalidPortNumber": "Érvénytelen portszám",
+    "websocketInvalidPortNumberDescription": "Kérjük, adjon meg egy érvényes portszámot 1 és 65535 között.",
+    "websocketMessageExample": "WebSocket üzenet példa:",
+    "websocketNoActiveConnections": "Nincsenek aktív kapcsolatok",
+    "websocketNoCopyableMessage": "Nincs másolható üzenet",
+    "websocketOpenActionChooser": "Műveletválasztó megnyitása",
+    "websocketOpenActionChooserDescription": "Kattintson a fenti gombra a CommandPost műveletválasztó megnyitásához, ahol böngészhet és kereshet az összes elérhető művelet között.",
+    "websocketRefresh": "Frissítés",
+    "websocketServerMode": "Szerver mód",
+    "websocketServerNotRunning": "A szerver nem fut",
+    "websocketServerPort": "Szerverport",
+    "websocketServerRunning": "Szerver fut",
+    "websocketServerRunningWithDetails": "A szerver fut\\nPort: %{port}\\nCsatlakoztatott kliensek: %{count}",
+    "websocketServerStopped": "Szerver leállítva",
+    "websocketToggleWebSocketControlSurface": "WebSocket vezérlőfelület be- és kikapcsolása",
     "weight": "Súly",
     "welcomeToTheToolbox": "Üdvözöljük az Eszköztárban",
     "whatDidYouExpectToHappen": "Mire számítottál?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "Munkafolyamat-bővítmény telepítve",
     "workflowExtensionMovePlayhead": "A Workflow Extension API-n keresztül mozgatja a Final Cut Pro lejátszófejet",
     "workspaces": "munkaterületek",
+    "wsActionId": "Műveletazonosító",
+    "wsHandler": "Kezelő",
+    "wsId": "azonosító",
+    "wsMode": "Mód",
+    "wsStatus": "Állapot",
     "xml": "XML",
     "yellow": "Sárga",
     "yes": "Igen",
