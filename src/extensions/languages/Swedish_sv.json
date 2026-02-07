@@ -2,6 +2,7 @@
     "LibrariesBrowser_NoClipTitled": "Inget klipp med titeln '%{title}' hittades.",
     "aNewFCPXMLHasBeenExportedSuccessfully": "En ny FCPXML har exporterats framgångsrikt.",
     "aValidTokenIsRequired": "En giltig token krävs.",
+    "aValidWorkspaceIsRequired": "En giltig arbetsyta krävs.",
     "above": "Ovan",
     "absolute": "Absolut",
     "absoluteSnapsToZero": "Absolut (snäpper till noll)",
@@ -462,6 +463,9 @@
     "core_tourbox_manager_label": "TourBox: Manager",
     "core_tourbox_prefs_label": "Inställningar: TourBox",
     "core_watchfolders_manager_label": "Manager: Titta på mappar",
+    "core_websocket_label": "WebSocket",
+    "core_websocket_manager_label": "Chef: WebSocket",
+    "core_websocket_prefs_label": "Inställningar: WebSocket",
     "correctSpellingAutomatically": "Rätt stavning automatiskt",
     "cpAddNoteToSelectedClips_title": "Lägg till anteckning till valda klipp (er)",
     "cpAllowTasksDuringPlayback_title": "Växla rendering under uppspelning",
@@ -812,6 +816,7 @@
     "enableFilenamePrefix": "Aktivera filnamnsprefix",
     "enableFlashDrive": "Aktivera Flash Drive",
     "enableHUD": "Aktivera HUD",
+    "enableHaptics": "Aktivera haptik",
     "enableLoupdeckSupport": "Aktivera Loupedeck + Support",
     "enableLoupedeckCTSupport": "Aktivera Loupedeck CT Support",
     "enableLoupedeckCTSupportQuitLoupedeckApp": "Aktivera Loupedeck CT Support & Avsluta Loupedeck-appen",
@@ -949,6 +954,7 @@
     "feedback": "Återkoppling",
     "feedbackError": "Följande fel inträffade när man kommunicerade med CommandPost-servrarna:\n\n%{message}\n\nTyvärr har din feedback inte skickats in.\n\nVar god försök igen.",
     "feedbackSuccess": "Din feedback har skickats.\n\nTack!",
+    "fieldOfView": "Synfält",
     "fiftyHz": "50Hz",
     "fileCouldNotBeRead": "Den valda filen kunde inte läsas.",
     "fill": "Fylla",
@@ -1165,6 +1171,7 @@
     "findNext": "Hitta nästa",
     "findPrevious": "Hitta tidigare",
     "findToken": "Hitta token",
+    "findWorkspace": "Hitta arbetsyta",
     "finder": "Upphittare",
     "finder_application_manager_label": "Application Manager",
     "finder_audio_label": "Ljudåtgärder",
@@ -1180,6 +1187,7 @@
     "five": "5",
     "flat": "Platt",
     "flat9": "Platt",
+    "focusOnScaleAll": "Fokusera på skala alla",
     "focusOnTitleTextInInspector": "Fokus på titeltext i inspektör",
     "folder": "Mapp",
     "font": "Font",
@@ -1270,6 +1278,8 @@
     "grouped": "grupperade",
     "guide": "Guide",
     "guides": "guider",
+    "hapticsSpeed": "Haptisk hastighet",
+    "hapticsStrenght": "Haptisk styrka",
     "hardLight": "Hårt ljus",
     "hardLight9": "Hårt ljus",
     "hardMix": "Hard Mix",
@@ -1364,6 +1374,7 @@
     "inertiaCam": "InertiaCam",
     "info": "Info",
     "insert": "Föra in",
+    "insertAction": "Infoga åtgärd",
     "insertClipsVerticallyFromBrowserToTimeline": "Sätt i klipp vertikalt från webbläsare till tidslinje",
     "insertIntoTimeline": "Sätt i tidslinjen",
     "insideCorners": "Inuti hörn",
@@ -1390,6 +1401,7 @@
     },
     "jogWheelMode": "Jog Wheel-läge",
     "joinClips": "Gå med i klipp",
+    "joinDiscord": "Gå med i Discord",
     "jumpToFrameShiftExplanation": "Om du håller ned SHIFT hoppar den 10 bildrutor istället för 1.",
     "jumpToNextFrame": "Hoppa till nästa bildruta",
     "jumpToPreviousFrame": "Hoppa till föregående bildruta",
@@ -1520,6 +1532,7 @@
     "macosShortcutsSetupMessage": "CommandPost kräver en <strong>Automation</strong>-behörighet<br /> för att lista genvägar från appen MacOS Genvägar i Search Console.<br /><br />Detta är <strong>valfritt</strong>. Om du klickar på <strong>Aktivera genvägar</strong> kan du bli tillfrågad om tillåtelse<br /> om CommandPost inte redan har frågat tidigare. Du kan ändra denna behörighet när som helst genom att besöka panelen <strong>Systeminställningar > Säkerhet och sekretess > Sekretess > Automation</strong>.",
     "magicButton": "Magisk knapp",
     "magnify": "Förstora",
+    "mapping": "Kartläggning",
     "marker": "Markör",
     "master": "Bemästra",
     "master2": "FRÖKEN",
@@ -1663,7 +1676,9 @@
     "notion": "Begrepp",
     "notionDatabaseURL": "Begreppsdatabas-URL",
     "notionDescription": "Detta verktyg låter dig hämta metadata från Final Cut Pro och ladda upp det direkt till Notion. Drivs av vzhd1701s csv2notion.",
+    "notionDescriptionTwo": "Drivs av CSV2Notion Neo.",
     "notionToken": "Notion Token",
+    "notionWorkspace": "Begreppet arbetsyta",
     "nudge": "Knuff",
     "number": "Nummer",
     "ofScreen": "på skärmen",
@@ -1711,6 +1726,8 @@
     "optional": "Frivillig",
     "options": "alternativ",
     "organize": "Organisera",
+    "orientation": "Orientering",
+    "orientationMapping": "Orienteringskartläggning",
     "originalClipName": "Original Clip Name",
     "originalOptimised": "Original / Optimerad",
     "originalTitle": "Originaltitel",
@@ -1931,6 +1948,7 @@
     "renameButtonQuestion": "Vad vill du döpa om den här knappen till?",
     "renameClip": "Byt namn på klipp",
     "renderComplete": "Rendering slutförd!",
+    "reorient": "Omorientera",
     "repeat": "Upprepa",
     "repeatPressActionUntilReleased": "Upprepa pressåtgärd tills den släpps",
     "replace": "Byta ut",
@@ -2001,6 +2019,7 @@
     "rightSurroundToLeftFront9": "Rght2Left",
     "rightTextLayer": "Höger textlager",
     "rightVertical": "Höger vertikalt",
+    "roll": "Rulla",
     "rollingShutter": "Rullande slutare",
     "rotate": "Rotera",
     "rotate9": "Rotera",
@@ -2158,6 +2177,38 @@
         "one": "Flytta ankare uppåt med %{amount} Pixel",
         "other": "Flytta ankare uppåt med %{amount} Pixel"
     },
+    "shiftOrientationFieldOfViewLeft": {
+        "one": "Skift orienteringsfält vänster med %{amount} grad",
+        "other": "Skift orienteringsfält vänster med %{amount} grad"
+    },
+    "shiftOrientationFieldOfViewRight": {
+        "one": "Flytta orienteringsfältet åt höger med %{amount} grader",
+        "other": "Flytta orienteringsfältet åt höger med %{amount} grader"
+    },
+    "shiftOrientationPanLeft": {
+        "one": "Skift Orientering Panorera vänster med %{amount} Grad",
+        "other": "Skift Orientering Panorera vänster med %{amount} Grad"
+    },
+    "shiftOrientationPanRight": {
+        "one": "Skift Orientering Panorera åt höger med %{amount} Grad",
+        "other": "Skift Orientering Panorera åt höger med %{amount} Grad"
+    },
+    "shiftOrientationRollLeft": {
+        "one": "Skift orientering Rulla vänster med %{amount} grader",
+        "other": "Skift orientering Rulla vänster med %{amount} grader"
+    },
+    "shiftOrientationRollRight": {
+        "one": "Skift orientering Rulla åt höger med %{amount} grader",
+        "other": "Skift orientering Rulla åt höger med %{amount} grader"
+    },
+    "shiftOrientationTiltLeft": {
+        "one": "Skiftorientering Luta åt vänster med %{amount} grader",
+        "other": "Skiftorientering Luta åt vänster med %{amount} grader"
+    },
+    "shiftOrientationTiltRight": {
+        "one": "Skift orientering Luta åt höger med %{amount} grader",
+        "other": "Skift orientering Luta åt höger med %{amount} grader"
+    },
     "shiftPositionDownPixels": {
         "one": "Skiftposition ned %{amount} Pixel",
         "other": "Skiftposition ned %{amount} Pixel"
@@ -2173,6 +2224,30 @@
     "shiftPositionUpPixels": {
         "one": "Skiftposition upp %{amount} Pixel",
         "other": "Skiftposition upp %{amount} Pixel"
+    },
+    "shiftReorientPanLeft": {
+        "one": "Skift Omorientera Panorera åt vänster med %{amount} Grad",
+        "other": "Skift Omorientera Panorera åt vänster med %{amount} Grad"
+    },
+    "shiftReorientPanRight": {
+        "one": "Skift Omorientera Panorera åt höger med %{amount} Grad",
+        "other": "Skift Omorientera Panorera åt höger med %{amount} Grad"
+    },
+    "shiftReorientRollLeft": {
+        "one": "Skift Omorientera Rulla åt vänster med %{amount} grader",
+        "other": "Skift Omorientera Rulla åt vänster med %{amount} grader"
+    },
+    "shiftReorientRollRight": {
+        "one": "Skift Omorientera Rulla åt höger med %{amount} Grad",
+        "other": "Skift Omorientera Rulla åt höger med %{amount} Grad"
+    },
+    "shiftReorientTiltLeft": {
+        "one": "Skift Omorientera Luta åt vänster med %{amount} grader",
+        "other": "Skift Omorientera Luta åt vänster med %{amount} grader"
+    },
+    "shiftReorientTiltRight": {
+        "one": "Skift Omorientera Luta åt höger med %{amount} grader",
+        "other": "Skift Omorientera Luta åt höger med %{amount} grader"
     },
     "shiftRotationLeft": {
         "one": "Skiftrotation vänster med %{amount} grad",
@@ -2339,6 +2414,7 @@
     "streamDeckResetUnitConfirmation": "Detta återställer alla Stream Deck-objekt för den här enheten till standardvärdena.",
     "streamdeckPanelLabel": "Stream Deck",
     "streamdeckPanelTooltip": "Inställningar för strömdäck",
+    "strong": "Stark",
     "subcomponent": "delkomponent",
     "subcomponents": "delkomponenter",
     "subtract": "Subtrahera",
@@ -2380,6 +2456,7 @@
     "temperature": "Temperatur",
     "temperature4": "Temp",
     "ten": "10",
+    "testSnippet": "Testutdrag",
     "testTitle": "CommandPost-test",
     "text": "Text",
     "textInspectorCouldNotBeShown": "Textinspektör kunde inte visas.",
@@ -2401,6 +2478,7 @@
     "thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped": "Detta kommer endast att utlösa kortkommandot om du redan har stoppat det.",
     "three": "3",
     "threeDeeText": "3D-text",
+    "tilt": "Luta",
     "timeline": "tidslinje",
     "timelineBatchExportBeginMessage": "Det här tidslinjen Batch Export Tool använder automatisering för att välja varje klipp individuellt och utlöser sedan menyposten 'File> Share'.\n\nFlytta inte musen eller röra tangentbordet förrän denna process är klar.",
     "timelineBatchExportCompressorBeginMessage": "Det här tidslinjen Batch Export Tool använder automatisering för att välja varje klipp individuellt och utlöser sedan menyposten 'File> Send to Compressor'.\n\nFlytta inte musen eller röra tangentbordet förrän denna process är klar.",
@@ -2411,6 +2489,7 @@
     "timeline_group": "tidslinje",
     "tint": "Nyans",
     "tint4": "Nyans",
+    "tinyPlanet": "Liten planet",
     "tip": "Tips",
     "title": "Titel",
     "title_group": "Titel",
@@ -2431,6 +2510,7 @@
     "toggleControls": "Växla kontroller",
     "toggleDaVinciResolveControlSurfaceSupport": "Växla DaVinci Resolve Control Surface Support",
     "toggleEffects": "Växla effekter",
+    "toggleKeyframe": "Växla nyckelbild",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClips": "Växla Opacity Fade Handles i Video Animation Popup på utvalda klipp",
     "toggleOpacityFadeHandlesInVideoAnimationPopupOnSelectedClipsDescription": "På grund av ett Final Cut Pro-fel fungerar det inte för klipp i en sekundär berättelse",
     "toggleOverlaysWithCapsLock": "Växla överlägg med Caps Lock",
@@ -2608,6 +2688,42 @@
     "watchFolderXMLHelp": "Den här funktionen låter dig få MacOS-anmälningar när en FCPXML-fil läggs till i någon av nedanstående klockmappar. <br /> Från meddelandet kan du <b> importera </b> dessa filer direkt till din aktuella Final Cut Pro-tidslinje . <br /> Om du håller ner <b> SKIFT </b> när du trycker på <b> Importera </b> kommer det att importera alla utestående filer.",
     "watchFolders": "Titta på mappar",
     "wave": "Vinka",
+    "weak": "Svag",
+    "websocket": "WebSocket",
+    "websocketActionQuery": "Åtgärdsfråga",
+    "websocketAddress": "Adress",
+    "websocketCannotParseMessageData": "Kan inte analysera meddelandedata:",
+    "websocketClientMode": "Klientläge",
+    "websocketClients": "klienter",
+    "websocketConnected": "Ansluten",
+    "websocketConnectionStatus": "Anslutningsstatus",
+    "websocketControlSurface": "WebSocket-kontrollyta",
+    "websocketControlSurfaceDisabled": "WebSocket-kontrollytan är inaktiverad",
+    "websocketControlSurfaceSettings": "Inställningar för WebSocket-kontrollyta",
+    "websocketCopied": "Kopierad",
+    "websocketCopyFailed": "Kopieringen misslyckades:",
+    "websocketCopyMessage": "Kopiera meddelande",
+    "websocketCurrentlySelectedAction": "Aktuellt vald åtgärd",
+    "websocketDisableWebSocketControlSurface": "Inaktivera WebSocket-kontrollytan",
+    "websocketDisconnected": "Osammanhängande",
+    "websocketEnableWebSocket": "Aktivera WebSocket",
+    "websocketEnableWebSocketControlSurface": "Aktivera WebSocket-kontrollytan",
+    "websocketFilterActionsByApplication": "Filtrera åtgärder efter applikation:",
+    "websocketInvalidPortNumber": "Ogiltigt portnummer",
+    "websocketInvalidPortNumberDescription": "Ange ett giltigt portnummer mellan 1 och 65535",
+    "websocketMessageExample": "Exempel på WebSocket-meddelande:",
+    "websocketNoActiveConnections": "Inga aktiva anslutningar",
+    "websocketNoCopyableMessage": "Inget meddelande att kopiera",
+    "websocketOpenActionChooser": "Öppna åtgärdsväljaren",
+    "websocketOpenActionChooserDescription": "Klicka på knappen ovan för att öppna CommandPost-åtgärdsväljaren och bläddra bland och söka efter alla tillgängliga åtgärder.",
+    "websocketRefresh": "Uppdatera",
+    "websocketServerMode": "Serverläge",
+    "websocketServerNotRunning": "Servern körs inte",
+    "websocketServerPort": "Serverport",
+    "websocketServerRunning": "Servern körs",
+    "websocketServerRunningWithDetails": "Servern körs\\nPort: %{port}\\nAnslutna klienter: %{count}",
+    "websocketServerStopped": "Servern stoppad",
+    "websocketToggleWebSocketControlSurface": "Växla WebSocket-kontrollyta",
     "weight": "Vikt",
     "welcomeToTheToolbox": "Välkommen till verktygslådan",
     "whatDidYouExpectToHappen": "Vad förväntade du dig hända?",
@@ -2625,6 +2741,11 @@
     "workflowExtensionInstalled": "Arbetsflödestillägg installerat",
     "workflowExtensionMovePlayhead": "Flyttar Final Cut Pro-spelhuvudet via Workflow Extension API",
     "workspaces": "arbetsytor",
+    "wsActionId": "Åtgärds-ID",
+    "wsHandler": "Hanterare",
+    "wsId": "ID",
+    "wsMode": "Läge",
+    "wsStatus": "Status",
     "xml": "XML",
     "yellow": "Gul",
     "yes": "Ja",
