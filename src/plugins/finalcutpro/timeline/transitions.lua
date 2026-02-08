@@ -76,12 +76,21 @@ function mod.apply(action)
     transitions:show()
 
     --------------------------------------------------------------------------------
-    -- Make sure "Installed Transitions" is selected:
+    -- Make sure "Installed Transitions" or "Transitions" (in FCP v12 and later)
+    -- is selected:
     --------------------------------------------------------------------------------
-    local group = transitions.group:UI()
-    local groupValue = group:attributeValue("AXValue")
-    if groupValue ~= fcp:string("PEMediaBrowserInstalledTransitionsMenuItem") then
-        transitions:showInstalledTransitions()
+    local transitionsText
+    if fcp:isFinalCutPro12OrLater() then
+        transitionsText = fcp:string("FFEffectsBrowserInstalledMotionTemplatesTransitions")
+    else
+        transitionsText = fcp:string("PEMediaBrowserInstalledEffectsMenuItem")
+    end
+    local group = effects.group:UI()
+    if group then
+        local groupValue = group:attributeValue("AXValue")
+        if groupValue and transitionsText and groupValue ~= transitionsText then
+            effects:showInstalledEffects()
+        end
     end
 
     --------------------------------------------------------------------------------
