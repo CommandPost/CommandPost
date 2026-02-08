@@ -33,6 +33,19 @@ local CORRECTION_TYPE               = "Color Wheels"
 
 local ColorWheels = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorWheels")
 
+local function commitTextFieldValue(field, value, app)
+    if not field then
+        return
+    end
+    field:isFocused(true)
+    field:value(value)
+    field:performAction("AXConfirm")
+    field:isFocused(false)
+    if app then
+        app:keyStroke({}, "return")
+    end
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.matches(element)
 --- Function
 --- Checks if the specified element is the Color Wheels element.
@@ -87,7 +100,6 @@ function ColorWheels:initialize(parent)
     --------------------------------------------------------------------------------
     self.temperatureSlider.value:mirror(self.temperatureTextField.value)
     self.mixSlider.value:mirror(self.mixTextField.value)
-    self.tintSlider.value:mirror(self.tintTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs.axuielement; read-only>
@@ -134,21 +146,45 @@ end
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
 function ColorWheels.lazy.prop:mix()
-    return self.mixSlider.value
+    return prop(
+        function()
+            return self.mixTextField:value()
+        end,
+        function(value)
+            self:show()
+            commitTextFieldValue(self.mixTextField, value, self:app())
+        end
+    ):monitor(self.mixTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.temperature <cp.prop: number>
 --- Field
 --- The color temperature for this corrector. A number from 2500 to 10000.
 function ColorWheels.lazy.prop:temperature()
-    return self.temperatureSlider.value
+    return prop(
+        function()
+            return self.temperatureTextField:value()
+        end,
+        function(value)
+            self:show()
+            commitTextFieldValue(self.temperatureTextField, value, self:app())
+        end
+    ):monitor(self.temperatureTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.tint <cp.prop: number>
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
 function ColorWheels.lazy.prop:tint()
-    return self.tintSlider.value
+    return prop(
+        function()
+            return self.tintTextField:value()
+        end,
+        function(value)
+            self:show()
+            commitTextFieldValue(self.tintTextField, value, self:app())
+        end
+    ):monitor(self.tintTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
