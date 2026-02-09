@@ -122,8 +122,9 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     -- Reveal In Browser:
     --------------------------------------------------------------------------------
-    if menuBar:isEnabled({"File", "Reveal in Browser"}) then
-        menuBar:selectMenu({"File", "Reveal in Browser"})
+    local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+    if menuBar:isEnabled({"File", revealInBrowserText}) then
+        menuBar:selectMenu({"File", revealInBrowserText})
     end
 
     --------------------------------------------------------------------------------
@@ -302,7 +303,8 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Check the option is available in the current context
     --------------------------------------------------------------------------------
-    if not fcp.menu:isEnabled({"File", "Reveal in Browser"}) then
+    local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+    if not fcp.menu:isEnabled({"File", revealInBrowserText}) then
         return nil
     end
 
@@ -321,7 +323,8 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Trigger the menu item to reveal the clip
     --------------------------------------------------------------------------------
-    fcp.menu:selectMenu({"File", "Reveal in Browser"})
+    local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+    fcp.menu:selectMenu({"File", revealInBrowserText})
 
     --------------------------------------------------------------------------------
     -- Solo Clip:
@@ -347,7 +350,8 @@ end
 -- Returns:
 --  * None
 local function selectKeywordCollection(keyword, solo)
-    fcp:selectMenu({"File", "Reveal in Browser"})
+    local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+    fcp:selectMenu({"File", revealInBrowserText})
 
     local sidebar = fcp.libraries.sidebar
 
@@ -634,7 +638,8 @@ local function revealInKeywordCollection(solo)
             --------------------------------------------------------------------------------
             -- If no keywords on the clip, just "Reveal in Browser":
             --------------------------------------------------------------------------------
-            fcp.menu:selectMenu({"File", "Reveal in Browser"})
+            local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+            fcp.menu:selectMenu({"File", revealInBrowserText})
 
             --------------------------------------------------------------------------------
             -- Solo the clip if necessary:
@@ -835,7 +840,8 @@ local function commitMulticam()
     -- Fire off a bunch of menu items:
     --------------------------------------------------------------------------------
     wait(0.7)
-    fcp:selectMenu({"File", "Reveal in Browser"})
+    local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+    fcp:selectMenu({"File", revealInBrowserText})
     wait(0.7)
     fcp:selectMenu({"Mark", "Set Range Start"})
     wait(1.5)

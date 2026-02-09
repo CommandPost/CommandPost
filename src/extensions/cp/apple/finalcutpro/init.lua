@@ -298,6 +298,22 @@ function fcp:isFinalCutPro12OrLater()
     return self.app.version() >= semver("12.0.0")
 end
 
+--- cp.apple.finalcutpro.revealInBrowserMenuItemText() -> string
+--- Method
+--- The string used for the "Reveal in Browser" menubar item.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * "Reveal Source in Browser" in FCP v12 and above, otherwise "Reveal in Browser"
+function fcp:revealInBrowserMenuItemText()
+    if self.app.version() >= semver("12.0.0") then
+        return "Reveal Source in Browser"
+    end
+    return "Reveal in Browser"
+end
+
 --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only; live>
 --- Field
 --- Is Final Cut Pro Frontmost?

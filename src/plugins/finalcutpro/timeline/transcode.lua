@@ -133,7 +133,8 @@ function mod.transcodeSelectedClips(transcodeType)
             return
         end
 
-        fcp:selectMenu({"File", "Reveal in Browser"})
+        local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+        fcp:selectMenu({"File", revealInBrowserText})
         fcp:selectMenu({"Window", "Go To", "Libraries"})
 
         if not doUntil(function()
@@ -250,10 +251,12 @@ function mod.doTranscodeSelectedTimelineClips(transcodeType)
             return throwMessage("No clips selected in the Timeline.")
         end
 
+        local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+
         Given(selectedClipsUI)
         :Then(function(clip)
             return Do(contents:doSelectClip(clip))
-            :Then(fcp:doSelectMenu({"File", "Reveal in Browser"}))
+            :Then(fcp:doSelectMenu({"File", revealInBrowserText}))
             :Then(mod.doTranscodeSelectedBrowserClips(transcodeType))
         end)
     end)

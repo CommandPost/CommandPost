@@ -579,7 +579,8 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Reveal in Browser:
         --------------------------------------------------------------------------------
-        fcp:selectMenu({"File", "Reveal in Browser"})
+        local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+        fcp:selectMenu({"File", revealInBrowserText})
 
         --------------------------------------------------------------------------------
         -- Make sure the Browser is visible:
@@ -610,7 +611,9 @@ function mod._completeProcess()
             --------------------------------------------------------------------------------
             log.df("Reveal in Browser might have failed, so let's try again.")
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            fcp:selectMenu({"File", "Reveal in Browser"})
+
+            local revealInBrowserText = fcp:revealInBrowserMenuItemText()
+            fcp:selectMenu({"File", revealInBrowserText})
             clips = libraries:selectedClipsUI()
             if #clips ~= 1 then
                 --------------------------------------------------------------------------------
