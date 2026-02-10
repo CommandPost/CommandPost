@@ -12,12 +12,12 @@ local mod = {}
 --- plugins.core.console.preferences.scanRunningApplicationMenubarsOnStartup <cp.prop: boolean>
 --- Variable
 --- Scan Running Application Menubars on Startup
-mod.scanRunningApplicationMenubarsOnStartup = config.prop("scanRunningApplicationMenubarsOnStartup", false)
+mod.scanRunningApplicationMenubarsOnStartup = config.prop("scanRunningApplicationMenubarsOnStartup", true)
 
 --- plugins.core.console.preferences.scanTheMenubarsOfTheActiveApplication <cp.prop: boolean>
 --- Variable
 --- Scan the Menubars of the Active Application
-mod.scanTheMenubarsOfTheActiveApplication = config.prop("scanTheMenubarsOfTheActiveApplication", false)
+mod.scanTheMenubarsOfTheActiveApplication = config.prop("scanTheMenubarsOfTheActiveApplication", true)
 
 local plugin = {
     id              = "core.console.preferences",
