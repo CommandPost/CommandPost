@@ -306,9 +306,9 @@ end
 ---  * None
 ---
 --- Returns:
----  * "Reveal Source in Browser" in FCP v12 and above, otherwise "Reveal in Browser"
+---  * "Reveal Source in Browser" in FCP v11.1 and above, otherwise "Reveal in Browser"
 function fcp:revealInBrowserMenuItemText()
-    if self.app.version() >= semver("12.0.0") then
+    if self.app.version() >= semver("11.1.0") then
         return "Reveal Source in Browser"
     end
     return "Reveal in Browser"
