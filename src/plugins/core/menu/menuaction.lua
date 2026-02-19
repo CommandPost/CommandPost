@@ -7,7 +7,7 @@
 local require               = require
 local hs                    = _G.hs
 
---local log                   = require "hs.logger".new "menuaction"
+local log                   = require "hs.logger".new "menuaction"
 
 local application           = require "hs.application"
 local fnutils               = require "hs.fnutils"
@@ -35,6 +35,11 @@ local mod = {}
 mod._handlers = {}
 
 mod._cache = {}
+
+local absTime = hs.timer.absoluteTime
+local function msSince(t0)
+    return (absTime() - t0) / 1e6
+end
 
 local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/menu.png")
 
@@ -398,30 +403,74 @@ function plugin.postInit(deps)
     -- NOTE: This is off by default, as it's fairly slow.
     --------------------------------------------------------------------------------
     if deps.consolePreferences.scanRunningApplicationMenubarsOnStartup() then
-        --log.df("Scanning running application menubars for the Search Console")
+        --log.df("Startup menubar scan enabled")
+
         local apps = runningApplications()
+        log.df("Found %d running apps", #apps)
+
+        local timings = {}      -- array of {bundleID=..., name=..., ms=...}
+        local pending = 0       -- how many scans are currently in-flight
+
+        local function maybeReport()
+            if pending ~= 0 then return end
+            if #timings == 0 then
+                log.df("No apps were scanned (nothing qualified).")
+                return
+            end
+
+            table.sort(timings, function(a,b) return a.ms > b.ms end)
+
+            log.df("Menubar scan timings (slowest first):")
+            local topN = math.min(20, #timings)
+            for i = 1, topN do
+                local t = timings[i]
+                log.df("%2d) %7.1f ms  %s  (%s)", i, t.ms, t.name or "?", t.bundleID or "?")
+            end
+        end
+
         for _, app in pairs(apps) do
             local bundleID = app:bundleID()
-            --------------------------------------------------------------------------------
-            -- For some reason, some apps don't have a bundle ID:
-            --------------------------------------------------------------------------------
-            if bundleID and bundleID ~= "" then
-                if not mod._cache[bundleID] then
-                    local visibleWindows = app:visibleWindows()
-                    if next(visibleWindows) and accessibilityState() then
-                        getMenuItems(app, function(result)
-                            if not mod._cache[bundleID] then
-                                mod._cache[bundleID] = result
-                                mod._handler:reset()
-                                if mod._handlers[bundleID] then
-                                    mod._handlers[bundleID]:reset()
-                                end
+            local name = app:name()
+
+            if not bundleID or bundleID == "" then
+                --log.df("SKIP: %s (no bundleID)", name or "?")
+            elseif mod._cache[bundleID] then
+                --log.df("SKIP: %s (%s) already cached", name or "?", bundleID)
+            else
+                local visibleWindows = app:visibleWindows()
+                if not next(visibleWindows) then
+                    --log.df("SKIP: %s (%s) has no visible windows", name or "?", bundleID)
+                elseif not accessibilityState() then
+                    --log.df("SKIP: %s (%s) accessibilityState() is false", name or "?", bundleID)
+                else
+                    local t0 = absTime()
+                    pending = pending + 1
+                    --log.df("SCAN START: %s (%s)", name or "?", bundleID)
+
+                    getMenuItems(app, function(result)
+                        local elapsed = msSince(t0)
+                        table.insert(timings, { bundleID = bundleID, name = name, ms = elapsed })
+
+                        local count = (type(result) == "table") and #result or 0
+                        log.df("SCAN DONE : %s (%s) in %.1f ms (top-level items: %d)", name or "?", bundleID, elapsed, count)
+
+                        if not mod._cache[bundleID] then
+                            mod._cache[bundleID] = result
+                            mod._handler:reset()
+                            if mod._handlers[bundleID] then
+                                mod._handlers[bundleID]:reset()
                             end
-                        end)
-                    end
+                        end
+
+                        pending = pending - 1
+                        maybeReport()
+                    end)
                 end
             end
         end
+
+        -- In case nothing qualifies and pending never increments:
+        maybeReport()
     end
 end
 
