@@ -37,8 +37,13 @@ mod._handlers = {}
 mod._cache = {}
 
 local absTime = hs.timer.absoluteTime
+
 local function msSince(t0)
     return (absTime() - t0) / 1e6
+end
+
+local function sSince(t0)
+    return (absTime() - t0) / 1e9
 end
 
 local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/menu.png")
@@ -418,13 +423,13 @@ function plugin.postInit(deps)
                 return
             end
 
-            table.sort(timings, function(a,b) return a.ms > b.ms end)
+            table.sort(timings, function(a,b) return a.s > b.s end)
 
             log.df("Menubar scan timings (slowest first):")
             local topN = math.min(20, #timings)
             for i = 1, topN do
                 local t = timings[i]
-                log.df("%2d) %7.1f ms  %s  (%s)", i, t.ms, t.name or "?", t.bundleID or "?")
+                log.df("%2d) %7.3f s   %s  (%s)", i, t.s, t.name or "?", t.bundleID or "?")
             end
         end
 
@@ -448,11 +453,15 @@ function plugin.postInit(deps)
                     --log.df("SCAN START: %s (%s)", name or "?", bundleID)
 
                     getMenuItems(app, function(result)
-                        local elapsed = msSince(t0)
-                        table.insert(timings, { bundleID = bundleID, name = name, ms = elapsed })
+                        local elapsed = sSince(t0)
+                        table.insert(timings, { bundleID = bundleID, name = name, s = elapsed })
 
                         local count = (type(result) == "table") and #result or 0
-                        log.df("SCAN DONE : %s (%s) in %.1f ms (top-level items: %d)", name or "?", bundleID, elapsed, count)
+                        log.df("SCAN DONE : %s (%s) in %.3f s (top-level items: %d)", name or "?", bundleID, elapsed, count)
+
+                        if elapsed >= 1.0 then
+                            log.wf("SLOW SCAN: %s (%s) took %.3f s", name or "?", bundleID, elapsed)
+                        end
 
                         if not mod._cache[bundleID] then
                             mod._cache[bundleID] = result
