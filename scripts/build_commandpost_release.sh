@@ -148,9 +148,6 @@ echo " * Building CommandPost-App..."
 echo " * Validating CommandPost-App..."
 ./scripts/build.sh validate
 
-echo " * Building Uninstall App..."
-build_uninstall
-
 echo " * Building DMG for distribution..."
 build_dmgcanvas
 
