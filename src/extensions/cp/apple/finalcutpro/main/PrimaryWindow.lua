@@ -21,8 +21,6 @@ local lazy              = require "cp.lazy"
 
 local PrimaryWindow = class("cp.apple.finalcutpro.main.PrimaryWindow"):include(lazy)
 
-local finalCutProMenuTitle = "Final Cut Pro"
-
 --- cp.apple.finalcutpro.main.PrimaryWindow.matches(w) -> boolean
 --- Function
 --- Checks to see if a window matches the PrimaryWindow requirements
@@ -33,6 +31,11 @@ local finalCutProMenuTitle = "Final Cut Pro"
 --- Returns:
 ---  * `true` if matched otherwise `false`
 function PrimaryWindow.static.matches(w)
+    --------------------------------------------------------------------------------
+    -- NOTE: Even in Final Cut Pro v11 Trial, the AXTitle is still just
+    --       "Final Cut Pro" (NOT "Final Cut Pro Trial").
+    --------------------------------------------------------------------------------
+    local finalCutProMenuTitle = "Final Cut Pro"
     if w ~= nil then
         local subrole = w:attributeValue("AXSubrole")
         return w:attributeValue("AXTitle") == finalCutProMenuTitle and (subrole == "AXStandardWindow" or subrole == "AXDialog")
@@ -51,11 +54,6 @@ end
 ---  * PrimaryWindow
 function PrimaryWindow:initialize(app)
     self._app = app
-
-    --------------------------------------------------------------------------------
-    -- Set the Final Cut Pro Menu Title:
-    --------------------------------------------------------------------------------
-    finalCutProMenuTitle = app:mainMenuName()
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow:app() -> cp.apple.finalcutpro
