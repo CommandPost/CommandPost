@@ -90,9 +90,10 @@ menu:addMenuFinder(function(parentItem, path, childName, locale)
             ----------------------------------------------------------------------------------------
             -- Perform Pattern Matching with Tokens:
             ----------------------------------------------------------------------------------------
-            local itemChild = item.child:gsub("%%@", ".*")
-            if isEqual(path, item.path) and childName == itemChild then
-                local keyWithPattern = strings:find(item.key, locale):gsub("%%@", ".*")
+            local itemChild = type(item.child) == "string" and item.child:gsub("%%@", ".*") or nil
+            local keyTitle = type(item.key) == "string" and strings:find(item.key, locale, true) or nil
+            if itemChild and keyTitle and isEqual(path, item.path) and childName == itemChild then
+                local keyWithPattern = keyTitle:gsub("%%@", ".*")
                 return childMatching(parentItem, function(child)
                     local title = child:attributeValue("AXTitle")
                     return title and string.match(title, keyWithPattern)

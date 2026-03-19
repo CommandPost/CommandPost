@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "commandpost": {
+      "command": "node",
+      "args": ["/Users/briantate/Documents/GitHub/CommandPost/src/mcp-server/dist/index.js"]
+    }
+  }
+}

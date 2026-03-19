@@ -14,12 +14,79 @@ local config        = require "cp.config"
 local i18n          = require "cp.i18n"
 local prop          = require "cp.prop"
 local json          = require "hs.json"
+local hash          = require "hs.hash"
 
 local client        = require "client"
 local server        = require "server"
 local messageHandler = require "message-handler"
 
 local mod = {}
+
+--- plugins.core.websocket.manager.AUTH_TOKEN_FILENAME
+--- Constant
+--- Filename for the auth token file
+local AUTH_TOKEN_FILENAME = "mcp-auth-token"
+
+--- plugins.core.websocket.manager.generateAuthToken() -> string
+--- Function
+--- Generates a random auth token and writes it to a well-known file.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The generated token string
+local function generateAuthToken()
+    -- Generate a random token using timestamp + random data
+    local seed = tostring(os.time()) .. tostring(math.random(1000000, 9999999)) .. tostring(hs.processInfo.processID)
+    local token = hash.SHA256(seed)
+    return token
+end
+
+--- plugins.core.websocket.manager.writeAuthToken(token) -> boolean
+--- Function
+--- Writes the auth token to the well-known file path.
+---
+--- Parameters:
+---  * token - The token string to write
+---
+--- Returns:
+---  * true if written successfully
+local function writeAuthToken(token)
+    local tokenDir = config.userConfigRootPath
+    if not tokenDir then
+        tokenDir = os.getenv("HOME") .. "/.CommandPost"
+    end
+    -- Ensure directory exists
+    os.execute("mkdir -p " .. string.format("%q", tokenDir))
+    local tokenPath = tokenDir .. "/" .. AUTH_TOKEN_FILENAME
+    local f = io.open(tokenPath, "w")
+    if f then
+        f:write(token)
+        f:close()
+        -- Restrict permissions to owner only
+        os.execute("chmod 600 " .. string.format("%q", tokenPath))
+        log.df("Auth token written to: %s", tokenPath)
+        return true
+    else
+        log.ef("Failed to write auth token to: %s", tokenPath)
+        return false
+    end
+end
+
+--- plugins.core.websocket.manager.getAuthTokenPath() -> string
+--- Function
+--- Returns the path where the auth token file is stored.
+---
+--- Returns:
+---  * The file path string
+function mod.getAuthTokenPath()
+    local tokenDir = config.userConfigRootPath
+    if not tokenDir then
+        tokenDir = os.getenv("HOME") .. "/.CommandPost"
+    end
+    return tokenDir .. "/" .. AUTH_TOKEN_FILENAME
+end
 
 --- plugins.core.websocket.manager.MODE
 --- Constant
@@ -110,7 +177,13 @@ end
 ---  * true if started successfully, false otherwise
 function mod.startServer()
     local port = mod.serverPort()
-    --log.df("Starting WebSocket server on port %d", port)
+
+    -- Generate and write auth token for this session
+    local token = generateAuthToken()
+    writeAuthToken(token)
+    messageHandler.setAuthToken(token)
+    log.df("WebSocket server auth token generated for session")
+
     return server.start(port, mod.handleMessage)
 end
 
@@ -148,7 +221,15 @@ function mod.handleMessage(connection, message)
     if response then
         local ok, encoded = pcall(json.encode, response)
         if ok then
-            connection:send(encoded)
+            -- In client mode we must explicitly send the response back across the
+            -- outbound websocket connection. In server mode the websocket callback
+            -- return value is already routed to the requesting client, so sending
+            -- it again would broadcast request/response traffic to every client.
+            if connection and (connection.mode == "client" or connection.type == "client") then
+                connection:send(encoded)
+                return nil
+            end
+            return encoded
         else
             log.ef("Failed to encode response: %s", encoded)
         end
@@ -262,6 +343,12 @@ function plugin.init(deps, env)
     client.init(mod)
     server.init(mod)
     messageHandler.init(deps.actionManager)
+
+    -- Initialize audit log in the CommandPost config directory
+    local configPath = config.userConfigRootPath
+    if configPath then
+        messageHandler.initAuditLog(configPath)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

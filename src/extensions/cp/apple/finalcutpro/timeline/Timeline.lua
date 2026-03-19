@@ -149,10 +149,7 @@ end
 --- Field
 --- Checks if the Timeline is showing on either the Primary or Secondary display.
 function Timeline.lazy.prop:isShowing()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        return ui ~= nil and #ui > 0
-    end)
+    return self.UI:ISNOT(nil):AND(self:app().isShowing)
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.mainUI <cp.prop: hs.axuielement; read-only>
