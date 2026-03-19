@@ -21,6 +21,7 @@ import {
   GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { CommandPostClient } from "./commandpost.js";
+import { execSync } from "child_process";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Logging (stderr to avoid polluting MCP JSON-RPC on stdout)
@@ -1643,6 +1644,38 @@ const TOOLS = [
         },
       },
       required: ["clipPlan"],
+    },
+  },
+  // ── Scene Detection & Auto-Blade ─────────────────────────────────
+  {
+    name: "fcp_scene_detect_and_cut",
+    description:
+      "Detect scene changes in a video file using ffmpeg and blade the current timeline at all detected cut points in one batch operation. Requires ffmpeg installed. The video file should match the clip on the timeline.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        videoPath: {
+          type: "string",
+          description:
+            "Absolute path to the video file to analyze (e.g., /Users/you/Movies/clip.mp4)",
+        },
+        threshold: {
+          type: "number",
+          description:
+            "Scene detection sensitivity (1-100). Lower = more sensitive, detects more cuts. Default: 8. Use 3-5 for fast-cut content, 8-12 for normal edits, 15+ for only hard cuts.",
+        },
+        minGap: {
+          type: "number",
+          description:
+            "Minimum gap in seconds between detected cuts to filter out flash frames. Default: 0.5",
+        },
+        dryRun: {
+          type: "boolean",
+          description:
+            "If true, only detect and return cut points without actually blading. Default: false",
+        },
+      },
+      required: ["videoPath"],
     },
   },
 ];
@@ -5435,6 +5468,181 @@ ${clipStatements}
       return formatResult(extractResult(resp));
     }
 
+    // ── Scene Detection & Auto-Blade ───────────────────────────────
+    case "fcp_scene_detect_and_cut": {
+      const videoPath = args.videoPath as string;
+      const threshold = (args.threshold as number) ?? 8;
+      const minGap = (args.minGap as number) ?? 0.5;
+      const dryRun = (args.dryRun as boolean) ?? false;
+
+      // Validate file exists
+      try {
+        const fs = await import("fs");
+        if (!fs.existsSync(videoPath)) {
+          return formatResult({ success: false, error: `File not found: ${videoPath}` });
+        }
+      } catch {
+        return formatResult({ success: false, error: `Cannot access file: ${videoPath}` });
+      }
+
+      // Get video frame rate via ffprobe
+      let fps = 30;
+      try {
+        const probeOut = execSync(
+          `ffprobe -v quiet -print_format json -show_streams ${JSON.stringify(videoPath)}`,
+          { timeout: 30000, encoding: "utf-8" }
+        );
+        const probeData = JSON.parse(probeOut);
+        const videoStream = probeData.streams?.find((s: Record<string, unknown>) => s.codec_type === "video");
+        if (videoStream?.r_frame_rate) {
+          const [num, den] = (videoStream.r_frame_rate as string).split("/").map(Number);
+          fps = den ? num / den : num;
+        }
+      } catch (e) {
+        log("warn", "Could not determine frame rate, defaulting to 30fps", e);
+      }
+
+      // Run ffmpeg scene detection
+      log("info", `Running scene detection on ${videoPath} (threshold=${threshold}, fps=${fps})`);
+      let rawOutput: string;
+      try {
+        rawOutput = execSync(
+          `ffmpeg -i ${JSON.stringify(videoPath)} -vf "scdet=threshold=${threshold}" -f null - 2>&1`,
+          { timeout: 600000, encoding: "utf-8", maxBuffer: 50 * 1024 * 1024 }
+        );
+      } catch (e) {
+        const err = e as { stderr?: string; message?: string };
+        return formatResult({
+          success: false,
+          error: `ffmpeg scene detection failed: ${err.message ?? "unknown error"}`,
+        });
+      }
+
+      // Parse scene change timestamps
+      const sceneRegex = /lavfi\.scd\.time:\s*([\d.]+)/g;
+      const rawTimes: number[] = [];
+      let match: RegExpExecArray | null;
+      while ((match = sceneRegex.exec(rawOutput)) !== null) {
+        rawTimes.push(parseFloat(match[1]));
+      }
+
+      // Deduplicate: keep only first detection within minGap window
+      const cutTimes: number[] = [];
+      for (const t of rawTimes) {
+        if (cutTimes.length === 0 || (t - cutTimes[cutTimes.length - 1]) > minGap) {
+          cutTimes.push(t);
+        }
+      }
+
+      // Convert to FCP timecodes (HH:MM:SS:FF)
+      const timecodes = cutTimes.map((t) => {
+        const h = Math.floor(t / 3600);
+        const m = Math.floor((t % 3600) / 60);
+        const s = Math.floor(t % 60);
+        let f = Math.round((t % 1) * fps);
+        if (f >= fps) f = Math.ceil(fps) - 1;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}:${String(f).padStart(2, "0")}`;
+      });
+
+      if (timecodes.length === 0) {
+        return formatResult({
+          success: true,
+          cutsDetected: 0,
+          message: "No scene changes detected. Try lowering the threshold.",
+        });
+      }
+
+      if (dryRun) {
+        return formatResult({
+          success: true,
+          dryRun: true,
+          cutsDetected: timecodes.length,
+          fps,
+          threshold,
+          minGap,
+          cuts: timecodes.map((tc, i) => ({
+            index: i + 1,
+            timecode: tc,
+            seconds: Math.round(cutTimes[i] * 1000) / 1000,
+          })),
+        });
+      }
+
+      // Build Lua timecode array
+      const luaTimecodes = timecodes.map((tc) => `"${tc}"`).join(", ");
+
+      // Execute all blades in a single Lua call
+      await activateFinalCutPro();
+      const resp = await client.executeLua(`
+        local fcp = require("cp.apple.finalcutpro")
+        local timecodes = {${luaTimecodes}}
+        local results = {}
+        local succeeded = 0
+        local failed = 0
+
+        -- Ensure timeline is showing and focused
+        local contents = fcp.timeline.contents
+        if not contents:isShowing() then
+          return {error = "Timeline is not showing"}
+        end
+
+        -- Focus the timeline contents (required for blade to work)
+        pcall(function() contents:doFocus(true):Now() end)
+        hs.timer.usleep(300000)
+
+        -- Get initial clip count
+        local initialCount = 0
+        pcall(function()
+          local clips = contents:clipsUI(true) or {}
+          initialCount = #clips
+        end)
+
+        for i, tc in ipairs(timecodes) do
+          -- Navigate to timecode via the viewer
+          fcp.viewer:timecode(tc)
+          hs.timer.usleep(50000)
+
+          -- Blade via Trim > Blade All menu (works without clip selection, FCP v12)
+          local ok, err = pcall(function()
+            local result = fcp:selectMenu({"Trim", "Blade All"}, {plain = true})
+            if not result then
+              result = fcp:selectMenu({"Trim", "Blade"}, {plain = true})
+            end
+            if not result then
+              error("Blade menu item not available")
+            end
+          end)
+
+          if ok then
+            succeeded = succeeded + 1
+            table.insert(results, {index = i, timecode = tc, status = "ok"})
+          else
+            failed = failed + 1
+            table.insert(results, {index = i, timecode = tc, status = "failed", error = tostring(err)})
+          end
+        end
+
+        -- Get final clip count
+        hs.timer.usleep(200000)
+        local finalCount = 0
+        pcall(function()
+          local clips = contents:clipsUI(true) or {}
+          finalCount = #clips
+        end)
+
+        return {
+          cutsAttempted = #timecodes,
+          cutsSucceeded = succeeded,
+          cutsFailed = failed,
+          clipsBefore = initialCount,
+          clipsAfter = finalCount,
+          newClips = finalCount - initialCount,
+          cuts = results,
+        }
+      `, 120000);
+      return formatResult(extractResult(resp));
+    }
+
     default:
       return JSON.stringify({ success: false, error: `Unknown tool: ${name}` });
   }
@@ -5782,6 +5990,23 @@ function validateToolArgs(
     case "fcp_text_to_markers":
       if (typeof args.text !== "string" || args.text.length === 0) return "text is required";
       return validateStringInput(args.text, "text");
+
+    case "fcp_scene_detect_and_cut": {
+      if (typeof args.videoPath !== "string" || args.videoPath.length === 0) {
+        return "videoPath is required";
+      }
+      const pathErr = validateFilePath(args.videoPath);
+      if (pathErr) return pathErr;
+      if (args.threshold !== undefined) {
+        const tErr = validateRange(args.threshold as number, 1, 100, "threshold");
+        if (tErr) return tErr;
+      }
+      if (args.minGap !== undefined) {
+        const gErr = validateRange(args.minGap as number, 0.1, 10, "minGap");
+        if (gErr) return gErr;
+      }
+      return null;
+    }
 
     default:
       return null;
