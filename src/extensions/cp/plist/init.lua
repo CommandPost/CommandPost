@@ -256,7 +256,6 @@ function plist.isPlist(data)
     return plist.isBinaryPlist(data) or plist.isXMLPlist(data)
 end
 
-
 --- cp.plist.isBinaryPlist(data) -> boolean
 --- Function
 --- Checks if the provided data is a binary plist.
@@ -267,6 +266,9 @@ end
 --- Returns:
 ---  * `true` if it is a binary plist, `false` otherwise.
 function plist.isBinaryPlist(data)
+    if type(data) ~= "string" then
+        return false
+    end
     return data:sub(1, 6) == "bplist"
 end
 
@@ -283,6 +285,9 @@ end
 --- Notes:
 ---  * This will only check if it is an XML file, it does not check the actual format is correct.
 function plist.isXMLPlist(data)
+    if type(data) ~= "string" then
+        return false
+    end
     return data:sub(1, 5) == "<?xml"
 end
 
