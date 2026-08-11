@@ -1,0 +1,31 @@
+{
+  "name": "@commandpost/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP (Model Context Protocol) server for CommandPost — exposes full automation capabilities for Final Cut Pro and macOS workflows",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "commandpost-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "test:edit-workflow": "node test-edit-workflow.mjs",
+    "test:edit-workflow:mini": "node test-edit-workflow-mini.mjs",
+    "test:edit-workflow:storm": "node test-edit-workflow-storm.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/ws": "^8.18.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

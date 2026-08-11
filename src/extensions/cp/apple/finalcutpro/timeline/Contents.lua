@@ -294,7 +294,7 @@ function Contents:clipsUI(expandGroups, filterFn)
         end)
         return self:_filterClips(clips, expandGroups, filterFn)
     end
-    return nil
+    return {}
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:rangeSelectionUI() -> axuielements
@@ -331,12 +331,14 @@ end
 ---  * If `expandsGroups` is `true` any `AXGroup` items will be expanded to the list of contained `AXLayoutItems`.
 ---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:positionClipsUI(position, expandGroups, filterFn)
+    if type(position) ~= "number" then return {} end
+
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip.AXFrame
         return frame and position >= frame.x and position <= (frame.x + frame.w)
            and (filterFn == nil or filterFn(clip))
     end)
-    if not clips then return nil end
+    if not clips then return {} end
 
     table.sort(clips, function(a, b) return a.AXPosition.y < b.AXPosition.y end)
     return clips
@@ -357,7 +359,9 @@ end
 ---  * If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
 ---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:playheadClipsUI(expandGroups, filterFn)
-    return self:positionClipsUI(self.playhead:position(), expandGroups, filterFn)
+    local position = self.playhead and self.playhead:position()
+    if type(position) ~= "number" then return {} end
+    return self:positionClipsUI(position, expandGroups, filterFn)
 end
 
 --- cp.apple.finalcutpro.timeline.Contents:skimmingPlayheadClipsUI(expandedGroups, filterFn) -> table of axuielements
@@ -375,7 +379,9 @@ end
 ---  * If `expandsGroups` is true any AXGroup items will be expanded to the list of contained `AXLayoutItems`.
 ---  * If `filterFn` is provided it will be called with a single argument to check if the provided clip should be included in the final table.
 function Contents:skimmingPlayheadClipsUI(expandGroups, filterFn)
-    return self:positionClipsUI(self.skimmingPlayhead:position(), expandGroups, filterFn)
+    local position = self.skimmingPlayhead and self.skimmingPlayhead:position()
+    if type(position) ~= "number" then return {} end
+    return self:positionClipsUI(position, expandGroups, filterFn)
 end
 
 -- cp.apple.finalcutpro.timeline.Contents:_filterClips(clips, expandGroups, filterFn) -> table of axuielements
@@ -416,14 +422,25 @@ end
 -- Returns:
 --  * The table of axuielements that match the conditions
 function Contents:_expandClips(clips, filterFn)
+    if type(clips) ~= "table" then
+        return {}
+    end
+
     return fnutils.mapCat(clips, function(child)
+        if not child then
+            return {}
+        end
+
         local role = child:attributeValue("AXRole")
         if role == "AXLayoutItem" then
             if filterFn == nil or filterFn(child) then
                 return {child}
             end
         elseif role == "AXGroup" then
-            return self:_expandClips(child:attributeValue("AXChildren"), filterFn)
+            local children = child:attributeValue("AXChildren")
+            if type(children) == "table" then
+                return self:_expandClips(children, filterFn)
+            end
         end
         return {}
     end)

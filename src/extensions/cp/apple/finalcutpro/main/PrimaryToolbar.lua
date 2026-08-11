@@ -109,11 +109,16 @@ end
 --- The `CheckBox` that will open the `KeywordEditor` dialog when checked.
 function PrimaryToolbar.lazy.value:keywordEditor()
     return CheckBox(self, self.UI:mutate(function(original)
-        -- for some reason some of these buttons are individually wrapped in an AXGroup
-        local group = childFromLeft(original(), 1, Group.matches)
+        local ui = original()
+        -- Legacy (pre-v12): checkboxes wrapped in AXGroup
+        local group = childFromLeft(ui, 1, Group.matches)
         if group then
             return childMatching(group, CheckBox.matches)
         end
+        -- FCP v12+: checkboxes are direct toolbar children, match by description
+        return childMatching(ui, function(e)
+            return CheckBox.matches(e) and (e:attributeValue("AXDescription") or ""):find("Keyword Editor")
+        end)
     end))
 end
 
@@ -122,11 +127,14 @@ end
 --- The `CheckBox` that will open the `BackgroundTasksWindow` dialog
 function PrimaryToolbar.lazy.value:backgroundTasksWindow()
     return CheckBox(self, self.UI:mutate(function(original)
-        -- for some reason CheckBoxes are individually wrapped in an AXGroup
-        local group = childFromLeft(original(), 2, Group.matches)
+        local ui = original()
+        -- Legacy (pre-v12): checkboxes wrapped in AXGroup
+        local group = childFromLeft(ui, 2, Group.matches)
         if group then
             return childMatching(group, CheckBox.matches)
         end
+        -- FCP v12+: second checkbox from left (index 4, no description)
+        return childFromLeft(ui, 2, CheckBox.matches)
     end))
 end
 
@@ -144,12 +152,16 @@ end
 --- The `CheckBox` indicating if the `Browser` is showing
 function PrimaryToolbar.lazy.value:browserShowing()
     return CheckBox(self, self.UI:mutate(function(original)
-        -- for some reason CheckBoxes are individually wrapped in an AXGroup
-        local group = childFromRight(original(), 4)
+        local ui = original()
+        -- Legacy (pre-v12): CheckBoxes individually wrapped in an AXGroup
+        local group = childFromRight(ui, 4)
         if Group.matches(group) then
             return childMatching(group, CheckBox.matches)
         end
-        return nil
+        -- FCP v12+: direct checkbox children, match by description
+        return childMatching(ui, function(e)
+            return CheckBox.matches(e) and (e:attributeValue("AXDescription") or ""):find("Browser")
+        end)
     end))
 end
 
@@ -158,12 +170,16 @@ end
 --- The `CheckBox` indicating if the `Timeline` is showing
 function PrimaryToolbar.lazy.value:timelineShowing()
     return CheckBox(self, function()
-        -- for some reason CheckBoxes are individually wrapped in an AXGroup
-        local group = childFromRight(self:UI(), 3)
+        local ui = self:UI()
+        -- Legacy (pre-v12): CheckBoxes individually wrapped in an AXGroup
+        local group = childFromRight(ui, 3)
         if Group.matches(group) then
             return childMatching(group, CheckBox.matches)
         end
-        return nil
+        -- FCP v12+: direct checkbox children, match by description
+        return childMatching(ui, function(e)
+            return CheckBox.matches(e) and (e:attributeValue("AXDescription") or ""):find("Timeline")
+        end)
     end)
 end
 
@@ -172,12 +188,16 @@ end
 --- The `CheckBox` indicating if the Inspector is showing
 function PrimaryToolbar.lazy.value:inspectorShowing()
     return CheckBox(self, function()
-        -- for some reason CheckBoxes are individually wrapped in an AXGroup
-        local group = childFromRight(self:UI(), 2)
+        local ui = self:UI()
+        -- Legacy (pre-v12): CheckBoxes individually wrapped in an AXGroup
+        local group = childFromRight(ui, 2)
         if Group.matches(group) then
             return childMatching(group, CheckBox.matches)
         end
-        return nil
+        -- FCP v12+: direct checkbox children, match by description
+        return childMatching(ui, function(e)
+            return CheckBox.matches(e) and (e:attributeValue("AXDescription") or ""):find("Inspector")
+        end)
     end)
 end
 
