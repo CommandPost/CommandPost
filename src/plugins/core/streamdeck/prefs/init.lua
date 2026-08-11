@@ -274,6 +274,7 @@ local function updateUI(params)
         document.getElementById("streamdeckMiniUI").style.display = "]] .. (device == "Mini" and "inline-table" or "None") .. [[";
         document.getElementById("streamdeckXLUI").style.display = "]] .. (device == "XL" and "inline-table" or "None") .. [[";
         document.getElementById("streamdeckPlusUI").style.display = "]] .. (device == "Plus" and "inline-table" or "None") .. [[";
+        document.getElementById("streamdeckNeoUI").style.display = "]] .. (device == "Neo" and "inline-table" or "None") .. [[";
     ]] .. "\n"
 
     --------------------------------------------------------------------------------

@@ -86,6 +86,7 @@ mod.activeBanks = config.prop("streamDeck.activeBanks", {
     ["Original"] = {},
     ["XL"] = {},
     ["Plus"] = {},
+    ["Neo"] = {}
 })
 
 -- plugins.core.streamdeck.manager.devices -> table
@@ -96,6 +97,7 @@ mod.devices = {
     ["Original"] = {},
     ["XL"] = {},
     ["Plus"] = {},
+    ["Neo"] = {}
 }
 
 -- plugins.core.streamdeck.manager.deviceOrder -> table
@@ -106,6 +108,7 @@ mod.deviceOrder = {
     ["Original"] = {},
     ["XL"] = {},
     ["Plus"] = {},
+    ["Neo"] = {}
 }
 
 -- plugins.core.streamdeck.manager.numberOfButtons -> table
@@ -116,6 +119,7 @@ mod.numberOfButtons = {
     ["Original"] = 15,
     ["XL"] = 32,
     ["Plus"] = 8,
+    ["Neo"] = 8
 }
 
 -- plugins.core.streamdeck.manager.numberOfEncoders -> table
@@ -126,6 +130,7 @@ mod.numberOfEncoders = {
     ["Original"] = 0,
     ["XL"] = 0,
     ["Plus"] = 4,
+    ["Neo"] = 0
 }
 
 -- plugins.core.streamdeck.manager.buttonSize -> table
@@ -136,6 +141,7 @@ mod.buttonSize = {
     ["Original"] = 72,
     ["XL"] = 96,
     ["Plus"] = 120,
+    ["Neo"] = 80
 }
 
 -- plugins.core.streamdeck.manager.encoderSize -> table
@@ -176,7 +182,7 @@ function mod.getSnippetImage(device, buttonData, isEncoder)
     -- Handle Snippets:
     --------------------------------------------------------------------------------
 
-    --log.df("buttonData: %s", hs.inspect(buttonData))
+    log.df("buttonData: %s", hs.inspect(buttonData))
 
     local height
     local width
@@ -267,7 +273,9 @@ function mod.getDeviceType(object)
     elseif columns == 8 and rows == 4 then
         return "XL"
     elseif columns == 4 and rows == 2 then
-        return "Plus"
+        return "Neo"
+        -- TODO: How do we fix this?
+        --return "Plus"
     else
         log.ef("Unknown Stream Deck Model. Columns: %s, Rows: %s", columns, rows)
     end
@@ -342,8 +350,8 @@ function mod.buttonCallback(object, buttonID, pressed, controlType, turningLeft,
     local theBank = theApp and theApp[bankID]
     local theButton = theBank and theBank[buttonID]
 
-    --log.df("buttonID: %s", buttonID)
-    --log.df("theButton: %s", theButton)
+    log.df("buttonID: %s", buttonID)
+    log.df("theButton: %s", theButton)
 
     if controlType == "screen" then
         --------------------------------------------------------------------------------
@@ -351,9 +359,9 @@ function mod.buttonCallback(object, buttonID, pressed, controlType, turningLeft,
         --
         -- "shortPress", "longPress" or "swipe"
         --------------------------------------------------------------------------------
-        --log.df("[SCREEN] object: %s, eventType: %s, startX: %s, startY: %s, endX: %s, endY: %s", object, eventType, startX, startY, endX, endY)
+        log.df("[SCREEN] object: %s, eventType: %s, startX: %s, startY: %s, endX: %s, endY: %s", object, eventType, startX, startY, endX, endY)
 
-        --log.df("buttonID: %s eventType: %s", buttonID, eventType)
+        log.df("buttonID: %s eventType: %s", buttonID, eventType)
 
         local screenAction
         if eventType == "shortPress" then
@@ -823,7 +831,7 @@ function mod.discoveryCallback(connected, object)
     else
         local deviceType = mod.getDeviceType(object)
         if connected then
-            --log.df("Stream Deck Connected: %s - %s", deviceType, serialNumber)
+            log.df("Stream Deck Connected: %s - %s", deviceType, serialNumber)
             mod.devices[deviceType][serialNumber] = object:buttonCallback(mod.buttonCallback)
 
             --------------------------------------------------------------------------------
@@ -846,7 +854,7 @@ function mod.discoveryCallback(connected, object)
             mod.update()
         else
             if mod.devices and mod.devices[deviceType][serialNumber] then
-                --log.df("Stream Deck Disconnected: %s - %s", deviceType, serialNumber)
+                log.df("Stream Deck Disconnected: %s - %s", deviceType, serialNumber)
                 mod.devices[deviceType][serialNumber] = nil
             else
                 log.ef("Disconnected Stream Deck wasn't previously registered: %s - %s", deviceType, serialNumber)
