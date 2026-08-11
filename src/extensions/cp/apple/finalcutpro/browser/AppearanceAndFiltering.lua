@@ -15,6 +15,8 @@ local Slider                = require "cp.ui.Slider"
 
 local go                    = require "cp.rx.go"
 
+local semver                = require "semver"
+
 local If                    = go.If
 local SetProp               = go.SetProp
 local WaitUntil             = go.WaitUntil
@@ -125,9 +127,14 @@ end
 --- Field
 --- The "Clip Appearance & Filtering Menu" button.
 function AppearanceAndFiltering.lazy.value:button()
+    local buttonID = 2
+    if self:app():version() >= semver("12.3.0") then
+        buttonID = 1
+    end
+
     local parent = self:parent()
     return Button(parent, parent.UI:mutate(function(original)
-        return childFromRight(childrenWithRole(original(), "AXButton"), 2)
+        return childFromRight(childrenWithRole(original(), "AXButton"), buttonID)
     end))
 end
 

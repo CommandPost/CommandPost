@@ -18,10 +18,13 @@ local LibrariesList             = require "cp.apple.finalcutpro.main.LibrariesLi
 local LibrariesSidebar          = require "cp.apple.finalcutpro.main.LibrariesSidebar"
 
 local Button                    = require "cp.ui.Button"
+local Group                     = require "cp.ui.Group"
 local PopUpButton               = require "cp.ui.PopUpButton"
 local SplitGroup                = require "cp.ui.SplitGroup"
 local Table                     = require "cp.ui.OldTable"
 local TextField                 = require "cp.ui.TextField"
+
+local semver                    = require "semver"
 
 local Do                        = go.Do
 local First                     = go.First
@@ -32,6 +35,7 @@ local Throw                     = go.Throw
 
 local cache                     = axutils.cache
 local childFromRight            = axutils.childFromRight
+local childFromTop              = axutils.childFromTop
 local childMatching             = axutils.childMatching
 local childWith                 = axutils.childWith
 local childWithRole             = axutils.childWithRole
@@ -221,8 +225,14 @@ end
 --- Field
 --- The Toggle View Mode [Button](cp.ui.Button.md).
 function LibrariesBrowser.lazy.value:toggleViewMode()
+    local buttonID = 3
+
+    if self:app():version() >= semver("12.3.0") then
+        buttonID = 2
+    end
+
     return Button(self, self.UI:mutate(function(original)
-        return childFromRight(original(), 3, Button.matches)
+        return childFromRight(original(), buttonID, Button.matches)
     end))
 end
 
@@ -240,7 +250,24 @@ end
 --- The Search [TextField](cp.ui.TextField.md).
 function LibrariesBrowser.lazy.value:search()
     return TextField(self, self.mainGroupUI:mutate(function(original)
-        return childMatching(original(), TextField.matches)
+        if self:app():version() >= semver("12.3.0") then
+            local group = childFromTop(original(), 1, Group.matches)
+            return group and childMatching(group, TextField.matches)
+        else
+            return childMatching(original(), TextField.matches)
+        end
+    end))
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.searchClearButton <cp.ui.Button>
+--- Field
+--- The Clear button for the Search Text Field (Final Cut Pro 12.3 or later only).
+function LibrariesBrowser.lazy.value:searchClearButton()
+    return Button(self, self.mainGroupUI:mutate(function(original)
+        if self:app():version() >= semver("12.3.0") then
+            local group = childFromTop(original(), 1, Group.matches)
+            return group and childMatching(group, Button.matches)
+        end
     end))
 end
 

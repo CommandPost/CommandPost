@@ -14,10 +14,11 @@ local Group                             = require "cp.ui.Group"
 local tools								= require "cp.tools"
 local just								= require "cp.just"
 
-local Table								= require "cp.ui.OldTable"
-local ScrollArea						= require "cp.ui.ScrollArea"
+local Button							= require "cp.ui.Button"
 local CheckBox							= require "cp.ui.CheckBox"
 local PopUpButton						= require "cp.ui.PopUpButton"
+local ScrollArea						= require "cp.ui.ScrollArea"
+local Table								= require "cp.ui.OldTable"
 local TextField							= require "cp.ui.TextField"
 
 local Do                                = require "cp.rx.go.Do"
@@ -27,7 +28,10 @@ local WaitUntil                         = require "cp.rx.go.WaitUntil"
 
 local semver                            = require "semver"
 
+local childFromLeft                     = axutils.childFromLeft
+local childFromRight                    = axutils.childFromRight
 local childWithRole                     = axutils.childWithRole
+
 local ninjaDoubleClick                  = tools.ninjaDoubleClick
 local upper                             = tools.upper
 
@@ -695,6 +699,7 @@ function EffectsBrowser:applyItem(itemUI)
             local rect = geometry.rect(uiFrame)
             local targetPoint = rect and rect.center
             if targetPoint then
+                --log.df("Double clicking: %s", targetPoint)
                 ninjaDoubleClick(targetPoint)
             end
         end
@@ -766,7 +771,18 @@ end
 function EffectsBrowser.lazy.value:sidebarToggle()
     return CheckBox(self, function()
         local fcpVersion = self:app():version()
-        if fcpVersion >= semver("12.0.0") then
+        if fcpVersion >= semver("12.3.0") then
+
+            --log.df("UI: %s", self:UI())
+            --log.df("children: %s", hs.inspect(self:UI():attributeValue("AXChildren")))
+
+            local group = childFromLeft(self:UI(), 1, Group.matches)
+
+            --log.df("group: %s", group)
+
+            return group and childWithRole(group, "AXCheckBox")
+
+        elseif fcpVersion >= semver("12.0.0") then
             --log.df("Getting Sidebar Toggle for Final Cut Pro 12...")
             local group = childWithRole(self:UI(), "AXGroup")
             return childWithRole(group, "AXCheckBox")
@@ -790,7 +806,40 @@ end
 --- The Search `PopUpButton` object.
 function EffectsBrowser.lazy.value:search()
     return TextField(self, function()
-        return childWithRole(self:UI(), "AXTextField")
+        local fcpVersion = self:app():version()
+        if fcpVersion >= semver("12.3.0") then
+
+            --log.df("UI: %s", self:UI())
+            --log.df("children: %s", hs.inspect(self:UI():attributeValue("AXChildren")))
+
+            local group = childFromRight(self:UI(), 1, Group.matches)
+
+            --log.df("group: %s", group)
+
+            return group and childWithRole(group, "AXTextField")
+        else
+            return childWithRole(self:UI(), "AXTextField")
+        end
+    end)
+end
+
+--- cp.apple.finalcutpro.main.EffectsBrowser.searchClearButton <cp.ui.Button>
+--- Field
+--- The Clear button for the Search Text Field (Final Cut Pro 12.3 or later only).
+function EffectsBrowser.lazy.value:searchClearButton()
+    return Button(self, function()
+        local fcpVersion = self:app():version()
+        if fcpVersion >= semver("12.3.0") then
+
+            --log.df("UI: %s", self:UI())
+            --log.df("children: %s", hs.inspect(self:UI():attributeValue("AXChildren")))
+
+            local group = childFromRight(self:UI(), 1, Group.matches)
+
+            --log.df("group: %s", group)
+
+            return group and childWithRole(group, "AXButton")
+        end
     end)
 end
 

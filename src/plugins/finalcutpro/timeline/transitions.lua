@@ -5,13 +5,19 @@
 local require           = require
 --local log               = require "hs.logger".new "transitions"
 
+local eventtap          = require "hs.eventtap"
+local pasteboard        = require "hs.pasteboard"
 local timer             = require "hs.timer"
 
 local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
+local just              = require "cp.just"
+
+local semver            = require "semver"
 
 local doAfter           = timer.doAfter
+local doUntil           = just.doUntil
 
 local mod = {}
 
@@ -101,7 +107,13 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    transitions.search:clear()
+    local fcpVersion = fcp:version()
+    if fcpVersion >= semver("12.3.0") then
+        transitions.searchClearButton:press()
+    else
+        transitions.search:clear()
+    end
+
 
     --------------------------------------------------------------------------------
     -- Click 'All':
@@ -115,7 +127,35 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Perform Search:
     --------------------------------------------------------------------------------
-    transitions.search:setValue(name)
+    if fcpVersion >= semver("12.3.0") then
+        transitions.search:focus()
+
+        local originalPasteboard = pasteboard.readAllData()
+
+        pasteboard.setContents(name)
+
+        if not fcp:selectMenu({"Edit", "Paste"}) then
+            dialog.displayErrorMessage("Failed to paste Effect name into Search field.")
+            return false
+        end
+
+        if not doUntil(function()
+            return transitions.search.value() == name
+        end, 3) then
+            dialog.displayErrorMessage("Failed to update the Search field via the Pasteboard.")
+            return false
+        end
+
+        ---------------------------------------------------------
+        -- Restore the original pasteboard value:
+        ---------------------------------------------------------
+        if originalPasteboard then
+            pasteboard.writeAllData(originalPasteboard)
+        end
+
+    else
+        transitions.search:setValue(name)
+    end
 
     --------------------------------------------------------------------------------
     -- Get the list of matching transitions:
@@ -150,7 +190,41 @@ function mod.apply(action)
 
     -- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
     doAfter(0.1, function()
-        transitions.search:setValue(originalSearch)
+        if fcpVersion >= semver("12.3.0") then
+
+            transitions.search:focus()
+
+            if fcpVersion >= semver("12.3.0") then
+                transitions.searchClearButton:press()
+            else
+                transitions.search:clear()
+            end
+
+            local originalPasteboard = pasteboard.readAllData()
+            pasteboard.setContents(originalSearch)
+
+            if not fcp:selectMenu({"Edit", "Paste"}) then
+                dialog.displayErrorMessage("Failed to paste Effect name into Search field.")
+                return false
+            end
+
+            if not doUntil(function()
+                return transitions.search.value() == originalSearch
+            end, 3) then
+                dialog.displayErrorMessage("Failed to update the Search field via the Pasteboard.")
+                return false
+            end
+
+            ---------------------------------------------------------
+            -- Restore the original pasteboard value:
+            ---------------------------------------------------------
+            if originalPasteboard then
+                pasteboard.writeAllData(originalPasteboard)
+            end
+        else
+            transitions.search:setValue(originalSearch)
+        end
+
         transitions:loadLayout(transitionsLayout)
         if effectsLayout then effects:loadLayout(effectsLayout) end
         if not transitionsShowing then transitions:hide() end

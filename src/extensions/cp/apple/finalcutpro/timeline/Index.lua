@@ -34,8 +34,13 @@ local Index = SplitGroup:subclass("cp.apple.finalcutpro.timeline.Index")
 ---  * `true` if matches otherwise `false`
 function Index.static.matches(element)
     return SplitGroup.matches(element)
-       and hasChild(element, SearchField.matches)
-       and hasChild(element, IndexMode.matches)
+
+        --------------------------------------------------------------------------------
+        -- NOTE: The search field has changed in Final Cut Pro v12.3.
+        --------------------------------------------------------------------------------
+        --and hasChild(element, SearchField.matches)
+
+        and hasChild(element, IndexMode.matches)
 end
 
 --- cp.apple.finalcutpro.timeline.Index(timeline) -> cp.apple.finalcutpro.timeline.Index
@@ -61,6 +66,9 @@ end
 --- Field
 --- The [SearchField](cp.ui.SearchField.md) for the Timeline Index.
 function Index.lazy.value:search()
+    --------------------------------------------------------------------------------
+    -- TODO: This no longer works in Final Cut Pro v12.3.
+    --------------------------------------------------------------------------------
     return SearchField(self, self.UI:mutate(function(original)
         return childMatching(original(), SearchField.matches)
     end))

@@ -4,13 +4,21 @@
 
 local require = require
 
-local timer             = require("hs.timer")
+local log				= require "hs.logger".new("VideoEffects")
 
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local eventtap          = require "hs.eventtap"
+local pasteboard        = require "hs.pasteboard"
+local timer             = require "hs.timer"
+
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local just              = require "cp.just"
+
+local semver            = require "semver"
 
 local doAfter           = timer.doAfter
+local doUntil           = just.doUntil
 
 local mod = {}
 
@@ -100,11 +108,17 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects.search:clear()
+    local fcpVersion = fcp:version()
+    if fcpVersion >= semver("12.3.0") then
+        effects.searchClearButton:press()
+    else
+        effects.search:clear()
+    end
 
     --------------------------------------------------------------------------------
     -- Click 'All':
     --------------------------------------------------------------------------------
+    --log.df("category: %s", category)
     if category then
         effects:showVideoCategory(category)
     else
@@ -114,10 +128,38 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Perform Search:
     --------------------------------------------------------------------------------
-    effects.search:setValue(name)
+    if fcpVersion >= semver("12.3.0") then
+        effects.search:focus()
+
+        local originalPasteboard = pasteboard.readAllData()
+
+        pasteboard.setContents(name)
+
+        if not fcp:selectMenu({"Edit", "Paste"}) then
+            dialog.displayErrorMessage("Failed to paste Effect name into Search field.")
+            return false
+        end
+
+        if not doUntil(function()
+            return effects.search.value() == name
+        end, 3) then
+            dialog.displayErrorMessage("Failed to update the Search field via the Pasteboard.")
+            return false
+        end
+
+        ---------------------------------------------------------
+        -- Restore the original pasteboard value:
+        ---------------------------------------------------------
+        if originalPasteboard then
+            pasteboard.writeAllData(originalPasteboard)
+        end
+
+    else
+        effects.search:setValue(name)
+    end
 
     --------------------------------------------------------------------------------
-    -- Get the list of matching effects
+    -- Get the list of matching effects:
     --------------------------------------------------------------------------------
     local matches = effects:currentItemsUI()
     if not matches or #matches == 0 then
@@ -128,13 +170,46 @@ function mod.apply(action)
     local effect = matches[1]
 
     --------------------------------------------------------------------------------
-    -- Apply the selected Transition:
+    -- Apply the selected Effect:
     --------------------------------------------------------------------------------
     effects:applyItem(effect)
 
     -- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
     doAfter(0.1, function()
-        effects.search:setValue(originalSearch)
+        if fcpVersion >= semver("12.3.0") then
+
+            effects.search:focus()
+
+            if fcpVersion >= semver("12.3.0") then
+                effects.searchClearButton:press()
+            else
+                effects.search:clear()
+            end
+
+            local originalPasteboard = pasteboard.readAllData()
+            pasteboard.setContents(originalSearch)
+
+            if not fcp:selectMenu({"Edit", "Paste"}) then
+                dialog.displayErrorMessage("Failed to paste Effect name into Search field.")
+                return false
+            end
+
+            if not doUntil(function()
+                return effects.search.value() == originalSearch
+            end, 3) then
+                dialog.displayErrorMessage("Failed to update the Search field via the Pasteboard.")
+                return false
+            end
+
+            ---------------------------------------------------------
+            -- Restore the original pasteboard value:
+            ---------------------------------------------------------
+            if originalPasteboard then
+                pasteboard.writeAllData(originalPasteboard)
+            end
+        else
+            effects.search:setValue(originalSearch)
+        end
         effects:loadLayout(effectsLayout)
         if transitionsLayout then transitions:loadLayout(transitionsLayout) end
         if not effectsShowing then effects:hide() end
@@ -143,7 +218,6 @@ function mod.apply(action)
     -- Success!
     return true
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.videoeffects",
